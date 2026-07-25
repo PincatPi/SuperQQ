@@ -1,4 +1,5 @@
 using UnityEngine;
+using SuperQQ.UI;
 
 namespace SuperQQ.Player
 {
@@ -46,6 +47,10 @@ namespace SuperQQ.Player
         [Range(0f, 1f)]
         [SerializeField] private float ghostAlpha = 0.5f;               // 幽灵透明度
         [SerializeField] private Vector3 ghostSpawnPosition = Vector3.zero; // 幽灵初始位置
+
+        [Header("玩家信息")]
+        [SerializeField] private string playerName = "P1";                 // 玩家名称
+        [SerializeField] private Color playerColor = Color.white;          // 玩家专属颜色
 
         [Header("输入键位")]
         [SerializeField] private KeyCode leftKey = KeyCode.A;
@@ -110,6 +115,10 @@ namespace SuperQQ.Player
         public float GhostAlpha => ghostAlpha;
         public Vector3 GhostSpawnPosition => ghostSpawnPosition;
 
+        // 玩家信息
+        public string PlayerName => playerName;
+        public Color PlayerColor => playerColor;
+
         // 输入
         public float HorizontalInput => _horizontalInput;
         public float VerticalInput => _verticalInput;
@@ -121,6 +130,7 @@ namespace SuperQQ.Player
         public bool BIsGrounded => _currentState?.BIsGrounded ?? false;
         public bool BIsJumping => _currentState?.BIsJumping ?? false;
         public bool BIsDead => _currentState is PlayerGhostState;
+        public bool BIsFinished => _currentState is PlayerFinishedState;
         public float HorizontalVelocity => _currentState?.HorizontalVelocity ?? 0f;
 
         // ==================== 生命周期 ====================
@@ -141,6 +151,36 @@ namespace SuperQQ.Player
 
             _currentState = new PlayerAliveState(this);
             _currentState.Enter();
+        }
+
+        private void Start()
+        {
+            // 注册到玩家管理器
+            if (PlayerManager.Instance != null)
+            {
+                PlayerManager.Instance.RegisterPlayer(this);
+            }
+
+            // 注册到名称标签管理器
+            if (PlayerNameLabelManager.Instance != null)
+            {
+                PlayerNameLabelManager.Instance.RegisterPlayer(this);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            // 从玩家管理器注销
+            if (PlayerManager.Instance != null)
+            {
+                PlayerManager.Instance.UnregisterPlayer(this);
+            }
+
+            // 从名称标签管理器注销
+            if (PlayerNameLabelManager.Instance != null)
+            {
+                PlayerNameLabelManager.Instance.UnregisterPlayer(this);
+            }
         }
 
         private void Update()
@@ -204,13 +244,32 @@ namespace SuperQQ.Player
         // ==================== 状态切换 ====================
 
         /// <summary>
-        /// 切换到新状态（先 Exit 旧状态，再 Enter 新状态）
+        /// 切换到新状态（先 Exit 旧状态，再 Enter 新状态），并通知 PlayerManager 更新状态记录
         /// </summary>
         public void TransitionTo(IPlayerState newState)
         {
             _currentState?.Exit();
             _currentState = newState;
             _currentState.Enter();
+
+            // 通知 PlayerManager 同步状态
+            NotifyStateChanged();
+        }
+
+        /// <summary>
+        /// 将当前状态同步到 PlayerManager
+        /// </summary>
+        private void NotifyStateChanged()
+        {
+            if (PlayerManager.Instance == null)
+            {
+                return;
+            }
+
+            PlayerStateType stateType = _currentState is PlayerGhostState ? PlayerStateType.Ghost
+                : _currentState is PlayerFinishedState ? PlayerStateType.Finished
+                : PlayerStateType.Alive;
+            PlayerManager.Instance.UpdatePlayerState(this, stateType);
         }
 
         /// <summary>
@@ -218,7 +277,10 @@ namespace SuperQQ.Player
         /// </summary>
         public void PlayerDie()
         {
-            if (BIsDead) return;
+            if (BIsDead)
+            {
+                return;
+            }
             TransitionTo(new PlayerGhostState(this));
         }
 
@@ -227,13 +289,29 @@ namespace SuperQQ.Player
         /// </summary>
         public void Revive()
         {
-            if (!BIsDead) return;
+            if (!BIsDead)
+            {
+                return;
+            }
             TransitionTo(new PlayerAliveState(this));
             // 重置出生点
             if (rebornPosition != null)
             {
                 transform.position = rebornPosition;
             }
+        }
+
+        /// <summary>
+        /// 通关，进入通关状态
+        /// 已通关或已死亡的玩家不可再次通关
+        /// </summary>
+        public void PlayerFinish()
+        {
+            if (BIsFinished || BIsDead) 
+            {
+                return;
+            }
+            TransitionTo(new PlayerFinishedState(this));
         }
 
         // ==================== 调试可视化 ====================
@@ -245,18 +323,6 @@ namespace SuperQQ.Player
                 Gizmos.color = BIsGrounded ? Color.green : Color.red;
                 Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
             }
-        }
-
-        /// <summary>
-        /// 屏幕调试信息：显示接地状态、跳跃状态、当前状态类型、位置
-        /// </summary>
-        private void OnGUI()
-        {
-            string stateName = _currentState is PlayerGhostState ? "Ghost" : "Alive";
-            Vector2 pos = _rb.position;
-            string info = $"State: {stateName}  |  Grounded: {BIsGrounded}  |  Jumping: {BIsJumping}\n"
-                        + $"Pos: ({pos.x:F1}, {pos.y:F1})";
-            GUI.Label(new Rect(10, 10, 500, 40), info);
         }
     }
 }
