@@ -41,7 +41,11 @@ namespace SuperQQ.Player
         public void Enter()
         {
             // 禁用碰撞体
-            _ctx.Collider.enabled = false;
+            // 注意：Collider 可能为 null，必须做 null 检查，否则后续操作不会执行
+            if (_ctx.Collider != null)
+            {
+                _ctx.Collider.enabled = false;
+            }
 
             // 保存并取消重力
             _savedGravityScale = _ctx.Rb.gravityScale;
@@ -65,7 +69,10 @@ namespace SuperQQ.Player
         public void Exit()
         {
             // 恢复碰撞体
-            _ctx.Collider.enabled = true;
+            if (_ctx.Collider != null)
+            {
+                _ctx.Collider.enabled = true;
+            }
 
             // 恢复重力
             _ctx.Rb.gravityScale = _savedGravityScale;

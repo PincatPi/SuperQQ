@@ -155,10 +155,10 @@ namespace SuperQQ.Player
 
         private void Start()
         {
-            // 注册到玩家管理器
-            if (PlayerManager.Instance != null)
+            // 注册到关卡玩家注册表（场景级）
+            if (LevelPlayerRegistry.Instance != null)
             {
-                PlayerManager.Instance.RegisterPlayer(this);
+                LevelPlayerRegistry.Instance.RegisterPlayer(this);
             }
 
             // 注册到名称标签管理器
@@ -170,10 +170,10 @@ namespace SuperQQ.Player
 
         private void OnDestroy()
         {
-            // 从玩家管理器注销
-            if (PlayerManager.Instance != null)
+            // 从关卡玩家注册表注销
+            if (LevelPlayerRegistry.Instance != null)
             {
-                PlayerManager.Instance.UnregisterPlayer(this);
+                LevelPlayerRegistry.Instance.UnregisterPlayer(this);
             }
 
             // 从名称标签管理器注销
@@ -181,6 +181,56 @@ namespace SuperQQ.Player
             {
                 PlayerNameLabelManager.Instance.UnregisterPlayer(this);
             }
+        }
+
+        // ==================== 档案应用 ====================
+
+        /// <summary>
+        /// 应用玩家档案配置
+        /// 由 LevelPlayerRegistry 在实例化玩家后调用
+        /// 同步设置名称、颜色和键位，并立即刷新精灵颜色
+        /// </summary>
+        /// <param name="profile">玩家档案</param>
+        public void ApplyProfile(PlayerProfile profile)
+        {
+            if (profile == null)
+            {
+                return;
+            }
+
+            playerName = profile.PlayerName;
+            playerColor = profile.PlayerColor;
+            leftKey = profile.LeftKey;
+            rightKey = profile.RightKey;
+            jumpKey = profile.JumpKey;
+            jumpKeyAlt = profile.JumpKeyAlt;
+            downKey = profile.DownKey;
+
+            // 立即刷新精灵颜色（Awake 已缓存 _spriteRenderer）
+            if (_spriteRenderer != null)
+            {
+                _spriteRenderer.color = playerColor;
+            }
+        }
+
+        /// <summary>
+        /// 根据当前配置构建玩家档案
+        /// 用于将场景中预置的 PlayerController 信息同步到 PlayerSessionManager
+        /// 使手动放置的玩家也能进入结算页的玩家列表与得分记录
+        /// </summary>
+        /// <returns>包含当前名称、颜色和键位的 PlayerProfile</returns>
+        public PlayerProfile BuildProfile()
+        {
+            return new PlayerProfile
+            {
+                PlayerName = playerName,
+                PlayerColor = playerColor,
+                LeftKey = leftKey,
+                RightKey = rightKey,
+                JumpKey = jumpKey,
+                JumpKeyAlt = jumpKeyAlt,
+                DownKey = downKey
+            };
         }
 
         private void Update()
@@ -244,7 +294,7 @@ namespace SuperQQ.Player
         // ==================== 状态切换 ====================
 
         /// <summary>
-        /// 切换到新状态（先 Exit 旧状态，再 Enter 新状态），并通知 PlayerManager 更新状态记录
+        /// 切换到新状态（先 Exit 旧状态，再 Enter 新状态），并通知 LevelPlayerRegistry 更新状态记录
         /// </summary>
         public void TransitionTo(IPlayerState newState)
         {
@@ -252,16 +302,16 @@ namespace SuperQQ.Player
             _currentState = newState;
             _currentState.Enter();
 
-            // 通知 PlayerManager 同步状态
+            // 通知 LevelPlayerRegistry 同步状态
             NotifyStateChanged();
         }
 
         /// <summary>
-        /// 将当前状态同步到 PlayerManager
+        /// 将当前状态同步到 LevelPlayerRegistry
         /// </summary>
         private void NotifyStateChanged()
         {
-            if (PlayerManager.Instance == null)
+            if (LevelPlayerRegistry.Instance == null)
             {
                 return;
             }
@@ -269,7 +319,7 @@ namespace SuperQQ.Player
             PlayerStateType stateType = _currentState is PlayerGhostState ? PlayerStateType.Ghost
                 : _currentState is PlayerFinishedState ? PlayerStateType.Finished
                 : PlayerStateType.Alive;
-            PlayerManager.Instance.UpdatePlayerState(this, stateType);
+            LevelPlayerRegistry.Instance.UpdatePlayerState(this, stateType);
         }
 
         /// <summary>
