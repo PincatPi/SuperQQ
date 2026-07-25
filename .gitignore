@@ -107,3 +107,7 @@ InitTestScene*.unity*
 
 # TRAE workspace attachments (session-specific, not part of the game project)
 .uploads/
+.trae/
+
+# JetBrains IDE config
+.idea/
