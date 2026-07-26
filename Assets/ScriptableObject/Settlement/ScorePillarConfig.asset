@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b47d633c0f011349bbdc4cb29e8bf98, type: 3}
   m_Name: ScorePillarConfig
   m_EditorClassIdentifier: 
-  HeightPerPoint: 0.1
+  HeightPerPoint: 0.07
   PillarWidthRatio: 0.3
   CompletionColor: {r: 0.2, g: 0.5, b: 1, a: 1}
   FirstPlaceColor: {r: 0.2, g: 0.8, b: 0.3, a: 1}
@@ -51,5 +51,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   TrackBottomPadding: 0.3
   TrackTopPadding: 1
+  MaxTrackWidth: 6
   VictoryLineColor: {r: 1, g: 0.85, b: 0, a: 1}
   VictoryLineText: 100
