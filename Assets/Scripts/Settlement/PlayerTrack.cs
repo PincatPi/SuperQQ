@@ -53,13 +53,16 @@ namespace SuperQQ.Settlement
 
         /// <summary>
         /// 初始化轨道：设置玩家信息和配置，创建名称文本和柱体
+        /// 先创建过去轮次柱体（直接显示，无动画），再创建当前轮次柱体（播放弹出动画）
         /// </summary>
         /// <param name="playerName">玩家名称</param>
         /// <param name="playerColor">玩家颜色</param>
         /// <param name="roundScoreData">本轮得分数据</param>
         /// <param name="config">柱体配置</param>
         /// <param name="trackWidth">轨道宽度（世界单位）</param>
-        public void Initialize(string playerName, Color playerColor, RoundScoreData roundScoreData, ScorePillarConfig config, float trackWidth)
+        /// <param name="pastRoundScores">过去轮次得分数据列表（按轮次升序）</param>
+        public void Initialize(string playerName, Color playerColor, RoundScoreData roundScoreData,
+            ScorePillarConfig config, float trackWidth, List<RoundScoreData> pastRoundScores)
         {
             _playerName = playerName;
             _playerColor = playerColor;
@@ -72,6 +75,7 @@ namespace SuperQQ.Settlement
             ClearPillars();
             CreateNameText(playerName, playerColor);
             CreateTotalScoreText();
+            CreatePastRoundPillars(pastRoundScores);
             CreatePillars();
         }
 
@@ -168,6 +172,62 @@ namespace SuperQQ.Settlement
             if (textRenderer != null)
             {
                 textRenderer.sortingOrder = 3;
+            }
+        }
+
+        /// <summary>
+        /// 创建过去轮次的柱体，直接显示在最终高度（不播放弹出动画）
+        /// 过去轮次柱体从底部向上堆叠，为当前轮次柱体提供视觉底座
+        /// </summary>
+        /// <param name="pastRoundScores">过去轮次得分数据列表（按轮次升序）</param>
+        private void CreatePastRoundPillars(List<RoundScoreData> pastRoundScores)
+        {
+            if (pastRoundScores == null || pastRoundScores.Count == 0 || _config == null)
+            {
+                return;
+            }
+
+            List<ScoreType> order = _config.GetScoreTypeOrder();
+
+            for (int roundIdx = 0; roundIdx < pastRoundScores.Count; roundIdx++)
+            {
+                RoundScoreData pastRound = pastRoundScores[roundIdx];
+                if (pastRound == null)
+                {
+                    continue;
+                }
+
+                for (int i = 0; i < order.Count; i++)
+                {
+                    ScoreType scoreType = order[i];
+                    int score = 0;
+                    if (pastRound.ScoreBreakdown != null
+                        && pastRound.ScoreBreakdown.TryGetValue(scoreType, out int value))
+                    {
+                        score = value;
+                    }
+
+                    if (score <= 0)
+                    {
+                        continue;
+                    }
+
+                    float height = _config.CalculatePillarHeight(score);
+                    Color color = _config.GetScoreTypeColor(scoreType);
+
+                    GameObject pillarObj = new GameObject($"PastPillar_R{pastRound.RoundIndex}_{scoreType}");
+                    pillarObj.transform.SetParent(transform, false);
+                    pillarObj.transform.localPosition = new Vector3(0f, _accumulatedHeight, 0f);
+
+                    ScorePillar pillar = pillarObj.AddComponent<ScorePillar>();
+                    pillar.Initialize(color, score, height, _pillarWidth,
+                        _config.FontSize, _config.TextColor, _config.TextOffset);
+
+                    // 过去轮次柱体直接跳到最终状态，不播放弹出动画
+                    pillar.SkipAnimation();
+
+                    _accumulatedHeight += height;
+                }
             }
         }
 

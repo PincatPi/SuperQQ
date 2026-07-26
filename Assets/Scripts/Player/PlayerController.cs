@@ -119,6 +119,9 @@ namespace SuperQQ.Player
         public string PlayerName => playerName;
         public Color PlayerColor => playerColor;
 
+        // 输入键位
+        public KeyCode DownKey => downKey;
+
         // 输入
         public float HorizontalInput => _horizontalInput;
         public float VerticalInput => _verticalInput;

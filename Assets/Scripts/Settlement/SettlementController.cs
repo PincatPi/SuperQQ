@@ -12,6 +12,7 @@ namespace SuperQQ.Settlement
     /// 监听场景加载事件，进入 Settlement 场景时刷新结算显示
     /// 退出 Settlement 场景时隐藏轨道根节点，保留所有对象不销毁
     /// 下次进入时直接复现上次的状态，避免重复创建对象
+    /// 结算动画完成后根据胜利线检测结果，自动延迟切换到下一轮或整场结束
     /// 放置在 Settlement 场景中，首次加载后通过 DontDestroyOnLoad 持久化
     /// </summary>
     public class SettlementController : MonoBehaviour
@@ -21,6 +22,12 @@ namespace SuperQQ.Settlement
 
         [Header("相机")]
         [SerializeField] private float _cameraOrthographicSize = 6f;
+
+        [Header("场景")]
+        [SerializeField] private string _levelSceneName = "Level1";
+
+        [Header("结算后延迟")]
+        [SerializeField] private float _settlementEndDelay = 1.5f;
 
         // 单例实例
         private static SettlementController _instance;
@@ -37,8 +44,11 @@ namespace SuperQQ.Settlement
         // 当前动画协程引用
         private Coroutine _animationCoroutine;
 
-        // 是否已初始化轨道（用于区分首次创建和复用）
-        private bool _bIsTracksInitialized;
+        // 结算流程协程引用
+        private Coroutine _settlementFlowCoroutine;
+
+        // OnGUI调试文本
+        private string _debugFlowText = "";
 
         // ==================== 单例访问 ====================
 
@@ -91,10 +101,36 @@ namespace SuperQQ.Settlement
                 _animationCoroutine = null;
             }
 
+            if (_settlementFlowCoroutine != null)
+            {
+                StopCoroutine(_settlementFlowCoroutine);
+                _settlementFlowCoroutine = null;
+            }
+
             if (_instance == this)
             {
                 _instance = null;
             }
+        }
+
+        /// <summary>
+        /// OnGUI调试信息：在屏幕左上角显示结算流程状态
+        /// </summary>
+        private void OnGUI()
+        {
+            if (string.IsNullOrEmpty(_debugFlowText))
+            {
+                return;
+            }
+
+            GUIStyle style = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 20,
+                fontStyle = FontStyle.Bold
+            };
+            style.normal.textColor = Color.yellow;
+
+            GUI.Label(new Rect(10, 10, 600, 30), _debugFlowText, style);
         }
 
         // ==================== 轨道根节点 ====================
@@ -115,7 +151,7 @@ namespace SuperQQ.Settlement
         /// <summary>
         /// 场景加载完成回调
         /// 进入 Settlement 场景时显示轨道根节点并刷新结算
-        /// 进入其他场景时隐藏轨道根节点
+        /// 进入其他场景时隐藏轨道根节点并清空调试文本
         /// </summary>
         /// <param name="scene">已加载的场景</param>
         /// <param name="mode">加载模式</param>
@@ -124,11 +160,13 @@ namespace SuperQQ.Settlement
             if (scene.name == "Settlement")
             {
                 _tracksRoot.gameObject.SetActive(true);
+                _debugFlowText = "";
                 RefreshSettlement();
             }
             else
             {
                 _tracksRoot.gameObject.SetActive(false);
+                _debugFlowText = "";
             }
         }
 
@@ -153,11 +191,17 @@ namespace SuperQQ.Settlement
                 return;
             }
 
-            // 停止正在进行的动画
+            // 停止正在进行的动画和流程协程
             if (_animationCoroutine != null)
             {
                 StopCoroutine(_animationCoroutine);
                 _animationCoroutine = null;
+            }
+
+            if (_settlementFlowCoroutine != null)
+            {
+                StopCoroutine(_settlementFlowCoroutine);
+                _settlementFlowCoroutine = null;
             }
 
             // 清除旧轨道内容并重建
@@ -168,7 +212,7 @@ namespace SuperQQ.Settlement
         }
 
         // ==================== 轨道创建与更新 ====================
-        
+
         /// <summary>
         /// 根据当前玩家数量创建或更新轨道
         /// 轨道按 PlayerSessionManager 中 Profile 列表的注册顺序从左到右排列（Player1 → Player2 → ...）
@@ -188,7 +232,9 @@ namespace SuperQQ.Settlement
             float cameraAspect = Camera.main != null ? Camera.main.aspect : 1f;
             float trackWidth = _config.CalculateTrackWidth(_cameraOrthographicSize, cameraAspect, playerCount);
             float cameraWidth = _cameraOrthographicSize * 2f * cameraAspect;
-            float startX = -cameraWidth / 2f + trackWidth / 2f;
+            // 当轨道总宽度不满屏时居中显示，保持视觉平衡
+            float totalTracksWidth = playerCount * trackWidth;
+            float startX = -totalTracksWidth / 2f + trackWidth / 2f;
             // 轨道Y定位到相机视口底部 + 底部留白，确保柱体从屏幕最下方开始堆叠
             float trackBottomY = -_cameraOrthographicSize + _config.TrackBottomPadding;
 
@@ -208,6 +254,9 @@ namespace SuperQQ.Settlement
                 Color playerColor = GetPlayerColor(playerName);
                 Vector3 trackPosition = new Vector3(startX + i * trackWidth, trackBottomY, 0f);
 
+                // 获取过去轮次得分数据
+                List<RoundScoreData> pastRoundScores = GetPastRoundScores(playerName, roundIndex);
+
                 // 创建或复用轨道
                 PlayerTrack track;
                 if (i < _tracks.Count)
@@ -215,7 +264,7 @@ namespace SuperQQ.Settlement
                     // 复用已有轨道
                     track = _tracks[i];
                     track.transform.localPosition = trackPosition;
-                    track.Initialize(playerName, playerColor, roundScore, _config, trackWidth);
+                    track.Initialize(playerName, playerColor, roundScore, _config, trackWidth, pastRoundScores);
                 }
                 else
                 {
@@ -225,7 +274,7 @@ namespace SuperQQ.Settlement
                     trackObj.transform.localPosition = trackPosition;
 
                     track = trackObj.AddComponent<PlayerTrack>();
-                    track.Initialize(playerName, playerColor, roundScore, _config, trackWidth);
+                    track.Initialize(playerName, playerColor, roundScore, _config, trackWidth, pastRoundScores);
                     _tracks.Add(track);
                 }
             }
@@ -241,7 +290,6 @@ namespace SuperQQ.Settlement
                 _tracks.RemoveAt(lastIndex);
             }
 
-            _bIsTracksInitialized = true;
         }
 
         /// <summary>
@@ -341,6 +389,35 @@ namespace SuperQQ.Settlement
             return Color.white;
         }
 
+        /// <summary>
+        /// 获取指定玩家在当前轮次之前的所有轮次得分数据
+        /// 结果按轮次索引升序排列，用于结算时显示过去轮次的柱状得分底座
+        /// </summary>
+        /// <param name="playerName">玩家名称</param>
+        /// <param name="currentRoundIndex">当前轮次索引</param>
+        private List<RoundScoreData> GetPastRoundScores(string playerName, int currentRoundIndex)
+        {
+            List<RoundScoreData> pastScores = new List<RoundScoreData>();
+
+            PlayerScoreRecord record = PlayerScoreManager.Instance.GetPlayerScoreRecord(playerName);
+            if (record == null)
+            {
+                return pastScores;
+            }
+
+            for (int i = 0; i < record.RoundHistory.Count; i++)
+            {
+                if (record.RoundHistory[i].RoundIndex < currentRoundIndex)
+                {
+                    pastScores.Add(record.RoundHistory[i]);
+                }
+            }
+
+            // 按轮次索引升序排列
+            pastScores.Sort((a, b) => a.RoundIndex.CompareTo(b.RoundIndex));
+            return pastScores;
+        }
+
         // ==================== 批次动画 ====================
 
         /// <summary>
@@ -424,6 +501,9 @@ namespace SuperQQ.Settlement
             }
 
             _animationCoroutine = null;
+
+            // 动画完成后，启动结算流程判断
+            StartSettlementFlow();
         }
 
         /// <summary>
@@ -438,6 +518,72 @@ namespace SuperQQ.Settlement
                 yield return new WaitForSeconds(delay);
             }
             pillar.StartPopAnimation(_config.PopDuration, _config.PopCurve);
+        }
+
+        // ==================== 结算流程控制 ====================
+
+        /// <summary>
+        /// 启动结算流程：动画完成后延迟指定秒数，根据胜利线检测结果决定下一步
+        /// 无人达线 → 推进下一轮并加载关卡场景
+        /// 有人达线 → 整场结束，停留在结算页
+        /// </summary>
+        private void StartSettlementFlow()
+        {
+            if (_settlementFlowCoroutine != null)
+            {
+                StopCoroutine(_settlementFlowCoroutine);
+            }
+            _settlementFlowCoroutine = StartCoroutine(SettlementFlowCoroutine());
+        }
+
+        /// <summary>
+        /// 结算流程协程：延迟后根据胜利线检测结果执行流程分支
+        /// </summary>
+        private IEnumerator SettlementFlowCoroutine()
+        {
+            if (PlayerScoreManager.Instance == null)
+            {
+                Debug.LogError("[SettlementController] PlayerScoreManager 不存在，无法判断结算流程。");
+                yield break;
+            }
+
+            bool bHasWinner = PlayerScoreManager.Instance.BHasPlayerReachedVictoryLine();
+            int currentRound = PlayerScoreManager.Instance.CurrentRoundIndex;
+
+            if (bHasWinner)
+            {
+                // 有人达线：整场结束
+                _debugFlowText = $"[整场结束] 第{currentRound}轮结算完毕，有人达到胜利线！";
+                Debug.Log($"[SettlementController] {_debugFlowText}");
+                yield break;
+            }
+
+            // 无人达线：延迟后回到关卡继续闯关
+            _debugFlowText = $"[继续闯关] 第{currentRound}轮无人达线，{_settlementEndDelay}秒后进入第{currentRound + 1}轮...";
+            Debug.Log($"[SettlementController] {_debugFlowText}");
+
+            yield return new WaitForSeconds(_settlementEndDelay);
+
+            // 推进到下一轮：递增轮次索引、清空本轮中间数据
+            PlayerScoreManager.Instance.AdvanceToNextRound();
+
+            // 清空调试文本
+            _debugFlowText = "";
+
+            // 加载关卡场景继续闯关
+            Scene.SceneManager sceneManager = Scene.SceneManager.Instance;
+            if (sceneManager != null)
+            {
+                sceneManager.LoadScene(_levelSceneName);
+            }
+            else
+            {
+                // 回退方案：直接使用 Unity SceneManager 加载
+                Debug.LogWarning("[SettlementController] SceneManager 不存在，使用 Unity SceneManager 直接加载场景。");
+                UnityEngine.SceneManagement.SceneManager.LoadScene(_levelSceneName);
+            }
+
+            _settlementFlowCoroutine = null;
         }
     }
 }

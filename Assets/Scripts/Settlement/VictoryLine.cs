@@ -48,7 +48,7 @@ namespace SuperQQ.Settlement
 
                 _lineRenderer = lineObj.AddComponent<SpriteRenderer>();
                 _lineRenderer.sprite = CreateWhiteSprite();
-                _lineRenderer.sortingOrder = 0;
+                _lineRenderer.sortingOrder = 4;
             }
 
             _lineRenderer.color = config.VictoryLineColor;
@@ -74,7 +74,7 @@ namespace SuperQQ.Settlement
                 Renderer textRenderer = labelObj.GetComponent<Renderer>();
                 if (textRenderer != null)
                 {
-                    textRenderer.sortingOrder = 3;
+                    textRenderer.sortingOrder = 5;
                 }
             }
 

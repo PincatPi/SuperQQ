@@ -59,6 +59,9 @@ namespace SuperQQ.Settlement
         [Tooltip("轨道顶部留白（世界单位），预留给总分文本")]
         public float TrackTopPadding = 1f;
 
+        [Tooltip("单条轨道最大宽度（世界单位），玩家数量少时轨道不会超过此值以保持美观")]
+        public float MaxTrackWidth = 6f;
+
         [Header("胜利线")]
         [Tooltip("胜利线颜色")]
         public Color VictoryLineColor = new Color(1f, 0.85f, 0f);
@@ -70,12 +73,13 @@ namespace SuperQQ.Settlement
 
         /// <summary>
         /// 根据相机正交大小和玩家数量计算单条轨道宽度
-        /// 所有轨道平分整个屏幕宽度
+        /// 所有轨道平分整个屏幕宽度，但不超过 MaxTrackWidth
+        /// 玩家数量少时轨道宽度被限制，保持美观的比例
         /// </summary>
         /// <param name="cameraOrthographicSize">相机正交大小</param>
         /// <param name="cameraAspect">相机宽高比</param>
         /// <param name="playerCount">玩家数量</param>
-        /// <returns>单条轨道宽度（世界单位）</returns>
+        /// <returns>单条轨道宽度（世界单位），不超过 MaxTrackWidth</returns>
         public float CalculateTrackWidth(float cameraOrthographicSize, float cameraAspect, int playerCount)
         {
             if (playerCount <= 0)
@@ -84,7 +88,10 @@ namespace SuperQQ.Settlement
             }
 
             float cameraWidth = cameraOrthographicSize * 2f * cameraAspect;
-            return cameraWidth / playerCount;
+            float rawTrackWidth = cameraWidth / playerCount;
+
+            // 限制轨道宽度不超过最大值，玩家少时保持美观比例
+            return Mathf.Min(rawTrackWidth, MaxTrackWidth);
         }
 
         /// <summary>

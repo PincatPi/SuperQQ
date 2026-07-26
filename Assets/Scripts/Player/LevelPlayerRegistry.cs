@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SuperQQ.Score;
 using SuperQQ.UI;
 using UnityEngine;
 
@@ -33,6 +34,9 @@ namespace SuperQQ.Player
 
         // 仅剩一名存活玩家时触发的提示标记，防止重复弹出
         private bool _bIsLastPlayerStandingTriggered;
+
+        // 提前结束长按时长（秒），对应策划文档：长按蹲/秀键 1.6 秒放弃
+        private const float EARLY_QUIT_HOLD_DURATION = 1.6f;
 
         // ==================== 公开事件 ====================
 
@@ -71,6 +75,17 @@ namespace SuperQQ.Player
         /// 本关玩家数量
         /// </summary>
         public int PlayerCount => _players.Count;
+
+        /// <summary>
+        /// 是否只剩一名存活玩家
+        /// 满足条件时存活玩家可长按 Down Key 提前放弃
+        /// </summary>
+        public bool BIsLastPlayerStanding => _bIsLastPlayerStandingTriggered;
+
+        /// <summary>
+        /// 提前结束长按时长（秒）
+        /// </summary>
+        public float EarlyQuitHoldDuration => EARLY_QUIT_HOLD_DURATION;
 
         // ==================== 生命周期 ====================
 
@@ -359,6 +374,63 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
+        /// 获取当前唯一的存活玩家
+        /// 仅在 BIsLastPlayerStanding 为 true 时有效
+        /// 用于提前放弃长按检测时确认当前存活玩家身份
+        /// </summary>
+        /// <returns>唯一存活玩家的 PlayerController，无存活玩家或多人存活时返回 null</returns>
+        public PlayerController GetLastAlivePlayer()
+        {
+            PlayerController lastAlive = null;
+            for (int i = 0; i < _players.Count; i++)
+            {
+                PlayerController player = _players[i];
+                if (player == null)
+                {
+                    continue;
+                }
+
+                if (_playerStates.TryGetValue(player, out PlayerStateType state) && state == PlayerStateType.Alive)
+                {
+                    if (lastAlive != null)
+                    {
+                        // 多于一名存活玩家，返回 null
+                        return null;
+                    }
+                    lastAlive = player;
+                }
+            }
+            return lastAlive;
+        }
+
+        /// <summary>
+        /// 提前放弃：由最后一名存活玩家长按 Down Key 触发
+        /// 该玩家立即死亡（变幽灵），随后由 CheckAllPlayersOut 检测到全员出局并触发结算
+        /// </summary>
+        /// <param name="player">发起放弃的玩家</param>
+        public void TriggerEarlyQuit(PlayerController player)
+        {
+            if (player == null)
+            {
+                return;
+            }
+
+            if (!_bIsLastPlayerStandingTriggered)
+            {
+                return;
+            }
+
+            // 确认该玩家仍是存活状态
+            if (!_playerStates.TryGetValue(player, out PlayerStateType state) || state != PlayerStateType.Alive)
+            {
+                return;
+            }
+
+            Debug.Log($"[LevelPlayerRegistry] 玩家 {player.PlayerName} 长按放弃，提前结束本关。");
+            player.PlayerDie();
+        }
+
+        /// <summary>
         /// 获取玩家颜色
         /// 优先从 PlayerController 读取，失败时回退到 PlayerSessionManager 的 Profile
         /// 用于结算页等需要在玩家化身销毁后仍能取色的场景
@@ -489,5 +561,80 @@ namespace SuperQQ.Player
 
             PopupManager.Instance.ShowPopup(_endEarlyPopupPrefab, 3f);
         }
+
+        // ==================== 调试信息 ====================
+
+#if UNITY_EDITOR
+        private static readonly Color DebugTextColor = Color.black;
+
+        private void OnGUI()
+        {
+            if (_players.Count == 0)
+            {
+                return;
+            }
+
+            GUIStyle style = new GUIStyle(GUI.skin.label) { fontSize = 12, normal = { textColor = DebugTextColor } };
+            GUIStyle boldStyle = new GUIStyle(style) { fontStyle = FontStyle.Bold };
+
+            GUILayout.BeginArea(new Rect(10f, 10f, 500f, 600f));
+            GUILayout.Label("[LevelPlayerRegistry Debug]", boldStyle);
+
+            for (int i = 0; i < _players.Count; i++)
+            {
+                PlayerController player = _players[i];
+                if (player == null)
+                {
+                    continue;
+                }
+
+                // 玩家名称与当前状态
+                if (!_playerStates.TryGetValue(player, out PlayerStateType state))
+                {
+                    state = PlayerStateType.Alive;
+                }
+
+                GUILayout.Space(4f);
+                GUILayout.Label($"[{player.PlayerName}] State:{state} | Total Score: {GetTotalScore(player.PlayerName)}", boldStyle);
+
+                // 最近一轮细化得分
+                PlayerScoreManager scoreMgr = PlayerScoreManager.Instance;
+                if (scoreMgr != null)
+                {
+                    PlayerScoreRecord record = scoreMgr.GetPlayerScoreRecord(player.PlayerName);
+                    if (record != null && record.RoundHistory.Count > 0)
+                    {
+                        RoundScoreData latestRound = record.RoundHistory[record.RoundHistory.Count - 1];
+
+                        // 将细化得分拼为一行：Completion:+20 | FirstPlace:+10 | ...
+                        List<string> parts = new List<string>(latestRound.ScoreBreakdown.Count);
+                        foreach (var scorePair in latestRound.ScoreBreakdown)
+                        {
+                            parts.Add($"{scorePair.Key}:+{scorePair.Value}");
+                        }
+                        GUILayout.Label($"  Round {latestRound.RoundIndex} Score: {latestRound.RoundTotal} | {string.Join(" | ", parts)}", style);
+                    }
+                    else
+                    {
+                        GUILayout.Label("  No round score yet", style);
+                    }
+                }
+            }
+
+            GUILayout.EndArea();
+        }
+
+        private static int GetTotalScore(string playerName)
+        {
+            PlayerScoreManager scoreMgr = PlayerScoreManager.Instance;
+            if (scoreMgr == null)
+            {
+                return 0;
+            }
+
+            PlayerScoreRecord record = scoreMgr.GetPlayerScoreRecord(playerName);
+            return record != null ? record.TotalScore : 0;
+        }
+#endif
     }
 }
