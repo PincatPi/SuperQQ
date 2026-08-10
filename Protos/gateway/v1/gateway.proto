@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package minigame.gateway.v1;
+
+option go_package = "minigame/gen/go/gateway/v1;gatewayv1";
+
+import "account/v1/account.proto";
+import "common/v1/common.proto";
+import "match/v1/match.proto";
+import "room/v1/room.proto";
+
+// 客户端定时上行心跳，网关负责回包并刷新连接活跃时间。
+message HeartbeatRequest {
+  int64 client_time_ms = 1;
+}
+
+message HeartbeatResponse {
+  int64 server_time_ms = 1;
+  int64 client_time_ms = 2;
+}
+
+// 通用错误响应用于承接坏包、未知路由或网关级别的异常。
+message ErrorResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  string route = 2;
+}
+
+// WebSocket 二进制帧统一封装结构，后续网关按 oneof 类型路由到不同服务。
+message ClientEnvelope {
+  minigame.common.v1.TraceContext trace = 1;
+  uint64 seq = 2;
+
+  oneof payload {
+    HeartbeatRequest heartbeat = 10;
+    minigame.account.v1.LoginRequest login = 11;
+    minigame.account.v1.GetPlayerRequest get_player = 12;
+    minigame.match.v1.StartMatchRequest start_match = 13;
+    minigame.match.v1.CancelMatchRequest cancel_match = 14;
+    minigame.match.v1.GetTicketRequest get_ticket = 15;
+    minigame.room.v1.JoinRoomRequest join_room = 16;
+    minigame.room.v1.SubmitPlayerInputRequest submit_player_input = 17;
+    minigame.room.v1.CreateRoomRequest create_room = 18;
+    minigame.room.v1.SyncPlayerStateRequest sync_player_state = 19;
+  }
+}
+
+// 网关返回给客户端的统一结构，既支持同步应答，也支持服务端推送。
+message ServerEnvelope {
+  minigame.common.v1.TraceContext trace = 1;
+  uint64 seq = 2;
+
+  oneof payload {
+    HeartbeatResponse heartbeat = 10;
+    minigame.account.v1.LoginResponse login = 11;
+    minigame.account.v1.GetPlayerResponse get_player = 12;
+    minigame.match.v1.StartMatchResponse start_match = 13;
+    minigame.match.v1.CancelMatchResponse cancel_match = 14;
+    minigame.match.v1.GetTicketResponse get_ticket = 15;
+    minigame.match.v1.MatchAssignment match_assignment = 16;
+    minigame.room.v1.JoinRoomResponse join_room = 17;
+    minigame.room.v1.RoomSnapshot room_snapshot = 18;
+    minigame.room.v1.Settlement settlement = 19;
+    minigame.room.v1.SubmitPlayerInputResponse submit_player_input = 20;
+    minigame.room.v1.CreateRoomResponse create_room = 21;
+    minigame.room.v1.SyncPlayerStateResponse sync_player_state = 22;
+    ErrorResponse error = 90;
+  }
+}

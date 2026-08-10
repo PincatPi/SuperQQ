@@ -49,6 +49,8 @@ namespace SuperQQ.Player
         [SerializeField] private Vector3 ghostSpawnPosition = Vector3.zero; // 幽灵初始位置
 
         [Header("玩家信息")]
+        [SerializeField] private string playerId = "";                     // 网络唯一ID（联机主键，单机可为空）
+        [SerializeField] private bool isLocal = true;                      // 是否本机控制（false=远程玩家由网络驱动）
         [SerializeField] private string playerName = "P1";                 // 玩家名称
         [SerializeField] private Color playerColor = Color.white;          // 玩家专属颜色
 
@@ -69,6 +71,9 @@ namespace SuperQQ.Player
 
         // ---------- 状态机 ----------
         private IPlayerState _currentState;
+
+        // ---------- 输入来源（本地键盘 / 联机远程快照） ----------
+        private IPlayerInput _input;
 
         // ---------- 输入（Update 读取，状态消费） ----------
         private float _horizontalInput;
@@ -116,8 +121,12 @@ namespace SuperQQ.Player
         public Vector3 GhostSpawnPosition => ghostSpawnPosition;
 
         // 玩家信息
+        public string PlayerId => playerId;
+        public bool BIsLocal => isLocal;
         public string PlayerName => playerName;
         public Color PlayerColor => playerColor;
+        /// <summary>身份主键：联机为 PlayerId，单机回退为 PlayerName</summary>
+        public string IdentityKey => string.IsNullOrEmpty(playerId) ? playerName : playerId;
 
         // 输入键位
         public KeyCode DownKey => downKey;
@@ -151,6 +160,9 @@ namespace SuperQQ.Player
             {
                 Debug.LogWarning("[PlayerController] 未指定 groundCheck，地面检测将失效。请在 Inspector 中设置脚下检测点。", this);
             }
+
+            // 默认使用本地键盘输入；联机模式下由外部通过 SetInputSource 替换为远程输入
+            _input = new LocalPlayerInput(leftKey, rightKey, jumpKey, jumpKeyAlt, downKey);
 
             _currentState = new PlayerAliveState(this);
             _currentState.Enter();
@@ -201,6 +213,8 @@ namespace SuperQQ.Player
                 return;
             }
 
+            playerId = profile.PlayerId;
+            isLocal = profile.IsLocal;
             playerName = profile.PlayerName;
             playerColor = profile.PlayerColor;
             leftKey = profile.LeftKey;
@@ -209,10 +223,28 @@ namespace SuperQQ.Player
             jumpKeyAlt = profile.JumpKeyAlt;
             downKey = profile.DownKey;
 
+            // 同步键位到本地输入源
+            if (_input is LocalPlayerInput localInput)
+            {
+                localInput.SetKeys(leftKey, rightKey, jumpKey, jumpKeyAlt, downKey);
+            }
+
             // 立即刷新精灵颜色（Awake 已缓存 _spriteRenderer）
             if (_spriteRenderer != null)
             {
                 _spriteRenderer.color = playerColor;
+            }
+        }
+
+        /// <summary>
+        /// 替换输入来源。联机模式下远程玩家应传入 RemotePlayerInput，
+        /// 调用后状态机行为不变，仅输入来源切换
+        /// </summary>
+        public void SetInputSource(IPlayerInput input)
+        {
+            if (input != null)
+            {
+                _input = input;
             }
         }
 
@@ -226,6 +258,8 @@ namespace SuperQQ.Player
         {
             return new PlayerProfile
             {
+                PlayerId = playerId,
+                IsLocal = isLocal,
                 PlayerName = playerName,
                 PlayerColor = playerColor,
                 LeftKey = leftKey,
@@ -251,32 +285,15 @@ namespace SuperQQ.Player
         // ==================== 输入读取 ====================
 
         /// <summary>
-        /// 读取玩家操作输入
+        /// 读取玩家操作输入（委托给当前输入源）
         /// </summary>
         private void ReadInput()
         {
-            _horizontalInput = 0f;
-            _verticalInput = 0f;
-
-            if (Input.GetKey(leftKey))
-            {
-                _horizontalInput -= 1f;
-            }
-            if (Input.GetKey(rightKey))
-            {
-                _horizontalInput += 1f;
-            }
-            if (Input.GetKey(jumpKey) || Input.GetKey(jumpKeyAlt))
-            {
-                _verticalInput += 1f;
-            }
-            if (Input.GetKey(downKey))
-            {
-                _verticalInput -= 1f;
-            }
-
-            _jumpPressed = Input.GetKeyDown(jumpKey) || Input.GetKeyDown(jumpKeyAlt);
-            _jumpHeld = Input.GetKey(jumpKey) || Input.GetKey(jumpKeyAlt);
+            _input.ReadInput();
+            _horizontalInput = _input.Horizontal;
+            _verticalInput = _input.Vertical;
+            _jumpPressed = _input.JumpPressed;
+            _jumpHeld = _input.JumpHeld;
         }
 
         /// <summary>

@@ -12,7 +12,19 @@ namespace SuperQQ.Player
     public class PlayerProfile
     {
         /// <summary>
-        /// 玩家名称（如 "P1"），作为玩家身份的唯一标识
+        /// 网络唯一玩家ID（联机主键，由服务器分配）
+        /// 单机模式可为空，此时回退以 PlayerName 作为标识
+        /// </summary>
+        public string PlayerId;
+
+        /// <summary>
+        /// 是否为本机控制的玩家
+        /// true=本地键盘输入+上报状态；false=远程玩家，由网络快照驱动
+        /// </summary>
+        public bool IsLocal = true;
+
+        /// <summary>
+        /// 玩家名称（如 "P1"），用于展示；单机模式下兼作身份标识
         /// </summary>
         public string PlayerName;
 
@@ -45,5 +57,11 @@ namespace SuperQQ.Player
         /// 下蹲/幽灵下移按键
         /// </summary>
         public KeyCode DownKey;
+
+        /// <summary>
+        /// 身份主键：联机模式为 PlayerId，单机模式回退为 PlayerName
+        /// 需要按身份查找/去重时统一使用此属性
+        /// </summary>
+        public string IdentityKey => string.IsNullOrEmpty(PlayerId) ? PlayerName : PlayerId;
     }
 }

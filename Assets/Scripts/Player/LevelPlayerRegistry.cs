@@ -175,8 +175,9 @@ namespace SuperQQ.Player
         /// <summary>
         /// 根据 PlayerSessionManager 的 Profile 列表在出生点实例化缺失的玩家化身
         /// 已存在的同名玩家（场景中预置的 PlayerController）跳过，避免重复创建
+        /// 联机模式下由 NetDebugBootstrap 在进房成功、注册远程玩家档案后再次调用
         /// </summary>
-        private void SpawnMissingPlayerAvatars()
+        public void SpawnMissingPlayerAvatars()
         {
             if (PlayerSessionManager.Instance == null)
             {

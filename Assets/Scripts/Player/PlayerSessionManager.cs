@@ -83,18 +83,18 @@ namespace SuperQQ.Player
 
         /// <summary>
         /// 注册一个玩家档案
-        /// 相同 PlayerName 的档案不会被重复注册
+        /// 按身份主键（PlayerId 优先，回退 PlayerName）去重，相同主键不会重复注册
         /// 注册成功后发出 OnProfileRegistered 事件
         /// </summary>
         /// <param name="profile">待注册的玩家档案</param>
         public void RegisterProfile(PlayerProfile profile)
         {
-            if (profile == null || string.IsNullOrEmpty(profile.PlayerName))
+            if (profile == null || string.IsNullOrEmpty(profile.IdentityKey))
             {
                 return;
             }
 
-            if (HasPlayer(profile.PlayerName))
+            if (HasPlayerByIdentity(profile.IdentityKey))
             {
                 return;
             }
@@ -172,6 +172,36 @@ namespace SuperQQ.Player
             for (int i = 0; i < _profiles.Count; i++)
             {
                 if (_profiles[i].PlayerName == playerName)
+                {
+                    return _profiles[i];
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 按身份主键（PlayerId 或 PlayerName）判断是否已注册
+        /// </summary>
+        public bool HasPlayerByIdentity(string identityKey)
+        {
+            return GetProfileByIdentity(identityKey) != null;
+        }
+
+        /// <summary>
+        /// 按身份主键（PlayerId 或 PlayerName）获取玩家档案
+        /// 联机模式传 PlayerId，单机模式传 PlayerName 均可命中
+        /// </summary>
+        /// <returns>玩家档案，未找到时返回 null</returns>
+        public PlayerProfile GetProfileByIdentity(string identityKey)
+        {
+            if (string.IsNullOrEmpty(identityKey))
+            {
+                return null;
+            }
+
+            for (int i = 0; i < _profiles.Count; i++)
+            {
+                if (_profiles[i].IdentityKey == identityKey)
                 {
                     return _profiles[i];
                 }
