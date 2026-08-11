@@ -16,7 +16,10 @@ namespace SuperQQ.Network
     public class RemotePlayerSync : MonoBehaviour
     {
         [Header("插值延迟（秒），大于快照间隔即可平滑")]
-        [SerializeField] private float interpolationDelay = 0.12f;
+        [SerializeField] private float interpolationDelay = 0.07f;
+
+        [Header("缓冲耗尽时按速度外推的最长时间（秒）")]
+        [SerializeField] private float maxExtrapolationTime = 0.25f;
 
         [Header("偏差超过该距离直接瞬移（防长时间追不上）")]
         [SerializeField] private float teleportDistance = 5f;
@@ -29,6 +32,7 @@ namespace SuperQQ.Network
         {
             public float Time;      // 本地接收时刻
             public Vector2 Pos;
+            public Vector2 Vel;     // 上报速度，用于外推
             public Vector2 Dir;
             public int PlayerState; // 0=存活 1=幽灵 2=已通关
             public bool FacingLeft;
@@ -70,6 +74,9 @@ namespace SuperQQ.Network
             {
                 Time = UnityEngine.Time.time,
                 Pos = new Vector2(state.Position.X, state.Position.Y),
+                Vel = state.Velocity != null
+                    ? new Vector2(state.Velocity.X, state.Velocity.Y)
+                    : Vector2.zero,
                 Dir = state.Direction != null
                     ? new Vector2(state.Direction.X, state.Direction.Y)
                     : Vector2.zero,
@@ -90,10 +97,14 @@ namespace SuperQQ.Network
 
             float renderTime = UnityEngine.Time.time - interpolationDelay;
 
-            // 缓冲耗尽（网络卡顿）：停在最新位置
+            // 缓冲耗尽（网络卡顿）：按最新快照的速度外推一小段时间（Dead Reckoning），
+            // 比停在原地等包更跟手；外推时间钳制上限，防止跑飞
             if (renderTime >= _buffer[_buffer.Count - 1].Time)
             {
-                SetPosition(_buffer[_buffer.Count - 1]);
+                SnapshotPoint latest = _buffer[_buffer.Count - 1];
+                float extra = Mathf.Min(renderTime - latest.Time, maxExtrapolationTime);
+                latest.Pos += latest.Vel * extra;
+                SetPosition(latest);
                 return;
             }
 

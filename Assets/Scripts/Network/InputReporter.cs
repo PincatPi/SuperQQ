@@ -18,7 +18,7 @@ namespace SuperQQ.Network
     public class InputReporter : MonoBehaviour
     {
         [Header("上报频率（次/秒）")]
-        [SerializeField] private float reportRate = 20f;
+        [SerializeField] private float reportRate = 30f;
 
         private PlayerController _player;
         private Rigidbody2D _rb;
