@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using SuperQQ.GameFlow;
 using SuperQQ.Player;
 using SuperQQ.Score;
 using UnityEngine;
@@ -12,7 +13,7 @@ namespace SuperQQ.Settlement
     /// 监听场景加载事件，进入 Settlement 场景时刷新结算显示
     /// 退出 Settlement 场景时隐藏轨道根节点，保留所有对象不销毁
     /// 下次进入时直接复现上次的状态，避免重复创建对象
-    /// 结算动画完成后根据胜利线检测结果，自动延迟切换到下一轮或整场结束
+    /// 结算动画完成后通知当前阶段结算展示已完成
     /// 放置在 Settlement 场景中，首次加载后通过 DontDestroyOnLoad 持久化
     /// </summary>
     public class SettlementController : MonoBehaviour
@@ -22,9 +23,6 @@ namespace SuperQQ.Settlement
 
         [Header("相机")]
         [SerializeField] private float _cameraOrthographicSize = 6f;
-
-        [Header("场景")]
-        [SerializeField] private string _levelSceneName = "Level1";
 
         [Header("结算后延迟")]
         [SerializeField] private float _settlementEndDelay = 1.5f;
@@ -157,7 +155,10 @@ namespace SuperQQ.Settlement
         /// <param name="mode">加载模式</param>
         private void HandleSceneLoaded(UnityEngine.SceneManagement.Scene scene, LoadSceneMode mode)
         {
-            if (scene.name == "Settlement")
+            bool bIsRoundSettlementPhase = GamePhaseManager.Instance != null &&
+                                           GamePhaseManager.Instance.CurrentPhaseAsset is RoundSettlementPhase;
+
+            if (bIsRoundSettlementPhase || scene.name == "Settlement")
             {
                 _tracksRoot.gameObject.SetActive(true);
                 _debugFlowText = "";
@@ -523,9 +524,7 @@ namespace SuperQQ.Settlement
         // ==================== 结算流程控制 ====================
 
         /// <summary>
-        /// 启动结算流程：动画完成后延迟指定秒数，根据胜利线检测结果决定下一步
-        /// 无人达线 → 推进下一轮并加载关卡场景
-        /// 有人达线 → 整场结束，停留在结算页
+        /// 启动结算流程：动画完成后延迟指定秒数，通知阶段管理器推进后续流程。
         /// </summary>
         private void StartSettlementFlow()
         {
@@ -537,50 +536,40 @@ namespace SuperQQ.Settlement
         }
 
         /// <summary>
-        /// 结算流程协程：延迟后根据胜利线检测结果执行流程分支
+        /// 结算流程协程：延迟后通知当前单轮结算阶段展示已完成。
         /// </summary>
         private IEnumerator SettlementFlowCoroutine()
         {
             if (PlayerScoreManager.Instance == null)
             {
-                Debug.LogError("[SettlementController] PlayerScoreManager 不存在，无法判断结算流程。");
+                Debug.LogError("[SettlementController] PlayerScoreManager 不存在，无法完成结算流程。");
                 yield break;
             }
 
-            bool bHasWinner = PlayerScoreManager.Instance.BHasPlayerReachedVictoryLine();
             int currentRound = PlayerScoreManager.Instance.CurrentRoundIndex;
+            bool bHasWinner = PlayerScoreManager.Instance.BHasPlayerReachedVictoryLine();
 
             if (bHasWinner)
             {
-                // 有人达线：整场结束
-                _debugFlowText = $"[整场结束] 第{currentRound}轮结算完毕，有人达到胜利线！";
-                Debug.Log($"[SettlementController] {_debugFlowText}");
-                yield break;
-            }
-
-            // 无人达线：延迟后回到关卡继续闯关
-            _debugFlowText = $"[继续闯关] 第{currentRound}轮无人达线，{_settlementEndDelay}秒后进入第{currentRound + 1}轮...";
-            Debug.Log($"[SettlementController] {_debugFlowText}");
-
-            yield return new WaitForSeconds(_settlementEndDelay);
-
-            // 推进到下一轮：递增轮次索引、清空本轮中间数据
-            PlayerScoreManager.Instance.AdvanceToNextRound();
-
-            // 清空调试文本
-            _debugFlowText = "";
-
-            // 加载关卡场景继续闯关
-            Scene.SceneManager sceneManager = Scene.SceneManager.Instance;
-            if (sceneManager != null)
-            {
-                sceneManager.LoadScene(_levelSceneName);
+                _debugFlowText = $"[整场结束] 第{currentRound}轮结算完毕，有人达到胜利线，{_settlementEndDelay}秒后通知阶段状态机...";
             }
             else
             {
-                // 回退方案：直接使用 Unity SceneManager 加载
-                Debug.LogWarning("[SettlementController] SceneManager 不存在，使用 Unity SceneManager 直接加载场景。");
-                UnityEngine.SceneManagement.SceneManager.LoadScene(_levelSceneName);
+                _debugFlowText = $"[继续闯关] 第{currentRound}轮无人达线，{_settlementEndDelay}秒后通知阶段状态机...";
+            }
+
+            Debug.Log($"[SettlementController] {_debugFlowText}");
+            yield return new WaitForSeconds(_settlementEndDelay);
+
+            _debugFlowText = "";
+
+            if (GamePhaseManager.Instance != null)
+            {
+                GamePhaseManager.Instance.NotifyCurrentPhaseEvent();
+            }
+            else
+            {
+                Debug.LogError("[SettlementController] GamePhaseManager 不存在，无法通知结算阶段完成。");
             }
 
             _settlementFlowCoroutine = null;

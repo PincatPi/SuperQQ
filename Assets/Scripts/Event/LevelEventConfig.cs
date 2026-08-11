@@ -9,7 +9,7 @@ namespace SuperQQ.Event
     /// 由 LevelEventAnnouncer 读取，从中随机选择一个事件进行播报
     /// 多关卡可复用同一 Config，也可为不同关卡配置不同事件池
     /// </summary>
-    [CreateAssetMenu(fileName = "LevelEventConfig", menuName = "SuperQQ/LevelEventConfig")]
+    [CreateAssetMenu(fileName = "LevelEventConfig", menuName = "SuperQQ/Event/LevelEventConfig")]
     public class LevelEventConfig : ScriptableObject
     {
         /// <summary>

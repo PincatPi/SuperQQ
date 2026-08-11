@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3d466bf9f7e9524ba44bd209d76d91d, type: 3}
+  m_Name: PlayingPhase
+  m_EditorClassIdentifier: 
+  _displayName: "\u6B63\u5F0F\u6E38\u73A9\u9636\u6BB5"
+  _scene:
+    _sceneAsset: {fileID: 102900000, guid: 8c9cfa26abfee488c85f1582747f6a02, type: 3}
+    _sceneName: Level1
+  _description: "\u6B63\u5F0F\u5F00\u59CB\u5173\u5361\u7684\u6E38\u73A9\u9636\u6BB5"
+  _transitions:
+  - _targetPhase: {fileID: 11400000, guid: b8512170d511cbb4faca21e6fff4b142, type: 2}
+    _condition:
+      rid: -2
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }

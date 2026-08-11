@@ -8,7 +8,7 @@ namespace SuperQQ.Score
 {
     /// <summary>
     /// 玩家得分管理器 — 跨场景持久化的得分数据中心
-    /// 监听 LevelPlayerRegistry 的轮次结束事件，触发 ScoreCalculator 计算得分
+    /// 由 GamePhaseManager 在正式游玩结束时主动触发本轮结算
     /// 暴露查询接口供结算页、HUD 等读取
     /// 陷阱系统和老板事件系统通过本类的记录接口提交数据
     /// 持久化层：与 PlayerSessionManager 同层，随 DontDestroyOnLoad 跨场景保留
@@ -149,7 +149,6 @@ namespace SuperQQ.Score
             }
 
             _currentRegistry = registry;
-            _currentRegistry.OnAllPlayersOut += HandleAllPlayersOut;
 
             // 首次进入关卡时初始化第一轮
             if (_currentRoundIndex == 0)
@@ -159,16 +158,12 @@ namespace SuperQQ.Score
         }
 
         /// <summary>
-        /// 取消订阅当前 LevelPlayerRegistry 的事件
+        /// 取消当前 LevelPlayerRegistry 引用
         /// 场景切换前调用，避免引用已销毁的 Registry
         /// </summary>
         private void UnsubscribeFromRegistry()
         {
-            if (_currentRegistry != null)
-            {
-                _currentRegistry.OnAllPlayersOut -= HandleAllPlayersOut;
-                _currentRegistry = null;
-            }
+            _currentRegistry = null;
         }
 
         // ==================== 初始化 ====================
@@ -242,14 +237,16 @@ namespace SuperQQ.Score
         // ==================== 轮次结算触发 ====================
 
         /// <summary>
-        /// 所有玩家出局时的处理：汇总输入数据，调用 ScoreCalculator 计算得分
+        /// 主动结算当前轮次。
+        /// 由 GamePhaseManager 在正式游玩阶段结束时调用，避免计分系统直接驱动游戏流程。
         /// </summary>
-        private void HandleAllPlayersOut()
+        public void SettleCurrentRound()
         {
             if (_bIsRoundScored)
             {
                 return;
             }
+
             CalculateCurrentRoundScores();
         }
 
@@ -469,7 +466,7 @@ namespace SuperQQ.Score
 
         /// <summary>
         /// 进入下一轮：递增轮次索引、清空本轮中间数据
-        /// 由 SceneManager 或 LevelManager 在确认继续下一轮时调用
+        /// 由 GamePhaseManager 在确认继续下一轮时调用
         /// </summary>
         public void AdvanceToNextRound()
         {

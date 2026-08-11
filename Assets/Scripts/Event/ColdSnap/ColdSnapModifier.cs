@@ -10,7 +10,7 @@ namespace SuperQQ.Event
     /// 所有时间参数、冷气参数和空调组 Prefab 在 Inspector 中配置，便于策划调优
     /// 空调组在 Activate 时动态实例化，Deactivate 时销毁，不预先放置在场景中
     /// </summary>
-    [CreateAssetMenu(fileName = "ColdSnapModifier", menuName = "SuperQQ/ColdSnapModifier")]
+    [CreateAssetMenu(fileName = "ColdSnapModifier", menuName = "SuperQQ/Event/ColdSnapModifier")]
     public class ColdSnapModifier : LevelEventModifier
     {
         [Header("时间节奏（秒）")]

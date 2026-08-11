@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 818701e2c7d96b04d95cd1cb61fd1f32, type: 3}
+  m_Name: FinalSettlement Phase
+  m_EditorClassIdentifier: 
+  _displayName: "\u6700\u7EC8\u7ED3\u7B97\u9636\u6BB5"
+  _scene:
+    _sceneAsset: {fileID: 0}
+    _sceneName: 
+  _description: "\u4E00\u8F6E\u6E38\u620F\u51B3\u51FA\u80DC\u8005\u540E\u7684\u6700\u7EC8\u7ED3\u7B97\u9636\u6BB5"
+  _transitions: []
+  references:
+    version: 2
+    RefIds: []
