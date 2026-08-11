@@ -108,8 +108,8 @@ namespace SuperQQ.Network
                 IMessage msg = pair.Value(envelope);
                 if (msg == null) continue;
 
-                // 高频消息（房间快照/心跳回包）降频打印，其余全量打印
-                if (msg is RoomSnapshot or HeartbeatResponse)
+                // 高频消息（房间快照/心跳回包/状态上报应答）降频打印，其余全量打印
+                if (msg is RoomSnapshot or HeartbeatResponse or SyncPlayerStateResponse)
                 {
                     _recvHighFreqCount++;
                     if (_recvHighFreqCount % 100 == 1)
@@ -120,14 +120,11 @@ namespace SuperQQ.Network
                     Debug.Log($"[NetWork] 收到 {pair.Key.Name} seq={envelope.Seq}\n{msg}");
                 }
 
+                // 未注册处理器属正常情况（如心跳回包无人订阅），静默忽略，不打警告
                 if (handlers.TryGetValue(pair.Key, out var handler))
                 {
                     try { handler(msg); }
                     catch (Exception e) { Debug.LogError($"[NetWork] 处理 {pair.Key.Name} 异常: {e}"); }
-                }
-                else
-                {
-                    Debug.LogWarning($"[NetWork] 未注册的消息类型: {pair.Key.Name}");
                 }
                 return;
             }

@@ -1,7 +1,10 @@
 using Minigame.Account.V1;
+using Minigame.Common.V1;
+using Minigame.Gateway.V1;
 using Minigame.Room.V1;
 using SuperQQ.Player;
 using UnityEngine;
+using PlayerProfile = SuperQQ.Player.PlayerProfile;
 
 namespace SuperQQ.Network
 {
@@ -45,6 +48,8 @@ namespace SuperQQ.Network
 
             _net.Register<LoginResponse>(OnLogin);
             _net.Register<JoinRoomResponse>(OnJoinRoom);
+            _net.Register<CreateRoomResponse>(OnCreateRoom);
+            _net.Register<ErrorResponse>(OnError);
             _net.OnConnectionChanged += OnConnectionChanged;
 
             _net.Connect();
@@ -55,7 +60,55 @@ namespace SuperQQ.Network
             if (_net == null) return;
             _net.Unregister<LoginResponse>();
             _net.Unregister<JoinRoomResponse>();
+            _net.Unregister<CreateRoomResponse>();
+            _net.Unregister<ErrorResponse>();
             _net.OnConnectionChanged -= OnConnectionChanged;
+        }
+
+        // ==================== 错误处理：房间不存在时自动创建 ====================
+
+        private void OnError(ErrorResponse err)
+        {
+            Debug.LogWarning($"[NetWork] 服务端错误: route={err.Route} code={err.Status?.Code} msg={err.Status?.Message}");
+
+            // 进房时房间不存在 → 自动创建房间，创建成功后会再次进房
+            if (err.Route == "join_room" && err.Status != null && err.Status.Code == ResultCode.NotFound)
+            {
+                Debug.Log($"[NetWork] 房间 {roomId} 不存在，自动创建");
+                _net.Send(new CreateRoomRequest
+                {
+                    RoomId = roomId,
+                    Mode = MatchMode.Casual1V1,
+                    Players =
+                    {
+                        new PlayerRef
+                        {
+                            PlayerId = _net.LocalPlayerId,
+                            GatewayId = _net.GatewayId,
+                            SessionId = _net.SessionId
+                        }
+                    },
+                    CreatedAtMs = NetworkManager.NowMs()
+                });
+            }
+        }
+
+        private void OnCreateRoom(CreateRoomResponse resp)
+        {
+            if (resp.Status == null || resp.Status.Code != ResultCode.Ok)
+            {
+                Debug.LogError($"[NetWork] 创建房间失败: {resp.Status?.Message}");
+                return;
+            }
+
+            Debug.Log($"[NetWork] 创建房间成功: roomId={resp.Room.RoomId}，重新加入");
+            _net.Send(new JoinRoomRequest
+            {
+                RoomId = roomId,
+                PlayerId = _net.LocalPlayerId,
+                GatewayId = _net.GatewayId,
+                SessionId = _net.SessionId
+            });
         }
 
         // ==================== ① 连接成功 → 登录 ====================
