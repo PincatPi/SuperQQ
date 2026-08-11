@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package minigame.account.v1;
+
+option go_package = "minigame/gen/go/account/v1;accountv1";
+
+import "common/v1/common.proto";
+
+// 客户端首次登录请求，使用 device_id/open_id 做最小闭环认证。
+message LoginRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string device_id = 2;
+  string open_id = 3;
+  string client_version = 4;
+}
+
+message LoginResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  string token = 2;
+  minigame.common.v1.PlayerProfile player = 3;
+  int64 expires_at_ms = 4;
+}
+
+message GetPlayerRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string player_id = 2;
+  string token = 3;
+}
+
+message GetPlayerResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  minigame.common.v1.PlayerProfile player = 2;
+}
+
+message ValidateTokenRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string token = 2;
+}
+
+message ValidateTokenResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  string player_id = 2;
+  minigame.common.v1.PlayerProfile player = 3;
+}
+
+service AccountService {
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc GetPlayer(GetPlayerRequest) returns (GetPlayerResponse);
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}

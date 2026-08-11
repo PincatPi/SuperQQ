@@ -1,0 +1,159 @@
+syntax = "proto3";
+
+package minigame.room.v1;
+
+option go_package = "minigame/gen/go/room/v1;roomv1";
+
+import "common/v1/common.proto";
+
+// 匹配服务或网关创建房间时使用，players 最少可只传创建者自己。
+message CreateRoomRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  minigame.common.v1.MatchMode mode = 3;
+  repeated minigame.common.v1.PlayerRef players = 4;
+  int64 created_at_ms = 5;
+}
+
+message CreateRoomResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  Room room = 2;
+}
+
+message JoinRoomRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;
+  string gateway_id = 4;
+  string session_id = 5;
+}
+
+message JoinRoomResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  Room room = 2;
+}
+
+message GetRoomRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+}
+
+message GetRoomResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  Room room = 2;
+}
+
+// 2D 坐标向量，当前同步层先围绕位置、朝向和速度来设计。
+message Vector2 {
+  float x = 1;
+  float y = 2;
+}
+
+// 客户端每次上报自己的当前状态，服务端会覆盖缓存并广播新的房间快照。
+message TransformState {
+  Vector2 position = 1;
+  Vector2 direction = 2;
+  Vector2 velocity = 3;
+  uint64 state_seq = 4;
+  int64 client_time_ms = 5;
+  int64 server_time_ms = 6;
+  // 玩家状态：0=存活 1=幽灵（死亡） 2=已通关。远端用于同步透明度等表现。
+  int32 player_state = 7;
+  // 朝向：true=面向左。静止时 direction 为 0 无法表达朝向，故单独上报。
+  bool facing_left = 8;
+}
+
+message SyncPlayerStateRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;
+  TransformState transform = 4;
+}
+
+message SyncPlayerStateResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  uint64 accepted_tick = 2;
+}
+
+// gateway 为每个 WebSocket 会话建立一个订阅流，房间快照通过该流主动推送。
+message SubscribeRoomRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;
+  string gateway_id = 4;
+  string session_id = 5;
+}
+
+// 玩家输入先保留为兼容接口，后续战斗判定再复用。
+message PlayerInput {
+  int32 move_x = 1;
+  int32 move_y = 2;
+  bool cast_skill = 3;
+}
+
+message SubmitPlayerInputRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;
+  uint64 tick = 4;
+  PlayerInput input = 5;
+}
+
+message SubmitPlayerInputResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  uint64 accepted_tick = 2;
+}
+
+message RoomPlayerState {
+  minigame.common.v1.PlayerRef player = 1;
+  int32 hp = 2;
+  int32 energy = 3;
+  int32 score = 4;
+  bool connected = 5;
+  bool alive = 6;
+  TransformState transform = 7;
+}
+
+message Room {
+  string room_id = 1;
+  minigame.common.v1.MatchMode mode = 2;
+  minigame.common.v1.RoomPhase phase = 3;
+  repeated RoomPlayerState players = 4;
+  uint64 current_tick = 5;
+  int64 started_at_ms = 6;
+  int64 finished_at_ms = 7;
+}
+
+// 房间快照用于服务端主动同步客户端状态，客户端拿到后可以直接做插值和表现层更新。
+message RoomSnapshot {
+  string room_id = 1;
+  minigame.common.v1.RoomPhase phase = 2;
+  uint64 tick = 3;
+  repeated RoomPlayerState players = 4;
+  int64 server_time_ms = 5;
+  minigame.common.v1.TraceContext trace = 6;
+}
+
+message SettlementPlayerResult {
+  string player_id = 1;
+  int32 hp = 2;
+  int32 rank = 3;
+  int32 mmr_delta = 4;
+  int32 coin_delta = 5;
+}
+
+message Settlement {
+  string room_id = 1;
+  string winner_player_id = 2;
+  repeated SettlementPlayerResult results = 3;
+  int64 settled_at_ms = 4;
+}
+
+service RoomService {
+  rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
+  rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
+  rpc GetRoom(GetRoomRequest) returns (GetRoomResponse);
+  rpc SubmitPlayerInput(SubmitPlayerInputRequest) returns (SubmitPlayerInputResponse);
+  rpc SyncPlayerState(SyncPlayerStateRequest) returns (SyncPlayerStateResponse);
+  rpc SubscribeRoom(SubscribeRoomRequest) returns (stream RoomSnapshot);
+}

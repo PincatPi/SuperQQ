@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package minigame.ai.v1;
+
+option go_package = "minigame/gen/go/ai/v1;aiv1";
+
+import "common/v1/common.proto";
+import "room/v1/room.proto";
+
+// AI 服务接口预留，后续可以基于房间快照做机器人决策。
+message DecideActionRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;
+  minigame.room.v1.RoomSnapshot snapshot = 4;
+}
+
+message DecideActionResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  minigame.room.v1.PlayerInput input = 2;
+  string debug_reason = 3;
+}
+
+service AIService {
+  rpc DecideAction(DecideActionRequest) returns (DecideActionResponse);
+}

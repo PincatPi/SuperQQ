@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package minigame.common.v1;
+
+option go_package = "minigame/gen/go/common/v1;commonv1";
+
+// 通用业务返回码，网关响应和服务间 RPC 统一复用。
+enum ResultCode {
+  RESULT_CODE_UNSPECIFIED = 0;
+  RESULT_CODE_OK = 1;
+  RESULT_CODE_BAD_REQUEST = 2;
+  RESULT_CODE_UNAUTHORIZED = 3;
+  RESULT_CODE_FORBIDDEN = 4;
+  RESULT_CODE_NOT_FOUND = 5;
+  RESULT_CODE_CONFLICT = 6;
+  RESULT_CODE_BUSY = 7;
+  RESULT_CODE_INTERNAL_ERROR = 8;
+}
+
+// 服务枚举用于日志、追踪和路由标签。
+enum ServiceKind {
+  SERVICE_KIND_UNSPECIFIED = 0;
+  SERVICE_KIND_GATEWAY = 1;
+  SERVICE_KIND_ACCOUNT = 2;
+  SERVICE_KIND_MATCH = 3;
+  SERVICE_KIND_ROOM = 4;
+  SERVICE_KIND_AI = 5;
+}
+
+// 当前项目的对战模式先聚焦 1v1，后续可在此扩展更多玩法。
+enum MatchMode {
+  MATCH_MODE_UNSPECIFIED = 0;
+  MATCH_MODE_RANKED_1V1 = 1;
+  MATCH_MODE_CASUAL_1V1 = 2;
+}
+
+// 匹配单状态，供客户端轮询和服务内部共享使用。
+enum MatchTicketState {
+  MATCH_TICKET_STATE_UNSPECIFIED = 0;
+  MATCH_TICKET_STATE_QUEUED = 1;
+  MATCH_TICKET_STATE_MATCHED = 2;
+  MATCH_TICKET_STATE_CANCELLED = 3;
+  MATCH_TICKET_STATE_TIMEOUT = 4;
+}
+
+// 房间生命周期状态。
+enum RoomPhase {
+  ROOM_PHASE_UNSPECIFIED = 0;
+  ROOM_PHASE_WAITING = 1;
+  ROOM_PHASE_LOADING = 2;
+  ROOM_PHASE_BATTLE = 3;
+  ROOM_PHASE_SETTLEMENT = 4;
+  ROOM_PHASE_CLOSED = 5;
+}
+
+// 全链路追踪上下文，客户端、网关和服务间 RPC 都可以透传。
+message TraceContext {
+  string trace_id = 1;
+  string span_id = 2;
+  string session_id = 3;
+  string player_id = 4;
+  string gateway_id = 5;
+  int64 request_at_ms = 6;
+}
+
+// 统一业务响应结构。
+message ResponseStatus {
+  ResultCode code = 1;
+  string message = 2;
+}
+
+// 玩家基础档案信息。
+message PlayerProfile {
+  string player_id = 1;
+  string nickname = 2;
+  int32 level = 3;
+  int32 mmr = 4;
+  int32 coins = 5;
+  int64 updated_at_ms = 6;
+}
+
+// 进入匹配或房间时用到的精简玩家引用。
+message PlayerRef {
+  string player_id = 1;
+  string nickname = 2;
+  int32 mmr = 3;
+  string gateway_id = 4;
+  string session_id = 5;
+}

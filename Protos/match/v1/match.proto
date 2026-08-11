@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package minigame.match.v1;
+
+option go_package = "minigame/gen/go/match/v1;matchv1";
+
+import "common/v1/common.proto";
+
+// 发起匹配时由网关补齐玩家和会话信息，匹配服务据此入队。
+message StartMatchRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string player_id = 2;
+  string token = 3;
+  minigame.common.v1.MatchMode mode = 4;
+  string gateway_id = 5;
+  string session_id = 6;
+}
+
+message StartMatchResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  string ticket_id = 2;
+  minigame.common.v1.MatchTicketState state = 3;
+  int32 queued_players = 4;
+}
+
+message CancelMatchRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string ticket_id = 2;
+  string player_id = 3;
+}
+
+message CancelMatchResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  minigame.common.v1.MatchTicketState state = 2;
+}
+
+message GetTicketRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string ticket_id = 2;
+  string player_id = 3;
+}
+
+message MatchAssignment {
+  string ticket_id = 1;
+  string match_id = 2;
+  string room_id = 3;
+  minigame.common.v1.MatchMode mode = 4;
+  repeated minigame.common.v1.PlayerRef players = 5;
+  int64 matched_at_ms = 6;
+}
+
+message GetTicketResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  minigame.common.v1.MatchTicketState state = 2;
+  MatchAssignment assignment = 3;
+  int32 ahead_count = 4;
+}
+
+service MatchService {
+  rpc StartMatch(StartMatchRequest) returns (StartMatchResponse);
+  rpc CancelMatch(CancelMatchRequest) returns (CancelMatchResponse);
+  rpc GetTicket(GetTicketRequest) returns (GetTicketResponse);
+}
