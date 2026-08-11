@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35ba393666af88b4cbe1a3de6a82a4b7, type: 3}
   m_Name: PropSelectCondition
   m_EditorClassIdentifier: 
-  _duration: 0
+  _duration: 30

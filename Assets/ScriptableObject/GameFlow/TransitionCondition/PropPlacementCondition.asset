@@ -9,12 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d38995b0fb2ec24a81430ae4b62c4d3, type: 3}
-  m_Name: RoundSettlement Phase
+  m_Script: {fileID: 11500000, guid: 301f15d9966846f4faac84bd93ba7842, type: 3}
+  m_Name: PropPlacementCondition
   m_EditorClassIdentifier: 
-  _phaseId: 
-  _displayName: 
-  _sceneName: 
-  _description: 
-  _nextRoundPhaseId: 
-  _finalSettlementPhaseId: 
+  _duration: 45

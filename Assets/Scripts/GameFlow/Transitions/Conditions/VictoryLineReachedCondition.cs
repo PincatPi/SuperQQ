@@ -11,7 +11,6 @@ namespace SuperQQ.GameFlow
     public class VictoryLineReachedCondition : GamePhaseCondition
     {
         private bool _bScoreManagerWarned;
-        [SerializeField] private bool _bIsInvert;
 
         public override bool Evaluate(GamePhaseContext context)
         {

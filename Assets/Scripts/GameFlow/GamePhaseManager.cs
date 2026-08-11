@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -18,9 +19,14 @@ namespace SuperQQ.GameFlow
         [Header("启动设置")]
         [SerializeField] private bool _bStartFlowOnStart = true;
 
+        [Header("调试")]
+        [Tooltip("在屏幕右上角实时显示当前阶段与即将切换的下一阶段名称")]
+        [SerializeField] private bool _bShowPhaseDebugInfo = true;
+
         private GamePhaseContext _context;
         private GamePhaseBase _currentPhase;
         private bool _bFlowStarted;
+        private string _debugNextPhaseName = string.Empty;
 
         /// <summary>
         /// 阶段变化事件。
@@ -103,10 +109,71 @@ namespace SuperQQ.GameFlow
 
             _currentPhase.OnUpdate(_context, Time.deltaTime);
 
+            UpdateDebugNextPhaseName();
+
             if (_currentPhase.TryGetNextPhase(_context, out GamePhaseBase nextPhase, out string reason))
             {
                 EnterPhase(nextPhase, reason);
             }
+        }
+
+        /// <summary>
+        /// 刷新调试用的下一阶段名称。
+        /// 仅评估条件，不触发 TryGetNextPhase 中的转移选中副作用。
+        /// </summary>
+        private void UpdateDebugNextPhaseName()
+        {
+            _debugNextPhaseName = string.Empty;
+
+            if (!_bShowPhaseDebugInfo || _currentPhase == null || _context == null)
+            {
+                return;
+            }
+
+            IReadOnlyList<GamePhaseTransition> transitions = _currentPhase.Transitions;
+            if (transitions == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < transitions.Count; i++)
+            {
+                GamePhaseTransition transition = transitions[i];
+                if (transition == null || transition.TargetPhase == null)
+                {
+                    continue;
+                }
+
+                if (transition.Evaluate(_context))
+                {
+                    _debugNextPhaseName = transition.TargetPhase.LogName;
+                    return;
+                }
+            }
+        }
+
+        private void OnGUI()
+        {
+            if (!_bShowPhaseDebugInfo || !_bFlowStarted || _currentPhase == null)
+            {
+                return;
+            }
+
+            GUIStyle style = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 14,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.UpperRight,
+                normal = { textColor = Color.black }
+            };
+
+            string nextPhaseText = string.IsNullOrEmpty(_debugNextPhaseName) ? "无（条件未满足）" : _debugNextPhaseName;
+            string text = $"当前阶段：{_currentPhase.LogName}\n下一阶段：{nextPhaseText}";
+
+            GUIContent content = new GUIContent(text);
+            Vector2 size = style.CalcSize(content);
+            Rect rect = new Rect(Screen.width - size.x - 12f, 10f, size.x, size.y);
+            GUI.Label(rect, content, style);
         }
 
         /// <summary>

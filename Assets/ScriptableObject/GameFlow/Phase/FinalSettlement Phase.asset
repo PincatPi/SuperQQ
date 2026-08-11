@@ -14,10 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _displayName: "\u6700\u7EC8\u7ED3\u7B97\u9636\u6BB5"
   _scene:
-    _sceneAsset: {fileID: 0}
-    _sceneName: 
+    _sceneAsset: {fileID: 102900000, guid: 8a320c2a2f21842488b600a74d203be3, type: 3}
+    _sceneName: FinalSettlement
   _description: "\u4E00\u8F6E\u6E38\u620F\u51B3\u51FA\u80DC\u8005\u540E\u7684\u6700\u7EC8\u7ED3\u7B97\u9636\u6BB5"
   _transitions: []
-  references:
-    version: 2
-    RefIds: []

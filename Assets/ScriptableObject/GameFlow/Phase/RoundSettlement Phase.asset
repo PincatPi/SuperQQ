@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d38995b0fb2ec24a81430ae4b62c4d3, type: 3}
+  m_Name: RoundSettlement Phase
+  m_EditorClassIdentifier: 
+  _displayName: "\u672C\u8F6E\u7ED3\u7B97\u9636\u6BB5"
+  _scene:
+    _sceneAsset: {fileID: 102900000, guid: 0b237b75b84b20a4094073cec217f6ed, type: 3}
+    _sceneName: Settlement
+  _description: "\u6BCF\u8F6E\u5173\u5361\u7ED3\u675F\u540E\u5BF9\u672C\u8F6E\u5F97\u5206\u8FDB\u884C\u7ED3\u7B97\u7684\u9636\u6BB5"
+  _transitions:
+  - _targetPhase: {fileID: 11400000, guid: 5b8383004b9b4f144ae8fd35be931133, type: 2}
+    _condition: {fileID: 11400000, guid: c5e40a8360ca5dd488bcb95e0cbec78a, type: 2}
+    _bIsInvert: 1
+  - _targetPhase: {fileID: 11400000, guid: 8f882889a704ccc4f8164b1f91a00292, type: 2}
+    _condition: {fileID: 11400000, guid: c5e40a8360ca5dd488bcb95e0cbec78a, type: 2}
+    _bIsInvert: 0
