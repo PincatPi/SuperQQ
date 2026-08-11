@@ -273,8 +273,8 @@ namespace SuperQQ.Player
                 return;
             }
 
-            // 检测 Down Key 是否被持续按住
-            if (Input.GetKey(_ctx.DownKey))
+            // 检测"下"输入是否被持续按住（走输入抽象层，键盘/触屏通用）
+            if (_ctx.VerticalInput < -0.5f)
             {
                 _bIsEarlyQuitHolding = true;
                 _earlyQuitHoldTimer += Time.deltaTime;
