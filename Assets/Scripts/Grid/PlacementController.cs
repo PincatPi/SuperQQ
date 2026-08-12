@@ -1,274 +1,298 @@
-using System;
 using UnityEngine;
 
 namespace SuperQQ.Grid
 {
     /// <summary>
-    /// 摆放控制器 — 场景单例，建造阶段激活
-    /// 负责摆放交互全流程：生成幽灵体 → 触屏拖拽吸附 → 合法性提示 → UI 按钮确认/旋转/取消
-    ///
-    /// 同一时刻只有一个幽灵体在被拖拽，已放置的物体无需吸附（放下时已对齐）
-    /// 触屏与编辑器鼠标双兼容，便于真机与编辑器调试
-    /// 网络同步挂点：订阅 OnPlaced / OnRemoved 事件发送消息（本地权威，先放置再广播）
+    /// 网格吸附拖拽控制器 — 挂在每个需要网格吸附的道具上
+    /// 玩家拖拽道具本体时，根据自身的包围盒（FootprintBoxView.Footprint）自动对齐场景网格：
+    ///   按下：若已放置则先释放占据格子，记录原锚点
+    ///   拖拽：位置完全由格子坐标重建（吸附），虚线框按合法性变绿/红
+    ///   抬起：落点合法则登记占据；非法则吸附回原锚点
+    /// 依赖碰撞体接收拖拽输入（OnMouseDown/Drag/Up，触屏兼容）
     /// </summary>
+    [RequireComponent(typeof(FootprintBoxView))]
+    [RequireComponent(typeof(Collider2D))]
     public class PlacementController : MonoBehaviour
     {
-        /// <summary>当前场景实例</summary>
-        public static PlacementController Instance { get; private set; }
-
         [Header("引用")]
         [Tooltip("留空则自动使用 Camera.main")]
         [SerializeField] private Camera inputCamera;
 
-        [Header("幽灵体外观")]
-        [Tooltip("幽灵体半透明度")]
+        [Header("拖拽")]
+        [Tooltip("拖拽时道具相对指针上移的格数，避免手指遮挡")]
+        [SerializeField] private float pointerLiftCells = 1f;
+        [Tooltip("拖拽时是否显示虚线包围盒")]
+        [SerializeField] private bool showBoxWhileDragging = true;
+
+        [Header("虚化")]
+        [Tooltip("虚化时 Sprtie 的透明度（可拖拽/待确认状态的视觉提示）")]
         [SerializeField, Range(0f, 1f)] private float ghostAlpha = 0.5f;
-        [Tooltip("可放置时虚线框颜色")]
+
+        [Header("提示颜色")]
         [SerializeField] private Color validColor = new Color(0.3f, 1f, 0.3f, 0.9f);
-        [Tooltip("不可放置时虚线框颜色")]
         [SerializeField] private Color invalidColor = new Color(1f, 0.3f, 0.3f, 0.9f);
 
-        [Header("触屏")]
-        [Tooltip("幽灵体相对手指的上移格数，避免手指挡住预览")]
-        [SerializeField] private float fingerOffsetCells = 2f;
+        private FootprintBoxView box;
+        private PlacedItem placedItem;        // 占据登记凭证（登记过时存在）
+        private bool draggable;               // 可拖拽状态（由 EnterDraggableState 开启）
+        private bool dragging;
+        private bool currentValid;
+        private Vector2Int originalAnchor;    // 拖拽起始锚点（落点非法时回退用）
 
-        // 放置/移除事件（网络同步层订阅）
-        /// <summary>本地确认放置后触发（参数：放置结果）</summary>
-        public event Action<PlacedItem> OnPlaced;
-        /// <summary>本地拾回移除后触发（参数：被移除物体原本的锚点格子）</summary>
-        public event Action<Vector2Int> OnRemoved;
+        // 虚化状态：缓存各 SpriteRenderer 原始透明度，结束时恢复
+        private SpriteRenderer[] cachedRenderers;
+        private float[] originalAlphas;
+        private bool ghosting;
 
-        // 当前摆放状态
-        private PlacableItemDef currentDef;
-        private GameObject ghost;
-        private FootprintBoxView ghostBox;
-        private bool rotated;
+        private GridManager Grid => GridManager.Instance;
 
-        /// <summary>是否正处于摆放状态（有幽灵体）</summary>
-        public bool IsPlacing => ghost != null;
+        /// <summary>是否处于可拖拽状态</summary>
+        public bool IsDraggable => draggable;
+        /// <summary>是否正在被拖拽</summary>
+        public bool IsDragging => dragging;
+        /// <summary>当前拖拽落点是否合法</summary>
+        public bool CurrentValid => currentValid;
 
         // ==================== 生命周期 ====================
 
         private void Awake()
         {
-            Instance = this;
+            box = GetComponent<FootprintBoxView>();
+            placedItem = GetComponent<PlacedItem>();
             if (inputCamera == null)
             {
                 inputCamera = Camera.main;
             }
         }
 
-        private void OnDestroy()
+        /// <summary>
+        /// 吸附到最近的合法格子位置（不登记，仅对齐位置）
+        /// </summary>
+        public void SnapToNearestCell()
         {
-            if (Instance == this)
-            {
-                Instance = null;
-            }
+            Vector2Int anchor = Grid.WorldToCell(transform.position);
+            transform.position = Grid.GetPlacementWorldPos(anchor, box.Footprint, false);
         }
+
+        // ==================== 状态接口 ====================
+
+        /// <summary>
+        /// 进入可拖拽状态：开启拖拽响应并虚化显示（摆放阶段由外部调用）
+        /// </summary>
+        public void EnterDraggableState()
+        {
+            draggable = true;
+            GhostOn();
+        }
+
+        /// <summary>
+        /// 完成放置：结束拖拽（若正在拖拽则按当前位置结算），
+        /// 把包围盒占据的格子登记为已占领，关闭虚化，锁定道具
+        /// </summary>
+        public void CompletePlacement()
+        {
+            if (dragging)
+            {
+                EndDrag();
+            }
+
+            // 兜底登记：未被拖拽过（或拖拽结算前）直接完成放置时，
+            // 按当前位置吸附并把 footprint 覆盖的格子标记为已占领
+            if (placedItem == null)
+            {
+                SnapToNearestCell();
+                RegisterAt(Grid.WorldToCell(transform.position));
+            }
+
+            draggable = false;
+            GhostOff();
+        }
+
+        // ==================== 拖拽输入（手动轮询，编辑器鼠标/真机触屏通用） ====================
 
         private void Update()
         {
-            if (!IsPlacing)
+            if (Grid == null || !draggable)
             {
                 return;
             }
 
-            // 按住屏幕/鼠标即拖拽幽灵体；松手不确认，幽灵体驻留当前格子，
-            // 由 UI 确认按钮调 ConfirmPlacement() 完成放置
-            Vector2? pointerWorld = GetPointerWorldPosition();
-            if (pointerWorld.HasValue)
+            bool pressed = GetPointerPressed(out Vector2 pointerScreen);
+            if (!dragging)
             {
-                UpdateGhost(pointerWorld.Value);
-            }
-        }
-
-        // ==================== 公开接口（UI / 道具栏调用） ====================
-
-        /// <summary>
-        /// 开始摆放一个道具：生成幽灵体，进入拖拽吸附状态
-        /// 重复调用会先取消上一次摆放
-        /// </summary>
-        public void BeginPlacement(PlacableItemDef def)
-        {
-            if (def == null || def.Prefab == null)
-            {
+                // 按下瞬间做 2D 射线检测：点到本道具才开始拖拽
+                if (pressed && IsPointerDownThisFrame() && HitSelf(ScreenToWorld(pointerScreen)))
+                {
+                    BeginDrag();
+                }
                 return;
             }
 
-            CancelPlacement();
-            currentDef = def;
-            rotated = false;
-
-            ghost = CreateGhost(def);
-            ghostBox = ghost.GetComponent<FootprintBoxView>();
-            if (ghostBox == null)
+            if (pressed)
             {
-                ghostBox = ghost.AddComponent<FootprintBoxView>();
+                DragStep(ScreenToWorld(pointerScreen));
             }
-            ghostBox.Init(GridManager.Instance.ResolveFootprint(def), rotated);
-            ghostBox.Show();
+            else
+            {
+                EndDrag();
+            }
         }
 
-        /// <summary>
-        /// 取消摆放：销毁幽灵体，不放置
-        /// </summary>
-        public void CancelPlacement()
+        private void BeginDrag()
         {
-            if (ghost != null)
+            dragging = true;
+            originalAnchor = Grid.WorldToCell(transform.position);
+
+            // 已放置的物体：先释放占据的格子，腾空后拖动
+            if (placedItem != null)
             {
-                Destroy(ghost);
+                Grid.Release(placedItem);
             }
-            ghost = null;
-            ghostBox = null;
-            currentDef = null;
-            rotated = false;
+
+            if (showBoxWhileDragging)
+            {
+                box.Init(box.Footprint, false);
+                box.Show();
+            }
         }
 
-        /// <summary>
-        /// 旋转幽灵体90度（道具不允许旋转时无效）；接 UI 旋转按钮
-        /// </summary>
-        public void RotateGhost()
+        private void DragStep(Vector2 pointerWorld)
         {
-            if (!IsPlacing || currentDef == null || !currentDef.Rotatable)
-            {
-                return;
-            }
+            // 指针位置上移后换算格子，吸附锚点与道具位置完全由格子重建
+            Vector2 liftedWorld = pointerWorld + Vector2.up * (pointerLiftCells * Grid.PublicCellSize);
+            Vector2Int anchor = Grid.WorldToCell(liftedWorld);
 
-            rotated = !rotated;
-            ghost.transform.rotation = rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
-            ghostBox.Init(GridManager.Instance.ResolveFootprint(currentDef), rotated);
+            transform.position = Grid.GetPlacementWorldPos(anchor, box.Footprint, false);
+
+            currentValid = Grid.CanOccupy(anchor, box.Footprint);
+            box.SetColor(currentValid ? validColor : invalidColor);
         }
 
-        /// <summary>
-        /// 拾回已放置的物体：移除并以其定义重新进入摆放状态
-        /// </summary>
-        public bool PickUpAt(Vector2 worldPos)
+        private void EndDrag()
         {
-            Vector2Int cell = GridManager.Instance.WorldToCell(worldPos);
-            PlacedItem item = GridManager.Instance.GetItemAt(cell);
-            if (item == null)
+            dragging = false;
+
+            Vector2Int anchor = Grid.WorldToCell(transform.position);
+            if (currentValid)
             {
-                return false;
+                RegisterAt(anchor);
+            }
+            else
+            {
+                // 落点非法：吸附回原锚点并恢复登记
+                transform.position = Grid.GetPlacementWorldPos(originalAnchor, box.Footprint, false);
+                RegisterAt(originalAnchor);
             }
 
-            PlacableItemDef def = item.Def;
-            Vector2Int anchor = item.AnchorCell;
-            if (GridManager.Instance.RemoveAt(cell))
-            {
-                OnRemoved?.Invoke(anchor);
-                BeginPlacement(def);
-                return true;
-            }
-            return false;
+            box.Hide();
         }
 
         // ==================== 内部逻辑 ====================
 
         /// <summary>
-        /// 幽灵体跟随指针并吸附到格子，按合法性切换虚线框颜色
+        /// 射线检测指针是否点中了本道具（含子物体的碰撞体）
         /// </summary>
-        private void UpdateGhost(Vector2 pointerWorld)
+        private bool HitSelf(Vector2 pointerWorld)
         {
-            GridManager gm = GridManager.Instance;
-            Vector2Int footprint = gm.ResolveFootprint(currentDef);
-
-            // 幽灵体显示位置相对指针上移，避免手指遮挡；吸附锚点按偏移后的位置计算
-            Vector2 ghostWorld = pointerWorld + Vector2.up * (fingerOffsetCells * gm.PublicCellSize);
-            Vector2Int anchor = gm.WorldToCell(ghostWorld);
-            ghost.transform.position = gm.GetPlacementWorldPos(anchor, footprint, rotated);
-            ghost.transform.rotation = rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
-
-            bool canPlace = gm.CanPlace(currentDef, anchor, rotated);
-            ghostBox.SetColor(canPlace ? validColor : invalidColor);
+            RaycastHit2D hit = Physics2D.Raycast(pointerWorld, Vector2.zero);
+            return hit.collider != null && hit.collider.GetComponentInParent<PlacementController>() == this;
         }
 
         /// <summary>
-        /// 确认放置：在幽灵体当前格子正式生成道具并退出摆放状态；接 UI 确认按钮
-        /// 位置非法时不放置（幽灵体保留，玩家可继续拖拽调整）
+        /// 在指定锚点登记占据（首次登记时自动补挂 PlacedItem）
         /// </summary>
-        /// <returns>是否成功放置</returns>
-        public bool ConfirmPlacement()
+        private void RegisterAt(Vector2Int anchor)
         {
-            if (!IsPlacing)
+            if (placedItem == null)
             {
-                return false;
+                placedItem = gameObject.AddComponent<PlacedItem>();
+                placedItem.Init(null, anchor, false, -1);
             }
-
-            GridManager gm = GridManager.Instance;
-            Vector2Int anchor = gm.WorldToCell(ghost.transform.position);
-
-            PlacedItem item = gm.Place(currentDef, anchor, rotated, -1);
-            if (item == null)
-            {
-                return false;
-            }
-
-            OnPlaced?.Invoke(item);
-            CancelPlacement();
-            return true;
+            Grid.Occupy(anchor, box.Footprint, placedItem);
         }
 
-        /// <summary>
-        /// 幽灵体当前位置是否可放置（UI 可用它控制确认按钮的置灰/高亮）
-        /// </summary>
-        public bool CanConfirm
-        {
-            get
-            {
-                if (!IsPlacing)
-                {
-                    return false;
-                }
-                Vector2Int anchor = GridManager.Instance.WorldToCell(ghost.transform.position);
-                return GridManager.Instance.CanPlace(currentDef, anchor, rotated);
-            }
-        }
+        // ==================== 虚化接口 ====================
 
         /// <summary>
-        /// 生成幽灵体：实例化 prefab 后"降级"——禁碰撞、关物理、半透明
+        /// 开启虚化：所有 SpriteRenderer 透明度降为 ghostAlpha（原始值已缓存，可安全重复调用）
         /// </summary>
-        private GameObject CreateGhost(PlacableItemDef def)
+        public void GhostOn()
         {
-            GameObject go = Instantiate(def.GhostPrefab != null ? def.GhostPrefab : def.Prefab);
-            go.name = def.ItemId + "_Ghost";
+            if (ghosting)
+            {
+                return;
+            }
+            ghosting = true;
 
-            foreach (Collider2D col in go.GetComponentsInChildren<Collider2D>(true))
+            cachedRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+            originalAlphas = new float[cachedRenderers.Length];
+            for (int i = 0; i < cachedRenderers.Length; i++)
             {
-                col.enabled = false;
-            }
-            foreach (Rigidbody2D rb in go.GetComponentsInChildren<Rigidbody2D>(true))
-            {
-                rb.simulated = false;
-            }
-            foreach (SpriteRenderer sr in go.GetComponentsInChildren<SpriteRenderer>(true))
-            {
-                Color c = sr.color;
+                originalAlphas[i] = cachedRenderers[i].color.a;
+                Color c = cachedRenderers[i].color;
                 c.a = ghostAlpha;
-                sr.color = c;
+                cachedRenderers[i].color = c;
             }
-            return go;
         }
 
         /// <summary>
-        /// 读取指针世界坐标（触屏优先，编辑器回退鼠标）；无有效指针时返回 null
+        /// 结束虚化：恢复所有 SpriteRenderer 的原始透明度
         /// </summary>
-        private Vector2? GetPointerWorldPosition()
+        public void GhostOff()
+        {
+            if (!ghosting)
+            {
+                return;
+            }
+            ghosting = false;
+
+            for (int i = 0; i < cachedRenderers.Length; i++)
+            {
+                if (cachedRenderers[i] == null)
+                {
+                    continue;
+                }
+                Color c = cachedRenderers[i].color;
+                c.a = originalAlphas[i];
+                cachedRenderers[i].color = c;
+            }
+            cachedRenderers = null;
+            originalAlphas = null;
+        }
+
+        /// <summary>
+        /// 指针当前是否按下（触屏或鼠标），并输出屏幕坐标
+        /// </summary>
+        private bool GetPointerPressed(out Vector2 screenPos)
         {
             if (Input.touchCount > 0)
             {
                 Touch touch = Input.GetTouch(0);
-                if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+                if (touch.phase != TouchPhase.Ended && touch.phase != TouchPhase.Canceled)
                 {
-                    return null;
+                    screenPos = touch.position;
+                    return true;
                 }
-                return ScreenToWorld(touch.position);
             }
-
-            if (Input.GetMouseButton(0))
+            else if (Input.GetMouseButton(0))
             {
-                return ScreenToWorld(Input.mousePosition);
+                screenPos = Input.mousePosition;
+                return true;
             }
-            return null;
+            screenPos = Vector2.zero;
+            return false;
+        }
+
+        /// <summary>
+        /// 本帧是否为指针刚按下的一瞬
+        /// </summary>
+        private bool IsPointerDownThisFrame()
+        {
+            if (Input.touchCount > 0)
+            {
+                return Input.GetTouch(0).phase == TouchPhase.Began;
+            }
+            return Input.GetMouseButtonDown(0);
         }
 
         private Vector2 ScreenToWorld(Vector2 screenPos)

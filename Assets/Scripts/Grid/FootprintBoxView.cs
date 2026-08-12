@@ -44,7 +44,7 @@ namespace SuperQQ.Grid
         public Vector2Int Footprint => footprint;
 
         /// <summary>
-        /// 获取当前格子尺寸（编辑期 GridManager.Instance 未初始化时回退查找场景实例）
+        /// 获取当前格子尺寸（编辑期单例未初始化时回退查找场景实例，再找不到用默认值 0.5）
         /// </summary>
         private float ResolveCellSize()
         {
@@ -77,8 +77,7 @@ namespace SuperQQ.Grid
         public void Init(Vector2Int footprint, bool rotated)
         {
             Vector2Int size = rotated ? new Vector2Int(footprint.y, footprint.x) : footprint;
-            float cellSize = GridManager.Instance != null ? GridManager.Instance.PublicCellSize : 0.5f;
-            Build(size, cellSize);
+            Build(size, ResolveCellSize());
         }
 
         /// <summary>显示虚线框（未生成过则先按组件 footprint 自动生成）</summary>
