@@ -26,6 +26,12 @@ namespace SuperQQ.Grid
         [Tooltip("是否允许旋转90度（旋转后 footprint 宽高互换）")]
         [SerializeField] private bool rotatable;
 
+        [Header("分类与朝向")]
+        [Tooltip("道具类别（道具栏分组/统计用）")]
+        [SerializeField] private SuperQQ.Item.ItemCategory category;
+        [Tooltip("允许的朝向档位数：0=不可旋转，2=可翻面（0°/180°），4=四向（0°/90°/180°/270°）")]
+        [SerializeField, Range(0, 4)] private int facingSteps;
+
         [Header("UI")]
         [Tooltip("道具栏图标")]
         [SerializeField] private Sprite icon;
@@ -38,8 +44,12 @@ namespace SuperQQ.Grid
         public GameObject GhostPrefab => ghostPrefab;
         /// <summary>未旋转时占据的格子数（宽x高）</summary>
         public Vector2Int Footprint => footprint;
-        /// <summary>是否允许旋转90度</summary>
-        public bool Rotatable => rotatable;
+        /// <summary>是否允许旋转90度（旧字段，优先看 FacingSteps）</summary>
+        public bool Rotatable => facingSteps > 0 || rotatable;
+        /// <summary>道具类别</summary>
+        public SuperQQ.Item.ItemCategory Category => category;
+        /// <summary>允许的朝向档位数：0=不可旋转，2=翻面，4=四向</summary>
+        public int FacingSteps => facingSteps;
         /// <summary>道具栏图标</summary>
         public Sprite Icon => icon;
 
