@@ -59,6 +59,14 @@ namespace SuperQQ.Grid
         private Vector2 Origin => gridOrigin != null ? (Vector2)gridOrigin.position : Vector2.zero;
         private float CellSize => config != null ? config.CellSize : 0.5f;
 
+        // 供 GridView 等外部组件读取的只读属性
+        /// <summary>格子边长（米）</summary>
+        public float PublicCellSize => CellSize;
+        /// <summary>格子(0,0)中心的世界坐标</summary>
+        public Vector2 PublicOrigin => Origin;
+        /// <summary>可摆放区域（格子坐标）</summary>
+        public RectInt PlaceableBounds => placeableBounds;
+
         /// <summary>
         /// 世界坐标 -> 所在格子坐标
         /// </summary>
@@ -122,11 +130,27 @@ namespace SuperQQ.Grid
         }
 
         /// <summary>
+        /// 解析道具的实际占位：优先读 prefab 上 FootprintBoxView 组件的定义，无组件时用资产里的 footprint
+        /// </summary>
+        public Vector2Int ResolveFootprint(PlacableItemDef def)
+        {
+            if (def != null && def.Prefab != null)
+            {
+                FootprintBoxView box = def.Prefab.GetComponent<FootprintBoxView>();
+                if (box != null)
+                {
+                    return box.Footprint;
+                }
+            }
+            return def != null ? def.Footprint : Vector2Int.one;
+        }
+
+        /// <summary>
         /// 检测能否在指定锚点放置（区域内 + 全部占位格子空闲）
         /// </summary>
         public bool CanPlace(PlacableItemDef def, Vector2Int anchorCell, bool rotated)
         {
-            List<Vector2Int> cells = GetFootprintCells(anchorCell, def.Footprint, rotated);
+            List<Vector2Int> cells = GetFootprintCells(anchorCell, ResolveFootprint(def), rotated);
             foreach (Vector2Int cell in cells)
             {
                 if (!placeableBounds.Contains(cell) || occupiedCells.ContainsKey(cell))
@@ -151,7 +175,8 @@ namespace SuperQQ.Grid
                 return null;
             }
 
-            Vector2 pos = GetPlacementWorldPos(anchorCell, def.Footprint, rotated);
+            Vector2Int footprint = ResolveFootprint(def);
+            Vector2 pos = GetPlacementWorldPos(anchorCell, footprint, rotated);
             Quaternion rot = rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
             GameObject go = Instantiate(def.Prefab, pos, rot, transform);
 
@@ -162,7 +187,15 @@ namespace SuperQQ.Grid
             }
             item.Init(def, anchorCell, rotated, ownerPlayerId);
 
-            foreach (Vector2Int cell in GetFootprintCells(anchorCell, def.Footprint, rotated))
+            // 接入道具基类：注入放置信息并触发 OnPlaced 钩子
+            SuperQQ.Item.ItemBase itemBase = go.GetComponent<SuperQQ.Item.ItemBase>();
+            if (itemBase != null)
+            {
+                itemBase.InitPlaced(item, rotated ? 1 : 0);
+                itemBase.OnPlaced();
+            }
+
+            foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, rotated))
             {
                 occupiedCells[cell] = item;
             }
@@ -180,7 +213,14 @@ namespace SuperQQ.Grid
                 return false;
             }
 
-            foreach (Vector2Int c in GetFootprintCells(item.AnchorCell, item.Def.Footprint, item.Rotated))
+            // 触发道具基类的移除钩子（清理运行状态）
+            SuperQQ.Item.ItemBase itemBase = item.GetComponent<SuperQQ.Item.ItemBase>();
+            if (itemBase != null)
+            {
+                itemBase.OnRemoved();
+            }
+
+            foreach (Vector2Int c in GetFootprintCells(item.AnchorCell, ResolveFootprint(item.Def), item.Rotated))
             {
                 occupiedCells.Remove(c);
             }

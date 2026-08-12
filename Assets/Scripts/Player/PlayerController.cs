@@ -72,6 +72,9 @@ namespace SuperQQ.Player
         // ---------- 状态机 ----------
         private IPlayerState _currentState;
 
+        // ---------- 外部速度修正（道具表面效果等，1=无影响） ----------
+        private float _speedMultiplier = 1f;
+
         // ---------- 输入来源（本地键盘 / 联机远程快照） ----------
         private IPlayerInput _input;
 
@@ -96,7 +99,7 @@ namespace SuperQQ.Player
         public MapBoundary MapBoundary => mapBoundary;
 
         // 移动
-        public float MoveSpeed => moveSpeed;
+        public float MoveSpeed => moveSpeed * _speedMultiplier;
         public float Acceleration => acceleration;
         public float Deceleration => deceleration;
         public float AirControlMultiplier => airControlMultiplier;
@@ -309,6 +312,24 @@ namespace SuperQQ.Player
             {
                 Revive();
             }
+        }
+
+        // ==================== 外部速度修正 ====================
+
+        /// <summary>
+        /// 设置移动速度倍率（由道具表面效果调用，如黄油块减速0.5）
+        /// </summary>
+        public void SetSpeedMultiplier(float multiplier)
+        {
+            _speedMultiplier = Mathf.Max(0f, multiplier);
+        }
+
+        /// <summary>
+        /// 恢复原始移动速度
+        /// </summary>
+        public void ResetSpeedMultiplier()
+        {
+            _speedMultiplier = 1f;
         }
 
         // ==================== 状态切换 ====================
