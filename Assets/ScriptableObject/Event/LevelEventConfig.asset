@@ -12,9 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abdcae80de3fae24ea81bb864915a97a, type: 3}
   m_Name: LevelEventConfig
   m_EditorClassIdentifier: 
-  _events:
-  - EventType: 1
-    PopupPrefab: {fileID: 1270365875219720365, guid: 7afca11766b9317438be107c7bb67717, type: 3}
-    DisplayName: "\u7A7A\u8C03\u53D8\u51B7"
-    BIsFixed: 1
-    Modifier: {fileID: 11400000, guid: 26bce99d28fd6bf44ab8434bc7632315, type: 2}
+  _events: []
