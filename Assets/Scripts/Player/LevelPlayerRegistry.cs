@@ -47,6 +47,18 @@ namespace SuperQQ.Player
         /// </summary>
         public event Action OnAllPlayersOut;
 
+        /// <summary>
+        /// 玩家实例集合变化事件（注册或注销任何 PlayerController 后触发）
+        /// 供相机目标组、UI 等表现层模块订阅，与网络/玩法逻辑解耦
+        /// </summary>
+        public event Action OnPlayersChanged;
+
+        /// <summary>
+        /// 玩家状态变更事件（参数：玩家控制器，新状态类型）
+        /// 由 UpdatePlayerState 触发，供相机目标组等表现层按状态过滤目标
+        /// </summary>
+        public event Action<PlayerController, PlayerStateType> OnPlayerStateChanged;
+
         // ==================== 单例访问 ====================
 
         /// <summary>
@@ -284,6 +296,7 @@ namespace SuperQQ.Player
             {
                 _players.Add(player);
                 _playerStates[player] = PlayerStateType.Alive;
+                OnPlayersChanged?.Invoke();
             }
         }
 
@@ -302,6 +315,7 @@ namespace SuperQQ.Player
 
             _players.Remove(player);
             _playerStates.Remove(player);
+            OnPlayersChanged?.Invoke();
         }
 
         // ==================== 状态更新 ====================
@@ -321,6 +335,7 @@ namespace SuperQQ.Player
             }
 
             _playerStates[player] = stateType;
+            OnPlayerStateChanged?.Invoke(player, stateType);
 
             // 检查是否所有玩家都已出局
             CheckAllPlayersOut();
@@ -351,6 +366,20 @@ namespace SuperQQ.Player
                 }
             }
             return result;
+        }
+
+        /// <summary>
+        /// 查询玩家当前状态
+        /// 未注册或无记录时按 Alive 返回（与 CheckAllPlayersOut 的"未知按存活"口径一致）
+        /// </summary>
+        /// <param name="player">玩家控制器</param>
+        public PlayerStateType GetPlayerState(PlayerController player)
+        {
+            if (player != null && _playerStates.TryGetValue(player, out PlayerStateType state))
+            {
+                return state;
+            }
+            return PlayerStateType.Alive;
         }
 
         /// <summary>

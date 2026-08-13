@@ -59,6 +59,37 @@ namespace SuperQQ.Network
 
                 RemotePlayerSync sync = GetOrCreateRemoteSync(playerId, playerState);
                 sync?.ApplySnapshot(playerState.Transform);
+
+                // 同步远端玩家的存活/幽灵/通关状态到 Registry
+                // 驱动相机目标组过滤、全员出局检测等依赖状态的逻辑
+                if (sync != null)
+                {
+                    SyncRemotePlayerState(sync, playerState.Transform);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 把快照中的远端玩家状态（0=存活 1=幽灵 2=已通关）同步到 LevelPlayerRegistry
+        /// 仅状态变化时更新，避免每次快照都触发状态变更事件
+        /// </summary>
+        private void SyncRemotePlayerState(RemotePlayerSync sync, TransformState transform)
+        {
+            if (transform == null || LevelPlayerRegistry.Instance == null) return;
+
+            PlayerController player = sync.GetComponent<PlayerController>();
+            if (player == null) return;
+
+            PlayerStateType stateType = transform.PlayerState switch
+            {
+                1 => PlayerStateType.Ghost,
+                2 => PlayerStateType.Finished,
+                _ => PlayerStateType.Alive
+            };
+
+            if (LevelPlayerRegistry.Instance.GetPlayerState(player) != stateType)
+            {
+                LevelPlayerRegistry.Instance.UpdatePlayerState(player, stateType);
             }
         }
 
