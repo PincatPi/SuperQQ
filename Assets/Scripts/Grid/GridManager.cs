@@ -197,13 +197,14 @@ namespace SuperQQ.Grid
 
         /// <summary>
         /// 检测能否在指定锚点放置（区域内 + 全部占位格子空闲）
+        /// allowOccupiedCells：允许落在被占据格子上（拆除类道具用）
         /// </summary>
-        public bool CanPlace(PlacableItemDef def, Vector2Int anchorCell, bool rotated)
+        public bool CanPlace(PlacableItemDef def, Vector2Int anchorCell, bool rotated, bool allowOccupiedCells = false)
         {
             List<Vector2Int> cells = GetFootprintCells(anchorCell, ResolveFootprint(def), rotated);
             foreach (Vector2Int cell in cells)
             {
-                if (!placeableBounds.Contains(cell) || occupiedCells.ContainsKey(cell))
+                if (!placeableBounds.Contains(cell) || (!allowOccupiedCells && occupiedCells.ContainsKey(cell)))
                 {
                     return false;
                 }
@@ -225,7 +226,14 @@ namespace SuperQQ.Grid
         /// <returns>放置成功的物体；不合法返回 null</returns>
         public PlacedItem Place(PlacableItemDef def, Vector2Int anchorCell, bool rotated, int ownerPlayerId)
         {
-            if (def == null || def.Prefab == null || !CanPlace(def, anchorCell, rotated))
+            if (def == null || def.Prefab == null)
+            {
+                return null;
+            }
+
+            // 占位策略由道具自身声明（ItemBase）：拆除类允许叠放到目标上方
+            SuperQQ.Item.ItemBase itemPolicy = def.Prefab.GetComponent<SuperQQ.Item.ItemBase>();
+            if (!CanPlace(def, anchorCell, rotated, itemPolicy != null && itemPolicy.AllowsOccupiedOverlap))
             {
                 return null;
             }
@@ -251,9 +259,13 @@ namespace SuperQQ.Grid
                 itemBase.OnPlaced();
             }
 
-            foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, rotated))
+            // 登记占据：即放即消的道具（RegistersOccupancy = false，如拆除类）不持久占位
+            if (itemBase == null || itemBase.RegistersOccupancy)
             {
-                occupiedCells[cell] = item;
+                foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, rotated))
+                {
+                    occupiedCells[cell] = item;
+                }
             }
             return item;
         }
@@ -342,7 +354,11 @@ namespace SuperQQ.Grid
                 itemBase.OnRemoved();
             }
 
-            foreach (Vector2Int c in GetFootprintCells(item.AnchorCell, ResolveFootprint(item.Def), item.Rotated))
+            // 优先读实例上的 FootprintBoxView（与占据登记口径一致，Def 为 null 的拖拽放置也能正确释放），
+            // 无组件时回退 Def 配置
+            FootprintBoxView box = item.GetComponent<FootprintBoxView>();
+            Vector2Int footprint = box != null ? box.Footprint : ResolveFootprint(item.Def);
+            foreach (Vector2Int c in GetFootprintCells(item.AnchorCell, footprint, item.Rotated))
             {
                 occupiedCells.Remove(c);
             }

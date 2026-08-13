@@ -10,6 +10,7 @@ namespace SuperQQ.Item
     ///
     /// 朝向约定：Facing 为 0/1/2/3，对应 0°/90°/180°/270°（绕 Z 轴逆时针），
     /// 由摆放时的旋转操作设置；90° 的奇数次会使 footprint 宽高互换（GridManager 已处理）
+    ///
     /// </summary>
     public abstract class ItemBase : MonoBehaviour
     {
@@ -25,6 +26,21 @@ namespace SuperQQ.Item
         /// <summary>朝向对应的世界角度（度）</summary>
         public float FacingAngle => Facing * 90f;
 
+        // ==================== 占位策略（按需重写） ====================
+
+        /// <summary>
+        /// 放置确认后是否把 footprint 覆盖的格子登记为已占据（持久占位）。
+        /// 即放即消的道具（拆除类）重写为 false：只借用落点定位，不持久占位，
+        /// 由 GridManager.Place / PlacementController.RegisterAt 在登记时遵守
+        /// </summary>
+        public virtual bool RegistersOccupancy => true;
+
+        /// <summary>
+        /// 摆放时是否允许落在其它道具已占据的格子上。
+        /// 拆除类重写为 true：爆破范围即自身 footprint，必须能叠放到目标上方才能清除
+        /// </summary>
+        public virtual bool AllowsOccupiedOverlap => false;
+
         /// <summary>
         /// 初始化放置数据（仅由 GridManager.Place 调用）
         /// </summary>
@@ -33,6 +49,22 @@ namespace SuperQQ.Item
             Placed = placed;
             Facing = facing;
         }
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// 编辑器中挂载本组件（或手动 Reset）时自动连带挂载依赖组件，
+        /// 补齐网格道具的标准组合：FootprintBoxView + BoxCollider2D + PlacementController
+        /// </summary>
+        protected virtual void Reset()
+        {
+            if (GetComponent<FootprintBoxView>() == null)
+                gameObject.AddComponent<FootprintBoxView>();
+            if (GetComponent<BoxCollider2D>() == null)
+                gameObject.AddComponent<BoxCollider2D>();
+            if (GetComponent<PlacementController>() == null)
+                gameObject.AddComponent<PlacementController>();
+        }
+#endif
 
         // ==================== 生命周期钩子（按需重写） ====================
 

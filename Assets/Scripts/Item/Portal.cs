@@ -10,9 +10,15 @@ namespace SuperQQ.Item
     /// 玩家从入口进入后从出口出来（单向传送，出口不反向传送）
     ///
     /// 角色判定（OnPlaced 时自动完成，无需手动配置）：
-    /// - 场上不存在未配对的入口 → 本实例成为入口，并自动生成出口实例进入其摆放环节
+    /// - 场上不存在未配对的入口 → 本实例成为入口；摆放流程随后通过 SpawnChainedItem
+    ///   取回出口实例并直接接管其摆放（入口→出口两次摆放衔接进行，不中断）
     /// - 场上存在未配对的入口 → 本实例成为出口，与其配对（优先匹配同一放置者）
     /// 该顺序约束天然保证"一定先放置入口再放置出口"
+    ///
+    /// 配对强制约束：场上不允许存在非成对的传送门——
+    /// 一端被移除时 OnRemoved 会级联销毁另一端；
+    /// 放置阶段结束/摆放取消时由摆放流程调用 DestroyAllUnpaired 清剿落单者
+    /// （摆放出口进行中的入口属合法的瞬时未配对状态，出口确认/取消后即收敛）
     ///
     /// prefab 配置约定：
     /// - 根物体挂 Collider2D（isTrigger = true）：兼作拖拽点击与传送触发区，
@@ -21,10 +27,12 @@ namespace SuperQQ.Item
     /// - PlacableItemDef：category = Control，facingSteps 按需（1x2 旋转后为 2x1）
     ///
     /// 联机注意：角色由放置顺序决定，网络回放时只要各端按相同顺序回放 Place，
-    /// 角色判定结果即一致；若入口/出口由不同消息通道下发，建议在消息中显式携带角色
+    /// 角色判定结果即一致；若入口/出口由不同消息通道下发，建议在消息中显式携带角色。
+    /// 任何摆放流程（测试控制器 / GameFlow / 网络回放）在确认放置后都应经
+    /// IChainedPlacement.SpawnChainedItem 衔接出口摆放，否则入口将一直处于未配对状态
     /// </summary>
     [RequireComponent(typeof(Collider2D))]
-    public class Portal : ItemBase
+    public class Portal : ItemBase, IChainedPlacement
     {
         /// <summary>传送门端点角色</summary>
         private enum PortalRole
@@ -38,7 +46,7 @@ namespace SuperQQ.Item
         [SerializeField] private Vector2 exitOffset = Vector2.zero;
 
         [Header("出口生成")]
-        [Tooltip("入口确认后自动生成的出口传送门预制体；留空则回退使用 Placed.Def.Prefab（场景手动摆放测试时 Def 为空，需在 Inspector 中配置本字段）")]
+        [Tooltip("入口确认后生成的出口传送门预制体（由摆放流程经 SpawnChainedItem 取回）；留空则回退使用 Placed.Def.Prefab（场景手动摆放测试时 Def 为空，需在 Inspector 中配置本字段）")]
         [SerializeField] private GameObject exitPortalPrefab;
         [Tooltip("出口初始位置相对入口的格子偏移（错开入口，避免出生时占位冲突）")]
         [SerializeField] private Vector2Int exitSpawnCellOffset = new Vector2Int(3, 0);
@@ -79,9 +87,8 @@ namespace SuperQQ.Item
             Portal pendingEntrance = FindPendingEntrance();
             if (pendingEntrance == null)
             {
-                // 先放置的一端：成为入口，并生成出口实例进入其摆放环节
+                // 先放置的一端：成为入口；出口实例由摆放流程通过 SpawnChainedItem 取回并继续摆放
                 role = PortalRole.Entrance;
-                SpawnExitPortal();
             }
             else
             {
@@ -93,11 +100,17 @@ namespace SuperQQ.Item
         }
 
         /// <summary>
-        /// 被移除（爆破等）前解除配对，避免另一端持有悬空引用
+        /// 被移除（爆破等）前解除配对，避免另一端持有悬空引用；
+        /// 配对强制约束：一端被移除时级联销毁另一端，不允许非成对传送门残留
         /// </summary>
         public override void OnRemoved()
         {
+            Portal other = linkedPortal;
             Unlink();
+            if (other != null)
+            {
+                other.DestroyIfUnpaired();
+            }
         }
 
         // ==================== 传送 ====================
@@ -178,24 +191,73 @@ namespace SuperQQ.Item
             }
         }
 
+        // ==================== 配对校验 ====================
+
+        /// <summary>
+        /// 校验配对状态，落单则销毁自身：
+        /// 配对另一端不存在（从未配对 / 已被销毁）时执行销毁——已登记占据的走网格移除流程
+        /// 释放格子并触发 OnRemoved，未登记的（摆放中被取消等）直接销毁
+        /// 配对强制约束的单元入口：场上不允许存在非成对的传送门
+        /// </summary>
+        public void DestroyIfUnpaired()
+        {
+            // Unity 重载的 == 可识别"引用还在但物体已销毁"的悬空配对
+            if (linkedPortal != null)
+            {
+                return;
+            }
+
+            GridManager grid = GridManager.Instance;
+            if (Placed != null && grid != null && grid.GetItemAt(Placed.AnchorCell) == Placed)
+            {
+                grid.RemoveAt(Placed.AnchorCell);   // 释放占据格子并触发 OnRemoved
+            }
+            else
+            {
+                OnRemoved();   // 未登记占据：手动补齐移除钩子，保持生命周期对称
+                Destroy(gameObject);
+            }
+        }
+
+        /// <summary>
+        /// 清剿全场未配对的传送门：逐个校验并销毁落单者
+        /// 由摆放流程在放置阶段结束/摆放取消时调用（如 Esc 取消出口摆放后，入口需一并清除）
+        /// </summary>
+        public static void DestroyAllUnpaired()
+        {
+            foreach (Portal portal in FindObjectsOfType<Portal>())
+            {
+                if (portal != null)   // 跳过本次清剿中已被级联销毁的
+                {
+                    portal.DestroyIfUnpaired();
+                }
+            }
+        }
+
         // ==================== 内部 ====================
 
         /// <summary>
-        /// 生成出口传送门实例并使其直接进入可拖拽状态，衔接到"摆放出口"环节
+        /// 衔接摆放（IChainedPlacement 契约）：入口确认后生成出口实例，交还摆放流程接管其摆放交互
         /// 出口确认放置时走自身 OnPlaced：检索到本入口（未配对）即自动成为出口并配对
         /// </summary>
-        private void SpawnExitPortal()
+        public GameObject SpawnChainedItem()
         {
+            if (role != PortalRole.Entrance || IsLinked)
+            {
+                return null;
+            }
+
             GameObject prefab = exitPortalPrefab != null
                 ? exitPortalPrefab
                 : (Placed != null && Placed.Def != null ? Placed.Def.Prefab : null);
             if (prefab == null)
             {
                 Debug.LogWarning("[Portal] 无法生成出口：未配置 exitPortalPrefab 且放置信息中无 Def", this);
-                return;
+                return null;
             }
 
-            // 初始位置按格子偏移错开入口；用 prefab 默认朝向（其内部旋转标记是未旋转状态）
+            // 初始位置按格子偏移错开入口，避免出生时占位冲突；随后由摆放流程接管移动
+            // 用 prefab 默认朝向（其内部旋转标记是未旋转状态）
             Vector3 spawnPos = transform.position;
             GridManager grid = GridManager.Instance;
             if (grid != null)
@@ -204,12 +266,7 @@ namespace SuperQQ.Item
                 spawnPos += new Vector3(exitSpawnCellOffset.x * cellSize, exitSpawnCellOffset.y * cellSize, 0f);
             }
 
-            GameObject exitGo = Instantiate(prefab, spawnPos, prefab.transform.rotation);
-            PlacementController controller = exitGo.GetComponent<PlacementController>();
-            if (controller != null)
-            {
-                controller.EnterDraggableState();
-            }
+            return Instantiate(prefab, spawnPos, prefab.transform.rotation);
         }
 
         /// <summary>按角色染色（调试用，正式素材就位后关闭 tintByRole）</summary>
