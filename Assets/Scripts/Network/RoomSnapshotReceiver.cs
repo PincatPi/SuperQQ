@@ -19,6 +19,9 @@ namespace SuperQQ.Network
         // playerId -> 远程玩家同步器
         private readonly Dictionary<string, RemotePlayerSync> _remotePlayers = new();
 
+        /// <summary>最近一次收到的房间快照（供玩家列表 UI 等读取），无快照时为 null</summary>
+        public RoomSnapshot LatestSnapshot { get; private set; }
+
         private void OnEnable()
         {
             if (NetworkManager.Instance != null)
@@ -42,6 +45,8 @@ namespace SuperQQ.Network
         {
             NetworkManager net = NetworkManager.Instance;
             if (net == null || string.IsNullOrEmpty(net.LocalPlayerId)) return;
+
+            LatestSnapshot = snapshot;
 
             if (!_firstSnapshotLogged)
             {

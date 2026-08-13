@@ -32,12 +32,54 @@ namespace SuperQQ.Grid
         [SerializeField] private Color validColor = new Color(0.3f, 1f, 0.3f, 0.9f);
         [SerializeField] private Color invalidColor = new Color(1f, 0.3f, 0.3f, 0.9f);
 
+        [Header("旋转")]
+        [Tooltip("旋转状态对应的 Z 轴角度（切换 0°/该角度）")]
+        [SerializeField] private float rotatedAngle = 90f;
+
+        [Header("调试")]
+        [Tooltip("启用后：P 键进入可拖拽状态，R 键旋转")]
+        [SerializeField] private bool debugHotkeys = true;
+
         private FootprintBoxView box;
         private PlacedItem placedItem;        // 占据登记凭证（登记过时存在）
         private bool draggable;               // 可拖拽状态（由 EnterDraggableState 开启）
         private bool dragging;
         private bool currentValid;
-        private Vector2Int originalAnchor;    // 拖拽起始锚点（落点非法时回退用）
+        private bool rotated;                 // 当前旋转状态（false=0°，true=rotatedAngle）
+        private bool registered;              // 占据是否已登记（false=未合规放置，可再拖拽）
+        private Vector2Int currentPivotCell;  // 拖拽中最近一次吸附的锚点格子（旋转围绕它进行）
+
+        /// <summary>当前朝向下锚点格子在占位矩形内的索引</summary>
+        private Vector2Int PivotInRect => rotated
+            ? GridManager.GetRotatedPivot(box.PivotCell, box.Footprint)
+            : box.PivotCell;
+
+        /// <summary>锚点格子 -> 占位矩形左下角锚点（占据登记用）</summary>
+        private Vector2Int AnchorFromPivot(Vector2Int pivotGridCell) => pivotGridCell - PivotInRect;
+
+        /// <summary>左下角锚点 -> 根节点（框中心）的世界坐标</summary>
+        private Vector2 RootPosFromAnchor(Vector2Int anchor)
+        {
+            return Grid.GetPlacementWorldPos(anchor, box.Footprint, rotated, box.PivotCell);
+        }
+
+        /// <summary>根节点（框中心）世界坐标 -> 左下角锚点格子</summary>
+        private Vector2Int AnchorFromRootPos(Vector2 worldPos)
+        {
+            Vector2Int size = rotated
+                ? new Vector2Int(box.Footprint.y, box.Footprint.x)
+                : box.Footprint;
+            Vector2 local = (worldPos - Grid.PublicOrigin) / Grid.PublicCellSize;
+            return new Vector2Int(
+                Mathf.RoundToInt(local.x - size.x * 0.5f),
+                Mathf.RoundToInt(local.y - size.y * 0.5f));
+        }
+
+        /// <summary>根节点世界坐标 -> 锚点所在格子（锚点格子的世界中心）</summary>
+        private Vector2Int PivotCellFromRootPos(Vector2 worldPos)
+        {
+            return AnchorFromRootPos(worldPos) + PivotInRect;
+        }
 
         // 虚化状态：缓存各 SpriteRenderer 原始透明度，结束时恢复
         private SpriteRenderer[] cachedRenderers;
@@ -52,6 +94,12 @@ namespace SuperQQ.Grid
         public bool IsDragging => dragging;
         /// <summary>当前拖拽落点是否合法</summary>
         public bool CurrentValid => currentValid;
+        /// <summary>当前是否处于旋转状态</summary>
+        public bool IsRotated => rotated;
+        /// <summary>本道具是否允许旋转（由 FootprintBoxView 配置）</summary>
+        public bool CanRotate => box != null && box.CanRotate;
+        /// <summary>当前摆放是否合规（占据已登记到网格；拖拽到非法区域停留时为 false）</summary>
+        public bool IsPlacementValid => registered;
 
         // ==================== 生命周期 ====================
 
@@ -70,8 +118,8 @@ namespace SuperQQ.Grid
         /// </summary>
         public void SnapToNearestCell()
         {
-            Vector2Int anchor = Grid.WorldToCell(transform.position);
-            transform.position = Grid.GetPlacementWorldPos(anchor, box.Footprint, false);
+            // 框对齐格子网格：偶数宽/高时根节点落在格线上
+            transform.position = RootPosFromAnchor(AnchorFromRootPos(transform.position));
         }
 
         // ==================== 状态接口 ====================
@@ -97,22 +145,126 @@ namespace SuperQQ.Grid
             }
 
             // 兜底登记：未被拖拽过（或拖拽结算前）直接完成放置时，
-            // 按当前位置吸附并把 footprint 覆盖的格子标记为已占领
-            if (placedItem == null)
+            // 按当前位置吸附并把 footprint 覆盖的格子标记为已占领；落点非法则保持不合规状态
+            if (!registered)
             {
                 SnapToNearestCell();
-                RegisterAt(Grid.WorldToCell(transform.position));
+                Vector2Int anchor = AnchorFromRootPos(transform.position);
+                if (Grid.CanOccupy(anchor, box.Footprint, rotated))
+                {
+                    RegisterAt(anchor);
+                }
+                else
+                {
+                    box.Init(box.Footprint, rotated);
+                    box.Show();
+                    box.SetColor(invalidColor);
+                }
             }
 
             draggable = false;
             GhostOff();
         }
 
+        // ==================== 旋转接口 ====================
+
+        /// <summary>
+        /// 切换旋转状态（0° ↔ rotatedAngle），供双击/按钮等外部输入调用。
+        /// 连带旋转：transform（碰撞体/贴图/特效挂点）、虚线框、占位宽高互换。
+        /// </summary>
+        /// <returns>旋转是否生效（道具不可旋转或已放置且新朝向落点非法时返回 false）</returns>
+        public bool ToggleRotate()
+        {
+            return SetRotated(!rotated);
+        }
+
+        /// <summary>
+        /// 设置旋转状态。
+        /// 拖拽中：按当前锚点重新吸附并刷新合法性提示；
+        /// 已放置：在原锚点以新朝向重新登记，落点非法则整体回退；
+        /// 未放置：仅旋转表现，占位在后续吸附时生效。
+        /// </summary>
+        public bool SetRotated(bool target)
+        {
+            if (target == rotated)
+            {
+                return true;
+            }
+            if (!CanRotate || Grid == null)
+            {
+                return false;
+            }
+
+            bool prev = rotated;
+
+            if (registered && placedItem != null && !dragging)
+            {
+                // 已合规放置：锚点格子世界位置不动，占位矩形绕它重排，根节点物理移动到新框中心
+                Vector2Int pivotGridCell = PivotCellFromRootPos(transform.position);
+                Vector2Int oldAnchor = AnchorFromPivot(pivotGridCell);
+                rotated = target;
+                Vector2Int newAnchor = AnchorFromPivot(pivotGridCell);
+
+                Grid.Release(placedItem);
+                if (Grid.CanOccupy(newAnchor, box.Footprint, rotated))
+                {
+                    ApplyRotation();
+                    transform.position = RootPosFromAnchor(newAnchor);
+                    placedItem.Init(placedItem.Def, newAnchor, rotated, placedItem.OwnerPlayerId);
+                    Grid.Occupy(newAnchor, box.Footprint, placedItem, rotated);
+                    return true;
+                }
+                // 落点非法：回退旋转状态并恢复原登记
+                rotated = prev;
+                Grid.Occupy(oldAnchor, box.Footprint, placedItem, rotated);
+                return false;
+            }
+
+            // 未放置/拖拽中：绕锚点格子旋转——锚点格子世界位置不动，
+            // 根节点物理移动到新朝向的框中心，外观即围绕锚点旋转
+            Vector2Int pivotCell = PivotCellFromRootPos(transform.position);
+            rotated = target;
+            ApplyRotation();
+            transform.position = RootPosFromAnchor(AnchorFromPivot(pivotCell));
+            box.Init(box.Footprint, rotated);
+
+            if (dragging)
+            {
+                currentValid = Grid.CanOccupy(AnchorFromPivot(pivotCell), box.Footprint, rotated);
+                box.SetColor(currentValid ? validColor : invalidColor);
+            }
+            return true;
+        }
+
+        /// <summary>按当前旋转状态应用 transform 旋转（碰撞体/视觉/挂点随层级一并旋转）</summary>
+        private void ApplyRotation()
+        {
+            transform.rotation = rotated ? Quaternion.Euler(0f, 0f, rotatedAngle) : Quaternion.identity;
+        }
+
         // ==================== 拖拽输入（手动轮询，编辑器鼠标/真机触屏通用） ====================
 
         private void Update()
         {
-            if (Grid == null || !draggable)
+            if (Grid == null)
+            {
+                return;
+            }
+
+            // 调试快捷键：P 进入可拖拽状态，R 旋转
+            if (debugHotkeys)
+            {
+                if (Input.GetKeyDown(KeyCode.P) && !draggable)
+                {
+                    EnterDraggableState();
+                }
+                if (Input.GetKeyDown(KeyCode.R) && draggable)
+                {
+                    ToggleRotate();
+                }
+            }
+
+            if (!draggable)
             {
                 return;
             }
@@ -141,30 +293,31 @@ namespace SuperQQ.Grid
         private void BeginDrag()
         {
             dragging = true;
-            originalAnchor = Grid.WorldToCell(transform.position);
+            currentPivotCell = PivotCellFromRootPos(transform.position);
 
-            // 已放置的物体：先释放占据的格子，腾空后拖动
-            if (placedItem != null)
+            // 已登记的物体：先释放占据的格子，腾空后拖动
+            if (registered && placedItem != null)
             {
                 Grid.Release(placedItem);
             }
+            registered = false;
 
             if (showBoxWhileDragging)
             {
-                box.Init(box.Footprint, false);
+                box.Init(box.Footprint, rotated);
                 box.Show();
             }
         }
 
         private void DragStep(Vector2 pointerWorld)
         {
-            // 指针位置上移后换算格子，吸附锚点与道具位置完全由格子重建
+            // 指针位置上移后换算锚点格子，位置完全由格子重建（框中心对齐网格）
             Vector2 liftedWorld = pointerWorld + Vector2.up * (pointerLiftCells * Grid.PublicCellSize);
-            Vector2Int anchor = Grid.WorldToCell(liftedWorld);
+            currentPivotCell = Grid.WorldToCell(liftedWorld);
 
-            transform.position = Grid.GetPlacementWorldPos(anchor, box.Footprint, false);
+            transform.position = RootPosFromAnchor(AnchorFromPivot(currentPivotCell));
 
-            currentValid = Grid.CanOccupy(anchor, box.Footprint);
+            currentValid = Grid.CanOccupy(AnchorFromPivot(currentPivotCell), box.Footprint, rotated);
             box.SetColor(currentValid ? validColor : invalidColor);
         }
 
@@ -172,19 +325,16 @@ namespace SuperQQ.Grid
         {
             dragging = false;
 
-            Vector2Int anchor = Grid.WorldToCell(transform.position);
             if (currentValid)
             {
-                RegisterAt(anchor);
+                RegisterAt(AnchorFromRootPos(transform.position));
+                box.Hide();
             }
             else
             {
-                // 落点非法：吸附回原锚点并恢复登记
-                transform.position = Grid.GetPlacementWorldPos(originalAnchor, box.Footprint, false);
-                RegisterAt(originalAnchor);
+                // 落点非法：停留在当前位置（不弹回、不登记），保持红色包围盒提示不合规
+                box.SetColor(invalidColor);
             }
-
-            box.Hide();
         }
 
         // ==================== 内部逻辑 ====================
@@ -206,9 +356,15 @@ namespace SuperQQ.Grid
             if (placedItem == null)
             {
                 placedItem = gameObject.AddComponent<PlacedItem>();
-                placedItem.Init(null, anchor, false, -1);
+                placedItem.Init(null, anchor, rotated, -1);
             }
-            Grid.Occupy(anchor, box.Footprint, placedItem);
+            else
+            {
+                placedItem.Init(placedItem.Def, anchor, rotated, placedItem.OwnerPlayerId);
+            }
+            Grid.Occupy(anchor, box.Footprint, placedItem, rotated);
+            registered = true;
+            box.Hide();
         }
 
         // ==================== 虚化接口 ====================
