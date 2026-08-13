@@ -23,6 +23,8 @@ namespace SuperQQ.Grid
         [SerializeField] private float pointerLiftCells = 1f;
         [Tooltip("拖拽时是否显示虚线包围盒")]
         [SerializeField] private bool showBoxWhileDragging = true;
+        [Tooltip("允许放置在被占用的格子上（拆除类/附着类道具开启）；开启后登记时跳过已被占据的格子，不覆盖原有道具的占据记录")]
+        [SerializeField] private bool allowPlaceOnOccupied;
 
         [Header("虚化")]
         [Tooltip("虚化时 Sprtie 的透明度（可拖拽/待确认状态的视觉提示）")]
@@ -159,7 +161,7 @@ namespace SuperQQ.Grid
             {
                 SnapToNearestCell();
                 Vector2Int anchor = AnchorFromRootPos(transform.position);
-                if (Grid.CanOccupy(anchor, box.Footprint, rotated))
+                if (Grid.CanOccupy(anchor, box.Footprint, rotated, allowPlaceOnOccupied))
                 {
                     RegisterAt(anchor);
                 }
@@ -215,17 +217,17 @@ namespace SuperQQ.Grid
                 Vector2Int newAnchor = AnchorFromPivot(pivotGridCell);
 
                 Grid.Release(placedItem);
-                if (Grid.CanOccupy(newAnchor, box.Footprint, rotated))
+                if (Grid.CanOccupy(newAnchor, box.Footprint, rotated, allowPlaceOnOccupied))
                 {
                     ApplyRotation();
                     transform.position = RootPosFromAnchor(newAnchor);
                     placedItem.Init(placedItem.Def, newAnchor, rotated, placedItem.OwnerPlayerId);
-                    Grid.Occupy(newAnchor, box.Footprint, placedItem, rotated);
+                    Grid.Occupy(newAnchor, box.Footprint, placedItem, rotated, allowPlaceOnOccupied);
                     return true;
                 }
                 // 落点非法：回退旋转状态并恢复原登记
                 rotated = prev;
-                Grid.Occupy(oldAnchor, box.Footprint, placedItem, rotated);
+                Grid.Occupy(oldAnchor, box.Footprint, placedItem, rotated, allowPlaceOnOccupied);
                 return false;
             }
 
@@ -239,7 +241,7 @@ namespace SuperQQ.Grid
 
             if (dragging)
             {
-                currentValid = Grid.CanOccupy(AnchorFromPivot(pivotCell), box.Footprint, rotated);
+                currentValid = Grid.CanOccupy(AnchorFromPivot(pivotCell), box.Footprint, rotated, allowPlaceOnOccupied);
                 box.SetColor(currentValid ? validColor : invalidColor);
             }
             return true;
@@ -334,7 +336,7 @@ namespace SuperQQ.Grid
 
             transform.position = RootPosFromAnchor(AnchorFromPivot(currentPivotCell));
 
-            currentValid = Grid.CanOccupy(AnchorFromPivot(currentPivotCell), box.Footprint, rotated);
+            currentValid = Grid.CanOccupy(AnchorFromPivot(currentPivotCell), box.Footprint, rotated, allowPlaceOnOccupied);
             box.SetColor(currentValid ? validColor : invalidColor);
         }
 
@@ -359,10 +361,21 @@ namespace SuperQQ.Grid
         /// <summary>
         /// 射线检测指针是否点中了本道具（含子物体的碰撞体）
         /// </summary>
+        /// <summary>
+        /// 点选检测：指针是否落在本道具的包围盒（footprint 矩形）内
+        /// 不依赖碰撞体——素材不填满占位、细长道具也能整框点选
+        /// </summary>
         private bool HitSelf(Vector2 pointerWorld)
         {
-            RaycastHit2D hit = Physics2D.Raycast(pointerWorld, Vector2.zero);
-            return hit.collider != null && hit.collider.GetComponentInParent<PlacementController>() == this;
+            Vector2Int size = rotated
+                ? new Vector2Int(box.Footprint.y, box.Footprint.x)
+                : box.Footprint;
+            Vector2 halfSize = new Vector2(size.x, size.y) * (Grid.PublicCellSize * 0.5f);
+
+            // 根节点位置即包围盒中心（RootPosFromAnchor 的约定）
+            Vector2 center = transform.position;
+            return Mathf.Abs(pointerWorld.x - center.x) <= halfSize.x
+                && Mathf.Abs(pointerWorld.y - center.y) <= halfSize.y;
         }
 
         /// <summary>
@@ -379,7 +392,7 @@ namespace SuperQQ.Grid
             {
                 placedItem.Init(placedItem.Def, anchor, rotated, placedItem.OwnerPlayerId);
             }
-            Grid.Occupy(anchor, box.Footprint, placedItem, rotated);
+            Grid.Occupy(anchor, box.Footprint, placedItem, rotated, allowPlaceOnOccupied);
             registered = true;
             box.Hide();
             NotifyPlaced();

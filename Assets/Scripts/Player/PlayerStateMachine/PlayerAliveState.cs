@@ -151,12 +151,27 @@ namespace SuperQQ.Player
         private void ApplyHorizontalMovement()
         {
             float targetVelocity = _ctx.HorizontalInput * _ctx.MoveSpeed;
-            float rate = Mathf.Abs(_ctx.HorizontalInput) > 0.01f
-                ? _ctx.Acceleration
-                : _ctx.Deceleration;
-            if (!_bIsGrounded)
+            float rate;
+            if (_ctx.Frictionless && _bIsGrounded)
             {
-                rate *= _ctx.AirControlMultiplier;
+                // 肥皂表面：滑行完全不可控——只有静止起步时输入才决定滑动方向（满速），
+                // 一旦滑起来就忽略一切输入（不能转向/刹车/加速），仅按减阻缓慢衰减（0=匀速）
+                rate = _ctx.SlideDrag;
+                if (Mathf.Abs(_currentHorizontalVelocity) < 0.01f
+                    && Mathf.Abs(_ctx.HorizontalInput) > 0.01f)
+                {
+                    _currentHorizontalVelocity = Mathf.Sign(_ctx.HorizontalInput) * _ctx.MoveSpeed;
+                }
+            }
+            else
+            {
+                rate = Mathf.Abs(_ctx.HorizontalInput) > 0.01f
+                    ? _ctx.Acceleration
+                    : _ctx.Deceleration;
+                if (!_bIsGrounded)
+                {
+                    rate *= _ctx.AirControlMultiplier;
+                }
             }
 
             _currentHorizontalVelocity = Mathf.MoveTowards(

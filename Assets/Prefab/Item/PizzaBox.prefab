@@ -84,7 +84,7 @@ MonoBehaviour:
   autoInitOnStart: 0
   startRotated: 0
   canRotate: 0
-  pivotCell: {x: 0, y: 0}
+  pivotCell: {x: 2, y: 0}
   drawBoxInEditor: 1
   lineColor: {r: 1, g: 1, b: 1, a: 0.9}
   lineWidthPixels: 3
@@ -179,7 +179,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5770838219189954765}
   - component: {fileID: 7328136879758299238}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -242,7 +242,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: c3de984fb733f1d46b8ba93c7ed06e1d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 54627c03a3413c740bbcaf52764bed0d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

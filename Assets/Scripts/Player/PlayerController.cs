@@ -75,6 +75,13 @@ namespace SuperQQ.Player
         // ---------- 外部速度修正（道具表面效果等，1=无影响） ----------
         private float _speedMultiplier = 1f;
 
+        // ---------- 无摩擦状态（肥皂表面等） ----------
+        private bool _frictionless;
+        private float _slideDrag;
+
+        // ---------- 输入锁定（击飞死亡表现期间屏蔽操作） ----------
+        private bool _inputLocked;
+
         // ---------- 输入来源（本地键盘 / 联机远程快照） ----------
         private IPlayerInput _input;
 
@@ -103,6 +110,10 @@ namespace SuperQQ.Player
         public float Acceleration => acceleration;
         public float Deceleration => deceleration;
         public float AirControlMultiplier => airControlMultiplier;
+
+        // 无摩擦（肥皂：加/减速率压到 0，初速度保留）
+        public bool Frictionless => _frictionless;
+        public float SlideDrag => _slideDrag;
 
         // 跳跃
         public float JumpVelocity => jumpVelocity;
@@ -292,6 +303,15 @@ namespace SuperQQ.Player
         /// </summary>
         private void ReadInput()
         {
+            // 输入锁定期间（击飞死亡表现）屏蔽一切操作
+            if (_inputLocked)
+            {
+                _horizontalInput = 0f;
+                _verticalInput = 0f;
+                _jumpPressed = false;
+                _jumpHeld = false;
+                return;
+            }
             _input.ReadInput();
             _horizontalInput = _input.Horizontal;
             _verticalInput = _input.Vertical;
@@ -330,6 +350,17 @@ namespace SuperQQ.Player
         public void ResetSpeedMultiplier()
         {
             _speedMultiplier = 1f;
+        }
+
+        /// <summary>
+        /// 进入/离开无摩擦状态（肥皂表面：滑行不可控）
+        /// </summary>
+        /// <param name="active">true=无摩擦滑行</param>
+        /// <param name="drag">滑行减阻（0=完全无摩擦匀速滑行）</param>
+        public void SetFrictionless(bool active, float drag = 0f)
+        {
+            _frictionless = active;
+            _slideDrag = active ? Mathf.Max(0f, drag) : 0f;
         }
 
         // ==================== 状态切换 ====================
@@ -373,6 +404,32 @@ namespace SuperQQ.Player
                 return;
             }
             TransitionTo(new PlayerGhostState(this));
+        }
+
+        /// <summary>
+        /// 被击飞死亡：强制一个击飞速度并屏蔽操作输入，延迟后进入幽灵状态
+        /// </summary>
+        /// <param name="knockbackVelocity">击飞速度（世界方向）</param>
+        /// <param name="ghostDelay">进入幽灵状态前的延迟（秒）</param>
+        public void PlayerKnockbackDie(Vector2 knockbackVelocity, float ghostDelay = 0.6f)
+        {
+            if (BIsDead || _inputLocked)
+            {
+                return;
+            }
+            if (_rb != null)
+            {
+                _rb.velocity = knockbackVelocity;
+            }
+            StartCoroutine(KnockbackDieRoutine(ghostDelay));
+        }
+
+        private System.Collections.IEnumerator KnockbackDieRoutine(float delay)
+        {
+            _inputLocked = true;
+            yield return new WaitForSeconds(delay);
+            _inputLocked = false;
+            PlayerDie();
         }
 
         /// <summary>
