@@ -261,12 +261,17 @@ namespace SuperQQ.Grid
         /// <summary>
         /// 检测一组格子是否可占用（区域内 + 全部空闲），供拖拽已有物体时使用
         /// </summary>
-        public bool CanOccupy(Vector2Int anchorCell, Vector2Int footprint, bool rotated = false)
+        public bool CanOccupy(Vector2Int anchorCell, Vector2Int footprint, bool rotated = false, bool allowOccupiedCells = false)
         {
             List<Vector2Int> cells = GetFootprintCells(anchorCell, footprint, rotated);
             foreach (Vector2Int cell in cells)
             {
-                if (!placeableBounds.Contains(cell) || occupiedCells.ContainsKey(cell))
+                if (!placeableBounds.Contains(cell))
+                {
+                    return false;
+                }
+                // 拆除/附着类道具允许落在被占用格子上
+                if (!allowOccupiedCells && occupiedCells.ContainsKey(cell))
                 {
                     return false;
                 }
@@ -281,11 +286,17 @@ namespace SuperQQ.Grid
 
         /// <summary>
         /// 登记已有物体的占据（拖拽落点合法时调用，不实例化新物体）
+        /// skipOccupiedCells：跳过已被其他物体占据的格子（拆除/附着类道具用，
+        /// 避免覆盖被附着物体的占据记录）
         /// </summary>
-        public void Occupy(Vector2Int anchorCell, Vector2Int footprint, PlacedItem owner, bool rotated = false)
+        public void Occupy(Vector2Int anchorCell, Vector2Int footprint, PlacedItem owner, bool rotated = false, bool skipOccupiedCells = false)
         {
             foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, rotated))
             {
+                if (skipOccupiedCells && occupiedCells.ContainsKey(cell))
+                {
+                    continue;
+                }
                 occupiedCells[cell] = owner;
             }
         }
