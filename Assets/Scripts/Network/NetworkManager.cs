@@ -33,6 +33,8 @@ namespace SuperQQ.Network
         public string LocalPlayerId = "";
         /// <summary>当前房间ID（进房后设置）</summary>
         public string RoomId = "";
+        /// <summary>进房成功时的完整房间数据（含已在房间的玩家列表），跨场景传递给关卡使用</summary>
+        public global::Minigame.Room.V1.Room JoinedRoom;
         /// <summary>登录令牌</summary>
         public string Token = "";
         /// <summary>网关会话ID（连接成功后由网关分配，若协议需要）</summary>

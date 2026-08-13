@@ -126,6 +126,40 @@ namespace SuperQQ.Grid
             return Origin + new Vector2(anchorCell.x + size.x * 0.5f, anchorCell.y + size.y * 0.5f) * CellSize;
         }
 
+        /// <summary>
+        /// 逆时针 90° 旋转后锚点格子在新占位矩形内的索引（宽高互换后的坐标）
+        /// </summary>
+        public static Vector2Int GetRotatedPivot(Vector2Int pivot, Vector2Int footprint)
+        {
+            return new Vector2Int(footprint.y - 1 - pivot.y, pivot.x);
+        }
+
+        /// <summary>
+        /// 解析道具的锚点格子：优先读 prefab 上 FootprintBoxView 的配置，缺省取中心格子
+        /// </summary>
+        public Vector2Int ResolvePivot(PlacableItemDef def, Vector2Int footprint)
+        {
+            if (def != null && def.Prefab != null)
+            {
+                FootprintBoxView box = def.Prefab.GetComponent<FootprintBoxView>();
+                if (box != null)
+                {
+                    return box.PivotCell;
+                }
+            }
+            return new Vector2Int((footprint.x - 1) / 2, (footprint.y - 1) / 2);
+        }
+
+        /// <summary>
+        /// 锚点格子（左下角）+ footprint + 锚点 -> 根节点（框中心）的世界坐标
+        /// 框中心对齐格子网格：偶数宽/高时落在格线上（半格偏移），奇数时落在格心
+        /// </summary>
+        public Vector2 GetPlacementWorldPos(Vector2Int anchorCell, Vector2Int footprint, bool rotated, Vector2Int pivot)
+        {
+            Vector2Int size = rotated ? new Vector2Int(footprint.y, footprint.x) : footprint;
+            return Origin + new Vector2(anchorCell.x + size.x * 0.5f, anchorCell.y + size.y * 0.5f) * CellSize;
+        }
+
         // ==================== 查询 ====================
 
         /// <summary>
@@ -197,7 +231,8 @@ namespace SuperQQ.Grid
             }
 
             Vector2Int footprint = ResolveFootprint(def);
-            Vector2 pos = GetPlacementWorldPos(anchorCell, footprint, rotated);
+            Vector2Int pivot = ResolvePivot(def, footprint);
+            Vector2 pos = GetPlacementWorldPos(anchorCell, footprint, rotated, pivot);
             Quaternion rot = rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
             GameObject go = Instantiate(def.Prefab, pos, rot, transform);
 
@@ -226,9 +261,9 @@ namespace SuperQQ.Grid
         /// <summary>
         /// 检测一组格子是否可占用（区域内 + 全部空闲），供拖拽已有物体时使用
         /// </summary>
-        public bool CanOccupy(Vector2Int anchorCell, Vector2Int footprint)
+        public bool CanOccupy(Vector2Int anchorCell, Vector2Int footprint, bool rotated = false)
         {
-            List<Vector2Int> cells = GetFootprintCells(anchorCell, footprint, false);
+            List<Vector2Int> cells = GetFootprintCells(anchorCell, footprint, rotated);
             foreach (Vector2Int cell in cells)
             {
                 if (!placeableBounds.Contains(cell) || occupiedCells.ContainsKey(cell))
@@ -247,9 +282,9 @@ namespace SuperQQ.Grid
         /// <summary>
         /// 登记已有物体的占据（拖拽落点合法时调用，不实例化新物体）
         /// </summary>
-        public void Occupy(Vector2Int anchorCell, Vector2Int footprint, PlacedItem owner)
+        public void Occupy(Vector2Int anchorCell, Vector2Int footprint, PlacedItem owner, bool rotated = false)
         {
-            foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, false))
+            foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, rotated))
             {
                 occupiedCells[cell] = owner;
             }
