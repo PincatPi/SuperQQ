@@ -184,7 +184,7 @@ MonoBehaviour:
   groundCheckRadius: 0.16
   groundLayer:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 768
   mapBoundary: {fileID: 0}
   ghostMoveSpeed: 10
   ghostAcceleration: 80
