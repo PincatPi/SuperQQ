@@ -44,6 +44,7 @@ namespace SuperQQ.Grid
 
         private FootprintBoxView box;
         private PlacedItem placedItem;        // 占据登记凭证（登记过时存在）
+        private SuperQQ.Item.ItemBase itemBase;   // 道具基类（摆放完成时通知 OnPlaced；无则跳过）
         private bool draggable;               // 可拖拽状态（由 EnterDraggableState 开启）
         private bool dragging;
         private bool currentValid;
@@ -108,7 +109,15 @@ namespace SuperQQ.Grid
         private void Awake()
         {
             box = GetComponent<FootprintBoxView>();
+            if (box == null)
+            {
+                // 兜底：对象在 RequireComponent 约束生效前配置（或依赖被手动移除）时 GetComponent 会拿到 null，
+                // 此处自动补挂，避免后续吸附/登记逻辑空引用
+                box = gameObject.AddComponent<FootprintBoxView>();
+                Debug.LogWarning("[PlacementController] 缺少 FootprintBoxView，已自动补挂（占位默认 1x1，请在 Inspector 中核对）", this);
+            }
             placedItem = GetComponent<PlacedItem>();
+            itemBase = GetComponent<SuperQQ.Item.ItemBase>();
             if (inputCamera == null)
             {
                 inputCamera = Camera.main;
@@ -253,12 +262,20 @@ namespace SuperQQ.Grid
                 return;
             }
 
-            // 调试快捷键：P 进入可拖拽状态，R 旋转
+            // 调试快捷键：P 进入可拖拽状态，R 旋转，Enter 确认放置
             if (debugHotkeys)
             {
                 if (Input.GetKeyDown(KeyCode.P) && !draggable)
                 {
                     EnterDraggableState();
+                }
+                if (Input.GetKeyDown(KeyCode.Return) && draggable && dragging)
+                {
+                    // 确认放置：仅结算正在被拖拽的本道具（P 会激活场上所有道具，
+                    // 不加 dragging 约束会导致 Enter 连带确认其它道具）；
+                    // 结束拖拽、登记占据格子并触发 OnPlaced，落点非法则保持不合规提示
+                    CompletePlacement();
+                    return;
                 }
                 if (Input.GetKeyDown(KeyCode.R) && draggable)
                 {
@@ -378,6 +395,20 @@ namespace SuperQQ.Grid
             Grid.Occupy(anchor, box.Footprint, placedItem, rotated, allowPlaceOnOccupied);
             registered = true;
             box.Hide();
+            NotifyPlaced();
+        }
+
+        /// <summary>
+        /// 摆放完成通知：注入放置信息并触发道具的 OnPlaced 钩子（与 GridManager.Place 行为一致）
+        /// 拖拽抬起落点合法与 CompletePlacement 兜底登记都经由 RegisterAt，保证通知不遗漏
+        /// </summary>
+        private void NotifyPlaced()
+        {
+            if (itemBase != null)
+            {
+                itemBase.InitPlaced(placedItem, rotated ? 1 : 0);
+                itemBase.OnPlaced();
+            }
         }
 
         // ==================== 虚化接口 ====================
