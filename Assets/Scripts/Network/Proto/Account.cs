@@ -25,35 +25,36 @@ namespace Minigame.Account.V1 {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChhhY2NvdW50L3YxL2FjY291bnQucHJvdG8SE21pbmlnYW1lLmFjY291bnQu",
-            "djEaFmNvbW1vbi92MS9jb21tb24ucHJvdG8iewoMTG9naW5SZXF1ZXN0Ei8K",
-            "BXRyYWNlGAEgASgLMiAubWluaWdhbWUuY29tbW9uLnYxLlRyYWNlQ29udGV4",
-            "dBIRCglkZXZpY2VfaWQYAiABKAkSDwoHb3Blbl9pZBgDIAEoCRIWCg5jbGll",
-            "bnRfdmVyc2lvbhgEIAEoCSKcAQoNTG9naW5SZXNwb25zZRIyCgZzdGF0dXMY",
-            "ASABKAsyIi5taW5pZ2FtZS5jb21tb24udjEuUmVzcG9uc2VTdGF0dXMSDQoF",
-            "dG9rZW4YAiABKAkSMQoGcGxheWVyGAMgASgLMiEubWluaWdhbWUuY29tbW9u",
-            "LnYxLlBsYXllclByb2ZpbGUSFQoNZXhwaXJlc19hdF9tcxgEIAEoAyJlChBH",
-            "ZXRQbGF5ZXJSZXF1ZXN0Ei8KBXRyYWNlGAEgASgLMiAubWluaWdhbWUuY29t",
-            "bW9uLnYxLlRyYWNlQ29udGV4dBIRCglwbGF5ZXJfaWQYAiABKAkSDQoFdG9r",
-            "ZW4YAyABKAkiegoRR2V0UGxheWVyUmVzcG9uc2USMgoGc3RhdHVzGAEgASgL",
-            "MiIubWluaWdhbWUuY29tbW9uLnYxLlJlc3BvbnNlU3RhdHVzEjEKBnBsYXll",
-            "chgCIAEoCzIhLm1pbmlnYW1lLmNvbW1vbi52MS5QbGF5ZXJQcm9maWxlIlYK",
-            "FFZhbGlkYXRlVG9rZW5SZXF1ZXN0Ei8KBXRyYWNlGAEgASgLMiAubWluaWdh",
-            "bWUuY29tbW9uLnYxLlRyYWNlQ29udGV4dBINCgV0b2tlbhgCIAEoCSKRAQoV",
-            "VmFsaWRhdGVUb2tlblJlc3BvbnNlEjIKBnN0YXR1cxgBIAEoCzIiLm1pbmln",
-            "YW1lLmNvbW1vbi52MS5SZXNwb25zZVN0YXR1cxIRCglwbGF5ZXJfaWQYAiAB",
-            "KAkSMQoGcGxheWVyGAMgASgLMiEubWluaWdhbWUuY29tbW9uLnYxLlBsYXll",
-            "clByb2ZpbGUypAIKDkFjY291bnRTZXJ2aWNlEk4KBUxvZ2luEiEubWluaWdh",
-            "bWUuYWNjb3VudC52MS5Mb2dpblJlcXVlc3QaIi5taW5pZ2FtZS5hY2NvdW50",
-            "LnYxLkxvZ2luUmVzcG9uc2USWgoJR2V0UGxheWVyEiUubWluaWdhbWUuYWNj",
-            "b3VudC52MS5HZXRQbGF5ZXJSZXF1ZXN0GiYubWluaWdhbWUuYWNjb3VudC52",
-            "MS5HZXRQbGF5ZXJSZXNwb25zZRJmCg1WYWxpZGF0ZVRva2VuEikubWluaWdh",
-            "bWUuYWNjb3VudC52MS5WYWxpZGF0ZVRva2VuUmVxdWVzdBoqLm1pbmlnYW1l",
-            "LmFjY291bnQudjEuVmFsaWRhdGVUb2tlblJlc3BvbnNlQiZaJG1pbmlnYW1l",
-            "L2dlbi9nby9hY2NvdW50L3YxO2FjY291bnR2MWIGcHJvdG8z"));
+            "djEaFmNvbW1vbi92MS9jb21tb24ucHJvdG8inwEKDExvZ2luUmVxdWVzdBIv",
+            "CgV0cmFjZRgBIAEoCzIgLm1pbmlnYW1lLmNvbW1vbi52MS5UcmFjZUNvbnRl",
+            "eHQSEQoJZGV2aWNlX2lkGAIgASgJEg8KB29wZW5faWQYAyABKAkSFgoOY2xp",
+            "ZW50X3ZlcnNpb24YBCABKAkSEAoIdXNlcm5hbWUYBSABKAkSEAoIcGFzc3dv",
+            "cmQYBiABKAkinAEKDUxvZ2luUmVzcG9uc2USMgoGc3RhdHVzGAEgASgLMiIu",
+            "bWluaWdhbWUuY29tbW9uLnYxLlJlc3BvbnNlU3RhdHVzEg0KBXRva2VuGAIg",
+            "ASgJEjEKBnBsYXllchgDIAEoCzIhLm1pbmlnYW1lLmNvbW1vbi52MS5QbGF5",
+            "ZXJQcm9maWxlEhUKDWV4cGlyZXNfYXRfbXMYBCABKAMiZQoQR2V0UGxheWVy",
+            "UmVxdWVzdBIvCgV0cmFjZRgBIAEoCzIgLm1pbmlnYW1lLmNvbW1vbi52MS5U",
+            "cmFjZUNvbnRleHQSEQoJcGxheWVyX2lkGAIgASgJEg0KBXRva2VuGAMgASgJ",
+            "InoKEUdldFBsYXllclJlc3BvbnNlEjIKBnN0YXR1cxgBIAEoCzIiLm1pbmln",
+            "YW1lLmNvbW1vbi52MS5SZXNwb25zZVN0YXR1cxIxCgZwbGF5ZXIYAiABKAsy",
+            "IS5taW5pZ2FtZS5jb21tb24udjEuUGxheWVyUHJvZmlsZSJWChRWYWxpZGF0",
+            "ZVRva2VuUmVxdWVzdBIvCgV0cmFjZRgBIAEoCzIgLm1pbmlnYW1lLmNvbW1v",
+            "bi52MS5UcmFjZUNvbnRleHQSDQoFdG9rZW4YAiABKAkikQEKFVZhbGlkYXRl",
+            "VG9rZW5SZXNwb25zZRIyCgZzdGF0dXMYASABKAsyIi5taW5pZ2FtZS5jb21t",
+            "b24udjEuUmVzcG9uc2VTdGF0dXMSEQoJcGxheWVyX2lkGAIgASgJEjEKBnBs",
+            "YXllchgDIAEoCzIhLm1pbmlnYW1lLmNvbW1vbi52MS5QbGF5ZXJQcm9maWxl",
+            "MqQCCg5BY2NvdW50U2VydmljZRJOCgVMb2dpbhIhLm1pbmlnYW1lLmFjY291",
+            "bnQudjEuTG9naW5SZXF1ZXN0GiIubWluaWdhbWUuYWNjb3VudC52MS5Mb2dp",
+            "blJlc3BvbnNlEloKCUdldFBsYXllchIlLm1pbmlnYW1lLmFjY291bnQudjEu",
+            "R2V0UGxheWVyUmVxdWVzdBomLm1pbmlnYW1lLmFjY291bnQudjEuR2V0UGxh",
+            "eWVyUmVzcG9uc2USZgoNVmFsaWRhdGVUb2tlbhIpLm1pbmlnYW1lLmFjY291",
+            "bnQudjEuVmFsaWRhdGVUb2tlblJlcXVlc3QaKi5taW5pZ2FtZS5hY2NvdW50",
+            "LnYxLlZhbGlkYXRlVG9rZW5SZXNwb25zZUImWiRtaW5pZ2FtZS9nZW4vZ28v",
+            "YWNjb3VudC92MTthY2NvdW50djFiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Minigame.Common.V1.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Account.V1.LoginRequest), global::Minigame.Account.V1.LoginRequest.Parser, new[]{ "Trace", "DeviceId", "OpenId", "ClientVersion" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Account.V1.LoginRequest), global::Minigame.Account.V1.LoginRequest.Parser, new[]{ "Trace", "DeviceId", "OpenId", "ClientVersion", "Username", "Password" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Account.V1.LoginResponse), global::Minigame.Account.V1.LoginResponse.Parser, new[]{ "Status", "Token", "Player", "ExpiresAtMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Account.V1.GetPlayerRequest), global::Minigame.Account.V1.GetPlayerRequest.Parser, new[]{ "Trace", "PlayerId", "Token" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Account.V1.GetPlayerResponse), global::Minigame.Account.V1.GetPlayerResponse.Parser, new[]{ "Status", "Player" }, null, null, null, null),
@@ -107,6 +108,8 @@ namespace Minigame.Account.V1 {
       deviceId_ = other.deviceId_;
       openId_ = other.openId_;
       clientVersion_ = other.clientVersion_;
+      username_ = other.username_;
+      password_ = other.password_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -164,6 +167,34 @@ namespace Minigame.Account.V1 {
       }
     }
 
+    /// <summary>Field number for the "username" field.</summary>
+    public const int UsernameFieldNumber = 5;
+    private string username_ = "";
+    /// <summary>
+    /// 账号密码登录（可选）。填写后服务端优先按账号密码校验；
+    /// 留空则回退 device_id 免注册登录（旧逻辑，proto3 新增字段向后兼容）。
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Username {
+      get { return username_; }
+      set {
+        username_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "password" field.</summary>
+    public const int PasswordFieldNumber = 6;
+    private string password_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Password {
+      get { return password_; }
+      set {
+        password_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
@@ -183,6 +214,8 @@ namespace Minigame.Account.V1 {
       if (DeviceId != other.DeviceId) return false;
       if (OpenId != other.OpenId) return false;
       if (ClientVersion != other.ClientVersion) return false;
+      if (Username != other.Username) return false;
+      if (Password != other.Password) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -194,6 +227,8 @@ namespace Minigame.Account.V1 {
       if (DeviceId.Length != 0) hash ^= DeviceId.GetHashCode();
       if (OpenId.Length != 0) hash ^= OpenId.GetHashCode();
       if (ClientVersion.Length != 0) hash ^= ClientVersion.GetHashCode();
+      if (Username.Length != 0) hash ^= Username.GetHashCode();
+      if (Password.Length != 0) hash ^= Password.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -228,6 +263,14 @@ namespace Minigame.Account.V1 {
         output.WriteRawTag(34);
         output.WriteString(ClientVersion);
       }
+      if (Username.Length != 0) {
+        output.WriteRawTag(42);
+        output.WriteString(Username);
+      }
+      if (Password.Length != 0) {
+        output.WriteRawTag(50);
+        output.WriteString(Password);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -254,6 +297,14 @@ namespace Minigame.Account.V1 {
         output.WriteRawTag(34);
         output.WriteString(ClientVersion);
       }
+      if (Username.Length != 0) {
+        output.WriteRawTag(42);
+        output.WriteString(Username);
+      }
+      if (Password.Length != 0) {
+        output.WriteRawTag(50);
+        output.WriteString(Password);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -275,6 +326,12 @@ namespace Minigame.Account.V1 {
       }
       if (ClientVersion.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(ClientVersion);
+      }
+      if (Username.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Username);
+      }
+      if (Password.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Password);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -302,6 +359,12 @@ namespace Minigame.Account.V1 {
       }
       if (other.ClientVersion.Length != 0) {
         ClientVersion = other.ClientVersion;
+      }
+      if (other.Username.Length != 0) {
+        Username = other.Username;
+      }
+      if (other.Password.Length != 0) {
+        Password = other.Password;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -341,6 +404,14 @@ namespace Minigame.Account.V1 {
             ClientVersion = input.ReadString();
             break;
           }
+          case 42: {
+            Username = input.ReadString();
+            break;
+          }
+          case 50: {
+            Password = input.ReadString();
+            break;
+          }
         }
       }
     #endif
@@ -377,6 +448,14 @@ namespace Minigame.Account.V1 {
           }
           case 34: {
             ClientVersion = input.ReadString();
+            break;
+          }
+          case 42: {
+            Username = input.ReadString();
+            break;
+          }
+          case 50: {
+            Password = input.ReadString();
             break;
           }
         }

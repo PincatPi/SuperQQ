@@ -79,6 +79,9 @@ namespace SuperQQ.Player
         private bool _frictionless;
         private float _slideDrag;
 
+        // ---------- 外部推力（排气扇风力等，多来源向量累加） ----------
+        private Vector2 _windForce;
+
         // ---------- 输入锁定（击飞死亡表现期间屏蔽操作） ----------
         private bool _inputLocked;
 
@@ -114,6 +117,9 @@ namespace SuperQQ.Player
         // 无摩擦（肥皂：加/减速率压到 0，初速度保留）
         public bool Frictionless => _frictionless;
         public float SlideDrag => _slideDrag;
+
+        // 外部推力（排气扇风力，单位/秒²）
+        public Vector2 WindForce => _windForce;
 
         // 跳跃
         public float JumpVelocity => jumpVelocity;
@@ -361,6 +367,22 @@ namespace SuperQQ.Player
         {
             _frictionless = active;
             _slideDrag = active ? Mathf.Max(0f, drag) : 0f;
+        }
+
+        /// <summary>
+        /// 累加外部推力（排气扇风力等；进入风区传正向量，离开传反向量抵消）
+        /// </summary>
+        public void AddWindForce(Vector2 force)
+        {
+            _windForce += force;
+        }
+
+        /// <summary>
+        /// 清空外部推力（复活/状态重置时兜底用）
+        /// </summary>
+        public void ClearWindForce()
+        {
+            _windForce = Vector2.zero;
         }
 
         // ==================== 状态切换 ====================

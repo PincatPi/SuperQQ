@@ -1,7 +1,7 @@
 using Minigame.Account.V1;
 using Minigame.Common.V1;
 using Minigame.Gateway.V1;
-using Minigame.Room.V1;
+using SuperQQ.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -9,23 +9,24 @@ using UnityEngine.UI;
 namespace SuperQQ.Network
 {
     /// <summary>
-    /// 大厅控制器：启动即连接+登录，玩家输入房间名点击"加入房间"后进房，
-    /// 进房成功切到对局场景（Level1）。房间不存在时自动创建再加入。
-    /// 依赖场景中的 UI 引用：roomNameInput / joinButton / statusText。
+    /// 登录场景控制器（Lobby）：启动自动连接，点击"登录"弹出账号密码弹窗，
+    /// 登录成功后进入大厅场景（Hall），建房/加房流程由 HallController 接管。
+    /// 依赖场景中的 UI 引用：statusText（可选）。
     /// </summary>
     public class LobbyController : MonoBehaviour
     {
-        [Header("对局场景名（需已加入 Build Settings）")]
-        [SerializeField] private string battleSceneName = "Level1";
+        [Header("登录成功后进入的大厅场景名（需已加入 Build Settings）")]
+        [SerializeField] private string hallSceneName = "Hall";
 
         [Header("UI 引用")]
-        [SerializeField] private InputField roomNameInput;
-        [SerializeField] private Button joinButton;
         [SerializeField] private Text statusText;
 
+        [Header("登录按钮（留空则运行时自动创建一个）")]
+        [SerializeField] private Button loginButton;
+
         private NetworkManager _net;
-        private string _pendingRoomId = "";
-        private bool _joining;
+        private LoginPopup _activePopup;
+        private Text _loginButtonLabel;
 
         private void Start()
         {
@@ -38,16 +39,10 @@ namespace SuperQQ.Network
             }
 
             _net.Register<LoginResponse>(OnLogin);
-            _net.Register<JoinRoomResponse>(OnJoinRoom);
-            _net.Register<CreateRoomResponse>(OnCreateRoom);
             _net.Register<ErrorResponse>(OnError);
             _net.OnConnectionChanged += OnConnectionChanged;
 
-            if (joinButton != null)
-            {
-                joinButton.onClick.AddListener(OnJoinClicked);
-                joinButton.interactable = false;
-            }
+            SetupLoginButton();
 
             if (_net.IsConnected)
             {
@@ -64,134 +59,188 @@ namespace SuperQQ.Network
         {
             if (_net == null) return;
             _net.Unregister<LoginResponse>();
-            _net.Unregister<JoinRoomResponse>();
-            _net.Unregister<CreateRoomResponse>();
             _net.Unregister<ErrorResponse>();
             _net.OnConnectionChanged -= OnConnectionChanged;
         }
 
-        // ==================== 连接 → 登录 ====================
+        // ==================== 连接 → 登录按钮 → 账号密码弹窗 ====================
+
+        /// <summary>登录按钮初始化：未配置时在 Canvas 顶部动态创建一个</summary>
+        private void SetupLoginButton()
+        {
+            if (loginButton == null)
+            {
+                Canvas canvas = FindFirstObjectByType<Canvas>();
+                if (canvas == null)
+                {
+                    Debug.LogError("[NetWork] 场景中未找到 Canvas，无法创建登录按钮");
+                    return;
+                }
+                loginButton = CreateLoginButton(canvas.transform);
+            }
+
+            _loginButtonLabel = loginButton.GetComponentInChildren<Text>();
+            loginButton.onClick.AddListener(OnLoginClicked);
+            loginButton.interactable = false;
+        }
 
         private void OnConnectionChanged(bool connected)
         {
             if (!connected)
             {
                 SetStatus("连接失败/已断开");
+                if (loginButton != null) loginButton.interactable = false;
+                _activePopup?.SetStatus("连接已断开", true);
+                _activePopup?.SetConfirmInteractable(false);
                 return;
             }
 
+            // 已登录（如从对局返回大厅）：直接刷新状态，不再要求登录
+            if (!string.IsNullOrEmpty(_net.LocalPlayerId))
+            {
+                SetStatus($"已登录：{_net.LocalPlayerId}");
+                MarkLoggedIn();
+                return;
+            }
+
+            SetStatus("已连接，请点击登录");
+            if (loginButton != null) loginButton.interactable = true;
+        }
+
+        private void OnLoginClicked()
+        {
+            if (_activePopup != null) return;
+            if (!string.IsNullOrEmpty(_net.LocalPlayerId)) return;
+
+            Canvas canvas = FindFirstObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                SetStatus("错误：场景中缺少 Canvas");
+                return;
+            }
+
+            if (loginButton != null) loginButton.interactable = false;
+            _activePopup = LoginPopup.Show(canvas.transform, OnLoginConfirm, OnLoginCancel);
+        }
+
+        private void OnLoginCancel()
+        {
+            _activePopup = null;
+            if (loginButton != null && string.IsNullOrEmpty(_net.LocalPlayerId))
+            {
+                loginButton.interactable = _net.IsConnected;
+            }
+        }
+
+        /// <summary>弹窗确认登录：账号密码 + deviceId 一起上报，服务端优先按账号密码校验</summary>
+        private void OnLoginConfirm(string username, string password)
+        {
             string deviceId = SystemInfo.deviceUniqueIdentifier
                               + (Application.isEditor ? "-editor" : "-player")
                               + "-" + GetOrCreateDeviceSuffix();
 
-            Debug.Log($"[NetWork] 大厅自动登录: deviceId={deviceId}");
-            SetStatus("已连接，登录中...");
-            _net.Send(new LoginRequest { DeviceId = deviceId, ClientVersion = Application.version });
+            Debug.Log($"[NetWork] 账号密码登录: username={username} deviceId={deviceId}");
+            SetStatus("登录中...");
+            _activePopup?.SetStatus("登录中...");
+            _activePopup?.SetConfirmInteractable(false);
+
+            _net.Send(new LoginRequest
+            {
+                DeviceId = deviceId,
+                ClientVersion = Application.version,
+                Username = username,
+                Password = password
+            });
         }
 
         private void OnLogin(LoginResponse resp)
         {
             if (resp.Status == null || resp.Status.Code != ResultCode.Ok)
             {
-                SetStatus($"登录失败: {resp.Status?.Message}");
+                string errorMsg = resp.Status?.Message ?? "未知错误";
+                SetStatus($"登录失败: {errorMsg}");
+                _activePopup?.SetStatus($"登录失败: {errorMsg}", true);
+                _activePopup?.SetConfirmInteractable(true);
                 return;
             }
 
             _net.LocalPlayerId = resp.Player.PlayerId;
             _net.Token = resp.Token;
-            Debug.Log($"[NetWork] 大厅登录成功: playerId={resp.Player.PlayerId} nickname={resp.Player.Nickname}");
-            SetStatus($"登录成功：{resp.Player.Nickname}，输入房间名加入");
-            if (joinButton != null) joinButton.interactable = true;
+            Debug.Log($"[NetWork] 登录成功: playerId={resp.Player.PlayerId} nickname={resp.Player.Nickname}，进入大厅 {hallSceneName}");
+            SetStatus($"登录成功：{resp.Player.Nickname}，进入大厅...");
+
+            // 登录成功：关闭弹窗，进入大厅场景
+            _activePopup?.ClosePopup();
+            _activePopup = null;
+            MarkLoggedIn();
+            SceneManager.LoadScene(hallSceneName);
         }
 
-        // ==================== 加入/创建房间 ====================
-
-        private void OnJoinClicked()
+        /// <summary>登录成功后刷新登录按钮为"已登录"状态并禁用</summary>
+        private void MarkLoggedIn()
         {
-            if (_joining || string.IsNullOrEmpty(_net.LocalPlayerId)) return;
+            if (loginButton != null) loginButton.interactable = false;
+            if (_loginButtonLabel != null) _loginButtonLabel.text = "已登录";
+        }
 
-            string roomName = roomNameInput != null ? roomNameInput.text.Trim() : "";
-            if (string.IsNullOrEmpty(roomName))
+        /// <summary>运行时创建登录按钮（固定在 Canvas 顶部居中，仅供 Lobby 测试场景使用）</summary>
+        private static Button CreateLoginButton(Transform canvasTransform)
+        {
+            Font font = null;
+            try { font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); } catch { }
+            if (font == null)
             {
-                SetStatus("请输入房间名");
-                return;
+                try { font = Resources.GetBuiltinResource<Font>("Arial.ttf"); } catch { }
             }
 
-            _joining = true;
-            _pendingRoomId = roomName;
-            if (joinButton != null) joinButton.interactable = false;
-            SetStatus($"正在加入房间 {roomName}...");
-            SendJoin(roomName);
+            var obj = new GameObject("LoginButton", typeof(RectTransform));
+            obj.transform.SetParent(canvasTransform, false);
+
+            Image bg = obj.AddComponent<Image>();
+            bg.color = new Color(0.25f, 0.55f, 0.95f);
+
+            Button button = obj.AddComponent<Button>();
+            button.targetGraphic = bg;
+
+            RectTransform rect = (RectTransform)obj.transform;
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, -30f);
+            rect.sizeDelta = new Vector2(260f, 70f);
+
+            var textObj = new GameObject("Text", typeof(RectTransform));
+            textObj.transform.SetParent(obj.transform, false);
+            Text text = textObj.AddComponent<Text>();
+            text.font = font;
+            text.text = "登 录";
+            text.fontSize = 28;
+            text.fontStyle = FontStyle.Bold;
+            text.color = Color.white;
+            text.alignment = TextAnchor.MiddleCenter;
+            RectTransform textRect = (RectTransform)textObj.transform;
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+
+            return button;
         }
 
-        private void SendJoin(string roomId)
-        {
-            _net.Send(new JoinRoomRequest
-            {
-                RoomId = roomId,
-                PlayerId = _net.LocalPlayerId,
-                GatewayId = _net.GatewayId,
-                SessionId = _net.SessionId
-            });
-        }
+        // ==================== 错误处理 ====================
 
         private void OnError(ErrorResponse err)
         {
             Debug.LogWarning($"[NetWork] 服务端错误: route={err.Route} code={err.Status?.Code} msg={err.Status?.Message}");
 
-            if (err.Route == "join_room" && err.Status != null && err.Status.Code == ResultCode.NotFound && _joining)
+            // 网关级登录失败（如账号密码错误走 ErrorResponse 回包）：反馈到弹窗
+            if (err.Route == "login" && string.IsNullOrEmpty(_net.LocalPlayerId))
             {
-                Debug.Log($"[NetWork] 房间 {_pendingRoomId} 不存在，自动创建");
-                SetStatus($"房间不存在，创建 {_pendingRoomId}...");
-                _net.Send(new CreateRoomRequest
-                {
-                    RoomId = _pendingRoomId,
-                    Mode = MatchMode.Casual1V1,
-                    Players =
-                    {
-                        new PlayerRef
-                        {
-                            PlayerId = _net.LocalPlayerId,
-                            GatewayId = _net.GatewayId,
-                            SessionId = _net.SessionId
-                        }
-                    },
-                    CreatedAtMs = NetworkManager.NowMs()
-                });
+                string errorMsg = err.Status?.Message ?? "登录失败";
+                SetStatus($"登录失败: {errorMsg}");
+                _activePopup?.SetStatus($"登录失败: {errorMsg}", true);
+                _activePopup?.SetConfirmInteractable(true);
             }
-        }
-
-        private void OnCreateRoom(CreateRoomResponse resp)
-        {
-            if (resp.Status == null || resp.Status.Code != ResultCode.Ok)
-            {
-                _joining = false;
-                if (joinButton != null) joinButton.interactable = true;
-                SetStatus($"创建房间失败: {resp.Status?.Message}");
-                return;
-            }
-
-            Debug.Log($"[NetWork] 创建房间成功: roomId={resp.Room.RoomId}，加入");
-            SendJoin(_pendingRoomId);
-        }
-
-        // ==================== 进房成功 → 进对局场景 ====================
-
-        private void OnJoinRoom(JoinRoomResponse resp)
-        {
-            if (resp.Status == null || resp.Status.Code != ResultCode.Ok)
-            {
-                _joining = false;
-                if (joinButton != null) joinButton.interactable = true;
-                SetStatus($"进房失败: {resp.Status?.Message}");
-                return;
-            }
-
-            _net.RoomId = resp.Room.RoomId;
-            _net.JoinedRoom = resp.Room;
-            Debug.Log($"[NetWork] 进房成功: roomId={resp.Room.RoomId} 玩家数={resp.Room.Players.Count}，进入对局场景 {battleSceneName}");
-            SetStatus("进房成功，进入对局...");
-            SceneManager.LoadScene(battleSceneName);
         }
 
         // ==================== 工具 ====================

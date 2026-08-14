@@ -41,6 +41,9 @@ message ClientEnvelope {
     minigame.room.v1.SubmitPlayerInputRequest submit_player_input = 17;
     minigame.room.v1.CreateRoomRequest create_room = 18;
     minigame.room.v1.SyncPlayerStateRequest sync_player_state = 19;
+    minigame.room.v1.SetReadyRequest set_ready = 20;
+    minigame.room.v1.StartGameRequest start_game = 21;
+    minigame.room.v1.GetRoomRequest get_room = 22;
   }
 }
 
@@ -63,6 +66,10 @@ message ServerEnvelope {
     minigame.room.v1.SubmitPlayerInputResponse submit_player_input = 20;
     minigame.room.v1.CreateRoomResponse create_room = 21;
     minigame.room.v1.SyncPlayerStateResponse sync_player_state = 22;
+    minigame.room.v1.SetReadyResponse set_ready = 23;
+    minigame.room.v1.StartGameResponse start_game = 24;
+    minigame.room.v1.RoomUpdated room_updated = 25;
+    minigame.room.v1.GetRoomResponse get_room = 26;
     ErrorResponse error = 90;
   }
 }

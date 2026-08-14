@@ -59,6 +59,9 @@ namespace SuperQQ.Network
             { typeof(CreateRoomRequest),        (e, m) => e.CreateRoom = (CreateRoomRequest)m },
             { typeof(SubmitPlayerInputRequest), (e, m) => e.SubmitPlayerInput = (SubmitPlayerInputRequest)m },
             { typeof(SyncPlayerStateRequest),   (e, m) => e.SyncPlayerState = (SyncPlayerStateRequest)m },
+            { typeof(SetReadyRequest),          (e, m) => e.SetReady = (SetReadyRequest)m },
+            { typeof(StartGameRequest),         (e, m) => e.StartGame = (StartGameRequest)m },
+            { typeof(GetRoomRequest),           (e, m) => e.GetRoom = (GetRoomRequest)m },
         };
 
         // 接收侧：消息类型 -> 从 ServerEnvelope 取出的方式
@@ -77,6 +80,10 @@ namespace SuperQQ.Network
             { typeof(global::Minigame.Room.V1.Settlement), e => e.Settlement },
             { typeof(SubmitPlayerInputResponse), e => e.SubmitPlayerInput },
             { typeof(SyncPlayerStateResponse),   e => e.SyncPlayerState },
+            { typeof(SetReadyResponse),          e => e.SetReady },
+            { typeof(StartGameResponse),         e => e.StartGame },
+            { typeof(RoomUpdated),               e => e.RoomUpdated },
+            { typeof(GetRoomResponse),           e => e.GetRoom },
             { typeof(ErrorResponse),             e => e.Error },
         };
 

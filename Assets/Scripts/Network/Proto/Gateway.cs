@@ -31,7 +31,7 @@ namespace Minigame.Gateway.V1 {
             "ASgDIkMKEUhlYXJ0YmVhdFJlc3BvbnNlEhYKDnNlcnZlcl90aW1lX21zGAEg",
             "ASgDEhYKDmNsaWVudF90aW1lX21zGAIgASgDIlIKDUVycm9yUmVzcG9uc2US",
             "MgoGc3RhdHVzGAEgASgLMiIubWluaWdhbWUuY29tbW9uLnYxLlJlc3BvbnNl",
-            "U3RhdHVzEg0KBXJvdXRlGAIgASgJIsMFCg5DbGllbnRFbnZlbG9wZRIvCgV0",
+            "U3RhdHVzEg0KBXJvdXRlGAIgASgJIusGCg5DbGllbnRFbnZlbG9wZRIvCgV0",
             "cmFjZRgBIAEoCzIgLm1pbmlnYW1lLmNvbW1vbi52MS5UcmFjZUNvbnRleHQS",
             "CwoDc2VxGAIgASgEEjoKCWhlYXJ0YmVhdBgKIAEoCzIlLm1pbmlnYW1lLmdh",
             "dGV3YXkudjEuSGVhcnRiZWF0UmVxdWVzdEgAEjIKBWxvZ2luGAsgASgLMiEu",
@@ -47,37 +47,46 @@ namespace Minigame.Gateway.V1 {
             "c3RIABI6CgtjcmVhdGVfcm9vbRgSIAEoCzIjLm1pbmlnYW1lLnJvb20udjEu",
             "Q3JlYXRlUm9vbVJlcXVlc3RIABJFChFzeW5jX3BsYXllcl9zdGF0ZRgTIAEo",
             "CzIoLm1pbmlnYW1lLnJvb20udjEuU3luY1BsYXllclN0YXRlUmVxdWVzdEgA",
-            "QgkKB3BheWxvYWQirwcKDlNlcnZlckVudmVsb3BlEi8KBXRyYWNlGAEgASgL",
-            "MiAubWluaWdhbWUuY29tbW9uLnYxLlRyYWNlQ29udGV4dBILCgNzZXEYAiAB",
-            "KAQSOwoJaGVhcnRiZWF0GAogASgLMiYubWluaWdhbWUuZ2F0ZXdheS52MS5I",
-            "ZWFydGJlYXRSZXNwb25zZUgAEjMKBWxvZ2luGAsgASgLMiIubWluaWdhbWUu",
-            "YWNjb3VudC52MS5Mb2dpblJlc3BvbnNlSAASPAoKZ2V0X3BsYXllchgMIAEo",
-            "CzImLm1pbmlnYW1lLmFjY291bnQudjEuR2V0UGxheWVyUmVzcG9uc2VIABI8",
-            "CgtzdGFydF9tYXRjaBgNIAEoCzIlLm1pbmlnYW1lLm1hdGNoLnYxLlN0YXJ0",
-            "TWF0Y2hSZXNwb25zZUgAEj4KDGNhbmNlbF9tYXRjaBgOIAEoCzImLm1pbmln",
-            "YW1lLm1hdGNoLnYxLkNhbmNlbE1hdGNoUmVzcG9uc2VIABI6CgpnZXRfdGlj",
-            "a2V0GA8gASgLMiQubWluaWdhbWUubWF0Y2gudjEuR2V0VGlja2V0UmVzcG9u",
-            "c2VIABI+ChBtYXRjaF9hc3NpZ25tZW50GBAgASgLMiIubWluaWdhbWUubWF0",
-            "Y2gudjEuTWF0Y2hBc3NpZ25tZW50SAASNwoJam9pbl9yb29tGBEgASgLMiIu",
-            "bWluaWdhbWUucm9vbS52MS5Kb2luUm9vbVJlc3BvbnNlSAASNwoNcm9vbV9z",
-            "bmFwc2hvdBgSIAEoCzIeLm1pbmlnYW1lLnJvb20udjEuUm9vbVNuYXBzaG90",
-            "SAASMgoKc2V0dGxlbWVudBgTIAEoCzIcLm1pbmlnYW1lLnJvb20udjEuU2V0",
-            "dGxlbWVudEgAEkoKE3N1Ym1pdF9wbGF5ZXJfaW5wdXQYFCABKAsyKy5taW5p",
-            "Z2FtZS5yb29tLnYxLlN1Ym1pdFBsYXllcklucHV0UmVzcG9uc2VIABI7Cgtj",
-            "cmVhdGVfcm9vbRgVIAEoCzIkLm1pbmlnYW1lLnJvb20udjEuQ3JlYXRlUm9v",
-            "bVJlc3BvbnNlSAASRgoRc3luY19wbGF5ZXJfc3RhdGUYFiABKAsyKS5taW5p",
-            "Z2FtZS5yb29tLnYxLlN5bmNQbGF5ZXJTdGF0ZVJlc3BvbnNlSAASMwoFZXJy",
-            "b3IYWiABKAsyIi5taW5pZ2FtZS5nYXRld2F5LnYxLkVycm9yUmVzcG9uc2VI",
-            "AEIJCgdwYXlsb2FkQiZaJG1pbmlnYW1lL2dlbi9nby9nYXRld2F5L3YxO2dh",
-            "dGV3YXl2MWIGcHJvdG8z"));
+            "EjYKCXNldF9yZWFkeRgUIAEoCzIhLm1pbmlnYW1lLnJvb20udjEuU2V0UmVh",
+            "ZHlSZXF1ZXN0SAASOAoKc3RhcnRfZ2FtZRgVIAEoCzIiLm1pbmlnYW1lLnJv",
+            "b20udjEuU3RhcnRHYW1lUmVxdWVzdEgAEjQKCGdldF9yb29tGBYgASgLMiAu",
+            "bWluaWdhbWUucm9vbS52MS5HZXRSb29tUmVxdWVzdEgAQgkKB3BheWxvYWQi",
+            "kQkKDlNlcnZlckVudmVsb3BlEi8KBXRyYWNlGAEgASgLMiAubWluaWdhbWUu",
+            "Y29tbW9uLnYxLlRyYWNlQ29udGV4dBILCgNzZXEYAiABKAQSOwoJaGVhcnRi",
+            "ZWF0GAogASgLMiYubWluaWdhbWUuZ2F0ZXdheS52MS5IZWFydGJlYXRSZXNw",
+            "b25zZUgAEjMKBWxvZ2luGAsgASgLMiIubWluaWdhbWUuYWNjb3VudC52MS5M",
+            "b2dpblJlc3BvbnNlSAASPAoKZ2V0X3BsYXllchgMIAEoCzImLm1pbmlnYW1l",
+            "LmFjY291bnQudjEuR2V0UGxheWVyUmVzcG9uc2VIABI8CgtzdGFydF9tYXRj",
+            "aBgNIAEoCzIlLm1pbmlnYW1lLm1hdGNoLnYxLlN0YXJ0TWF0Y2hSZXNwb25z",
+            "ZUgAEj4KDGNhbmNlbF9tYXRjaBgOIAEoCzImLm1pbmlnYW1lLm1hdGNoLnYx",
+            "LkNhbmNlbE1hdGNoUmVzcG9uc2VIABI6CgpnZXRfdGlja2V0GA8gASgLMiQu",
+            "bWluaWdhbWUubWF0Y2gudjEuR2V0VGlja2V0UmVzcG9uc2VIABI+ChBtYXRj",
+            "aF9hc3NpZ25tZW50GBAgASgLMiIubWluaWdhbWUubWF0Y2gudjEuTWF0Y2hB",
+            "c3NpZ25tZW50SAASNwoJam9pbl9yb29tGBEgASgLMiIubWluaWdhbWUucm9v",
+            "bS52MS5Kb2luUm9vbVJlc3BvbnNlSAASNwoNcm9vbV9zbmFwc2hvdBgSIAEo",
+            "CzIeLm1pbmlnYW1lLnJvb20udjEuUm9vbVNuYXBzaG90SAASMgoKc2V0dGxl",
+            "bWVudBgTIAEoCzIcLm1pbmlnYW1lLnJvb20udjEuU2V0dGxlbWVudEgAEkoK",
+            "E3N1Ym1pdF9wbGF5ZXJfaW5wdXQYFCABKAsyKy5taW5pZ2FtZS5yb29tLnYx",
+            "LlN1Ym1pdFBsYXllcklucHV0UmVzcG9uc2VIABI7CgtjcmVhdGVfcm9vbRgV",
+            "IAEoCzIkLm1pbmlnYW1lLnJvb20udjEuQ3JlYXRlUm9vbVJlc3BvbnNlSAAS",
+            "RgoRc3luY19wbGF5ZXJfc3RhdGUYFiABKAsyKS5taW5pZ2FtZS5yb29tLnYx",
+            "LlN5bmNQbGF5ZXJTdGF0ZVJlc3BvbnNlSAASNwoJc2V0X3JlYWR5GBcgASgL",
+            "MiIubWluaWdhbWUucm9vbS52MS5TZXRSZWFkeVJlc3BvbnNlSAASOQoKc3Rh",
+            "cnRfZ2FtZRgYIAEoCzIjLm1pbmlnYW1lLnJvb20udjEuU3RhcnRHYW1lUmVz",
+            "cG9uc2VIABI1Cgxyb29tX3VwZGF0ZWQYGSABKAsyHS5taW5pZ2FtZS5yb29t",
+            "LnYxLlJvb21VcGRhdGVkSAASNQoIZ2V0X3Jvb20YGiABKAsyIS5taW5pZ2Ft",
+            "ZS5yb29tLnYxLkdldFJvb21SZXNwb25zZUgAEjMKBWVycm9yGFogASgLMiIu",
+            "bWluaWdhbWUuZ2F0ZXdheS52MS5FcnJvclJlc3BvbnNlSABCCQoHcGF5bG9h",
+            "ZEImWiRtaW5pZ2FtZS9nZW4vZ28vZ2F0ZXdheS92MTtnYXRld2F5djFiBnBy",
+            "b3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Minigame.Account.V1.AccountReflection.Descriptor, global::Minigame.Common.V1.CommonReflection.Descriptor, global::Minigame.Match.V1.MatchReflection.Descriptor, global::Minigame.Room.V1.RoomReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.HeartbeatRequest), global::Minigame.Gateway.V1.HeartbeatRequest.Parser, new[]{ "ClientTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.HeartbeatResponse), global::Minigame.Gateway.V1.HeartbeatResponse.Parser, new[]{ "ServerTimeMs", "ClientTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ErrorResponse), global::Minigame.Gateway.V1.ErrorResponse.Parser, new[]{ "Status", "Route" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ClientEnvelope), global::Minigame.Gateway.V1.ClientEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "JoinRoom", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState" }, new[]{ "Payload" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ServerEnvelope), global::Minigame.Gateway.V1.ServerEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "MatchAssignment", "JoinRoom", "RoomSnapshot", "Settlement", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "Error" }, new[]{ "Payload" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ClientEnvelope), global::Minigame.Gateway.V1.ClientEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "JoinRoom", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "GetRoom" }, new[]{ "Payload" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ServerEnvelope), global::Minigame.Gateway.V1.ServerEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "MatchAssignment", "JoinRoom", "RoomSnapshot", "Settlement", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "RoomUpdated", "GetRoom", "Error" }, new[]{ "Payload" }, null, null, null)
           }));
     }
     #endregion
@@ -838,6 +847,15 @@ namespace Minigame.Gateway.V1 {
         case PayloadOneofCase.SyncPlayerState:
           SyncPlayerState = other.SyncPlayerState.Clone();
           break;
+        case PayloadOneofCase.SetReady:
+          SetReady = other.SetReady.Clone();
+          break;
+        case PayloadOneofCase.StartGame:
+          StartGame = other.StartGame.Clone();
+          break;
+        case PayloadOneofCase.GetRoom:
+          GetRoom = other.GetRoom.Clone();
+          break;
       }
 
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -993,6 +1011,42 @@ namespace Minigame.Gateway.V1 {
       }
     }
 
+    /// <summary>Field number for the "set_ready" field.</summary>
+    public const int SetReadyFieldNumber = 20;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.SetReadyRequest SetReady {
+      get { return payloadCase_ == PayloadOneofCase.SetReady ? (global::Minigame.Room.V1.SetReadyRequest) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.SetReady;
+      }
+    }
+
+    /// <summary>Field number for the "start_game" field.</summary>
+    public const int StartGameFieldNumber = 21;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.StartGameRequest StartGame {
+      get { return payloadCase_ == PayloadOneofCase.StartGame ? (global::Minigame.Room.V1.StartGameRequest) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.StartGame;
+      }
+    }
+
+    /// <summary>Field number for the "get_room" field.</summary>
+    public const int GetRoomFieldNumber = 22;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.GetRoomRequest GetRoom {
+      get { return payloadCase_ == PayloadOneofCase.GetRoom ? (global::Minigame.Room.V1.GetRoomRequest) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.GetRoom;
+      }
+    }
+
     private object payload_;
     /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
@@ -1007,6 +1061,9 @@ namespace Minigame.Gateway.V1 {
       SubmitPlayerInput = 17,
       CreateRoom = 18,
       SyncPlayerState = 19,
+      SetReady = 20,
+      StartGame = 21,
+      GetRoom = 22,
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1049,6 +1106,9 @@ namespace Minigame.Gateway.V1 {
       if (!object.Equals(SubmitPlayerInput, other.SubmitPlayerInput)) return false;
       if (!object.Equals(CreateRoom, other.CreateRoom)) return false;
       if (!object.Equals(SyncPlayerState, other.SyncPlayerState)) return false;
+      if (!object.Equals(SetReady, other.SetReady)) return false;
+      if (!object.Equals(StartGame, other.StartGame)) return false;
+      if (!object.Equals(GetRoom, other.GetRoom)) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -1069,6 +1129,9 @@ namespace Minigame.Gateway.V1 {
       if (payloadCase_ == PayloadOneofCase.SubmitPlayerInput) hash ^= SubmitPlayerInput.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.CreateRoom) hash ^= CreateRoom.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.SyncPlayerState) hash ^= SyncPlayerState.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.SetReady) hash ^= SetReady.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.StartGame) hash ^= StartGame.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.GetRoom) hash ^= GetRoom.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -1136,6 +1199,18 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(154, 1);
         output.WriteMessage(SyncPlayerState);
       }
+      if (payloadCase_ == PayloadOneofCase.SetReady) {
+        output.WriteRawTag(162, 1);
+        output.WriteMessage(SetReady);
+      }
+      if (payloadCase_ == PayloadOneofCase.StartGame) {
+        output.WriteRawTag(170, 1);
+        output.WriteMessage(StartGame);
+      }
+      if (payloadCase_ == PayloadOneofCase.GetRoom) {
+        output.WriteRawTag(178, 1);
+        output.WriteMessage(GetRoom);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1194,6 +1269,18 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(154, 1);
         output.WriteMessage(SyncPlayerState);
       }
+      if (payloadCase_ == PayloadOneofCase.SetReady) {
+        output.WriteRawTag(162, 1);
+        output.WriteMessage(SetReady);
+      }
+      if (payloadCase_ == PayloadOneofCase.StartGame) {
+        output.WriteRawTag(170, 1);
+        output.WriteMessage(StartGame);
+      }
+      if (payloadCase_ == PayloadOneofCase.GetRoom) {
+        output.WriteRawTag(178, 1);
+        output.WriteMessage(GetRoom);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1239,6 +1326,15 @@ namespace Minigame.Gateway.V1 {
       }
       if (payloadCase_ == PayloadOneofCase.SyncPlayerState) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(SyncPlayerState);
+      }
+      if (payloadCase_ == PayloadOneofCase.SetReady) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(SetReady);
+      }
+      if (payloadCase_ == PayloadOneofCase.StartGame) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(StartGame);
+      }
+      if (payloadCase_ == PayloadOneofCase.GetRoom) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(GetRoom);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1321,6 +1417,24 @@ namespace Minigame.Gateway.V1 {
             SyncPlayerState = new global::Minigame.Room.V1.SyncPlayerStateRequest();
           }
           SyncPlayerState.MergeFrom(other.SyncPlayerState);
+          break;
+        case PayloadOneofCase.SetReady:
+          if (SetReady == null) {
+            SetReady = new global::Minigame.Room.V1.SetReadyRequest();
+          }
+          SetReady.MergeFrom(other.SetReady);
+          break;
+        case PayloadOneofCase.StartGame:
+          if (StartGame == null) {
+            StartGame = new global::Minigame.Room.V1.StartGameRequest();
+          }
+          StartGame.MergeFrom(other.StartGame);
+          break;
+        case PayloadOneofCase.GetRoom:
+          if (GetRoom == null) {
+            GetRoom = new global::Minigame.Room.V1.GetRoomRequest();
+          }
+          GetRoom.MergeFrom(other.GetRoom);
           break;
       }
 
@@ -1444,6 +1558,33 @@ namespace Minigame.Gateway.V1 {
             SyncPlayerState = subBuilder;
             break;
           }
+          case 162: {
+            global::Minigame.Room.V1.SetReadyRequest subBuilder = new global::Minigame.Room.V1.SetReadyRequest();
+            if (payloadCase_ == PayloadOneofCase.SetReady) {
+              subBuilder.MergeFrom(SetReady);
+            }
+            input.ReadMessage(subBuilder);
+            SetReady = subBuilder;
+            break;
+          }
+          case 170: {
+            global::Minigame.Room.V1.StartGameRequest subBuilder = new global::Minigame.Room.V1.StartGameRequest();
+            if (payloadCase_ == PayloadOneofCase.StartGame) {
+              subBuilder.MergeFrom(StartGame);
+            }
+            input.ReadMessage(subBuilder);
+            StartGame = subBuilder;
+            break;
+          }
+          case 178: {
+            global::Minigame.Room.V1.GetRoomRequest subBuilder = new global::Minigame.Room.V1.GetRoomRequest();
+            if (payloadCase_ == PayloadOneofCase.GetRoom) {
+              subBuilder.MergeFrom(GetRoom);
+            }
+            input.ReadMessage(subBuilder);
+            GetRoom = subBuilder;
+            break;
+          }
         }
       }
     #endif
@@ -1564,6 +1705,33 @@ namespace Minigame.Gateway.V1 {
             SyncPlayerState = subBuilder;
             break;
           }
+          case 162: {
+            global::Minigame.Room.V1.SetReadyRequest subBuilder = new global::Minigame.Room.V1.SetReadyRequest();
+            if (payloadCase_ == PayloadOneofCase.SetReady) {
+              subBuilder.MergeFrom(SetReady);
+            }
+            input.ReadMessage(subBuilder);
+            SetReady = subBuilder;
+            break;
+          }
+          case 170: {
+            global::Minigame.Room.V1.StartGameRequest subBuilder = new global::Minigame.Room.V1.StartGameRequest();
+            if (payloadCase_ == PayloadOneofCase.StartGame) {
+              subBuilder.MergeFrom(StartGame);
+            }
+            input.ReadMessage(subBuilder);
+            StartGame = subBuilder;
+            break;
+          }
+          case 178: {
+            global::Minigame.Room.V1.GetRoomRequest subBuilder = new global::Minigame.Room.V1.GetRoomRequest();
+            if (payloadCase_ == PayloadOneofCase.GetRoom) {
+              subBuilder.MergeFrom(GetRoom);
+            }
+            input.ReadMessage(subBuilder);
+            GetRoom = subBuilder;
+            break;
+          }
         }
       }
     }
@@ -1650,6 +1818,18 @@ namespace Minigame.Gateway.V1 {
           break;
         case PayloadOneofCase.SyncPlayerState:
           SyncPlayerState = other.SyncPlayerState.Clone();
+          break;
+        case PayloadOneofCase.SetReady:
+          SetReady = other.SetReady.Clone();
+          break;
+        case PayloadOneofCase.StartGame:
+          StartGame = other.StartGame.Clone();
+          break;
+        case PayloadOneofCase.RoomUpdated:
+          RoomUpdated = other.RoomUpdated.Clone();
+          break;
+        case PayloadOneofCase.GetRoom:
+          GetRoom = other.GetRoom.Clone();
           break;
         case PayloadOneofCase.Error:
           Error = other.Error.Clone();
@@ -1845,6 +2025,54 @@ namespace Minigame.Gateway.V1 {
       }
     }
 
+    /// <summary>Field number for the "set_ready" field.</summary>
+    public const int SetReadyFieldNumber = 23;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.SetReadyResponse SetReady {
+      get { return payloadCase_ == PayloadOneofCase.SetReady ? (global::Minigame.Room.V1.SetReadyResponse) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.SetReady;
+      }
+    }
+
+    /// <summary>Field number for the "start_game" field.</summary>
+    public const int StartGameFieldNumber = 24;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.StartGameResponse StartGame {
+      get { return payloadCase_ == PayloadOneofCase.StartGame ? (global::Minigame.Room.V1.StartGameResponse) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.StartGame;
+      }
+    }
+
+    /// <summary>Field number for the "room_updated" field.</summary>
+    public const int RoomUpdatedFieldNumber = 25;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.RoomUpdated RoomUpdated {
+      get { return payloadCase_ == PayloadOneofCase.RoomUpdated ? (global::Minigame.Room.V1.RoomUpdated) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.RoomUpdated;
+      }
+    }
+
+    /// <summary>Field number for the "get_room" field.</summary>
+    public const int GetRoomFieldNumber = 26;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.GetRoomResponse GetRoom {
+      get { return payloadCase_ == PayloadOneofCase.GetRoom ? (global::Minigame.Room.V1.GetRoomResponse) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.GetRoom;
+      }
+    }
+
     /// <summary>Field number for the "error" field.</summary>
     public const int ErrorFieldNumber = 90;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1874,6 +2102,10 @@ namespace Minigame.Gateway.V1 {
       SubmitPlayerInput = 20,
       CreateRoom = 21,
       SyncPlayerState = 22,
+      SetReady = 23,
+      StartGame = 24,
+      RoomUpdated = 25,
+      GetRoom = 26,
       Error = 90,
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
@@ -1920,6 +2152,10 @@ namespace Minigame.Gateway.V1 {
       if (!object.Equals(SubmitPlayerInput, other.SubmitPlayerInput)) return false;
       if (!object.Equals(CreateRoom, other.CreateRoom)) return false;
       if (!object.Equals(SyncPlayerState, other.SyncPlayerState)) return false;
+      if (!object.Equals(SetReady, other.SetReady)) return false;
+      if (!object.Equals(StartGame, other.StartGame)) return false;
+      if (!object.Equals(RoomUpdated, other.RoomUpdated)) return false;
+      if (!object.Equals(GetRoom, other.GetRoom)) return false;
       if (!object.Equals(Error, other.Error)) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -1944,6 +2180,10 @@ namespace Minigame.Gateway.V1 {
       if (payloadCase_ == PayloadOneofCase.SubmitPlayerInput) hash ^= SubmitPlayerInput.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.CreateRoom) hash ^= CreateRoom.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.SyncPlayerState) hash ^= SyncPlayerState.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.SetReady) hash ^= SetReady.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.StartGame) hash ^= StartGame.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.RoomUpdated) hash ^= RoomUpdated.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.GetRoom) hash ^= GetRoom.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.Error) hash ^= Error.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
@@ -2024,6 +2264,22 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(178, 1);
         output.WriteMessage(SyncPlayerState);
       }
+      if (payloadCase_ == PayloadOneofCase.SetReady) {
+        output.WriteRawTag(186, 1);
+        output.WriteMessage(SetReady);
+      }
+      if (payloadCase_ == PayloadOneofCase.StartGame) {
+        output.WriteRawTag(194, 1);
+        output.WriteMessage(StartGame);
+      }
+      if (payloadCase_ == PayloadOneofCase.RoomUpdated) {
+        output.WriteRawTag(202, 1);
+        output.WriteMessage(RoomUpdated);
+      }
+      if (payloadCase_ == PayloadOneofCase.GetRoom) {
+        output.WriteRawTag(210, 1);
+        output.WriteMessage(GetRoom);
+      }
       if (payloadCase_ == PayloadOneofCase.Error) {
         output.WriteRawTag(210, 5);
         output.WriteMessage(Error);
@@ -2098,6 +2354,22 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(178, 1);
         output.WriteMessage(SyncPlayerState);
       }
+      if (payloadCase_ == PayloadOneofCase.SetReady) {
+        output.WriteRawTag(186, 1);
+        output.WriteMessage(SetReady);
+      }
+      if (payloadCase_ == PayloadOneofCase.StartGame) {
+        output.WriteRawTag(194, 1);
+        output.WriteMessage(StartGame);
+      }
+      if (payloadCase_ == PayloadOneofCase.RoomUpdated) {
+        output.WriteRawTag(202, 1);
+        output.WriteMessage(RoomUpdated);
+      }
+      if (payloadCase_ == PayloadOneofCase.GetRoom) {
+        output.WriteRawTag(210, 1);
+        output.WriteMessage(GetRoom);
+      }
       if (payloadCase_ == PayloadOneofCase.Error) {
         output.WriteRawTag(210, 5);
         output.WriteMessage(Error);
@@ -2156,6 +2428,18 @@ namespace Minigame.Gateway.V1 {
       }
       if (payloadCase_ == PayloadOneofCase.SyncPlayerState) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(SyncPlayerState);
+      }
+      if (payloadCase_ == PayloadOneofCase.SetReady) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(SetReady);
+      }
+      if (payloadCase_ == PayloadOneofCase.StartGame) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(StartGame);
+      }
+      if (payloadCase_ == PayloadOneofCase.RoomUpdated) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(RoomUpdated);
+      }
+      if (payloadCase_ == PayloadOneofCase.GetRoom) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(GetRoom);
       }
       if (payloadCase_ == PayloadOneofCase.Error) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(Error);
@@ -2259,6 +2543,30 @@ namespace Minigame.Gateway.V1 {
             SyncPlayerState = new global::Minigame.Room.V1.SyncPlayerStateResponse();
           }
           SyncPlayerState.MergeFrom(other.SyncPlayerState);
+          break;
+        case PayloadOneofCase.SetReady:
+          if (SetReady == null) {
+            SetReady = new global::Minigame.Room.V1.SetReadyResponse();
+          }
+          SetReady.MergeFrom(other.SetReady);
+          break;
+        case PayloadOneofCase.StartGame:
+          if (StartGame == null) {
+            StartGame = new global::Minigame.Room.V1.StartGameResponse();
+          }
+          StartGame.MergeFrom(other.StartGame);
+          break;
+        case PayloadOneofCase.RoomUpdated:
+          if (RoomUpdated == null) {
+            RoomUpdated = new global::Minigame.Room.V1.RoomUpdated();
+          }
+          RoomUpdated.MergeFrom(other.RoomUpdated);
+          break;
+        case PayloadOneofCase.GetRoom:
+          if (GetRoom == null) {
+            GetRoom = new global::Minigame.Room.V1.GetRoomResponse();
+          }
+          GetRoom.MergeFrom(other.GetRoom);
           break;
         case PayloadOneofCase.Error:
           if (Error == null) {
@@ -2415,6 +2723,42 @@ namespace Minigame.Gateway.V1 {
             SyncPlayerState = subBuilder;
             break;
           }
+          case 186: {
+            global::Minigame.Room.V1.SetReadyResponse subBuilder = new global::Minigame.Room.V1.SetReadyResponse();
+            if (payloadCase_ == PayloadOneofCase.SetReady) {
+              subBuilder.MergeFrom(SetReady);
+            }
+            input.ReadMessage(subBuilder);
+            SetReady = subBuilder;
+            break;
+          }
+          case 194: {
+            global::Minigame.Room.V1.StartGameResponse subBuilder = new global::Minigame.Room.V1.StartGameResponse();
+            if (payloadCase_ == PayloadOneofCase.StartGame) {
+              subBuilder.MergeFrom(StartGame);
+            }
+            input.ReadMessage(subBuilder);
+            StartGame = subBuilder;
+            break;
+          }
+          case 202: {
+            global::Minigame.Room.V1.RoomUpdated subBuilder = new global::Minigame.Room.V1.RoomUpdated();
+            if (payloadCase_ == PayloadOneofCase.RoomUpdated) {
+              subBuilder.MergeFrom(RoomUpdated);
+            }
+            input.ReadMessage(subBuilder);
+            RoomUpdated = subBuilder;
+            break;
+          }
+          case 210: {
+            global::Minigame.Room.V1.GetRoomResponse subBuilder = new global::Minigame.Room.V1.GetRoomResponse();
+            if (payloadCase_ == PayloadOneofCase.GetRoom) {
+              subBuilder.MergeFrom(GetRoom);
+            }
+            input.ReadMessage(subBuilder);
+            GetRoom = subBuilder;
+            break;
+          }
           case 722: {
             global::Minigame.Gateway.V1.ErrorResponse subBuilder = new global::Minigame.Gateway.V1.ErrorResponse();
             if (payloadCase_ == PayloadOneofCase.Error) {
@@ -2569,6 +2913,42 @@ namespace Minigame.Gateway.V1 {
             }
             input.ReadMessage(subBuilder);
             SyncPlayerState = subBuilder;
+            break;
+          }
+          case 186: {
+            global::Minigame.Room.V1.SetReadyResponse subBuilder = new global::Minigame.Room.V1.SetReadyResponse();
+            if (payloadCase_ == PayloadOneofCase.SetReady) {
+              subBuilder.MergeFrom(SetReady);
+            }
+            input.ReadMessage(subBuilder);
+            SetReady = subBuilder;
+            break;
+          }
+          case 194: {
+            global::Minigame.Room.V1.StartGameResponse subBuilder = new global::Minigame.Room.V1.StartGameResponse();
+            if (payloadCase_ == PayloadOneofCase.StartGame) {
+              subBuilder.MergeFrom(StartGame);
+            }
+            input.ReadMessage(subBuilder);
+            StartGame = subBuilder;
+            break;
+          }
+          case 202: {
+            global::Minigame.Room.V1.RoomUpdated subBuilder = new global::Minigame.Room.V1.RoomUpdated();
+            if (payloadCase_ == PayloadOneofCase.RoomUpdated) {
+              subBuilder.MergeFrom(RoomUpdated);
+            }
+            input.ReadMessage(subBuilder);
+            RoomUpdated = subBuilder;
+            break;
+          }
+          case 210: {
+            global::Minigame.Room.V1.GetRoomResponse subBuilder = new global::Minigame.Room.V1.GetRoomResponse();
+            if (payloadCase_ == PayloadOneofCase.GetRoom) {
+              subBuilder.MergeFrom(GetRoom);
+            }
+            input.ReadMessage(subBuilder);
+            GetRoom = subBuilder;
             break;
           }
           case 722: {
