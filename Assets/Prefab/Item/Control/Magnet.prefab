@@ -132,7 +132,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e44bdd590728d7b4fb0a4db538a566e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rangeExtendCells: 1.5
+  rangeExtendCells: 2
   pullAcceleration: 100
   debugAlwaysActive: 1
 --- !u!114 &4757982768580238787
