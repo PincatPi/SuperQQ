@@ -40,6 +40,11 @@ namespace SuperQQ.Player
         public bool BIsJumping => _bIsJumping;
 
         /// <summary>
+        /// 是否滞空（离地）：跳跃或自然坠落均为 true，由地面检测直接派生
+        /// </summary>
+        public bool BIsJumpAirborne => !_bIsGrounded;
+
+        /// <summary>
         /// 当前水平速度
         /// </summary>
         public float HorizontalVelocity => _currentHorizontalVelocity;

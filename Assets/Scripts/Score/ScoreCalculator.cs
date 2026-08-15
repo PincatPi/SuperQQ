@@ -112,6 +112,11 @@ namespace SuperQQ.Score
                 data.ScoreBreakdown[ScoreType.SpecialEffect] =
                     (bHasAnyFinish && IsQuietPlayer(input, playerName)) ? SPECIAL_EFFECT_SCORE : 0;
 
+                // 6. 得分道具得分：金币等得分道具的额外加分，单独成项；
+                //    金币仅在跟随角色通关时提交，天然满足"通关才加分"；无人通关时为0
+                data.ScoreBreakdown[ScoreType.ScoreItem] =
+                    bHasAnyFinish ? GetBonusScore(input, playerName) : 0;
+
                 // 汇总本轮总得分
                 data.RoundTotal = SumBreakdown(data.ScoreBreakdown);
 
@@ -176,6 +181,18 @@ namespace SuperQQ.Score
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// 获取玩家本轮的额外加分（金币等得分道具，无记录返回 0）
+        /// </summary>
+        private static int GetBonusScore(RoundScoreInput input, string playerName)
+        {
+            if (input.BonusScores != null && input.BonusScores.TryGetValue(playerName, out int bonus))
+            {
+                return bonus;
+            }
+            return 0;
         }
 
         /// <summary>

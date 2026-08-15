@@ -34,9 +34,15 @@ namespace SuperQQ.Player
         bool BIsGrounded { get; }
 
         /// <summary>
-        /// 是否正在跳跃
+        /// 是否正在跳跃（可变高度跳跃的加速窗口期）
         /// </summary>
         bool BIsJumping { get; }
+
+        /// <summary>
+        /// 是否滞空（离地）：跳跃或自然坠落均为 true，落地为 false
+        /// 供动画层驱动跳跃/滞空动画；与 BIsJumping 不同，松键/长按结束不会提前退出
+        /// </summary>
+        bool BIsJumpAirborne { get; }
 
         /// <summary>
         /// 水平速度

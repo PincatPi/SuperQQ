@@ -97,7 +97,7 @@ namespace SuperQQ.UI
         /// </summary>
         private void UpdateColorByState()
         {
-            bool bIsGhost = _playerController.BIsDead;
+            bool bIsGhost = _playerController.BIsDead || _playerController.BIsGhost;
             if (bIsGhost != _bWasGhost)
             {
                 _text.color = bIsGhost ? _ghostColor : _aliveColor;

@@ -30,6 +30,11 @@ namespace SuperQQ.Score
         /// <summary>
         /// 特殊效果加分：老板巡视安静达标+10
         /// </summary>
-        SpecialEffect
+        SpecialEffect,
+
+        /// <summary>
+        /// 得分道具得分：金币等得分道具在跟随角色通关时提供的额外加分
+        /// </summary>
+        ScoreItem
     }
 }

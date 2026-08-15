@@ -26,8 +26,8 @@ namespace SuperQQ.Map
                 return;
             }
 
-            // 只有存活状态的玩家可以通关，已死亡或已通关的不再触发
-            if (player.BIsDead || player.BIsFinished)
+            // 只有存活状态的玩家可以通关，已死亡（含幽灵）或已通关的不再触发
+            if (player.BIsDead || player.BIsGhost || player.BIsFinished)
             {
                 return;
             }

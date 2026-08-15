@@ -16,10 +16,12 @@ namespace SuperQQ.UI.PlacementTest
     ///               落点不合法则保持摆放状态，调整后再点击
     ///   R / Esc     旋转 90° / 取消本次摆放
     ///
-    /// 测试道具数量无限，可重复选中放置；已确认的道具位置固定，不可再被选中/拖动。
+    /// 测试道具数量无限，可重复选中放置；已确认的道具会销毁其 PlacementController，
+    /// 位置彻底固定，不可能再被移动/虚化/重新激活。
     ///
     /// 实现说明：摆放中实例的 PlacementController 组件被禁用（屏蔽其长按拖拽输入），
-    /// 跟随鼠标/吸附/合法性提示由本控制器驱动，确认时调用其 CompletePlacement 完成登记。
+    /// 跟随鼠标/吸附/合法性提示由本控制器驱动，确认时调用其 CompletePlacement 完成登记、
+    /// 随后销毁该组件实现硬锁定（软锁定 enabled=false 可被场景级调试热键等外部激活绕过）。
     /// 衔接摆放：确认后若道具实现了 IChainedPlacement 并返回下一件（如传送门的出口），
     /// 本控制器直接接管其摆放，入口→出口两次摆放不中断
     ///
@@ -160,8 +162,8 @@ namespace SuperQQ.UI.PlacementTest
         }
 
         /// <summary>
-        /// 接管一个待摆放实例：禁用其 PlacementController 的长按拖拽输入，
-        /// 跟随/确认/旋转由本控制器驱动；确认前该组件保持禁用，道具位置自然锁定不可再动
+        /// 接管一个待摆放实例：禁用其 PlacementController 的长按拖拽输入与调试热键，
+        /// 跟随/确认/旋转由本控制器驱动；确认后该组件被销毁，道具位置彻底锁定
         /// </summary>
         private void AdoptForPlacement(GameObject go)
         {
@@ -248,7 +250,11 @@ namespace SuperQQ.UI.PlacementTest
                 return;
             }
 
-            // PlacementController 自生成起已禁用，确认后位置即固定，不可再被选中/拖动
+            // 位置锁定：确认后销毁 PlacementController——占据已登记网格、PlacedItem 已补挂，
+            // 摆放交互能力随组件一并移除，已确认道具不可能再被移动/虚化/重新激活
+            // （此前仅 enabled=false 软锁定，会被场景级调试热键等外部激活绕过）
+            Destroy(currentPc);
+
             confirmed.Add(current);
             Debug.Log($"[ItemPlacementTest] {items[selectedIndex].name} 已确认放置");
 

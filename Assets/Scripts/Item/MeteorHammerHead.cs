@@ -21,7 +21,7 @@ namespace SuperQQ.Item
         private void OnTriggerEnter2D(Collider2D other)
         {
             PlayerController player = other.GetComponentInParent<PlayerController>();
-            if (player == null || player.BIsDead)
+            if (player == null || player.BIsDead || player.BIsGhost)
             {
                 return;
             }
