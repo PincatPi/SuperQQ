@@ -932,7 +932,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5398532416977474687}
   - component: {fileID: 2272109380125762548}
-  m_Layer: 0
+  - component: {fileID: 1032539388440247214}
+  m_Layer: 3
   m_Name: MapBoundary
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -983,7 +984,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -999,6 +1000,19 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 32, y: 18}
   m_EdgeRadius: 0
+--- !u!114 &1032539388440247214
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5955008152498720675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 454e564bb70ead848a019f5ac6b8f006, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _edgeOffset: {x: -0.5, y: -0.5, z: 0, w: -1}
 --- !u!1 &6763453448056367576
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 using UnityEngine;
+using SuperQQ.Map;
 using SuperQQ.UI;
 
 namespace SuperQQ.Player
@@ -37,9 +38,6 @@ namespace SuperQQ.Player
         [SerializeField] private float groundCheckRadius = 0.16f;       // 检测半径
         [SerializeField] private LayerMask groundLayer;                 // 地面Layer
 
-        [Header("外部引用")]
-        [SerializeField] private MapBoundary mapBoundary;              // 地图边界组件引用
-
         [Header("死亡设置")]
         [SerializeField] private float deathDuration = 0.6f;           // 死亡过渡时长（秒），结束后自动进入幽灵状态
 
@@ -50,6 +48,9 @@ namespace SuperQQ.Player
         [Range(0f, 1f)]
         [SerializeField] private float ghostAlpha = 0.5f;               // 幽灵透明度
         [SerializeField] private Vector3 ghostSpawnPosition = Vector3.zero; // 幽灵初始位置
+
+        [Header("外部引用")]
+        [SerializeField] private LevelBounds levelBounds;                  // 关卡边界，留空则自动使用场景中的 LevelBounds.Instance
 
         [Header("玩家信息")]
         [SerializeField] private string playerId = "";                     // 网络唯一ID（联机主键，单机可为空）
@@ -98,8 +99,9 @@ namespace SuperQQ.Player
         public float GroundCheckRadius => groundCheckRadius;
         public LayerMask GroundLayer => groundLayer;
 
-        // 外部引用
-        public MapBoundary MapBoundary => mapBoundary;
+        // 关卡边界：优先使用 Inspector 显式指定，未指定时惰性回退到场景单例
+        // 访问时机在 FixedUpdate（晚于所有 Awake），无脚本执行顺序问题；为 null 时状态跳过钳制
+        public LevelBounds LevelBounds => levelBounds != null ? levelBounds : LevelBounds.Instance;
 
         // 移动
         public float MoveSpeed => moveSpeed * _speedMultiplier;

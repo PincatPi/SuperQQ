@@ -381,7 +381,6 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 256
-  mapBoundary: {fileID: 0}
   ghostMoveSpeed: 10
   ghostAcceleration: 80
   ghostDeceleration: 100
@@ -818,7 +817,6 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 256
-  mapBoundary: {fileID: 0}
   ghostMoveSpeed: 10
   ghostAcceleration: 80
   ghostDeceleration: 100

@@ -124,6 +124,7 @@ GameObject:
   - component: {fileID: 4068118322556819637}
   - component: {fileID: 1530836126952925576}
   - component: {fileID: 7027497864802993098}
+  - component: {fileID: 4787373482862280131}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -253,13 +254,13 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 768
-  mapBoundary: {fileID: 0}
   deathDuration: 0.35
   ghostMoveSpeed: 10
   ghostAcceleration: 80
   ghostDeceleration: 100
   ghostAlpha: 0.5
   ghostSpawnPosition: {x: 0, y: 0, z: 0}
+  levelBounds: {fileID: 0}
   playerId: 
   isLocal: 1
   playerName: Player1
@@ -281,9 +282,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5929ff376da3a244bbdec2e1676cd796, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 0}
+  animator: {fileID: 432204406649400064}
   runEnterThreshold: 0.1
   flipWithVelocity: 1
+--- !u!114 &4787373482862280131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2589623088379354774}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05034fac0665d4c4f8b7944256695587, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 8975701222924766890}
+  fontSize: 60
+  screenPosition: {x: 10, y: 10}
 --- !u!1 &7017826178959943543
 GameObject:
   m_ObjectHideFlags: 0
@@ -379,5 +395,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d2eb7d1889f8d94d86eda31b6133f4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  behindDistance: 0.7
+  behindDistance: 1
   flipDuration: 0.25
