@@ -57,6 +57,7 @@ namespace SuperQQ.Player
         [SerializeField] private bool isLocal = true;                      // 是否本机控制（false=远程玩家由网络驱动）
         [SerializeField] private string playerName = "P1";                 // 玩家名称
         [SerializeField] private Color playerColor = Color.white;          // 玩家专属颜色
+        [SerializeField] private Sprite cursorMarkerSprite;                // 放置阶段跟随光标的玩家标识图，留空则回退用角色本体 Sprite
 
         [Header("输入键位")]
         [SerializeField] private KeyCode leftKey = KeyCode.A;
@@ -142,6 +143,13 @@ namespace SuperQQ.Player
         public Color PlayerColor => playerColor;
         /// <summary>身份主键：联机为 PlayerId，单机回退为 PlayerName</summary>
         public string IdentityKey => string.IsNullOrEmpty(playerId) ? playerName : playerId;
+
+        /// <summary>
+        /// 放置阶段跟随光标的玩家标识图；未配置时回退为角色本体 Sprite
+        /// </summary>
+        public Sprite CursorMarkerSprite => cursorMarkerSprite != null
+            ? cursorMarkerSprite
+            : (_spriteRenderer != null ? _spriteRenderer.sprite : null);
 
         // 输入键位
         public KeyCode DownKey => downKey;
@@ -284,6 +292,11 @@ namespace SuperQQ.Player
                 _spriteRenderer.color = playerColor;
             }
         }
+
+        /// <summary>
+        /// 当前输入来源。临时替换输入源的流程（如道具放置阶段屏蔽移动操作）可先缓存本值，结束后原样还原
+        /// </summary>
+        public IPlayerInput InputSource => _input;
 
         /// <summary>
         /// 替换输入来源。联机模式下远程玩家应传入 RemotePlayerInput，

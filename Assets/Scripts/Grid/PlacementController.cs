@@ -143,6 +143,30 @@ namespace SuperQQ.Grid
             transform.position = RootPosFromAnchor(AnchorFromRootPos(transform.position));
         }
 
+        // ==================== 只读查询（外部摆放流程用） ====================
+
+        /// <summary>
+        /// 查询根节点位于指定世界坐标时对应的占位矩形左下角锚点格子。
+        /// 与登记时使用的换算完全一致，外部流程无需自行复刻公式
+        /// </summary>
+        public Vector2Int GetAnchorCellAt(Vector2 worldPos)
+        {
+            return Grid != null ? AnchorFromRootPos(worldPos) : Vector2Int.zero;
+        }
+
+        /// <summary>
+        /// 查询根节点位于指定世界坐标时落点是否合法（含本道具声明的叠放策略）。
+        /// 供外部摆放流程做合法性提示，保证提示结果与 CompletePlacement 的登记判定一致
+        /// </summary>
+        public bool CanPlaceAt(Vector2 worldPos)
+        {
+            if (Grid == null || box == null)
+            {
+                return false;
+            }
+            return Grid.CanOccupy(AnchorFromRootPos(worldPos), box.Footprint, rotated, AllowsOverlap);
+        }
+
         // ==================== 状态接口 ====================
 
         /// <summary>

@@ -20,6 +20,11 @@ namespace SuperQQ.GameFlow
         /// </summary>
         public float Duration => _duration;
 
+        /// <summary>
+        /// 剩余时间（秒），供倒计时 UI 显示；时长小于等于 0 时恒为 0。
+        /// </summary>
+        public float RemainingTime => _duration <= 0f ? 0f : Mathf.Max(0f, _duration - _elapsedTime);
+
         public override bool Evaluate(GamePhaseContext context)
         {
             if (_duration <= 0f || _elapsedTime >= _duration)

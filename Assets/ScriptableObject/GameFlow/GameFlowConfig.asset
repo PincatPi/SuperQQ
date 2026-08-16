@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e86669bf79977842a957017299d7e24, type: 3}
   m_Name: GameFlowConfig
   m_EditorClassIdentifier: 
-  _initialPhase: {fileID: 11400000, guid: 5b8383004b9b4f144ae8fd35be931133, type: 2}
+  _initialPhase: {fileID: 11400000, guid: e54787dadf444e648bacbdb4f5038a03, type: 2}
   _phases:
   - {fileID: 11400000, guid: d41ba911a1cb0174fbc326b2e58c0965, type: 2}
   - {fileID: 11400000, guid: e54787dadf444e648bacbdb4f5038a03, type: 2}

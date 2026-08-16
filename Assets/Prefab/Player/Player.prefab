@@ -265,6 +265,7 @@ MonoBehaviour:
   isLocal: 1
   playerName: Player1
   playerColor: {r: 0.5730121, g: 1, b: 0, a: 1}
+  cursorMarkerSprite: {fileID: 21300218, guid: 02503a0208504eff95da4cdeab44ed59, type: 3}
   leftKey: 97
   rightKey: 100
   jumpKey: 32

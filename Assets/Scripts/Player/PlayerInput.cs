@@ -75,4 +75,24 @@ namespace SuperQQ.Player
             JumpHeld = Input.GetKey(jumpKey) || Input.GetKey(jumpKeyAlt);
         }
     }
+
+    /// <summary>
+    /// 空输入实现：读数恒为静止。
+    /// 需要临时屏蔽角色移动操作的场景（如道具放置阶段）注入本实例即可，
+    /// 角色状态机照常运行但不会收到任何操作输入。
+    /// </summary>
+    public class NullPlayerInput : IPlayerInput
+    {
+        /// <summary>全局共享实例（无内部状态，可安全复用）</summary>
+        public static readonly NullPlayerInput Instance = new NullPlayerInput();
+
+        public float Horizontal => 0f;
+        public float Vertical => 0f;
+        public bool JumpPressed => false;
+        public bool JumpHeld => false;
+
+        public void ReadInput()
+        {
+        }
+    }
 }
