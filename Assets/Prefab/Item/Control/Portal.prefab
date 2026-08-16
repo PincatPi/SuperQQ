@@ -132,6 +132,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5397f36a741585419cd1c1c89bb25ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  displayName: "\u4F20\u9001\u95E8"
+  icon: {fileID: 21300000, guid: fb8ab99e49e3fa34ca6370d7a717a471, type: 3}
   exitOffset: {x: 2, y: 0}
   exitPortalPrefab: {fileID: 8282279829162158160}
   exitSpawnCellOffset: {x: 3, y: 0}

@@ -1,6 +1,7 @@
 using SuperQQ.Placement.Runtime;
 using SuperQQ.Player;
 using SuperQQ.Score;
+using SuperQQ.Selection.Runtime;
 using UnityEngine;
 
 namespace SuperQQ.GameFlow
@@ -35,6 +36,11 @@ namespace SuperQQ.GameFlow
         /// 当前场景的道具放置阶段门面。放置阶段不在场时为 null。
         /// </summary>
         public PropPlacementDirector PlacementDirector => PropPlacementDirector.Instance;
+
+        /// <summary>
+        /// 当前场景的道具选择阶段门面。选择阶段不在场时为 null。
+        /// </summary>
+        public PropSelectionDirector SelectionDirector => PropSelectionDirector.Instance;
 
         /// <summary>
         /// 构造阶段上下文。

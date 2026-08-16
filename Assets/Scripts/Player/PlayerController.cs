@@ -58,6 +58,7 @@ namespace SuperQQ.Player
         [SerializeField] private string playerName = "P1";                 // 玩家名称
         [SerializeField] private Color playerColor = Color.white;          // 玩家专属颜色
         [SerializeField] private Sprite cursorMarkerSprite;                // 放置阶段跟随光标的玩家标识图，留空则回退用角色本体 Sprite
+        [SerializeField] private Sprite selectionIconSprite;               // 选择阶段面板上的玩家图标，留空则回退用光标标识图
 
         [Header("输入键位")]
         [SerializeField] private KeyCode leftKey = KeyCode.A;
@@ -150,6 +151,13 @@ namespace SuperQQ.Player
         public Sprite CursorMarkerSprite => cursorMarkerSprite != null
             ? cursorMarkerSprite
             : (_spriteRenderer != null ? _spriteRenderer.sprite : null);
+
+        /// <summary>
+        /// 选择阶段面板上的玩家图标；未配置时回退为光标标识图（其自身再回退角色本体 Sprite）
+        /// </summary>
+        public Sprite SelectionIconSprite => selectionIconSprite != null
+            ? selectionIconSprite
+            : CursorMarkerSprite;
 
         // 输入键位
         public KeyCode DownKey => downKey;

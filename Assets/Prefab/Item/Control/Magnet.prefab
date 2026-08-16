@@ -132,6 +132,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e44bdd590728d7b4fb0a4db538a566e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  displayName: "\u78C1\u94C1"
+  icon: {fileID: 21300000, guid: 21dd92c87b8e4d041826c7313c504f50, type: 3}
   rangeExtendCells: 2
   pullAcceleration: 100
   debugAlwaysActive: 1

@@ -152,6 +152,7 @@ MonoBehaviour:
   inputCamera: {fileID: 0}
   pointerLiftCells: 1
   showBoxWhileDragging: 1
+  allowPlaceOnOccupied: 0
   ghostAlpha: 0.5
   validColor: {r: 0.3, g: 1, b: 0.3, a: 0.9}
   invalidColor: {r: 1, g: 0.3, b: 0.3, a: 0.9}
@@ -169,6 +170,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4ce625977e1853409230987954e17f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  displayName: "\u9762\u5305"
+  icon: {fileID: 21300000, guid: 54627c03a3413c740bbcaf52764bed0d, type: 3}
 --- !u!1 &7759195075958798245
 GameObject:
   m_ObjectHideFlags: 0

@@ -49,6 +49,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95b7bae2d05936a458bf1cf235142118, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  displayName: "\u95F9\u949F"
+  icon: {fileID: 21300000, guid: 0d553cdcce71f433e9a9e8b07cb09331, type: 3}
   rangeExtendCells: 2
   windUpTime: 1
   impulseSource: {fileID: 0}

@@ -102,21 +102,22 @@ namespace SuperQQ.Grid.EditorTools
         private void GenerateFromSelection()
         {
             GridManager gm = GridManager.Instance != null ? GridManager.Instance : Object.FindObjectOfType<GridManager>();
-            if (gm == null || Selection.activeGameObject == null || Selection.activeGameObject == Marker.gameObject)
+            // 显式全限定 UnityEditor.Selection：SuperQQ.Selection 命名空间会在 SuperQQ.* 下遮蔽该类
+            if (gm == null || UnityEditor.Selection.activeGameObject == null || UnityEditor.Selection.activeGameObject == Marker.gameObject)
             {
                 Debug.LogWarning("[GridZoneMarker] 请先在 Hierarchy 中选中一个地形/参照物体");
                 return;
             }
 
             Bounds? bounds = null;
-            var renderer = Selection.activeGameObject.GetComponent<Renderer>();
+            var renderer = UnityEditor.Selection.activeGameObject.GetComponent<Renderer>();
             if (renderer != null)
             {
                 bounds = renderer.bounds;
             }
             else
             {
-                var col = Selection.activeGameObject.GetComponent<Collider2D>();
+                var col = UnityEditor.Selection.activeGameObject.GetComponent<Collider2D>();
                 if (col != null)
                 {
                     bounds = col.bounds;
@@ -139,7 +140,7 @@ namespace SuperQQ.Grid.EditorTools
 
             Undo.RecordObject(Marker, "按包围盒生成区域");
             SetCells(new RectInt(xMin, yMin, Mathf.Max(xMax - xMin, 1), Mathf.Max(yMax - yMin, 1)));
-            Debug.Log($"[GridZoneMarker] 已按 {Selection.activeGameObject.name} 的包围盒生成区域");
+            Debug.Log($"[GridZoneMarker] 已按 {UnityEditor.Selection.activeGameObject.name} 的包围盒生成区域");
         }
 
         private void SetCells(RectInt cells)

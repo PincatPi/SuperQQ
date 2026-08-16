@@ -297,11 +297,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8690731eab3c0a24eb26fde805390d17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  displayName: "\u6D41\u661F\u9524"
+  icon: {fileID: 21300000, guid: 5c9cef0ffc979a940874a367e572756b, type: 3}
   arm: {fileID: 9141920536830378153}
   swingArcDegrees: 130
   sweepDuration: 1.2
+  armLength: 1.03
+  headRadius: 0.24
+  headCollider: {fileID: 2955316137860698142}
   startFromLeft: 1
+  debugAutoSwing: 1
   knockbackSpeed: 8
+  ghostDelay: 0.6
 --- !u!114 &4736593485169917852
 MonoBehaviour:
   m_ObjectHideFlags: 0

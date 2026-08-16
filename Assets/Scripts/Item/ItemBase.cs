@@ -14,8 +14,20 @@ namespace SuperQQ.Item
     /// </summary>
     public abstract class ItemBase : MonoBehaviour
     {
+        [Header("展示")]
+        [Tooltip("道具在选择面板中的展示名称；留空时使用物体名")]
+        [SerializeField] private string displayName = "";
+        [Tooltip("道具图标，用于选择面板等 UI 展示；留空时回退为自身首个 SpriteRenderer 的 Sprite")]
+        [SerializeField] private Sprite icon;
+
         /// <summary>道具类别（策划分类：搭路/伤害/控制/拆除）</summary>
         public abstract ItemCategory Category { get; }
+
+        /// <summary>展示名称（选择面板等 UI 使用）；未配置时回退为物体名</summary>
+        public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? name : displayName;
+
+        /// <summary>道具图标；未配置时回退为自身首个 SpriteRenderer 的 Sprite</summary>
+        public Sprite Icon => icon != null ? icon : FindFallbackIcon();
 
         /// <summary>放置信息（锚点格子、旋转、放置者），由 GridManager.Place 注入</summary>
         public PlacedItem Placed { get; private set; }
@@ -67,6 +79,13 @@ namespace SuperQQ.Item
 #endif
 
         // ==================== 生命周期钩子（按需重写） ====================
+
+        /// <summary>未配置图标时回退取自身首个 SpriteRenderer 的 Sprite；均无则为 null</summary>
+        private Sprite FindFallbackIcon()
+        {
+            SpriteRenderer renderer = GetComponentInChildren<SpriteRenderer>(true);
+            return renderer != null ? renderer.sprite : null;
+        }
 
         /// <summary>被放置到网格后调用（GridManager.Place 完成时）</summary>
         public virtual void OnPlaced() { }
