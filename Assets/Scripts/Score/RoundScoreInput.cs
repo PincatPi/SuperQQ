@@ -26,5 +26,11 @@ namespace SuperQQ.Score
         /// 本轮老板巡视安静达标的玩家名称列表
         /// </summary>
         public List<string> QuietPlayerNames = new();
+
+        /// <summary>
+        /// 每个玩家本轮的额外加分（金币等得分道具在通关时提交）
+        /// 键为玩家名称，值为加分点数
+        /// </summary>
+        public Dictionary<string, int> BonusScores = new();
     }
 }

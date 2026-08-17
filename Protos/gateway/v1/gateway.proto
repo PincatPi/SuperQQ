@@ -41,6 +41,18 @@ message ClientEnvelope {
     minigame.room.v1.SubmitPlayerInputRequest submit_player_input = 17;
     minigame.room.v1.CreateRoomRequest create_room = 18;
     minigame.room.v1.SyncPlayerStateRequest sync_player_state = 19;
+    minigame.room.v1.SetReadyRequest set_ready = 20;
+    minigame.room.v1.StartGameRequest start_game = 21;
+    minigame.room.v1.GetRoomRequest get_room = 22;
+    minigame.room.v1.ItemClaimIntent item_claim_intent = 23;
+    minigame.room.v1.ItemClaimConfirm item_claim_confirm = 24;
+    minigame.room.v1.ItemPlaceState item_place_state = 25;
+    minigame.room.v1.ItemPlaceConfirm item_place_confirm = 26;
+    minigame.room.v1.PlayerOutReport player_out_report = 27;
+    minigame.room.v1.RoundScoreReport round_score_report = 28;
+    minigame.room.v1.PlayerEvent player_event = 29;
+    minigame.room.v1.PickupClaim pickup_claim = 30;
+    minigame.room.v1.ItemStateEvent item_state_event = 31;
   }
 }
 
@@ -63,6 +75,20 @@ message ServerEnvelope {
     minigame.room.v1.SubmitPlayerInputResponse submit_player_input = 20;
     minigame.room.v1.CreateRoomResponse create_room = 21;
     minigame.room.v1.SyncPlayerStateResponse sync_player_state = 22;
+    minigame.room.v1.SetReadyResponse set_ready = 23;
+    minigame.room.v1.StartGameResponse start_game = 24;
+    minigame.room.v1.RoomUpdated room_updated = 25;
+    minigame.room.v1.GetRoomResponse get_room = 26;
+    minigame.room.v1.ItemOfferList item_offer_list = 27;
+    minigame.room.v1.ItemClaimIntentBroadcast item_claim_intent_broadcast = 28;
+    minigame.room.v1.ItemClaimResult item_claim_result = 29;
+    minigame.room.v1.GamePhaseSync game_phase_sync = 30;
+    minigame.room.v1.ItemPlaceStateBroadcast item_place_state_broadcast = 31;
+    minigame.room.v1.ItemPlaceResult item_place_result = 32;
+    minigame.room.v1.PlayerOutBroadcast player_out_broadcast = 33;
+    minigame.room.v1.PlayerEventBroadcast player_event_broadcast = 34;
+    minigame.room.v1.PickupClaimBroadcast pickup_claim_broadcast = 35;
+    minigame.room.v1.ItemStateEventBroadcast item_state_event_broadcast = 36;
     ErrorResponse error = 90;
   }
 }

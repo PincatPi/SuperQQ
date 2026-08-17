@@ -1,4 +1,5 @@
 using UnityEngine;
+using SuperQQ.Map;
 using SuperQQ.UI;
 
 namespace SuperQQ.Player
@@ -37,8 +38,8 @@ namespace SuperQQ.Player
         [SerializeField] private float groundCheckRadius = 0.16f;       // 检测半径
         [SerializeField] private LayerMask groundLayer;                 // 地面Layer
 
-        [Header("外部引用")]
-        [SerializeField] private MapBoundary mapBoundary;              // 地图边界组件引用
+        [Header("死亡设置")]
+        [SerializeField] private float deathDuration = 0.6f;           // 死亡过渡时长（秒），结束后自动进入幽灵状态
 
         [Header("幽灵设置")]
         [SerializeField] private float ghostMoveSpeed = 6f;             // 幽灵四向移动速度
@@ -48,11 +49,16 @@ namespace SuperQQ.Player
         [SerializeField] private float ghostAlpha = 0.5f;               // 幽灵透明度
         [SerializeField] private Vector3 ghostSpawnPosition = Vector3.zero; // 幽灵初始位置
 
+        [Header("外部引用")]
+        [SerializeField] private LevelBounds levelBounds;                  // 关卡边界，留空则自动使用场景中的 LevelBounds.Instance
+
         [Header("玩家信息")]
         [SerializeField] private string playerId = "";                     // 网络唯一ID（联机主键，单机可为空）
         [SerializeField] private bool isLocal = true;                      // 是否本机控制（false=远程玩家由网络驱动）
         [SerializeField] private string playerName = "P1";                 // 玩家名称
         [SerializeField] private Color playerColor = Color.white;          // 玩家专属颜色
+        [SerializeField] private Sprite cursorMarkerSprite;                // 放置阶段跟随光标的玩家标识图，留空则回退用角色本体 Sprite
+        [SerializeField] private Sprite selectionIconSprite;               // 选择阶段面板上的玩家图标，留空则回退用光标标识图
 
         [Header("输入键位")]
         [SerializeField] private KeyCode leftKey = KeyCode.A;
@@ -60,9 +66,6 @@ namespace SuperQQ.Player
         [SerializeField] private KeyCode jumpKey = KeyCode.Space;
         [SerializeField] private KeyCode jumpKeyAlt = KeyCode.W;         // 备用跳跃键（存活状态）
         [SerializeField] private KeyCode downKey = KeyCode.S;            // 下蹲/幽灵下移键
-
-        [Header("调试用参数")]
-        [SerializeField] private Vector3 rebornPosition;              // 复活出生点
 
         // ---------- 组件缓存 ----------
         private Rigidbody2D _rb;
@@ -74,6 +77,14 @@ namespace SuperQQ.Player
 
         // ---------- 外部速度修正（道具表面效果等，1=无影响） ----------
         private float _speedMultiplier = 1f;
+
+        // ---------- 无摩擦状态（肥皂表面等） ----------
+        private bool _frictionless;
+        private float _slideDrag;
+
+        // ---------- 外部推力（排气扇风力等，多来源向量累加） ----------
+        private Vector2 _windForce;
+
 
         // ---------- 输入来源（本地键盘 / 联机远程快照） ----------
         private IPlayerInput _input;
@@ -93,16 +104,23 @@ namespace SuperQQ.Player
         public Transform GroundCheck => groundCheck;
         public float GroundCheckRadius => groundCheckRadius;
         public LayerMask GroundLayer => groundLayer;
-        public Vector3 RebornPosition => rebornPosition;
 
-        // 外部引用
-        public MapBoundary MapBoundary => mapBoundary;
+        // 关卡边界：优先使用 Inspector 显式指定，未指定时惰性回退到场景单例
+        // 访问时机在 FixedUpdate（晚于所有 Awake），无脚本执行顺序问题；为 null 时状态跳过钳制
+        public LevelBounds LevelBounds => levelBounds != null ? levelBounds : LevelBounds.Instance;
 
         // 移动
         public float MoveSpeed => moveSpeed * _speedMultiplier;
         public float Acceleration => acceleration;
         public float Deceleration => deceleration;
         public float AirControlMultiplier => airControlMultiplier;
+
+        // 无摩擦（肥皂：加/减速率压到 0，初速度保留）
+        public bool Frictionless => _frictionless;
+        public float SlideDrag => _slideDrag;
+
+        // 外部推力（排气扇风力，单位/秒²）
+        public Vector2 WindForce => _windForce;
 
         // 跳跃
         public float JumpVelocity => jumpVelocity;
@@ -115,6 +133,9 @@ namespace SuperQQ.Player
         public float FallMultiplier => fallMultiplier;
         public float LowJumpMultiplier => lowJumpMultiplier;
         public float MaxFallSpeed => maxFallSpeed;
+
+        // 死亡
+        public float DeathDuration => deathDuration;
 
         // 幽灵
         public float GhostMoveSpeed => ghostMoveSpeed;
@@ -131,6 +152,20 @@ namespace SuperQQ.Player
         /// <summary>身份主键：联机为 PlayerId，单机回退为 PlayerName</summary>
         public string IdentityKey => string.IsNullOrEmpty(playerId) ? playerName : playerId;
 
+        /// <summary>
+        /// 放置阶段跟随光标的玩家标识图；未配置时回退为角色本体 Sprite
+        /// </summary>
+        public Sprite CursorMarkerSprite => cursorMarkerSprite != null
+            ? cursorMarkerSprite
+            : (_spriteRenderer != null ? _spriteRenderer.sprite : null);
+
+        /// <summary>
+        /// 选择阶段面板上的玩家图标；未配置时回退为光标标识图（其自身再回退角色本体 Sprite）
+        /// </summary>
+        public Sprite SelectionIconSprite => selectionIconSprite != null
+            ? selectionIconSprite
+            : CursorMarkerSprite;
+
         // 输入键位
         public KeyCode DownKey => downKey;
 
@@ -144,17 +179,51 @@ namespace SuperQQ.Player
 
         public bool BIsGrounded => _currentState?.BIsGrounded ?? false;
         public bool BIsJumping => _currentState?.BIsJumping ?? false;
-        public bool BIsDead => _currentState is PlayerGhostState;
+        // 跳跃滞空期：起跳 true、落地 false，供动画层驱动跳跃动画
+        public bool BIsJumpAirborne => _currentState?.BIsJumpAirborne ?? false;
+        // 仅死亡过渡（Dying）中视为已死亡，进入幽灵后置回 false
+        public bool BIsDead => _currentState is PlayerDyingState;
+        // 仅幽灵状态中视为幽灵，与 BIsDead 互斥
+        public bool BIsGhost => _currentState is PlayerGhostState;
         public bool BIsFinished => _currentState is PlayerFinishedState;
         public float HorizontalVelocity => _currentState?.HorizontalVelocity ?? 0f;
+
+        /// <summary>
+        /// 面朝方向（+1 朝右 / -1 朝左）：按水平速度更新，低于翻转阈值保持原朝向，
+        /// 判定与 PlayerAnimationController 的精灵翻转同一套阈值，表现层无需读 flipX
+        /// </summary>
+        public float FacingDir
+        {
+            get
+            {
+                float velocity = HorizontalVelocity;
+                if (velocity > FACING_FLIP_THRESHOLD)
+                {
+                    _facingDir = 1f;
+                }
+                else if (velocity < -FACING_FLIP_THRESHOLD)
+                {
+                    _facingDir = -1f;
+                }
+                return _facingDir;
+            }
+        }
+        private float _facingDir = 1f;
+        private const float FACING_FLIP_THRESHOLD = 0.1f;   // 与 PlayerAnimationController.runEnterThreshold 默认值一致
 
         // ==================== 生命周期 ====================
 
         private void Awake()
         {
             _rb = GetComponent<Rigidbody2D>();
-            _spriteRenderer = GetComponent<SpriteRenderer>();
+            // SpriteRenderer 挂在子物体 Visual 上，需从子级查找
+            _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             _collider = GetComponent<Collider2D>();
+
+            if (_spriteRenderer == null)
+            {
+                Debug.LogWarning("[PlayerController] 未找到 SpriteRenderer，颜色/透明度/朝向翻转将失效。请确认子物体 Visual 上挂载了 SpriteRenderer。", this);
+            }
 
             _rb.gravityScale = gravityScale;
             _rb.constraints = RigidbodyConstraints2D.FreezeRotation;
@@ -240,6 +309,11 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
+        /// 当前输入来源。临时替换输入源的流程（如道具放置阶段屏蔽移动操作）可先缓存本值，结束后原样还原
+        /// </summary>
+        public IPlayerInput InputSource => _input;
+
+        /// <summary>
         /// 替换输入来源。联机模式下远程玩家应传入 RemotePlayerInput，
         /// 调用后状态机行为不变，仅输入来源切换
         /// </summary>
@@ -276,7 +350,6 @@ namespace SuperQQ.Player
         private void Update()
         {
             ReadInput();
-            ReadDebugInput();
             _currentState.Update();
         }
 
@@ -299,21 +372,6 @@ namespace SuperQQ.Player
             _jumpHeld = _input.JumpHeld;
         }
 
-        /// <summary>
-        /// 读取调试输入：K键击杀、R键复活
-        /// </summary>
-        private void ReadDebugInput()
-        {
-            if (Input.GetKeyDown(KeyCode.K))
-            {
-                PlayerDie();
-            }
-            if (Input.GetKeyDown(KeyCode.R))
-            {
-                Revive();
-            }
-        }
-
         // ==================== 外部速度修正 ====================
 
         /// <summary>
@@ -332,10 +390,39 @@ namespace SuperQQ.Player
             _speedMultiplier = 1f;
         }
 
+        /// <summary>
+        /// 进入/离开无摩擦状态（肥皂表面：滑行不可控）
+        /// </summary>
+        /// <param name="active">true=无摩擦滑行</param>
+        /// <param name="drag">滑行减阻（0=完全无摩擦匀速滑行）</param>
+        public void SetFrictionless(bool active, float drag = 0f)
+        {
+            _frictionless = active;
+            _slideDrag = active ? Mathf.Max(0f, drag) : 0f;
+        }
+
+        /// <summary>
+        /// 累加外部推力（排气扇风力等；进入风区传正向量，离开传反向量抵消）
+        /// </summary>
+        public void AddWindForce(Vector2 force)
+        {
+            _windForce += force;
+        }
+
+        /// <summary>
+        /// 清空外部推力（复活/状态重置时兜底用）
+        /// </summary>
+        public void ClearWindForce()
+        {
+            _windForce = Vector2.zero;
+        }
+
         // ==================== 状态切换 ====================
 
         /// <summary>
         /// 切换到新状态（先 Exit 旧状态，再 Enter 新状态），并通知 LevelPlayerRegistry 更新状态记录
+        /// 调用约定：外部事件驱动的转换走本类的公共事件方法（PlayerDie/PlayerKnockbackDie/PlayerFinish）；
+        /// 状态自主驱动的转换由各状态内部直接调用本方法
         /// </summary>
         public void TransitionTo(IPlayerState newState)
         {
@@ -357,39 +444,50 @@ namespace SuperQQ.Player
                 return;
             }
 
-            PlayerStateType stateType = _currentState is PlayerGhostState ? PlayerStateType.Ghost
+            // 死亡过渡视为 Ghost 记录（对外等价于已死亡）
+            PlayerStateType stateType = _currentState is PlayerGhostState || _currentState is PlayerDyingState ? PlayerStateType.Ghost
                 : _currentState is PlayerFinishedState ? PlayerStateType.Finished
                 : PlayerStateType.Alive;
             LevelPlayerRegistry.Instance.UpdatePlayerState(this, stateType);
         }
 
         /// <summary>
-        /// 死亡，进入幽灵状态
+        /// 死亡，进入死亡过渡状态（倒计时结束后自动切换为幽灵状态）
         /// </summary>
         public void PlayerDie()
         {
-            if (BIsDead)
+            if (BIsDead || BIsGhost)
             {
                 return;
             }
-            TransitionTo(new PlayerGhostState(this));
+            // 联机：上报死亡瞬间事件（远端播死亡表现），离线时为空操作
+            SuperQQ.Network.NetEventSync.ReportEvent(
+                Minigame.Room.V1.PlayerEventType.Die, transform.position);
+            TransitionTo(new PlayerDyingState(this));
         }
 
         /// <summary>
-        /// 复活，回到存活状态
+        /// 被击飞死亡：强制一个击飞速度并进入死亡过渡状态
+        /// 过渡期间保留击飞动量、无法操作，倒计时结束后自动进入幽灵状态
+        /// 过渡时长统一使用 DeathDuration 配置，不允许外部覆盖
         /// </summary>
-        public void Revive()
+        /// <param name="knockbackVelocity">击飞速度（世界方向）</param>
+        public void PlayerKnockbackDie(Vector2 knockbackVelocity)
         {
-            if (!BIsDead)
+            if (BIsDead || BIsGhost)
             {
                 return;
             }
-            TransitionTo(new PlayerAliveState(this));
-            // 重置出生点
-            if (rebornPosition != null)
+            if (_rb != null)
             {
-                transform.position = rebornPosition;
+                _rb.velocity = knockbackVelocity;
             }
+            // 联机：受击+死亡事件（远端播受击闪色与死亡表现）
+            SuperQQ.Network.NetEventSync.ReportEvent(
+                Minigame.Room.V1.PlayerEventType.Hit, transform.position);
+            SuperQQ.Network.NetEventSync.ReportEvent(
+                Minigame.Room.V1.PlayerEventType.Die, transform.position);
+            TransitionTo(new PlayerDyingState(this));
         }
 
         /// <summary>
@@ -398,7 +496,7 @@ namespace SuperQQ.Player
         /// </summary>
         public void PlayerFinish()
         {
-            if (BIsFinished || BIsDead) 
+            if (BIsFinished || BIsDead || BIsGhost) 
             {
                 return;
             }

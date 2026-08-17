@@ -19,6 +19,9 @@ namespace SuperQQ.Network
         // playerId -> 远程玩家同步器
         private readonly Dictionary<string, RemotePlayerSync> _remotePlayers = new();
 
+        /// <summary>最近一次收到的房间快照（供玩家列表 UI 等读取），无快照时为 null</summary>
+        public RoomSnapshot LatestSnapshot { get; private set; }
+
         private void OnEnable()
         {
             if (NetworkManager.Instance != null)
@@ -43,6 +46,8 @@ namespace SuperQQ.Network
             NetworkManager net = NetworkManager.Instance;
             if (net == null || string.IsNullOrEmpty(net.LocalPlayerId)) return;
 
+            LatestSnapshot = snapshot;
+
             if (!_firstSnapshotLogged)
             {
                 _firstSnapshotLogged = true;
@@ -59,6 +64,37 @@ namespace SuperQQ.Network
 
                 RemotePlayerSync sync = GetOrCreateRemoteSync(playerId, playerState);
                 sync?.ApplySnapshot(playerState.Transform);
+
+                // 同步远端玩家的存活/幽灵/通关状态到 Registry
+                // 驱动相机目标组过滤、全员出局检测等依赖状态的逻辑
+                if (sync != null)
+                {
+                    SyncRemotePlayerState(sync, playerState.Transform);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 把快照中的远端玩家状态（0=存活 1=幽灵 2=已通关）同步到 LevelPlayerRegistry
+        /// 仅状态变化时更新，避免每次快照都触发状态变更事件
+        /// </summary>
+        private void SyncRemotePlayerState(RemotePlayerSync sync, TransformState transform)
+        {
+            if (transform == null || LevelPlayerRegistry.Instance == null) return;
+
+            PlayerController player = sync.GetComponent<PlayerController>();
+            if (player == null) return;
+
+            PlayerStateType stateType = transform.PlayerState switch
+            {
+                1 => PlayerStateType.Ghost,
+                2 => PlayerStateType.Finished,
+                _ => PlayerStateType.Alive
+            };
+
+            if (LevelPlayerRegistry.Instance.GetPlayerState(player) != stateType)
+            {
+                LevelPlayerRegistry.Instance.UpdatePlayerState(player, stateType);
             }
         }
 
@@ -101,21 +137,34 @@ namespace SuperQQ.Network
             }
 
             // 晚进房的玩家：场景中还没有化身，注册档案并补生成
-            SpawnLateJoiner(playerId);
+            SpawnLateJoiner(playerId, FindPlayerState(playerId));
             return null;
         }
 
-        private void SpawnLateJoiner(string playerId)
+        /// <summary>从最近快照中查某玩家的完整状态（取昵称/色号用）</summary>
+        private RoomPlayerState FindPlayerState(string playerId)
+        {
+            RoomSnapshot snapshot = LatestSnapshot;
+            if (snapshot == null) return null;
+            foreach (RoomPlayerState p in snapshot.Players)
+            {
+                if (p.Player?.PlayerId == playerId) return p;
+            }
+            return null;
+        }
+
+        private void SpawnLateJoiner(string playerId, RoomPlayerState playerState)
         {
             PlayerSessionManager session = PlayerSessionManager.Instance;
             if (session == null || session.HasPlayerByIdentity(playerId)) return;
 
+            string nickname = playerState?.Player?.Nickname;
             session.RegisterProfile(new PlayerProfile
             {
                 PlayerId = playerId,
                 IsLocal = false,
-                PlayerName = $"Remote_{playerId}",
-                PlayerColor = Color.cyan
+                PlayerName = string.IsNullOrEmpty(nickname) ? $"Remote_{playerId}" : nickname,
+                PlayerColor = PlayerColorPalette.Get(playerState?.ColorIndex ?? -1)
             });
 
             LevelPlayerRegistry.Instance?.SpawnMissingPlayerAvatars();

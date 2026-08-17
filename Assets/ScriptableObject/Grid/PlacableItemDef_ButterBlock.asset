@@ -15,7 +15,7 @@ MonoBehaviour:
   itemId: butter_block
   prefab: {fileID: 5900001724391387817, guid: 27e741ea1d149e544b16556a0a77b04d, type: 3}
   ghostPrefab: {fileID: 0}
-  footprint: {x: 1, y: 1}
+  footprint: {x: 3, y: 1}
   rotatable: 0
   category: 0
   facingSteps: 0

@@ -30,20 +30,36 @@ namespace SuperQQ.Grid
         [Tooltip("允许摆放的格子范围，对应建造阶段的虚线框；超出即不合法")]
         [SerializeField] private RectInt placeableBounds = new RectInt(-20, 0, 40, 15);
 
-        [Header("可视化")]
+        [Header("可视化（Scene 视图 Gizmos）")]
         [SerializeField] private bool drawGrid = true;
         [SerializeField] private Color gridLineColor = new Color(1f, 1f, 1f, 0.15f);
         [SerializeField] private Color boundsColor = new Color(0f, 1f, 1f, 0.6f);
         [SerializeField] private Color occupiedColor = new Color(1f, 0.3f, 0.3f, 0.35f);
 
+        [Header("网格可视化（运行时）")]
+        [Tooltip("小格子贴图（50x50 虚线框，PPU=100，1 格一张平铺）")]
+        [SerializeField] private Sprite smallCellSprite;
+        [Tooltip("大格子贴图（200x200 实线框，PPU=100，每 4x4 小格一张平铺）")]
+        [SerializeField] private Sprite bigCellSprite;
+        [Tooltip("网格显示的 Sorting Order（需高于背景、低于道具）")]
+        [SerializeField] private int gridSortingOrder = -1;
+
         // 占据表：格子 -> 占据该格子的物体（一个 PlacedItem 会登记其 footprint 覆盖的所有格子）
         private readonly Dictionary<Vector2Int, PlacedItem> occupiedCells = new Dictionary<Vector2Int, PlacedItem>();
+
+        [Header("区域配置")]
+        [Tooltip("本关卡的区域配置资产（由编辑器工具从场景标记烘焙生成）")]
+        [SerializeField] private LevelZoneConfig zoneConfig;
+
+        // 运行时网格可视化根物体（ShowGrid 时懒构建）
+        private GameObject gridVisualRoot;
 
         // ==================== 生命周期 ====================
 
         private void Awake()
         {
             Instance = this;
+            this.ShowGrid();    // 先默认开启网格可视化 - 调试
         }
 
         private void OnDestroy()
@@ -110,6 +126,40 @@ namespace SuperQQ.Grid
             return Origin + new Vector2(anchorCell.x + size.x * 0.5f, anchorCell.y + size.y * 0.5f) * CellSize;
         }
 
+        /// <summary>
+        /// 逆时针 90° 旋转后锚点格子在新占位矩形内的索引（宽高互换后的坐标）
+        /// </summary>
+        public static Vector2Int GetRotatedPivot(Vector2Int pivot, Vector2Int footprint)
+        {
+            return new Vector2Int(footprint.y - 1 - pivot.y, pivot.x);
+        }
+
+        /// <summary>
+        /// 解析道具的锚点格子：优先读 prefab 上 FootprintBoxView 的配置，缺省取中心格子
+        /// </summary>
+        public Vector2Int ResolvePivot(PlacableItemDef def, Vector2Int footprint)
+        {
+            if (def != null && def.Prefab != null)
+            {
+                FootprintBoxView box = def.Prefab.GetComponent<FootprintBoxView>();
+                if (box != null)
+                {
+                    return box.PivotCell;
+                }
+            }
+            return new Vector2Int((footprint.x - 1) / 2, (footprint.y - 1) / 2);
+        }
+
+        /// <summary>
+        /// 锚点格子（左下角）+ footprint + 锚点 -> 根节点（框中心）的世界坐标
+        /// 框中心对齐格子网格：偶数宽/高时落在格线上（半格偏移），奇数时落在格心
+        /// </summary>
+        public Vector2 GetPlacementWorldPos(Vector2Int anchorCell, Vector2Int footprint, bool rotated, Vector2Int pivot)
+        {
+            Vector2Int size = rotated ? new Vector2Int(footprint.y, footprint.x) : footprint;
+            return Origin + new Vector2(anchorCell.x + size.x * 0.5f, anchorCell.y + size.y * 0.5f) * CellSize;
+        }
+
         // ==================== 查询 ====================
 
         /// <summary>
@@ -147,16 +197,22 @@ namespace SuperQQ.Grid
 
         /// <summary>
         /// 检测能否在指定锚点放置（区域内 + 全部占位格子空闲）
+        /// allowOccupiedCells：允许落在被占据格子上（拆除类道具用）
         /// </summary>
-        public bool CanPlace(PlacableItemDef def, Vector2Int anchorCell, bool rotated)
+        public bool CanPlace(PlacableItemDef def, Vector2Int anchorCell, bool rotated, bool allowOccupiedCells = false)
         {
             List<Vector2Int> cells = GetFootprintCells(anchorCell, ResolveFootprint(def), rotated);
             foreach (Vector2Int cell in cells)
             {
-                if (!placeableBounds.Contains(cell) || occupiedCells.ContainsKey(cell))
+                if (!placeableBounds.Contains(cell) || (!allowOccupiedCells && occupiedCells.ContainsKey(cell)))
                 {
                     return false;
                 }
+            }
+            // 区域限制：出生终点/水底/被占用区域不可放置
+            if (GetZonesAt(cells).BlocksPlacement())
+            {
+                return false;
             }
             return true;
         }
@@ -170,13 +226,21 @@ namespace SuperQQ.Grid
         /// <returns>放置成功的物体；不合法返回 null</returns>
         public PlacedItem Place(PlacableItemDef def, Vector2Int anchorCell, bool rotated, int ownerPlayerId)
         {
-            if (def == null || def.Prefab == null || !CanPlace(def, anchorCell, rotated))
+            if (def == null || def.Prefab == null)
+            {
+                return null;
+            }
+
+            // 占位策略由道具自身声明（ItemBase）：拆除类允许叠放到目标上方
+            SuperQQ.Item.ItemBase itemPolicy = def.Prefab.GetComponent<SuperQQ.Item.ItemBase>();
+            if (!CanPlace(def, anchorCell, rotated, itemPolicy != null && itemPolicy.AllowsOccupiedOverlap))
             {
                 return null;
             }
 
             Vector2Int footprint = ResolveFootprint(def);
-            Vector2 pos = GetPlacementWorldPos(anchorCell, footprint, rotated);
+            Vector2Int pivot = ResolvePivot(def, footprint);
+            Vector2 pos = GetPlacementWorldPos(anchorCell, footprint, rotated, pivot);
             Quaternion rot = rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
             GameObject go = Instantiate(def.Prefab, pos, rot, transform);
 
@@ -195,11 +259,81 @@ namespace SuperQQ.Grid
                 itemBase.OnPlaced();
             }
 
-            foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, rotated))
+            // 登记占据：即放即消的道具（RegistersOccupancy = false，如拆除类）不持久占位
+            if (itemBase == null || itemBase.RegistersOccupancy)
             {
-                occupiedCells[cell] = item;
+                foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, rotated))
+                {
+                    occupiedCells[cell] = item;
+                }
             }
             return item;
+        }
+
+        /// <summary>
+        /// 检测一组格子是否可占用（区域内 + 全部空闲），供拖拽已有物体时使用
+        /// </summary>
+        public bool CanOccupy(Vector2Int anchorCell, Vector2Int footprint, bool rotated = false, bool allowOccupiedCells = false)
+        {
+            List<Vector2Int> cells = GetFootprintCells(anchorCell, footprint, rotated);
+            foreach (Vector2Int cell in cells)
+            {
+                if (!placeableBounds.Contains(cell))
+                {
+                    return false;
+                }
+                // 拆除/附着类道具允许落在被占用格子上
+                if (!allowOccupiedCells && occupiedCells.ContainsKey(cell))
+                {
+                    return false;
+                }
+            }
+            // 区域限制：出生终点/水底/被占用区域不可放置
+            if (GetZonesAt(cells).BlocksPlacement())
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 登记已有物体的占据（拖拽落点合法时调用，不实例化新物体）
+        /// skipOccupiedCells：跳过已被其他物体占据的格子（拆除/附着类道具用，
+        /// 避免覆盖被附着物体的占据记录）
+        /// </summary>
+        public void Occupy(Vector2Int anchorCell, Vector2Int footprint, PlacedItem owner, bool rotated = false, bool skipOccupiedCells = false)
+        {
+            foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, rotated))
+            {
+                if (skipOccupiedCells && occupiedCells.ContainsKey(cell))
+                {
+                    continue;
+                }
+                occupiedCells[cell] = owner;
+            }
+        }
+
+        /// <summary>
+        /// 释放某物体登记的全部格子（开始拖拽已放置物体时调用）
+        /// </summary>
+        public void Release(PlacedItem owner)
+        {
+            if (owner == null)
+            {
+                return;
+            }
+            var toRemove = new List<Vector2Int>();
+            foreach (KeyValuePair<Vector2Int, PlacedItem> pair in occupiedCells)
+            {
+                if (pair.Value == owner)
+                {
+                    toRemove.Add(pair.Key);
+                }
+            }
+            foreach (Vector2Int cell in toRemove)
+            {
+                occupiedCells.Remove(cell);
+            }
         }
 
         /// <summary>
@@ -220,12 +354,204 @@ namespace SuperQQ.Grid
                 itemBase.OnRemoved();
             }
 
-            foreach (Vector2Int c in GetFootprintCells(item.AnchorCell, ResolveFootprint(item.Def), item.Rotated))
+            // 优先读实例上的 FootprintBoxView（与占据登记口径一致，Def 为 null 的拖拽放置也能正确释放），
+            // 无组件时回退 Def 配置
+            FootprintBoxView box = item.GetComponent<FootprintBoxView>();
+            Vector2Int footprint = box != null ? box.Footprint : ResolveFootprint(item.Def);
+            foreach (Vector2Int c in GetFootprintCells(item.AnchorCell, footprint, item.Rotated))
             {
                 occupiedCells.Remove(c);
             }
             Destroy(item.gameObject);
             return true;
+        }
+
+        // ==================== 区域标记（Zone） ====================
+
+        /// <summary>当前加载的区域配置（可能为 null）</summary>
+        public LevelZoneConfig ZoneConfig => zoneConfig;
+
+        /// <summary>
+        /// 加载区域配置资产（关卡初始化时可由外部注入，覆盖 Inspector 配置）
+        /// </summary>
+        public void LoadZoneConfig(LevelZoneConfig config)
+        {
+            zoneConfig = config;
+        }
+
+        /// <summary>
+        /// 查询单个格子命中的区域类别（位或聚合，无命中返回 None）
+        /// </summary>
+        public GridZoneType GetZonesAt(Vector2Int cell)
+        {
+            GridZoneType result = GridZoneType.None;
+            if (zoneConfig == null)
+            {
+                return result;
+            }
+            foreach (LevelZoneConfig.ZoneEntry zone in zoneConfig.Zones)
+            {
+                if (zone.cells.Contains(cell))
+                {
+                    result |= zone.zoneType;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 查询多个格子命中的区域类别（聚合结果）
+        /// </summary>
+        public GridZoneType GetZonesAt(IEnumerable<Vector2Int> cells)
+        {
+            GridZoneType result = GridZoneType.None;
+            foreach (Vector2Int cell in cells)
+            {
+                result |= GetZonesAt(cell);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 查询一个格子矩形范围命中的区域类别（聚合结果）
+        /// </summary>
+        public GridZoneType GetZonesInRect(RectInt cellRect)
+        {
+            GridZoneType result = GridZoneType.None;
+            if (zoneConfig == null)
+            {
+                return result;
+            }
+            foreach (LevelZoneConfig.ZoneEntry zone in zoneConfig.Zones)
+            {
+                if (RectOverlaps(zone.cells, cellRect))
+                {
+                    result |= zone.zoneType;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 查询物体世界包围盒命中的区域类别（聚合结果）
+        /// 包围盒换算成覆盖的格子范围后做矩形相交检测
+        /// </summary>
+        public GridZoneType GetZonesInBounds(Bounds worldBounds)
+        {
+            Vector2Int minCell = WorldToCell(worldBounds.min);
+            // 减 1 像素防上/右边界多吃一格
+            Vector2Int maxCell = WorldToCell(worldBounds.max - Vector3.one * 0.001f);
+            var cellRect = new RectInt(
+                minCell.x, minCell.y,
+                maxCell.x - minCell.x + 1,
+                maxCell.y - minCell.y + 1);
+            return GetZonesInRect(cellRect);
+        }
+
+        /// <summary>两个格子矩形是否相交</summary>
+        private static bool RectOverlaps(RectInt a, RectInt b)
+        {
+            return a.xMin < b.xMax && a.xMax > b.xMin && a.yMin < b.yMax && a.yMax > b.yMin;
+        }
+
+        // ==================== 网格可视化（运行时接口） ====================
+
+        /// <summary>
+        /// 显示网格（建造阶段调用）。首次调用时懒构建平铺层，之后仅开关显隐
+        /// </summary>
+        public void ShowGrid()
+        {
+            if (gridVisualRoot == null)
+            {
+                BuildGridVisual();
+            }
+            if (gridVisualRoot != null)
+            {
+                gridVisualRoot.SetActive(true);
+            }
+        }
+
+        /// <summary>
+        /// 关闭网格显示（跑动阶段调用）
+        /// </summary>
+        public void HideGrid()
+        {
+            if (gridVisualRoot != null)
+            {
+                gridVisualRoot.SetActive(false);
+            }
+        }
+
+        /// <summary>网格当前是否可见</summary>
+        public bool IsGridVisible => gridVisualRoot != null && gridVisualRoot.activeSelf;
+
+        /// <summary>
+        /// 构建运行时网格可视化：小格/大格两层平铺 + SpriteMask 裁切到可摆放区域
+        /// </summary>
+        private void BuildGridVisual()
+        {
+            float cs = CellSize;
+            Vector2 boundsMin = Origin + new Vector2(placeableBounds.xMin, placeableBounds.yMin) * cs;
+            Vector2 boundsSize = new Vector2(placeableBounds.width, placeableBounds.height) * cs;
+
+            gridVisualRoot = new GameObject("GridVisual");
+            gridVisualRoot.transform.SetParent(transform, false);
+
+            // 遮罩：把平铺层裁切到可摆放区域内（1x1 白图程序生成，PPU=1 即 1 像素=1 米）
+            var maskGo = new GameObject("GridMask");
+            maskGo.transform.SetParent(gridVisualRoot.transform, false);
+            maskGo.transform.position = boundsMin + boundsSize * 0.5f;
+            var mask = maskGo.AddComponent<SpriteMask>();
+            mask.sprite = CreateWhiteSprite();
+            maskGo.transform.localScale = new Vector3(boundsSize.x, boundsSize.y, 1f);
+
+            if (smallCellSprite != null)
+            {
+                CreateTiledLayer("SmallCells", smallCellSprite, boundsMin, boundsSize);
+            }
+            if (bigCellSprite != null)
+            {
+                CreateTiledLayer("BigCells", bigCellSprite, boundsMin, boundsSize);
+            }
+        }
+
+        /// <summary>
+        /// 创建一层平铺网格：tile 边界与格子线严格对齐（遮罩负责裁掉溢出部分）
+        /// </summary>
+        private void CreateTiledLayer(string name, Sprite tileSprite, Vector2 boundsMin, Vector2 boundsSize)
+        {
+            Vector2 tileSize = tileSprite.bounds.size;   // 由贴图 PPU 决定（0.5m / 2m）
+            Vector2 pivotNorm = tileSprite.pivot / tileSprite.bounds.size;   // 归一化 pivot
+
+            var go = new GameObject(name);
+            go.transform.SetParent(gridVisualRoot.transform, false);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = tileSprite;
+            sr.drawMode = SpriteDrawMode.Tiled;
+            sr.sortingOrder = gridSortingOrder;
+            sr.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+
+            // 对齐：Tiled 模式以 pivot 为平铺锚点，tile 线位于 pos + pivot偏移 + k*tileSize
+            // 令一条 tile 线恰好压在 bounds 角上，再向四周各多铺 1 格防露边
+            Vector2 pivotOffset = new Vector2(pivotNorm.x * tileSize.x, pivotNorm.y * tileSize.y);
+            float posX = boundsMin.x + boundsSize.x * 0.5f;
+            float posY = boundsMin.y + boundsSize.y * 0.5f;
+            posX += Mathf.Repeat(boundsMin.x - pivotOffset.x - posX, tileSize.x);
+            posY += Mathf.Repeat(boundsMin.y - pivotOffset.y - posY, tileSize.y);
+            go.transform.position = new Vector3(posX, posY, 0f);
+
+            sr.size = boundsSize + tileSize * 2f;
+        }
+
+        /// <summary>
+        /// 程序生成 1x1 白色 Sprite（PPU=1，配合 transform.scale 充当任意尺寸矩形遮罩）
+        /// </summary>
+        private static Sprite CreateWhiteSprite()
+        {
+            var tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+            tex.SetPixel(0, 0, Color.white);
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
         }
 
         // ==================== 场景可视化 ====================

@@ -1,274 +1,536 @@
-using System;
 using UnityEngine;
 
 namespace SuperQQ.Grid
 {
     /// <summary>
-    /// 摆放控制器 — 场景单例，建造阶段激活
-    /// 负责摆放交互全流程：生成幽灵体 → 触屏拖拽吸附 → 合法性提示 → UI 按钮确认/旋转/取消
-    ///
-    /// 同一时刻只有一个幽灵体在被拖拽，已放置的物体无需吸附（放下时已对齐）
-    /// 触屏与编辑器鼠标双兼容，便于真机与编辑器调试
-    /// 网络同步挂点：订阅 OnPlaced / OnRemoved 事件发送消息（本地权威，先放置再广播）
+    /// 网格吸附拖拽控制器 — 挂在每个需要网格吸附的道具上
+    /// 玩家拖拽道具本体时，根据自身的包围盒（FootprintBoxView.Footprint）自动对齐场景网格：
+    ///   按下：若已放置则先释放占据格子，记录原锚点
+    ///   拖拽：位置完全由格子坐标重建（吸附），虚线框按合法性变绿/红
+    ///   抬起：落点合法则登记占据；非法则吸附回原锚点
+    /// 依赖碰撞体接收拖拽输入（OnMouseDown/Drag/Up，触屏兼容）
     /// </summary>
+    [RequireComponent(typeof(FootprintBoxView))]
+    [RequireComponent(typeof(Collider2D))]
     public class PlacementController : MonoBehaviour
     {
-        /// <summary>当前场景实例</summary>
-        public static PlacementController Instance { get; private set; }
-
         [Header("引用")]
         [Tooltip("留空则自动使用 Camera.main")]
         [SerializeField] private Camera inputCamera;
 
-        [Header("幽灵体外观")]
-        [Tooltip("幽灵体半透明度")]
+        [Header("拖拽")]
+        [Tooltip("拖拽时道具相对指针上移的格数，避免手指遮挡")]
+        [SerializeField] private float pointerLiftCells = 1f;
+        [Tooltip("拖拽时是否显示虚线包围盒")]
+        [SerializeField] private bool showBoxWhileDragging = true;
+        [Tooltip("允许放置在被占用的格子上（附着类道具开启；拆除类由 ItemBase.AllowsOccupiedOverlap 声明，无需勾选）；开启后登记时跳过已被占据的格子，不覆盖原有道具的占据记录")]
+        [SerializeField] private bool allowPlaceOnOccupied;
+
+        [Header("虚化")]
+        [Tooltip("虚化时 Sprtie 的透明度（可拖拽/待确认状态的视觉提示）")]
         [SerializeField, Range(0f, 1f)] private float ghostAlpha = 0.5f;
-        [Tooltip("可放置时虚线框颜色")]
+
+        [Header("提示颜色")]
         [SerializeField] private Color validColor = new Color(0.3f, 1f, 0.3f, 0.9f);
-        [Tooltip("不可放置时虚线框颜色")]
         [SerializeField] private Color invalidColor = new Color(1f, 0.3f, 0.3f, 0.9f);
 
-        [Header("触屏")]
-        [Tooltip("幽灵体相对手指的上移格数，避免手指挡住预览")]
-        [SerializeField] private float fingerOffsetCells = 2f;
+        [Header("旋转")]
+        [Tooltip("旋转状态对应的 Z 轴角度（切换 0°/该角度）")]
+        [SerializeField] private float rotatedAngle = 90f;
 
-        // 放置/移除事件（网络同步层订阅）
-        /// <summary>本地确认放置后触发（参数：放置结果）</summary>
-        public event Action<PlacedItem> OnPlaced;
-        /// <summary>本地拾回移除后触发（参数：被移除物体原本的锚点格子）</summary>
-        public event Action<Vector2Int> OnRemoved;
+        [Header("调试")]
+        [Tooltip("启用后：P 键进入可拖拽状态，R 键旋转")]
+        [SerializeField] private bool debugHotkeys = true;
 
-        // 当前摆放状态
-        private PlacableItemDef currentDef;
-        private GameObject ghost;
-        private FootprintBoxView ghostBox;
-        private bool rotated;
+        private FootprintBoxView box;
+        private PlacedItem placedItem;        // 占据登记凭证（登记过时存在）
+        private SuperQQ.Item.ItemBase itemBase;   // 道具基类（摆放完成时通知 OnPlaced；无则跳过）
+        private bool draggable;               // 可拖拽状态（由 EnterDraggableState 开启）
+        private bool dragging;
+        private bool currentValid;
+        private bool rotated;                 // 当前旋转状态（false=0°，true=rotatedAngle）
+        private bool registered;              // 占据是否已登记（false=未合规放置，可再拖拽）
+        private Vector2Int currentPivotCell;  // 拖拽中最近一次吸附的锚点格子（旋转围绕它进行）
 
-        /// <summary>是否正处于摆放状态（有幽灵体）</summary>
-        public bool IsPlacing => ghost != null;
+        /// <summary>当前朝向下锚点格子在占位矩形内的索引</summary>
+        private Vector2Int PivotInRect => rotated
+            ? GridManager.GetRotatedPivot(box.PivotCell, box.Footprint)
+            : box.PivotCell;
+
+        /// <summary>锚点格子 -> 占位矩形左下角锚点（占据登记用）</summary>
+        private Vector2Int AnchorFromPivot(Vector2Int pivotGridCell) => pivotGridCell - PivotInRect;
+
+        /// <summary>左下角锚点 -> 根节点（框中心）的世界坐标</summary>
+        private Vector2 RootPosFromAnchor(Vector2Int anchor)
+        {
+            return Grid.GetPlacementWorldPos(anchor, box.Footprint, rotated, box.PivotCell);
+        }
+
+        /// <summary>根节点（框中心）世界坐标 -> 左下角锚点格子</summary>
+        private Vector2Int AnchorFromRootPos(Vector2 worldPos)
+        {
+            Vector2Int size = rotated
+                ? new Vector2Int(box.Footprint.y, box.Footprint.x)
+                : box.Footprint;
+            Vector2 local = (worldPos - Grid.PublicOrigin) / Grid.PublicCellSize;
+            return new Vector2Int(
+                Mathf.RoundToInt(local.x - size.x * 0.5f),
+                Mathf.RoundToInt(local.y - size.y * 0.5f));
+        }
+
+        /// <summary>根节点世界坐标 -> 锚点所在格子（锚点格子的世界中心）</summary>
+        private Vector2Int PivotCellFromRootPos(Vector2 worldPos)
+        {
+            return AnchorFromRootPos(worldPos) + PivotInRect;
+        }
+
+        // 虚化状态：缓存各 SpriteRenderer 原始透明度，结束时恢复
+        private SpriteRenderer[] cachedRenderers;
+        private float[] originalAlphas;
+        private bool ghosting;
+
+        private GridManager Grid => GridManager.Instance;
+
+        /// <summary>是否处于可拖拽状态</summary>
+        public bool IsDraggable => draggable;
+        /// <summary>是否正在被拖拽</summary>
+        public bool IsDragging => dragging;
+        /// <summary>当前拖拽落点是否合法</summary>
+        public bool CurrentValid => currentValid;
+        /// <summary>当前是否处于旋转状态</summary>
+        public bool IsRotated => rotated;
+        /// <summary>本道具是否允许旋转（由 FootprintBoxView 配置）</summary>
+        public bool CanRotate => box != null && box.CanRotate;
+        /// <summary>当前摆放是否合规（占据已登记到网格；拖拽到非法区域停留时为 false）</summary>
+        public bool IsPlacementValid => registered;
+
+        /// <summary>调试快捷键（P/R/Enter）开关；外部摆放流程接管本组件时应关闭，避免热键与流程输入冲突</summary>
+        public bool DebugHotkeys
+        {
+            get => debugHotkeys;
+            set => debugHotkeys = value;
+        }
+
+        /// <summary>是否允许落在被占据格子上：本组件配置或道具基类策略（拆除类）声明均可开启</summary>
+        private bool AllowsOverlap => allowPlaceOnOccupied || (itemBase != null && itemBase.AllowsOccupiedOverlap);
 
         // ==================== 生命周期 ====================
 
         private void Awake()
         {
-            Instance = this;
+            box = GetComponent<FootprintBoxView>();
+            if (box == null)
+            {
+                // 兜底：对象在 RequireComponent 约束生效前配置（或依赖被手动移除）时 GetComponent 会拿到 null，
+                // 此处自动补挂，避免后续吸附/登记逻辑空引用
+                box = gameObject.AddComponent<FootprintBoxView>();
+                Debug.LogWarning("[PlacementController] 缺少 FootprintBoxView，已自动补挂（占位默认 1x1，请在 Inspector 中核对）", this);
+            }
+            placedItem = GetComponent<PlacedItem>();
+            itemBase = GetComponent<SuperQQ.Item.ItemBase>();
             if (inputCamera == null)
             {
                 inputCamera = Camera.main;
             }
         }
 
-        private void OnDestroy()
+        /// <summary>
+        /// 吸附到最近的合法格子位置（不登记，仅对齐位置）
+        /// </summary>
+        public void SnapToNearestCell()
         {
-            if (Instance == this)
-            {
-                Instance = null;
-            }
+            // 框对齐格子网格：偶数宽/高时根节点落在格线上
+            transform.position = RootPosFromAnchor(AnchorFromRootPos(transform.position));
         }
 
-        private void Update()
-        {
-            if (!IsPlacing)
-            {
-                return;
-            }
-
-            // 按住屏幕/鼠标即拖拽幽灵体；松手不确认，幽灵体驻留当前格子，
-            // 由 UI 确认按钮调 ConfirmPlacement() 完成放置
-            Vector2? pointerWorld = GetPointerWorldPosition();
-            if (pointerWorld.HasValue)
-            {
-                UpdateGhost(pointerWorld.Value);
-            }
-        }
-
-        // ==================== 公开接口（UI / 道具栏调用） ====================
+        // ==================== 只读查询（外部摆放流程用） ====================
 
         /// <summary>
-        /// 开始摆放一个道具：生成幽灵体，进入拖拽吸附状态
-        /// 重复调用会先取消上一次摆放
+        /// 查询根节点位于指定世界坐标时对应的占位矩形左下角锚点格子。
+        /// 与登记时使用的换算完全一致，外部流程无需自行复刻公式
         /// </summary>
-        public void BeginPlacement(PlacableItemDef def)
+        public Vector2Int GetAnchorCellAt(Vector2 worldPos)
         {
-            if (def == null || def.Prefab == null)
-            {
-                return;
-            }
-
-            CancelPlacement();
-            currentDef = def;
-            rotated = false;
-
-            ghost = CreateGhost(def);
-            ghostBox = ghost.GetComponent<FootprintBoxView>();
-            if (ghostBox == null)
-            {
-                ghostBox = ghost.AddComponent<FootprintBoxView>();
-            }
-            ghostBox.Init(GridManager.Instance.ResolveFootprint(def), rotated);
-            ghostBox.Show();
+            return Grid != null ? AnchorFromRootPos(worldPos) : Vector2Int.zero;
         }
 
         /// <summary>
-        /// 取消摆放：销毁幽灵体，不放置
+        /// 查询根节点位于指定世界坐标时落点是否合法（含本道具声明的叠放策略）。
+        /// 供外部摆放流程做合法性提示，保证提示结果与 CompletePlacement 的登记判定一致
         /// </summary>
-        public void CancelPlacement()
+        public bool CanPlaceAt(Vector2 worldPos)
         {
-            if (ghost != null)
+            if (Grid == null || box == null)
             {
-                Destroy(ghost);
+                return false;
             }
-            ghost = null;
-            ghostBox = null;
-            currentDef = null;
-            rotated = false;
+            return Grid.CanOccupy(AnchorFromRootPos(worldPos), box.Footprint, rotated, AllowsOverlap);
+        }
+
+        // ==================== 状态接口 ====================
+
+        /// <summary>
+        /// 进入可拖拽状态：开启拖拽响应并虚化显示（摆放阶段由外部调用）
+        /// </summary>
+        public void EnterDraggableState()
+        {
+            draggable = true;
+            GhostOn();
         }
 
         /// <summary>
-        /// 旋转幽灵体90度（道具不允许旋转时无效）；接 UI 旋转按钮
+        /// 完成放置：结束拖拽（若正在拖拽则按当前位置结算），
+        /// 把包围盒占据的格子登记为已占领，关闭虚化，锁定道具
         /// </summary>
-        public void RotateGhost()
+        public void CompletePlacement()
         {
-            if (!IsPlacing || currentDef == null || !currentDef.Rotatable)
+            if (dragging)
             {
-                return;
+                EndDrag();
             }
 
-            rotated = !rotated;
-            ghost.transform.rotation = rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
-            ghostBox.Init(GridManager.Instance.ResolveFootprint(currentDef), rotated);
+            // 兜底登记：未被拖拽过（或拖拽结算前）直接完成放置时，
+            // 按当前位置吸附并把 footprint 覆盖的格子标记为已占领；落点非法则保持不合规状态
+            if (!registered)
+            {
+                SnapToNearestCell();
+                Vector2Int anchor = AnchorFromRootPos(transform.position);
+                if (Grid.CanOccupy(anchor, box.Footprint, rotated, AllowsOverlap))
+                {
+                    RegisterAt(anchor);
+                }
+                else
+                {
+                    box.Init(box.Footprint, rotated);
+                    box.Show();
+                    box.SetColor(invalidColor);
+                }
+            }
+
+            draggable = false;
+            GhostOff();
+        }
+
+        // ==================== 旋转接口 ====================
+
+        /// <summary>
+        /// 切换旋转状态（0° ↔ rotatedAngle），供双击/按钮等外部输入调用。
+        /// 连带旋转：transform（碰撞体/贴图/特效挂点）、虚线框、占位宽高互换。
+        /// </summary>
+        /// <returns>旋转是否生效（道具不可旋转或已放置且新朝向落点非法时返回 false）</returns>
+        public bool ToggleRotate()
+        {
+            return SetRotated(!rotated);
         }
 
         /// <summary>
-        /// 拾回已放置的物体：移除并以其定义重新进入摆放状态
+        /// 设置旋转状态。
+        /// 拖拽中：按当前锚点重新吸附并刷新合法性提示；
+        /// 已放置：在原锚点以新朝向重新登记，落点非法则整体回退；
+        /// 未放置：仅旋转表现，占位在后续吸附时生效。
         /// </summary>
-        public bool PickUpAt(Vector2 worldPos)
+        public bool SetRotated(bool target)
         {
-            Vector2Int cell = GridManager.Instance.WorldToCell(worldPos);
-            PlacedItem item = GridManager.Instance.GetItemAt(cell);
-            if (item == null)
+            if (target == rotated)
+            {
+                return true;
+            }
+            if (!CanRotate || Grid == null)
             {
                 return false;
             }
 
-            PlacableItemDef def = item.Def;
-            Vector2Int anchor = item.AnchorCell;
-            if (GridManager.Instance.RemoveAt(cell))
+            bool prev = rotated;
+
+            if (registered && placedItem != null && !dragging)
             {
-                OnRemoved?.Invoke(anchor);
-                BeginPlacement(def);
-                return true;
+                // 已合规放置：锚点格子世界位置不动，占位矩形绕它重排，根节点物理移动到新框中心
+                Vector2Int pivotGridCell = PivotCellFromRootPos(transform.position);
+                Vector2Int oldAnchor = AnchorFromPivot(pivotGridCell);
+                rotated = target;
+                Vector2Int newAnchor = AnchorFromPivot(pivotGridCell);
+
+                Grid.Release(placedItem);
+                if (Grid.CanOccupy(newAnchor, box.Footprint, rotated, AllowsOverlap))
+                {
+                    ApplyRotation();
+                    transform.position = RootPosFromAnchor(newAnchor);
+                    placedItem.Init(placedItem.Def, newAnchor, rotated, placedItem.OwnerPlayerId);
+                    Grid.Occupy(newAnchor, box.Footprint, placedItem, rotated, AllowsOverlap);
+                    return true;
+                }
+                // 落点非法：回退旋转状态并恢复原登记
+                rotated = prev;
+                Grid.Occupy(oldAnchor, box.Footprint, placedItem, rotated, AllowsOverlap);
+                return false;
             }
-            return false;
+
+            // 未放置/拖拽中：绕锚点格子旋转——锚点格子世界位置不动，
+            // 根节点物理移动到新朝向的框中心，外观即围绕锚点旋转
+            Vector2Int pivotCell = PivotCellFromRootPos(transform.position);
+            rotated = target;
+            ApplyRotation();
+            transform.position = RootPosFromAnchor(AnchorFromPivot(pivotCell));
+            box.Init(box.Footprint, rotated);
+
+            if (dragging)
+            {
+                currentValid = Grid.CanOccupy(AnchorFromPivot(pivotCell), box.Footprint, rotated, AllowsOverlap);
+                box.SetColor(currentValid ? validColor : invalidColor);
+            }
+            return true;
+        }
+
+        /// <summary>按当前旋转状态应用 transform 旋转（碰撞体/视觉/挂点随层级一并旋转）</summary>
+        private void ApplyRotation()
+        {
+            transform.rotation = rotated ? Quaternion.Euler(0f, 0f, rotatedAngle) : Quaternion.identity;
+        }
+
+        // ==================== 拖拽输入（手动轮询，编辑器鼠标/真机触屏通用） ====================
+
+        private void Update()
+        {
+            if (Grid == null)
+            {
+                return;
+            }
+
+            // 调试快捷键：P 进入可拖拽状态，R 旋转，Enter 确认放置
+            if (debugHotkeys)
+            {
+                if (Input.GetKeyDown(KeyCode.P) && !draggable)
+                {
+                    EnterDraggableState();
+                }
+                if (Input.GetKeyDown(KeyCode.Return) && draggable && dragging)
+                {
+                    // 确认放置：仅结算正在被拖拽的本道具（P 会激活场上所有道具，
+                    // 不加 dragging 约束会导致 Enter 连带确认其它道具）；
+                    // 结束拖拽、登记占据格子并触发 OnPlaced，落点非法则保持不合规提示
+                    CompletePlacement();
+                    return;
+                }
+                if (Input.GetKeyDown(KeyCode.R) && draggable)
+                {
+                    ToggleRotate();
+                }
+            }
+
+            if (!draggable)
+            {
+                return;
+            }
+
+            bool pressed = GetPointerPressed(out Vector2 pointerScreen);
+            if (!dragging)
+            {
+                // 按下瞬间做 2D 射线检测：点到本道具才开始拖拽
+                if (pressed && IsPointerDownThisFrame() && HitSelf(ScreenToWorld(pointerScreen)))
+                {
+                    BeginDrag();
+                }
+                return;
+            }
+
+            if (pressed)
+            {
+                DragStep(ScreenToWorld(pointerScreen));
+            }
+            else
+            {
+                EndDrag();
+            }
+        }
+
+        private void BeginDrag()
+        {
+            dragging = true;
+            currentPivotCell = PivotCellFromRootPos(transform.position);
+
+            // 已登记的物体：先释放占据的格子，腾空后拖动
+            if (registered && placedItem != null)
+            {
+                Grid.Release(placedItem);
+            }
+            registered = false;
+
+            if (showBoxWhileDragging)
+            {
+                box.Init(box.Footprint, rotated);
+                box.Show();
+            }
+        }
+
+        private void DragStep(Vector2 pointerWorld)
+        {
+            // 指针位置上移后换算锚点格子，位置完全由格子重建（框中心对齐网格）
+            Vector2 liftedWorld = pointerWorld + Vector2.up * (pointerLiftCells * Grid.PublicCellSize);
+            currentPivotCell = Grid.WorldToCell(liftedWorld);
+
+            transform.position = RootPosFromAnchor(AnchorFromPivot(currentPivotCell));
+
+            currentValid = Grid.CanOccupy(AnchorFromPivot(currentPivotCell), box.Footprint, rotated, AllowsOverlap);
+            box.SetColor(currentValid ? validColor : invalidColor);
+        }
+
+        private void EndDrag()
+        {
+            dragging = false;
+
+            if (currentValid)
+            {
+                RegisterAt(AnchorFromRootPos(transform.position));
+                box.Hide();
+            }
+            else
+            {
+                // 落点非法：停留在当前位置（不弹回、不登记），保持红色包围盒提示不合规
+                box.SetColor(invalidColor);
+            }
         }
 
         // ==================== 内部逻辑 ====================
 
         /// <summary>
-        /// 幽灵体跟随指针并吸附到格子，按合法性切换虚线框颜色
+        /// 射线检测指针是否点中了本道具（含子物体的碰撞体）
         /// </summary>
-        private void UpdateGhost(Vector2 pointerWorld)
+        /// <summary>
+        /// 点选检测：指针是否落在本道具的包围盒（footprint 矩形）内
+        /// 不依赖碰撞体——素材不填满占位、细长道具也能整框点选
+        /// </summary>
+        private bool HitSelf(Vector2 pointerWorld)
         {
-            GridManager gm = GridManager.Instance;
-            Vector2Int footprint = gm.ResolveFootprint(currentDef);
+            Vector2Int size = rotated
+                ? new Vector2Int(box.Footprint.y, box.Footprint.x)
+                : box.Footprint;
+            Vector2 halfSize = new Vector2(size.x, size.y) * (Grid.PublicCellSize * 0.5f);
 
-            // 幽灵体显示位置相对指针上移，避免手指遮挡；吸附锚点按偏移后的位置计算
-            Vector2 ghostWorld = pointerWorld + Vector2.up * (fingerOffsetCells * gm.PublicCellSize);
-            Vector2Int anchor = gm.WorldToCell(ghostWorld);
-            ghost.transform.position = gm.GetPlacementWorldPos(anchor, footprint, rotated);
-            ghost.transform.rotation = rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
-
-            bool canPlace = gm.CanPlace(currentDef, anchor, rotated);
-            ghostBox.SetColor(canPlace ? validColor : invalidColor);
+            // 根节点位置即包围盒中心（RootPosFromAnchor 的约定）
+            Vector2 center = transform.position;
+            return Mathf.Abs(pointerWorld.x - center.x) <= halfSize.x
+                && Mathf.Abs(pointerWorld.y - center.y) <= halfSize.y;
         }
 
         /// <summary>
-        /// 确认放置：在幽灵体当前格子正式生成道具并退出摆放状态；接 UI 确认按钮
-        /// 位置非法时不放置（幽灵体保留，玩家可继续拖拽调整）
+        /// 在指定锚点登记占据（首次登记时自动补挂 PlacedItem）
         /// </summary>
-        /// <returns>是否成功放置</returns>
-        public bool ConfirmPlacement()
+        private void RegisterAt(Vector2Int anchor)
         {
-            if (!IsPlacing)
+            if (placedItem == null)
             {
-                return false;
+                placedItem = gameObject.AddComponent<PlacedItem>();
+                placedItem.Init(null, anchor, rotated, -1);
             }
-
-            GridManager gm = GridManager.Instance;
-            Vector2Int anchor = gm.WorldToCell(ghost.transform.position);
-
-            PlacedItem item = gm.Place(currentDef, anchor, rotated, -1);
-            if (item == null)
+            else
             {
-                return false;
+                placedItem.Init(placedItem.Def, anchor, rotated, placedItem.OwnerPlayerId);
             }
-
-            OnPlaced?.Invoke(item);
-            CancelPlacement();
-            return true;
+            // 登记占据：即放即消的道具（拆除类，RegistersOccupancy = false）只借落点定位，不持久占位
+            if (itemBase == null || itemBase.RegistersOccupancy)
+            {
+                Grid.Occupy(anchor, box.Footprint, placedItem, rotated, AllowsOverlap);
+            }
+            registered = true;
+            box.Hide();
+            NotifyPlaced();
         }
 
         /// <summary>
-        /// 幽灵体当前位置是否可放置（UI 可用它控制确认按钮的置灰/高亮）
+        /// 摆放完成通知：注入放置信息并触发道具的 OnPlaced 钩子（与 GridManager.Place 行为一致）
+        /// 拖拽抬起落点合法与 CompletePlacement 兜底登记都经由 RegisterAt，保证通知不遗漏
         /// </summary>
-        public bool CanConfirm
+        private void NotifyPlaced()
         {
-            get
+            if (itemBase != null)
             {
-                if (!IsPlacing)
-                {
-                    return false;
-                }
-                Vector2Int anchor = GridManager.Instance.WorldToCell(ghost.transform.position);
-                return GridManager.Instance.CanPlace(currentDef, anchor, rotated);
+                itemBase.InitPlaced(placedItem, rotated ? 1 : 0);
+                itemBase.OnPlaced();
             }
         }
 
-        /// <summary>
-        /// 生成幽灵体：实例化 prefab 后"降级"——禁碰撞、关物理、半透明
-        /// </summary>
-        private GameObject CreateGhost(PlacableItemDef def)
-        {
-            GameObject go = Instantiate(def.GhostPrefab != null ? def.GhostPrefab : def.Prefab);
-            go.name = def.ItemId + "_Ghost";
+        // ==================== 虚化接口 ====================
 
-            foreach (Collider2D col in go.GetComponentsInChildren<Collider2D>(true))
+        /// <summary>
+        /// 开启虚化：所有 SpriteRenderer 透明度降为 ghostAlpha（原始值已缓存，可安全重复调用）
+        /// </summary>
+        public void GhostOn()
+        {
+            if (ghosting)
             {
-                col.enabled = false;
+                return;
             }
-            foreach (Rigidbody2D rb in go.GetComponentsInChildren<Rigidbody2D>(true))
+            ghosting = true;
+
+            cachedRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+            originalAlphas = new float[cachedRenderers.Length];
+            for (int i = 0; i < cachedRenderers.Length; i++)
             {
-                rb.simulated = false;
-            }
-            foreach (SpriteRenderer sr in go.GetComponentsInChildren<SpriteRenderer>(true))
-            {
-                Color c = sr.color;
+                originalAlphas[i] = cachedRenderers[i].color.a;
+                Color c = cachedRenderers[i].color;
                 c.a = ghostAlpha;
-                sr.color = c;
+                cachedRenderers[i].color = c;
             }
-            return go;
         }
 
         /// <summary>
-        /// 读取指针世界坐标（触屏优先，编辑器回退鼠标）；无有效指针时返回 null
+        /// 结束虚化：恢复所有 SpriteRenderer 的原始透明度
         /// </summary>
-        private Vector2? GetPointerWorldPosition()
+        public void GhostOff()
+        {
+            if (!ghosting)
+            {
+                return;
+            }
+            ghosting = false;
+
+            for (int i = 0; i < cachedRenderers.Length; i++)
+            {
+                if (cachedRenderers[i] == null)
+                {
+                    continue;
+                }
+                Color c = cachedRenderers[i].color;
+                c.a = originalAlphas[i];
+                cachedRenderers[i].color = c;
+            }
+            cachedRenderers = null;
+            originalAlphas = null;
+        }
+
+        /// <summary>
+        /// 指针当前是否按下（触屏或鼠标），并输出屏幕坐标
+        /// </summary>
+        private bool GetPointerPressed(out Vector2 screenPos)
         {
             if (Input.touchCount > 0)
             {
                 Touch touch = Input.GetTouch(0);
-                if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+                if (touch.phase != TouchPhase.Ended && touch.phase != TouchPhase.Canceled)
                 {
-                    return null;
+                    screenPos = touch.position;
+                    return true;
                 }
-                return ScreenToWorld(touch.position);
             }
-
-            if (Input.GetMouseButton(0))
+            else if (Input.GetMouseButton(0))
             {
-                return ScreenToWorld(Input.mousePosition);
+                screenPos = Input.mousePosition;
+                return true;
             }
-            return null;
+            screenPos = Vector2.zero;
+            return false;
+        }
+
+        /// <summary>
+        /// 本帧是否为指针刚按下的一瞬
+        /// </summary>
+        private bool IsPointerDownThisFrame()
+        {
+            if (Input.touchCount > 0)
+            {
+                return Input.GetTouch(0).phase == TouchPhase.Began;
+            }
+            return Input.GetMouseButtonDown(0);
         }
 
         private Vector2 ScreenToWorld(Vector2 screenPos)

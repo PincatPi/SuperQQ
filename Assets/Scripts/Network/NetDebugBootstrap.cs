@@ -1,3 +1,4 @@
+using System;
 using Minigame.Account.V1;
 using Minigame.Common.V1;
 using Minigame.Gateway.V1;
@@ -40,10 +41,14 @@ namespace SuperQQ.Network
                 return;
             }
 
-            // 快照接收器直接挂在本物体上，避免手动配置场景
+            // 快照接收器与玩家列表面板直接挂在本物体上，避免手动配置场景
             if (GetComponent<RoomSnapshotReceiver>() == null)
             {
                 gameObject.AddComponent<RoomSnapshotReceiver>();
+            }
+            if (GetComponent<RoomPlayerListPanel>() == null)
+            {
+                gameObject.AddComponent<RoomPlayerListPanel>();
             }
 
             _net.Register<LoginResponse>(OnLogin);
@@ -51,6 +56,18 @@ namespace SuperQQ.Network
             _net.Register<CreateRoomResponse>(OnCreateRoom);
             _net.Register<ErrorResponse>(OnError);
             _net.OnConnectionChanged += OnConnectionChanged;
+
+            // 从大厅进房后进入本场景：连接/登录/进房已完成，直接接入本地玩家并生成远程化身
+            if (_net.IsConnected && !string.IsNullOrEmpty(_net.LocalPlayerId) && !string.IsNullOrEmpty(_net.RoomId))
+            {
+                Debug.Log($"[NetWork] 已在房间 {_net.RoomId} 中，跳过登录进房，直接接入对局");
+                SetupLocalPlayer();
+                if (_net.JoinedRoom != null)
+                {
+                    RegisterRemotePlayers(_net.JoinedRoom);
+                }
+                return;
+            }
 
             _net.Connect();
         }
@@ -118,7 +135,7 @@ namespace SuperQQ.Network
             if (!connected) return;
 
             string deviceId = string.IsNullOrEmpty(deviceIdOverride)
-                ? SystemInfo.deviceUniqueIdentifier + (Application.isEditor ? "-editor" : "-player")
+                ? GetOrCreateDeviceId()
                 : deviceIdOverride;
 
             Debug.Log($"[NetWork] 自动登录: deviceId={deviceId}");
@@ -127,6 +144,28 @@ namespace SuperQQ.Network
                 DeviceId = deviceId,
                 ClientVersion = Application.version
             });
+        }
+
+        /// <summary>
+        /// 获取本机的稳定设备ID：优先硬件标识，为空或与硬件无关的场景回退到
+        /// 首次启动生成并持久化的随机 GUID，保证每台设备安装后唯一。
+        /// 真机上 Android/iOS 相同机型可能返回相同的 deviceUniqueIdentifier，
+        /// 因此统一叠加本地持久化的随机串，彻底避免双端撞号。
+        /// </summary>
+        private static string GetOrCreateDeviceId()
+        {
+            const string key = "NetDebug_DeviceIdSuffix";
+            string suffix = PlayerPrefs.GetString(key, "");
+            if (string.IsNullOrEmpty(suffix))
+            {
+                suffix = Guid.NewGuid().ToString("N").Substring(0, 8);
+                PlayerPrefs.SetString(key, suffix);
+                PlayerPrefs.Save();
+            }
+
+            return SystemInfo.deviceUniqueIdentifier
+                   + (Application.isEditor ? "-editor" : "-player")
+                   + "-" + suffix;
         }
 
         // ==================== ② 登录成功 → 进房 ====================
@@ -164,6 +203,7 @@ namespace SuperQQ.Network
             }
 
             _net.RoomId = resp.Room.RoomId;
+            _net.JoinedRoom = resp.Room;
             Debug.Log($"[NetWork] 进房成功: roomId={resp.Room.RoomId} 房间玩家数={resp.Room.Players.Count}");
 
             SetupLocalPlayer();
@@ -186,6 +226,10 @@ namespace SuperQQ.Network
                 if (player.GetComponent<InputReporter>() == null)
                 {
                     player.gameObject.AddComponent<InputReporter>();
+                }
+                if (player.GetComponent<PlayerOutReporter>() == null)
+                {
+                    player.gameObject.AddComponent<PlayerOutReporter>();
                 }
 
                 Debug.Log($"[NetWork] 本地玩家已接入联机: {player.PlayerName} -> {_net.LocalPlayerId}");
@@ -213,6 +257,7 @@ namespace SuperQQ.Network
 
                 if (!session.HasPlayerByIdentity(playerId))
                 {
+                    // 颜色：服务器按进房顺序分配的 color_index 查本地色板，各端一致
                     session.RegisterProfile(new PlayerProfile
                     {
                         PlayerId = playerId,
@@ -220,9 +265,9 @@ namespace SuperQQ.Network
                         PlayerName = string.IsNullOrEmpty(playerState.Player.Nickname)
                             ? $"Remote{index}"
                             : playerState.Player.Nickname,
-                        PlayerColor = Color.cyan
+                        PlayerColor = PlayerColorPalette.Get(playerState.ColorIndex)
                     });
-                    Debug.Log($"[NetWork] 已注册远程玩家档案: {playerState.Player.Nickname}({playerId})");
+                    Debug.Log($"[NetWork] 已注册远程玩家档案: {playerState.Player.Nickname}({playerId}) 色号={playerState.ColorIndex}");
                 }
                 index++;
             }

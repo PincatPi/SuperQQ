@@ -55,7 +55,7 @@ namespace SuperQQ.Network
             Vector2 vel = _rb != null ? _rb.velocity : Vector2.zero;
 
             // 玩家状态：0=存活 1=幽灵 2=已通关（与 proto player_state 约定一致）
-            int playerState = _player.BIsDead ? 1 : _player.BIsFinished ? 2 : 0;
+            int playerState = (_player.BIsDead || _player.BIsGhost) ? 1 : _player.BIsFinished ? 2 : 0;
 
             net.Send(new SyncPlayerStateRequest
             {
@@ -73,7 +73,8 @@ namespace SuperQQ.Network
                     StateSeq = ++_stateSeq,
                     ClientTimeMs = NetworkManager.NowMs(),
                     PlayerState = playerState,
-                    FacingLeft = _renderer != null && _renderer.flipX
+                    FacingLeft = _renderer != null && _renderer.flipX,
+                    IsJumping = _player.BIsJumpAirborne
                 }
             });
         }

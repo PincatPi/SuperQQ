@@ -22,6 +22,12 @@ namespace SuperQQ.Grid
         [SerializeField] private bool autoInitOnStart;
         [Tooltip("独立使用时是否按旋转90度生成（宽高互换）")]
         [SerializeField] private bool startRotated;
+        [Tooltip("是否允许旋转（仅部分道具开启；宽高相等时旋转无占位意义，仅视觉旋转）")]
+        [SerializeField] private bool canRotate;
+        [Tooltip("锚点格子（footprint 内的格子索引，左下角为 0,0）：prefab 根节点对齐该格子中心，旋转绕该格子进行；(-1,-1)=自动取中心格子")]
+        [SerializeField] private Vector2Int pivotCell = new Vector2Int(-1, -1);
+        [Tooltip("编辑期（不运行）是否在 Scene 视图绘制虚线包围盒与锚点标记")]
+        [SerializeField] private bool drawBoxInEditor = true;
 
         [Header("外观")]
         [Tooltip("虚线颜色")]
@@ -42,9 +48,27 @@ namespace SuperQQ.Grid
 
         /// <summary>该物体占据的格子数（宽x高，未旋转）</summary>
         public Vector2Int Footprint => footprint;
+        /// <summary>是否允许旋转90度</summary>
+        public bool CanRotate => canRotate;
 
         /// <summary>
-        /// 获取当前格子尺寸（编辑期 GridManager.Instance 未初始化时回退查找场景实例）
+        /// 锚点格子（footprint 内的格子索引，已钳制到合法范围；未配置时自动取中心格子）
+        /// prefab 根节点需对齐该格子中心，旋转围绕它进行
+        /// </summary>
+        public Vector2Int PivotCell
+        {
+            get
+            {
+                int x = pivotCell.x >= 0 ? pivotCell.x : (footprint.x - 1) / 2;
+                int y = pivotCell.y >= 0 ? pivotCell.y : (footprint.y - 1) / 2;
+                return new Vector2Int(
+                    Mathf.Clamp(x, 0, Mathf.Max(footprint.x - 1, 0)),
+                    Mathf.Clamp(y, 0, Mathf.Max(footprint.y - 1, 0)));
+            }
+        }
+
+        /// <summary>
+        /// 获取当前格子尺寸（编辑期单例未初始化时回退查找场景实例，再找不到用默认值 0.5）
         /// </summary>
         private float ResolveCellSize()
         {
@@ -77,8 +101,7 @@ namespace SuperQQ.Grid
         public void Init(Vector2Int footprint, bool rotated)
         {
             Vector2Int size = rotated ? new Vector2Int(footprint.y, footprint.x) : footprint;
-            float cellSize = GridManager.Instance != null ? GridManager.Instance.PublicCellSize : 0.5f;
-            Build(size, cellSize);
+            Build(size, ResolveCellSize());
         }
 
         /// <summary>显示虚线框（未生成过则先按组件 footprint 自动生成）</summary>
@@ -145,6 +168,13 @@ namespace SuperQQ.Grid
                 boxRenderer = go.AddComponent<SpriteRenderer>();
                 boxRenderer.sortingOrder = sortingOrder;
             }
+
+            // 抵消父物体旋转：道具本体旋转 90° 时虚线框保持与世界网格轴对齐，
+            // 宽高互换仅由贴图重建（Init 的 rotated 参数）负责，避免双重旋转。
+            // 框始终以根节点（sprite 中心）为基准排布，与锚点选择无关；
+            // 锚点仅作为逻辑旋转中心，通过 GridManager 的世界坐标换算生效。
+            boxRenderer.transform.localRotation = Quaternion.Inverse(transform.rotation);
+            boxRenderer.transform.localPosition = Vector3.zero;
 
             if (generatedTexture != null)
             {
@@ -238,8 +268,13 @@ namespace SuperQQ.Grid
         private void OnDrawGizmos()
         {
 #if UNITY_EDITOR
+            if (!drawBoxInEditor)
+            {
+                return;
+            }
             float cs = ResolveCellSize();
             Vector2 size = new Vector2(footprint.x * cs, footprint.y * cs);
+            // 框以根节点（sprite 中心）为基准排布，与锚点选择无关
             Vector3 center = transform.position;
             Vector3 half = new Vector3(size.x * 0.5f, size.y * 0.5f, 0f);
 
@@ -254,6 +289,17 @@ namespace SuperQQ.Grid
             Handles.DrawDottedLine(tr, br, dashSize);
             Handles.DrawDottedLine(br, bl, dashSize);
             Handles.DrawDottedLine(bl, tl, dashSize);
+
+            // 锚点格子标记：在锚点所在位置画小十字（旋转围绕此点；锚点相对根节点按格子索引偏移）
+            Handles.color = Color.yellow;
+            float cross = cs * 0.25f;
+            Vector2Int pivot = PivotCell;
+            Vector3 p = transform.position + new Vector3(
+                (pivot.x - (footprint.x - 1) * 0.5f) * cs,
+                (pivot.y - (footprint.y - 1) * 0.5f) * cs,
+                0f);
+            Handles.DrawLine(p + new Vector3(-cross, 0f, 0f), p + new Vector3(cross, 0f, 0f));
+            Handles.DrawLine(p + new Vector3(0f, -cross, 0f), p + new Vector3(0f, cross, 0f));
 #endif
         }
     }

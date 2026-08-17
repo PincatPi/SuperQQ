@@ -1,11 +1,13 @@
 using UnityEngine;
+using SuperQQ.Map;
 
 namespace SuperQQ.Player
 {
     /// <summary>
-    /// 存活状态：左右移动、可变高度跳跃、下落手感优化
+    /// 存活状态：左右移动、可变高度跳跃、下落手感优化、地图边界约束
+    /// 边界行为：左右夹紧不允许水平越界；上方开放可跳出地图顶部；
+    /// 下方不做位置夹紧，y 越过下边界时触发死亡（PlayerDie）
     /// 所有运行时数据（土狼计时、跳跃保持计时等）归本状态私有
-    /// 边界约束：左右限制、掉落死亡
     /// 提前放弃：当场上只剩一名存活玩家时，长按 Down Key 1.6 秒可提前结束关卡
     /// </summary>
     public class PlayerAliveState : IPlayerState
@@ -38,6 +40,11 @@ namespace SuperQQ.Player
         /// 是否正在跳跃
         /// </summary>
         public bool BIsJumping => _bIsJumping;
+
+        /// <summary>
+        /// 是否滞空（离地）：跳跃或自然坠落均为 true，由地面检测直接派生
+        /// </summary>
+        public bool BIsJumpAirborne => !_bIsGrounded;
 
         /// <summary>
         /// 当前水平速度
@@ -76,14 +83,43 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
-        /// 物理帧更新：水平移动、可变跳跃高度、下落手感、边界约束
+        /// 物理帧更新：水平移动、可变跳跃高度、下落手感、地图边界约束
         /// </summary>
         public void FixedUpdate()
         {
             ApplyHorizontalMovement();
             ApplyVariableJumpHeight();
             ApplyBetterFallGravity();
-            ClampToMapBoundary();
+            ClampToLevelBounds();
+        }
+
+        // ==================== 地图边界 ====================
+
+        /// <summary>
+        /// 边界约束：水平夹紧（左右不允许越界），上下开放；
+        /// y 越过下边界时触发死亡。未配置 LevelBounds 时静默跳过
+        /// </summary>
+        private void ClampToLevelBounds()
+        {
+            LevelBounds bounds = _ctx.LevelBounds;
+            if (bounds == null)
+            {
+                return;
+            }
+
+            // 先水平夹紧写回（仅在产生修正时写入），死亡判定使用钳制后的位置
+            Vector2 pos = _ctx.Rb.position;
+            Vector2 clamped = bounds.ClampHorizontal(pos);
+            if (clamped != pos)
+            {
+                _ctx.Rb.position = clamped;
+            }
+
+            // 越过下边界：掉落死亡
+            if (bounds.IsBelow(clamped.y))
+            {
+                _ctx.PlayerDie();
+            }
         }
 
         // ==================== 地面检测 ====================
@@ -126,6 +162,10 @@ namespace SuperQQ.Player
                 _jumpHoldTimer = 0f;
                 // 起跳消耗土狼时间，避免连跳
                 _coyoteTimer = 0f;
+
+                // 联机：上报起跳事件（远端播音效/尘土），离线时为空操作
+                SuperQQ.Network.NetEventSync.ReportEvent(
+                    Minigame.Room.V1.PlayerEventType.Jump, _ctx.transform.position);
             }
         }
 
@@ -151,18 +191,63 @@ namespace SuperQQ.Player
         private void ApplyHorizontalMovement()
         {
             float targetVelocity = _ctx.HorizontalInput * _ctx.MoveSpeed;
-            float rate = Mathf.Abs(_ctx.HorizontalInput) > 0.01f
-                ? _ctx.Acceleration
-                : _ctx.Deceleration;
-            if (!_bIsGrounded)
+            float rate;
+            if (_ctx.Frictionless && _bIsGrounded)
             {
-                rate *= _ctx.AirControlMultiplier;
+                // 肥皂表面：滑行完全不可控——只有静止起步时输入才决定滑动方向（满速），
+                // 一旦滑起来就忽略一切输入（不能转向/刹车/加速），仅按减阻缓慢衰减（0=匀速）
+                rate = _ctx.SlideDrag;
+                if (Mathf.Abs(_currentHorizontalVelocity) < 0.01f
+                    && Mathf.Abs(_ctx.HorizontalInput) > 0.01f)
+                {
+                    _currentHorizontalVelocity = Mathf.Sign(_ctx.HorizontalInput) * _ctx.MoveSpeed;
+                }
+            }
+            else
+            {
+                rate = Mathf.Abs(_ctx.HorizontalInput) > 0.01f
+                    ? _ctx.Acceleration
+                    : _ctx.Deceleration;
+                if (!_bIsGrounded)
+                {
+                    rate *= _ctx.AirControlMultiplier;
+                }
             }
 
             _currentHorizontalVelocity = Mathf.MoveTowards(
                 _currentHorizontalVelocity, targetVelocity, rate * Time.fixedDeltaTime);
 
-            _ctx.Rb.velocity = new Vector2(_currentHorizontalVelocity, _ctx.Rb.velocity.y);
+            // 外部推力（排气扇风力）：独立累积风速分量，不被输入覆盖。
+            // 风速按响应时间封顶 → 逆风时净速度 = 输入速度 + 风速，
+            // 风力封顶值接近/超过移速时逆风寸步难行甚至被吹回去；顺风助推跳远；
+            // 出风区后风速逐渐衰减，不会永久残留
+            _ctx.Rb.velocity = new Vector2(
+                _currentHorizontalVelocity + UpdateWindVelocity(),
+                _ctx.Rb.velocity.y + _ctx.WindForce.y * Time.fixedDeltaTime);
+        }
+
+        private float _windVelocity;
+        private const float WindResponseTime = 0.35f;  // 风速累积到风力全量所需时间（秒）
+        private const float WindDecayRate = 30f;       // 出风区后风速衰减速率
+
+        /// <summary>
+        /// 积分风力速度分量：风区内累积（封顶 windForce * 响应时间），风区外衰减回 0
+        /// </summary>
+        private float UpdateWindVelocity()
+        {
+            float windX = _ctx.WindForce.x;
+            if (Mathf.Abs(windX) > 0.01f)
+            {
+                _windVelocity = Mathf.Clamp(
+                    _windVelocity + windX * Time.fixedDeltaTime,
+                    -Mathf.Abs(windX) * WindResponseTime,
+                    Mathf.Abs(windX) * WindResponseTime);
+            }
+            else
+            {
+                _windVelocity = Mathf.MoveTowards(_windVelocity, 0f, WindDecayRate * Time.fixedDeltaTime);
+            }
+            return _windVelocity;
         }
 
         /// <summary>
@@ -207,36 +292,6 @@ namespace SuperQQ.Player
             }
 
             _ctx.Rb.velocity = vel;
-        }
-
-        // ==================== 存活边界约束 ====================
-
-        /// <summary>
-        /// 存活状态边界约束：左右夹紧、掉落死亡
-        /// 存活状态不约束上边界（可跳跃超出地图上方），不约束下边界（用死亡判定代替）
-        /// </summary>
-        private void ClampToMapBoundary()
-        {
-            MapBoundary boundary = _ctx.MapBoundary;
-            if (boundary == null) return;
-
-            Vector2 pos = _ctx.Rb.position;
-
-            // 左右边界夹紧，不允许超出
-            pos = boundary.ClampHorizontal(pos);
-
-            // 下边界：掉落死亡
-            if (boundary.IsBelowBoundary(pos.y))
-            {
-                _ctx.PlayerDie();
-                return;
-            }
-
-            // 仅在位置被修正时才写入，避免无谓赋值
-            if (pos != _ctx.Rb.position)
-            {
-                _ctx.Rb.position = pos;
-            }
         }
 
         // ==================== 提前放弃长按检测 ====================
