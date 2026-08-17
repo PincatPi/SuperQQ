@@ -190,6 +190,9 @@ namespace SuperQQ.Network
         private readonly ConcurrentQueue<bool> connEvents = new();
 
         private float heartbeatTimer;
+        // 后台心跳线程：场景加载卡顿主线程时，Update 停转但心跳必须继续，
+        // 否则服务器心跳超时断连。心跳直接用 socket.SendAsync 发送（不经主线程队列）。
+        private Task _heartbeatTask;
 
         private void Awake()
         {
@@ -223,6 +226,7 @@ namespace SuperQQ.Network
                     await socket.ConnectAsync(new Uri(url), cts.Token);
                     Debug.Log("[NetWork] WebSocket 握手成功，连接已建立");
                     connEvents.Enqueue(true);
+                    StartHeartbeatLoop();
                     await ReceiveLoop();
                 }
                 catch (Exception e)
@@ -307,6 +311,49 @@ namespace SuperQQ.Network
             }
         }
 
+        /// <summary>
+        /// 后台心跳循环（连接成功后启动）：独立于主线程 Update，
+        /// 场景加载卡顿期间也能按时发送心跳，避免服务器心跳超时断连。
+        /// 直接调用 socket.SendAsync（WebSocket 单帧写入是线程安全的）。
+        /// </summary>
+        private void StartHeartbeatLoop()
+        {
+            CancellationToken token = cts.Token;
+            float intervalSec = heartbeatInterval;
+            ClientWebSocket hbSocket = socket;
+
+            _heartbeatTask = Task.Run(async () =>
+            {
+                while (!token.IsCancellationRequested
+                       && hbSocket != null
+                       && hbSocket.State == WebSocketState.Open)
+                {
+                    try
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(intervalSec), token);
+                        if (token.IsCancellationRequested || hbSocket.State != WebSocketState.Open) break;
+
+                        var envelope = new ClientEnvelope
+                        {
+                            Seq = 0,
+                            Heartbeat = new HeartbeatRequest { ClientTimeMs = NowMs() }
+                        };
+                        byte[] packet = envelope.ToByteArray();
+                        await hbSocket.SendAsync(new ArraySegment<byte>(packet),
+                            WebSocketMessageType.Binary, true, token);
+                    }
+                    catch (OperationCanceledException) { break; }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning($"[NetWork] 后台心跳发送失败: {e.Message}");
+                        break;
+                    }
+                }
+            }, token);
+        }
+
+        // 主线程心跳已废弃（改由 StartHeartbeatLoop 后台线程发送，场景加载时不停发）。
+        // 保留空实现以兼容 Update 中的调用点。
         private void UpdateHeartbeat()
         {
             if (!IsConnected) return;
@@ -314,7 +361,7 @@ namespace SuperQQ.Network
             if (heartbeatTimer >= heartbeatInterval)
             {
                 heartbeatTimer = 0f;
-                Send(new HeartbeatRequest { ClientTimeMs = NowMs() });
+                // 心跳已由后台线程负责，此处不再发送
             }
         }
 

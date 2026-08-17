@@ -63,19 +63,21 @@ namespace SuperQQ.Network
                 return;
             }
 
-            GamePhaseManager flow = GamePhaseManager.Instance;
-            if (flow == null)
-            {
-                return;
-            }
-
+            // 关键：消息注册不依赖 GamePhaseManager 就绪——发牌/阶段消息可能在 Level1
+            // 加载（GamePhaseManager 创建）之前到达，必须先注册才能缓存。阶段切换 handler
+            // 内部自行判空 GamePhaseManager，未就绪时消息已缓存、后续补消费。
             _initialized = true;
-            flow.SetStartFlowOnStart(false);
-            flow.SuppressLocalTransitions = true;
             net.Register<ItemOfferList>(OnServerOffers);
             net.Register<GamePhaseSync>(OnGamePhaseSync);
             net.Register<PlayerOutBroadcast>(OnPlayerOut);
             net.Register<global::Minigame.Room.V1.Settlement>(OnSettlement);
+
+            GamePhaseManager flow = GamePhaseManager.Instance;
+            if (flow != null)
+            {
+                flow.SetStartFlowOnStart(false);
+                flow.SuppressLocalTransitions = true;
+            }
             Debug.Log("[NetWork] 联机模式：游戏流程与阶段切换由服务器驱动（ItemOfferList / GamePhaseSync）");
         }
 
