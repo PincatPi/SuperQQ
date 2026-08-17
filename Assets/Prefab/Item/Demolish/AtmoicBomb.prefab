@@ -48,8 +48,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06dcb3af7c6d91b4999e468f05366523, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  displayName: "\u539F\u5B50\u5F39"
+  icon: {fileID: 21300000, guid: 8c59e30ad6c1b48d29b3c5ce0194ddda, type: 3}
   fuseDelay: 0
-  blastExpandCells: 1
   explosionEffectPrefab: {fileID: 0}
 --- !u!114 &1935948015406383157
 MonoBehaviour:
@@ -135,6 +136,7 @@ MonoBehaviour:
   inputCamera: {fileID: 0}
   pointerLiftCells: 1
   showBoxWhileDragging: 1
+  allowPlaceOnOccupied: 0
   ghostAlpha: 0.5
   validColor: {r: 0.3, g: 1, b: 0.3, a: 0.9}
   invalidColor: {r: 1, g: 0.3, b: 0.3, a: 0.9}

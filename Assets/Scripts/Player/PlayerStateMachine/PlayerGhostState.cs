@@ -1,10 +1,12 @@
 using UnityEngine;
+using SuperQQ.Map;
 
 namespace SuperQQ.Player
 {
     /// <summary>
     /// 幽灵状态：四向平移、无重力、半透明、无碰撞
-    /// 不与 Player/Ground 碰撞，通过 Bounds 约束不超出地图四周边界
+    /// 不与 Player/Ground 碰撞
+    /// 边界行为：四边夹紧，上下左右均不允许越过地图边界
     /// </summary>
     public class PlayerGhostState : IPlayerState
     {
@@ -31,6 +33,11 @@ namespace SuperQQ.Player
         /// 幽灵不跳跃
         /// </summary>
         public bool BIsJumping => false;
+
+        /// <summary>
+        /// 幽灵无跳跃滞空期
+        /// </summary>
+        public bool BIsJumpAirborne => false;
 
         /// <summary>
         /// 当前水平速度
@@ -101,12 +108,35 @@ namespace SuperQQ.Player
         public void Update() { }
 
         /// <summary>
-        /// 物理帧更新：四向平移、边界约束
+        /// 物理帧更新：四向平移、地图边界四边夹紧
         /// </summary>
         public void FixedUpdate()
         {
             ApplyGhostMovement();
-            ClampToMapBoundary();
+            ClampToLevelBounds();
+        }
+
+        // ==================== 地图边界 ====================
+
+        /// <summary>
+        /// 边界约束：四边夹紧（上下左右均不允许越界）
+        /// 未配置 LevelBounds 时静默跳过
+        /// </summary>
+        private void ClampToLevelBounds()
+        {
+            LevelBounds bounds = _ctx.LevelBounds;
+            if (bounds == null)
+            {
+                return;
+            }
+
+            // 仅在产生修正时写回刚体位置
+            Vector2 pos = _ctx.Rb.position;
+            Vector2 clamped = bounds.ClampAll(pos);
+            if (clamped != pos)
+            {
+                _ctx.Rb.position = clamped;
+            }
         }
 
         // ==================== 四向平移 ====================
@@ -133,28 +163,6 @@ namespace SuperQQ.Player
                 _currentVerticalVelocity, targetV, rateV * Time.fixedDeltaTime);
 
             _ctx.Rb.velocity = new Vector2(_currentHorizontalVelocity, _currentVerticalVelocity);
-        }
-
-        // ==================== 边界约束 ====================
-
-        /// <summary>
-        /// 幽灵四边边界约束：上下左右均夹紧，不允许超出地图
-        /// </summary>
-        private void ClampToMapBoundary()
-        {
-            MapBoundary boundary = _ctx.MapBoundary;
-            if (boundary == null) return;
-
-            Vector2 pos = _ctx.Rb.position;
-
-            // 四边夹紧
-            pos = boundary.ClampAll(pos);
-
-            // 仅在位置被修正时才写入
-            if (pos != _ctx.Rb.position)
-            {
-                _ctx.Rb.position = pos;
-            }
         }
     }
 }

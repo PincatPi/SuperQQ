@@ -32,7 +32,7 @@ namespace SuperQQ.Item
         private void OnTriggerEnter2D(Collider2D other)
         {
             PlayerController player = other.GetComponentInParent<PlayerController>();
-            if (player == null || player.BIsDead)
+            if (player == null || player.BIsDead || player.BIsGhost)
             {
                 return;
             }
@@ -56,8 +56,8 @@ namespace SuperQQ.Item
             foreach (KeyValuePair<PlayerController, float> pair in _dyingPlayers)
             {
                 PlayerController player = pair.Key;
-                // 玩家已死亡（被其他方式杀死）或组件失效：无需再处理
-                if (player == null || player.BIsDead)
+                // 玩家已死亡或已成幽灵（被其他方式杀死）或组件失效：无需再处理
+                if (player == null || player.BIsDead || player.BIsGhost)
                 {
                     continue;
                 }

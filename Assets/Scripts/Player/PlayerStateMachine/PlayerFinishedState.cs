@@ -29,6 +29,11 @@ namespace SuperQQ.Player
         public bool BIsJumping => false;
 
         /// <summary>
+        /// 通关状态无跳跃滞空期
+        /// </summary>
+        public bool BIsJumpAirborne => false;
+
+        /// <summary>
         /// 通关状态无水平速度
         /// </summary>
         public float HorizontalVelocity => 0f;

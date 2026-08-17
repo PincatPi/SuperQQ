@@ -23,7 +23,7 @@ namespace SuperQQ.Grid
         [SerializeField] private float pointerLiftCells = 1f;
         [Tooltip("拖拽时是否显示虚线包围盒")]
         [SerializeField] private bool showBoxWhileDragging = true;
-        [Tooltip("允许放置在被占用的格子上（拆除类/附着类道具开启）；开启后登记时跳过已被占据的格子，不覆盖原有道具的占据记录")]
+        [Tooltip("允许放置在被占用的格子上（附着类道具开启；拆除类由 ItemBase.AllowsOccupiedOverlap 声明，无需勾选）；开启后登记时跳过已被占据的格子，不覆盖原有道具的占据记录")]
         [SerializeField] private bool allowPlaceOnOccupied;
 
         [Header("虚化")]
@@ -104,6 +104,16 @@ namespace SuperQQ.Grid
         /// <summary>当前摆放是否合规（占据已登记到网格；拖拽到非法区域停留时为 false）</summary>
         public bool IsPlacementValid => registered;
 
+        /// <summary>调试快捷键（P/R/Enter）开关；外部摆放流程接管本组件时应关闭，避免热键与流程输入冲突</summary>
+        public bool DebugHotkeys
+        {
+            get => debugHotkeys;
+            set => debugHotkeys = value;
+        }
+
+        /// <summary>是否允许落在被占据格子上：本组件配置或道具基类策略（拆除类）声明均可开启</summary>
+        private bool AllowsOverlap => allowPlaceOnOccupied || (itemBase != null && itemBase.AllowsOccupiedOverlap);
+
         // ==================== 生命周期 ====================
 
         private void Awake()
@@ -131,6 +141,30 @@ namespace SuperQQ.Grid
         {
             // 框对齐格子网格：偶数宽/高时根节点落在格线上
             transform.position = RootPosFromAnchor(AnchorFromRootPos(transform.position));
+        }
+
+        // ==================== 只读查询（外部摆放流程用） ====================
+
+        /// <summary>
+        /// 查询根节点位于指定世界坐标时对应的占位矩形左下角锚点格子。
+        /// 与登记时使用的换算完全一致，外部流程无需自行复刻公式
+        /// </summary>
+        public Vector2Int GetAnchorCellAt(Vector2 worldPos)
+        {
+            return Grid != null ? AnchorFromRootPos(worldPos) : Vector2Int.zero;
+        }
+
+        /// <summary>
+        /// 查询根节点位于指定世界坐标时落点是否合法（含本道具声明的叠放策略）。
+        /// 供外部摆放流程做合法性提示，保证提示结果与 CompletePlacement 的登记判定一致
+        /// </summary>
+        public bool CanPlaceAt(Vector2 worldPos)
+        {
+            if (Grid == null || box == null)
+            {
+                return false;
+            }
+            return Grid.CanOccupy(AnchorFromRootPos(worldPos), box.Footprint, rotated, AllowsOverlap);
         }
 
         // ==================== 状态接口 ====================
@@ -161,7 +195,7 @@ namespace SuperQQ.Grid
             {
                 SnapToNearestCell();
                 Vector2Int anchor = AnchorFromRootPos(transform.position);
-                if (Grid.CanOccupy(anchor, box.Footprint, rotated, allowPlaceOnOccupied))
+                if (Grid.CanOccupy(anchor, box.Footprint, rotated, AllowsOverlap))
                 {
                     RegisterAt(anchor);
                 }
@@ -217,17 +251,17 @@ namespace SuperQQ.Grid
                 Vector2Int newAnchor = AnchorFromPivot(pivotGridCell);
 
                 Grid.Release(placedItem);
-                if (Grid.CanOccupy(newAnchor, box.Footprint, rotated, allowPlaceOnOccupied))
+                if (Grid.CanOccupy(newAnchor, box.Footprint, rotated, AllowsOverlap))
                 {
                     ApplyRotation();
                     transform.position = RootPosFromAnchor(newAnchor);
                     placedItem.Init(placedItem.Def, newAnchor, rotated, placedItem.OwnerPlayerId);
-                    Grid.Occupy(newAnchor, box.Footprint, placedItem, rotated, allowPlaceOnOccupied);
+                    Grid.Occupy(newAnchor, box.Footprint, placedItem, rotated, AllowsOverlap);
                     return true;
                 }
                 // 落点非法：回退旋转状态并恢复原登记
                 rotated = prev;
-                Grid.Occupy(oldAnchor, box.Footprint, placedItem, rotated, allowPlaceOnOccupied);
+                Grid.Occupy(oldAnchor, box.Footprint, placedItem, rotated, AllowsOverlap);
                 return false;
             }
 
@@ -241,7 +275,7 @@ namespace SuperQQ.Grid
 
             if (dragging)
             {
-                currentValid = Grid.CanOccupy(AnchorFromPivot(pivotCell), box.Footprint, rotated, allowPlaceOnOccupied);
+                currentValid = Grid.CanOccupy(AnchorFromPivot(pivotCell), box.Footprint, rotated, AllowsOverlap);
                 box.SetColor(currentValid ? validColor : invalidColor);
             }
             return true;
@@ -336,7 +370,7 @@ namespace SuperQQ.Grid
 
             transform.position = RootPosFromAnchor(AnchorFromPivot(currentPivotCell));
 
-            currentValid = Grid.CanOccupy(AnchorFromPivot(currentPivotCell), box.Footprint, rotated, allowPlaceOnOccupied);
+            currentValid = Grid.CanOccupy(AnchorFromPivot(currentPivotCell), box.Footprint, rotated, AllowsOverlap);
             box.SetColor(currentValid ? validColor : invalidColor);
         }
 
@@ -392,7 +426,11 @@ namespace SuperQQ.Grid
             {
                 placedItem.Init(placedItem.Def, anchor, rotated, placedItem.OwnerPlayerId);
             }
-            Grid.Occupy(anchor, box.Footprint, placedItem, rotated, allowPlaceOnOccupied);
+            // 登记占据：即放即消的道具（拆除类，RegistersOccupancy = false）只借落点定位，不持久占位
+            if (itemBase == null || itemBase.RegistersOccupancy)
+            {
+                Grid.Occupy(anchor, box.Footprint, placedItem, rotated, AllowsOverlap);
+            }
             registered = true;
             box.Hide();
             NotifyPlaced();

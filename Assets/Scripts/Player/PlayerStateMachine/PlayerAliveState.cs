@@ -1,11 +1,13 @@
 using UnityEngine;
+using SuperQQ.Map;
 
 namespace SuperQQ.Player
 {
     /// <summary>
-    /// 存活状态：左右移动、可变高度跳跃、下落手感优化
+    /// 存活状态：左右移动、可变高度跳跃、下落手感优化、地图边界约束
+    /// 边界行为：左右夹紧不允许水平越界；上方开放可跳出地图顶部；
+    /// 下方不做位置夹紧，y 越过下边界时触发死亡（PlayerDie）
     /// 所有运行时数据（土狼计时、跳跃保持计时等）归本状态私有
-    /// 边界约束：左右限制、掉落死亡
     /// 提前放弃：当场上只剩一名存活玩家时，长按 Down Key 1.6 秒可提前结束关卡
     /// </summary>
     public class PlayerAliveState : IPlayerState
@@ -38,6 +40,11 @@ namespace SuperQQ.Player
         /// 是否正在跳跃
         /// </summary>
         public bool BIsJumping => _bIsJumping;
+
+        /// <summary>
+        /// 是否滞空（离地）：跳跃或自然坠落均为 true，由地面检测直接派生
+        /// </summary>
+        public bool BIsJumpAirborne => !_bIsGrounded;
 
         /// <summary>
         /// 当前水平速度
@@ -76,14 +83,43 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
-        /// 物理帧更新：水平移动、可变跳跃高度、下落手感、边界约束
+        /// 物理帧更新：水平移动、可变跳跃高度、下落手感、地图边界约束
         /// </summary>
         public void FixedUpdate()
         {
             ApplyHorizontalMovement();
             ApplyVariableJumpHeight();
             ApplyBetterFallGravity();
-            ClampToMapBoundary();
+            ClampToLevelBounds();
+        }
+
+        // ==================== 地图边界 ====================
+
+        /// <summary>
+        /// 边界约束：水平夹紧（左右不允许越界），上下开放；
+        /// y 越过下边界时触发死亡。未配置 LevelBounds 时静默跳过
+        /// </summary>
+        private void ClampToLevelBounds()
+        {
+            LevelBounds bounds = _ctx.LevelBounds;
+            if (bounds == null)
+            {
+                return;
+            }
+
+            // 先水平夹紧写回（仅在产生修正时写入），死亡判定使用钳制后的位置
+            Vector2 pos = _ctx.Rb.position;
+            Vector2 clamped = bounds.ClampHorizontal(pos);
+            if (clamped != pos)
+            {
+                _ctx.Rb.position = clamped;
+            }
+
+            // 越过下边界：掉落死亡
+            if (bounds.IsBelow(clamped.y))
+            {
+                _ctx.PlayerDie();
+            }
         }
 
         // ==================== 地面检测 ====================
@@ -252,36 +288,6 @@ namespace SuperQQ.Player
             }
 
             _ctx.Rb.velocity = vel;
-        }
-
-        // ==================== 存活边界约束 ====================
-
-        /// <summary>
-        /// 存活状态边界约束：左右夹紧、掉落死亡
-        /// 存活状态不约束上边界（可跳跃超出地图上方），不约束下边界（用死亡判定代替）
-        /// </summary>
-        private void ClampToMapBoundary()
-        {
-            MapBoundary boundary = _ctx.MapBoundary;
-            if (boundary == null) return;
-
-            Vector2 pos = _ctx.Rb.position;
-
-            // 左右边界夹紧，不允许超出
-            pos = boundary.ClampHorizontal(pos);
-
-            // 下边界：掉落死亡
-            if (boundary.IsBelowBoundary(pos.y))
-            {
-                _ctx.PlayerDie();
-                return;
-            }
-
-            // 仅在位置被修正时才写入，避免无谓赋值
-            if (pos != _ctx.Rb.position)
-            {
-                _ctx.Rb.position = pos;
-            }
         }
 
         // ==================== 提前放弃长按检测 ====================

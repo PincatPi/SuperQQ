@@ -13,5 +13,7 @@ namespace SuperQQ.Item
         Control = 2,
         /// <summary>拆除：即放即爆的消耗品，摧毁范围内道具（摔炮、黑炸弹、原子弹）</summary>
         Demolition = 3,
+        /// <summary>得分：被获取后跟随角色，通关时提供额外加分（金币等）</summary>
+        Score = 4,
     }
 }

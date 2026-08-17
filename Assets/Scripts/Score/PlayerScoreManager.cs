@@ -38,6 +38,9 @@ namespace SuperQQ.Score
         // 本轮中间数据：陷阱击杀次数
         private readonly Dictionary<string, int> _roundTrapKillCounts = new();
 
+        // 本轮中间数据：额外加分（金币等得分道具在玩家通关时提交）
+        private readonly Dictionary<string, int> _roundBonusScores = new();
+
         // 本轮中间数据：老板巡视安静达标的玩家名称
         private readonly List<string> _roundQuietPlayerNames = new();
 
@@ -307,6 +310,12 @@ namespace SuperQQ.Score
                 input.TrapKillCounts[pair.Key] = pair.Value;
             }
 
+            // 额外加分（金币等得分道具，仅通关玩家提交）
+            foreach (var pair in _roundBonusScores)
+            {
+                input.BonusScores[pair.Key] = pair.Value;
+            }
+
             // 安静达标玩家
             for (int i = 0; i < _roundQuietPlayerNames.Count; i++)
             {
@@ -445,6 +454,26 @@ namespace SuperQQ.Score
         }
 
         /// <summary>
+        /// 记录一次额外加分（金币等得分道具在跟随角色通关时提交，同一玩家可多次调用累加）
+        /// 计入本轮结算的 BonusScores（叠加在通关分之上；未通关玩家不会提交，不产生分数）
+        /// </summary>
+        /// <param name="playerName">获得加分的玩家名称</param>
+        /// <param name="points">加分值</param>
+        public void RecordBonusScore(string playerName, int points)
+        {
+            if (string.IsNullOrEmpty(playerName) || points <= 0)
+            {
+                return;
+            }
+
+            if (!_roundBonusScores.ContainsKey(playerName))
+            {
+                _roundBonusScores[playerName] = 0;
+            }
+            _roundBonusScores[playerName] += points;
+        }
+
+        /// <summary>
         /// 记录老板巡视安静达标
         /// 由老板事件系统在巡视结束时调用
         /// </summary>
@@ -474,6 +503,7 @@ namespace SuperQQ.Score
             _bIsRoundScored = false;
             _roundTrapKillCounts.Clear();
             _roundQuietPlayerNames.Clear();
+            _roundBonusScores.Clear();
         }
 
         // ==================== 查询接口 ====================
