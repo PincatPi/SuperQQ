@@ -213,7 +213,37 @@ namespace SuperQQ.Player
             _currentHorizontalVelocity = Mathf.MoveTowards(
                 _currentHorizontalVelocity, targetVelocity, rate * Time.fixedDeltaTime);
 
-            _ctx.Rb.velocity = new Vector2(_currentHorizontalVelocity, _ctx.Rb.velocity.y);
+            // 外部推力（排气扇风力）：独立累积风速分量，不被输入覆盖。
+            // 风速按响应时间封顶 → 逆风时净速度 = 输入速度 + 风速，
+            // 风力封顶值接近/超过移速时逆风寸步难行甚至被吹回去；顺风助推跳远；
+            // 出风区后风速逐渐衰减，不会永久残留
+            _ctx.Rb.velocity = new Vector2(
+                _currentHorizontalVelocity + UpdateWindVelocity(),
+                _ctx.Rb.velocity.y + _ctx.WindForce.y * Time.fixedDeltaTime);
+        }
+
+        private float _windVelocity;
+        private const float WindResponseTime = 0.35f;  // 风速累积到风力全量所需时间（秒）
+        private const float WindDecayRate = 30f;       // 出风区后风速衰减速率
+
+        /// <summary>
+        /// 积分风力速度分量：风区内累积（封顶 windForce * 响应时间），风区外衰减回 0
+        /// </summary>
+        private float UpdateWindVelocity()
+        {
+            float windX = _ctx.WindForce.x;
+            if (Mathf.Abs(windX) > 0.01f)
+            {
+                _windVelocity = Mathf.Clamp(
+                    _windVelocity + windX * Time.fixedDeltaTime,
+                    -Mathf.Abs(windX) * WindResponseTime,
+                    Mathf.Abs(windX) * WindResponseTime);
+            }
+            else
+            {
+                _windVelocity = Mathf.MoveTowards(_windVelocity, 0f, WindDecayRate * Time.fixedDeltaTime);
+            }
+            return _windVelocity;
         }
 
         /// <summary>

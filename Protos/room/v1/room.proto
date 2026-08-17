@@ -104,6 +104,38 @@ message SubmitPlayerInputResponse {
   uint64 accepted_tick = 2;
 }
 
+// 大厅等待阶段：设置自己的准备状态，服务端广播 RoomUpdated。
+message SetReadyRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;
+  bool ready = 4;
+}
+
+message SetReadyResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  bool ready = 2;
+}
+
+// 房主在全员准备后发起开局，服务端校验后把房间 phase 切为 BATTLE 并广播 RoomUpdated。
+message StartGameRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;
+}
+
+message StartGameResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  Room room = 2;
+}
+
+// 房间大厅状态推送：成员进出、准备变化、游戏开始时由服务端主动广播给房间全员。
+message RoomUpdated {
+  Room room = 1;
+  // 变更原因：player_joined / player_left / ready_changed / game_started
+  string reason = 2;
+}
+
 message RoomPlayerState {
   minigame.common.v1.PlayerRef player = 1;
   int32 hp = 2;
@@ -112,6 +144,8 @@ message RoomPlayerState {
   bool connected = 5;
   bool alive = 6;
   TransformState transform = 7;
+  // 大厅等待阶段的准备状态（房主恒定视为已准备）
+  bool ready = 8;
 }
 
 message Room {
@@ -122,6 +156,8 @@ message Room {
   uint64 current_tick = 5;
   int64 started_at_ms = 6;
   int64 finished_at_ms = 7;
+  // 房主玩家ID（创建者），用于客户端判定是否展示"开始游戏"按钮
+  string owner_player_id = 8;
 }
 
 // 房间快照用于服务端主动同步客户端状态，客户端拿到后可以直接做插值和表现层更新。
@@ -153,6 +189,8 @@ service RoomService {
   rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
   rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
   rpc GetRoom(GetRoomRequest) returns (GetRoomResponse);
+  rpc SetReady(SetReadyRequest) returns (SetReadyResponse);
+  rpc StartGame(StartGameRequest) returns (StartGameResponse);
   rpc SubmitPlayerInput(SubmitPlayerInputRequest) returns (SubmitPlayerInputResponse);
   rpc SyncPlayerState(SyncPlayerStateRequest) returns (SyncPlayerStateResponse);
   rpc SubscribeRoom(SubscribeRoomRequest) returns (stream RoomSnapshot);
