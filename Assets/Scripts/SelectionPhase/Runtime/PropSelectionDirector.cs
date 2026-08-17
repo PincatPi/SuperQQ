@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Cinemachine;
+using Minigame.Room.V1;
 using SuperQQ.GameFlow;
 using SuperQQ.Item;
+using SuperQQ.Network;
 using SuperQQ.Placement.Runtime;
 using SuperQQ.Player;
 using SuperQQ.Selection.Core;
@@ -10,6 +12,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Vector2 = UnityEngine.Vector2;
 
 namespace SuperQQ.Selection.Runtime
 {
@@ -124,6 +127,10 @@ namespace SuperQQ.Selection.Runtime
         private int selectionCameraOriginalPriority;
         private float phaseElapsed;
 
+        // 联机打勾确认按钮（运行时搭建，跟随待确认槽位）
+        private RectTransform confirmCheckButton;       // 打勾按钮（EndPhase 销毁）
+        private int confirmCheckSlot = -1;              // 当前待确认的槽位；-1 表示无
+
         /// <summary>本地玩家确认一次选择时触发（未来网络同步订阅点）</summary>
         public event Action<SelectionResult> OnLocalSelectionConfirmed;
 
@@ -202,18 +209,36 @@ namespace SuperQQ.Selection.Runtime
 
             session = new SelectionSession();
             session.OnOfferClaimed += HandleOfferClaimed;
-            int rolled = session.RollOffers(itemPool, offerCount);
-            if (rolled == 0)
+
+            bool netMode = BNetMode;
+            int rolled = 0;
+            if (netMode)
             {
-                Debug.LogWarning($"{LOG_TAG} 道具候选池为空，本阶段将无事可做并由倒计时兜底结束。", this);
+                // 联机模式：候选由服务器 ItemOfferList 下发，收到前只搭面板等发牌
+                RegisterNetHandlers();
             }
+
+            else
+            {
+                rolled = session.RollOffers(itemPool, offerCount);
+                if (rolled == 0)
+                {
+                    Debug.LogWarning($"{LOG_TAG} 道具候选池为空，本阶段将无事可做并由倒计时兜底结束。", this);
+                }
+            }
+
+            // 首轮发牌可能先于本阶段注册到达（由 NetGameFlowGate 缓存），此处补消费
+            ItemOfferList pendingOffers = NetGameFlowGate.ConsumePendingOffers();
 
             localPlayerKey = ResolveLocalPlayerKey();
             localSelectedItem = null;
             phaseElapsed = 0f;
 
             BuildPanel();
-            BuildSlotViews();
+            if (!netMode)
+            {
+                BuildSlotViews();
+            }
             SpawnPlayerIcons();
             SetupFakePickers();
 
@@ -233,6 +258,11 @@ namespace SuperQQ.Selection.Runtime
 
             BIsActive = true;
             Debug.Log($"{LOG_TAG} 进入选择阶段，候选道具 {rolled} 件");
+
+            if (pendingOffers != null)
+            {
+                HandleServerOffers(pendingOffers);
+            }
         }
 
         /// <summary>
@@ -250,9 +280,11 @@ namespace SuperQQ.Selection.Runtime
                 session.OnOfferClaimed -= HandleOfferClaimed;
                 session = null;
             }
+            UnregisterNetHandlers();
 
             ClearSlotViews();
             ClearPlayerIcons();
+            HideConfirmCheck();
             HidePanel();
             fakePickers.Clear();
             avatarGate.Restore();
@@ -280,6 +312,20 @@ namespace SuperQQ.Selection.Runtime
             {
                 return;
             }
+
+            // 联机模式：先上报认领意图（服务器透传广播，其他端让远端图标/化身也飞过去）。
+            // 已有待确认槽位时允许改选：图标飞向新槽位，打勾按钮跟随移动。
+            if (BNetMode)
+            {
+                NetworkManager net = NetworkManager.Instance;
+                net.Send(new ItemClaimIntent
+                {
+                    RoomId = net.RoomId,
+                    PlayerId = net.LocalPlayerId,
+                    SlotIndex = slotIndex
+                });
+            }
+
             TryInitiateClaim(localPlayerKey, slotIndex);
         }
 
@@ -468,7 +514,23 @@ namespace SuperQQ.Selection.Runtime
             }
             pendingClaims.Remove(playerKey);
 
-            if (session == null || session.TrySelect(playerKey, slotIndex))
+            if (session == null)
+            {
+                return;
+            }
+
+            // 联机模式：认领结果以服务器仲裁为准。到达后在道具上方显示打勾按钮，
+            // 点击才向服务器发认领请求；期间仍可改点其他道具（打勾按钮跟随移动）。
+            if (BNetMode)
+            {
+                if (playerKey == localPlayerKey)
+                {
+                    ShowConfirmCheck(slotIndex);
+                }
+                return;
+            }
+
+            if (session.TrySelect(playerKey, slotIndex))
             {
                 return;
             }
@@ -909,6 +971,213 @@ namespace SuperQQ.Selection.Runtime
                 }
             }
             return -1;
+        }
+
+        // ==================== 联机打勾确认按钮（到达后二次确认，非模态） ====================
+
+        /// <summary>
+        /// 图标到达槽位后在该槽位上方显示打勾按钮：点击才向服务器发送认领请求。
+        /// 非模态：期间仍可改点其他未认领槽位，图标飞过去、打勾按钮跟随移动。
+        /// </summary>
+        private void ShowConfirmCheck(int slotIndex)
+        {
+            PropSelectionSlotView view = FindSlotView(slotIndex);
+            if (view == null)
+            {
+                // 槽位缺失时降级为直接确认，避免流程卡死
+                SendClaimConfirm(slotIndex);
+                return;
+            }
+
+            if (confirmCheckButton == null)
+            {
+                BuildConfirmCheckButton();
+            }
+            if (confirmCheckButton == null)
+            {
+                SendClaimConfirm(slotIndex);
+                return;
+            }
+
+            confirmCheckSlot = slotIndex;
+
+            // 定位到槽位正上方
+            RectTransform slotRect = (RectTransform)view.transform;
+            confirmCheckButton.SetParent(slotRect, false);
+            confirmCheckButton.anchorMin = new Vector2(0.5f, 1f);
+            confirmCheckButton.anchorMax = new Vector2(0.5f, 1f);
+            confirmCheckButton.pivot = new Vector2(0.5f, 0f);
+            confirmCheckButton.anchoredPosition = new Vector2(0f, 8f);
+            confirmCheckButton.SetAsLastSibling();
+
+            confirmCheckButton.gameObject.SetActive(true);
+        }
+
+        private void HideConfirmCheck()
+        {
+            confirmCheckSlot = -1;
+            if (confirmCheckButton != null)
+            {
+                confirmCheckButton.gameObject.SetActive(false);
+            }
+        }
+
+        /// <summary>打勾按钮回调：向服务器发送认领请求，等待仲裁结果（按钮保留显示直到结果返回）</summary>
+        private void OnConfirmCheckClicked()
+        {
+            int slotIndex = confirmCheckSlot;
+            if (slotIndex >= 0)
+            {
+                SendClaimConfirm(slotIndex);
+            }
+        }
+
+        private void SendClaimConfirm(int slotIndex)
+        {
+            NetworkManager net = NetworkManager.Instance;
+            net.Send(new ItemClaimConfirm
+            {
+                RoomId = net.RoomId,
+                PlayerId = net.LocalPlayerId,
+                SlotIndex = slotIndex,
+                ClientTimeMs = NetworkManager.NowMs()
+            });
+        }
+
+        /// <summary>运行时搭建打勾按钮（绿色圆角方块+白色对勾，挂到槽位上方）</summary>
+        private void BuildConfirmCheckButton()
+        {
+            Transform panelRoot = ResolvePanelRoot();
+            if (panelRoot == null)
+            {
+                return;
+            }
+
+            var btnGo = new GameObject("ClaimConfirmCheck", typeof(RectTransform), typeof(Image), typeof(Button));
+            btnGo.transform.SetParent(panelRoot, false);
+            confirmCheckButton = (RectTransform)btnGo.transform;
+            confirmCheckButton.sizeDelta = new Vector2(72f, 72f);
+            btnGo.GetComponent<Image>().color = new Color(0.2f, 0.7f, 0.3f, 0.95f);
+            btnGo.GetComponent<Button>().onClick.AddListener(OnConfirmCheckClicked);
+
+            var labelGo = new GameObject("Check", typeof(RectTransform), typeof(TextMeshProUGUI));
+            labelGo.transform.SetParent(btnGo.transform, false);
+            var labelRect = (RectTransform)labelGo.transform;
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+            var tmp = labelGo.GetComponent<TextMeshProUGUI>();
+            tmp.text = "✔";
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.fontSize = 44f;
+            tmp.color = Color.white;
+            tmp.raycastTarget = false;
+
+            confirmCheckButton.gameObject.SetActive(false);
+        }
+
+        // ==================== 联机同步（服务器仲裁模式） ====================
+
+        /// <summary>是否处于联机模式：已连接且已进房时，候选发牌与认领仲裁均以服务器为准</summary>
+        private static bool BNetMode =>
+            NetworkManager.Instance != null
+            && NetworkManager.Instance.IsConnected
+            && !string.IsNullOrEmpty(NetworkManager.Instance.RoomId);
+
+        private void RegisterNetHandlers()
+        {
+            NetworkManager net = NetworkManager.Instance;
+            if (net == null) return;
+            net.Register<ItemOfferList>(HandleServerOffers);
+            net.Register<ItemClaimIntentBroadcast>(HandleRemoteClaimIntent);
+            net.Register<ItemClaimResult>(HandleClaimResult);
+        }
+
+        private void UnregisterNetHandlers()
+        {
+            NetworkManager net = NetworkManager.Instance;
+            if (net == null) return;
+            net.Unregister<ItemOfferList>();
+            net.Unregister<ItemClaimIntentBroadcast>();
+            net.Unregister<ItemClaimResult>();
+        }
+
+        /// <summary>收到服务器下发的道具列表：按 itemId 映射本地 prefab 并发牌建槽位</summary>
+        private void HandleServerOffers(ItemOfferList list)
+        {
+            if (!BIsActive || session == null || session.OfferCount > 0)
+            {
+                return;
+            }
+
+            List<ItemBase> items = new List<ItemBase>(list.Offers.Count);
+            foreach (ItemOffer offer in list.Offers)
+            {
+                ItemBase prefab = FindPoolItem(offer.ItemId);
+                if (prefab == null)
+                {
+                    Debug.LogWarning($"{LOG_TAG} 服务器下发的道具 {offer.ItemId} 不在本地候选池中，已跳过。");
+                    continue;
+                }
+                items.Add(prefab);
+            }
+
+            session.SetOffers(items);
+            BuildSlotViews();
+            Debug.Log($"{LOG_TAG} 收到服务器道具列表: round={list.Round} 共 {items.Count} 件");
+        }
+
+        /// <summary>按道具ID（= prefab 名称）在本地候选池中查找</summary>
+        private ItemBase FindPoolItem(string itemId)
+        {
+            for (int i = 0; i < itemPool.Count; i++)
+            {
+                if (itemPool[i] != null && itemPool[i].name == itemId)
+                {
+                    return itemPool[i];
+                }
+            }
+            return null;
+        }
+
+        /// <summary>远端玩家的认领意图：只驱动其图标飞向槽位做表现，不产生任何认领效果</summary>
+        private void HandleRemoteClaimIntent(ItemClaimIntentBroadcast msg)
+        {
+            if (!BIsActive || msg.PlayerId == localPlayerKey)
+            {
+                return;
+            }
+            MovePlayerIconToSlot(msg.PlayerId, msg.SlotIndex);
+        }
+
+        /// <summary>服务器认领仲裁结果：成功方应用认领；本地失败则图标飞回出现位可重选</summary>
+        private void HandleClaimResult(ItemClaimResult result)
+        {
+            if (!BIsActive || session == null)
+            {
+                return;
+            }
+
+            if (result.PlayerId == localPlayerKey)
+            {
+                HideConfirmCheck();
+            }
+
+            if (!result.Success)
+            {
+                if (result.PlayerId == localPlayerKey
+                    && playerIcons.TryGetValue(localPlayerKey, out PropSelectionPlayerIcon icon)
+                    && icon != null)
+                {
+                    icon.MoveTo(icon.HomePos);
+                    Debug.Log($"{LOG_TAG} 认领槽位 {result.SlotIndex} 被抢，可重新选择");
+                }
+                return;
+            }
+
+            // 服务器已仲裁归属，本地会话应用结果（触发 HandleOfferClaimed 刷新表现）
+            session.TrySelect(result.PlayerId, result.SlotIndex);
         }
 
         // ==================== 阶段摄像机 ====================

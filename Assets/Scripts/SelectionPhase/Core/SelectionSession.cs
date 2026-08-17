@@ -105,6 +105,25 @@ namespace SuperQQ.Selection.Core
         }
 
         /// <summary>
+        /// 联机模式：由服务器下发的道具列表直接设置本轮候选（替代本地 RollOffers）。
+        /// 列表顺序即槽位下标（slot_index 从 0 开始连续）。
+        /// </summary>
+        public void SetOffers(IReadOnlyList<ItemBase> items)
+        {
+            offerItems.Clear();
+            offerClaims.Clear();
+            playerSelections.Clear();
+
+            if (items == null) return;
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i] == null) continue;
+                offerItems.Add(items[i]);
+                offerClaims.Add(null);
+            }
+        }
+
+        /// <summary>
         /// 认领指定槽位的道具：槽位未被认领且该玩家本轮尚未认领时成功。
         /// 认领即确认、不可更改；失败（已认领/已选过/下标非法）时不产生任何副作用。
         /// </summary>

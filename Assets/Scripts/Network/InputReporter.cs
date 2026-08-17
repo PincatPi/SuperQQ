@@ -73,7 +73,8 @@ namespace SuperQQ.Network
                     StateSeq = ++_stateSeq,
                     ClientTimeMs = NetworkManager.NowMs(),
                     PlayerState = playerState,
-                    FacingLeft = _renderer != null && _renderer.flipX
+                    FacingLeft = _renderer != null && _renderer.flipX,
+                    IsJumping = _player.BIsJumpAirborne
                 }
             });
         }

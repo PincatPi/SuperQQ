@@ -1,4 +1,5 @@
 using SuperQQ.Grid;
+using SuperQQ.Network;
 using SuperQQ.Player;
 using SuperQQ.Score;
 using UnityEngine;
@@ -80,7 +81,72 @@ namespace SuperQQ.Item
                 return;
             }
 
+            // 联机：该金币已被他人认领（广播先行到达）时不再触发本地拾取
+            if (SuperQQ.Network.PickupRegistry.BIsClaimed(Placed.AnchorCell))
+            {
+                return;
+            }
+
             Collect(player, registry);
+
+            // 联机：上报拾取请求，服务器裁决后广播（其他端据此移除这枚金币）
+            SuperQQ.Network.NetEventSync.ReportPickup(
+                SuperQQ.Network.PickupRegistry.MakeCoinId(Placed.AnchorCell));
+            SuperQQ.Network.NetEventSync.ReportEvent(
+                Minigame.Room.V1.PlayerEventType.Pickup, transform.position);
+        }
+
+        /// <summary>
+        /// 被远端玩家认领：释放占据格子，转为跟随远端化身（纯表现，不计分）。
+        /// 远端化身位置由快照插值驱动，跟随用简化轨迹（记录远端化身近期位置）。
+        /// </summary>
+        public void RemoveByRemoteClaim(string claimerPlayerId)
+        {
+            if (collected)
+            {
+                return;
+            }
+            collected = true;
+
+            GridManager grid = GridManager.Instance;
+            if (grid != null && Placed != null)
+            {
+                grid.Release(Placed);
+            }
+
+            Collider2D col = GetComponent<Collider2D>();
+            if (col != null)
+            {
+                col.enabled = false;
+            }
+
+            // 找到认领者的远端化身，挂简化跟随组件
+            PlayerController remote = FindPlayerByIdentity(claimerPlayerId);
+            if (remote != null)
+            {
+                var follow = gameObject.AddComponent<RemoteCoinFollow>();
+                follow.Init(remote.transform, followDelay, followOffset);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        private static PlayerController FindPlayerByIdentity(string playerId)
+        {
+            LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
+            if (registry == null) return null;
+
+            System.Collections.Generic.IReadOnlyList<PlayerController> players = registry.Players;
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i] != null && players[i].IdentityKey == playerId)
+                {
+                    return players[i];
+                }
+            }
+            return null;
         }
 
         /// <summary>被获取：释放占据格子永久离场，加入玩家的跟随组转为跟随</summary>

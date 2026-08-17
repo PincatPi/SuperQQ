@@ -59,6 +59,40 @@ namespace SuperQQ.GameFlow
         /// </summary>
         public GamePhaseBase CurrentPhaseAsset => _currentPhase;
 
+        /// <summary>游戏流程是否已启动</summary>
+        public bool BFlowStarted => _bFlowStarted;
+
+        /// <summary>设置是否自动启动流程（联机模式下由服务器消息触发，需关闭自动启动）</summary>
+        public void SetStartFlowOnStart(bool value) => _bStartFlowOnStart = value;
+
+        /// <summary>
+        /// 屏蔽本地阶段转移（联机模式下为 true）：阶段切换只响应服务器 GamePhaseSync，
+        /// 本地倒计时/条件评估不再触发切换。
+        /// </summary>
+        public bool SuppressLocalTransitions { get; set; }
+
+        /// <summary>
+        /// 按阶段类型进入对应阶段（联机模式下由服务器 GamePhaseSync 驱动）。
+        /// 在流程配置的阶段列表中按类型查找首个匹配的阶段资产。
+        /// </summary>
+        public bool EnterPhaseByType<T>(string reason) where T : GamePhaseBase
+        {
+            if (_config == null) return false;
+
+            IReadOnlyList<GamePhaseBase> phases = _config.Phases;
+            for (int i = 0; i < phases.Count; i++)
+            {
+                if (phases[i] is T)
+                {
+                    EnterPhase(phases[i], reason);
+                    return true;
+                }
+            }
+
+            Debug.LogError($"[GamePhaseManager] 阶段列表中未找到类型 {typeof(T).Name} 的阶段资产。");
+            return false;
+        }
+
         private void Awake()
         {
             if (_instance != null && _instance != this)
@@ -111,7 +145,9 @@ namespace SuperQQ.GameFlow
 
             UpdateDebugNextPhaseName();
 
-            if (_currentPhase.TryGetNextPhase(_context, out GamePhaseBase nextPhase, out string reason))
+            // 联机模式下阶段切换由服务器 GamePhaseSync 统一驱动，本地条件不再触发转移
+            if (!SuppressLocalTransitions
+                && _currentPhase.TryGetNextPhase(_context, out GamePhaseBase nextPhase, out string reason))
             {
                 EnterPhase(nextPhase, reason);
             }
