@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 54c40d9674f20b74fba0f53ca3a0449d
+guid: 02503a0208504eff95da4cdeab44ed59
 TextureImporter:
   internalIDToNameTable:
   - first:
@@ -774,7 +774,7 @@ TextureImporter:
       213: 21300512
     second: Chicken_Victory.011
   externalObjects: {}
-  serializedVersion: 13
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -791,12 +791,11 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
-    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMipmapLimit: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -835,7 +834,6 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
-  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
@@ -848,7 +846,6 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
-    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -861,46 +858,6 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: iPhone
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 2
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: WebGL
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 2
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: Android
-    maxTextureSize: 4096
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 2
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -5061,7 +5018,7 @@ TextureImporter:
         width: 186
         height: 307.97324
       alignment: 9
-      pivot: {x: 0.4569893, y: -0.14286956}
+      pivot: {x: 0.45698926, y: -0.14286956}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
       - - {x: -65, y: 59.013412}
@@ -44860,7 +44817,7 @@ TextureImporter:
         width: 189
         height: 327
       alignment: 9
-      pivot: {x: 0.4569893, y: -0.1428696}
+      pivot: {x: 0.48677248, y: -0.10091743}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline:
       - - {x: -62.500004, y: 47.500015}
@@ -48431,7 +48388,7 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: ec6614266d8d95c498e4300a7f9bac86
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -48696,8 +48653,9 @@ TextureImporter:
       Sheep_Wallslide.001: 21300214
       Sheep_Wallslide.002: 21300216
       Sheep_WalltoJumpUpTwist.000: 21300404
-  mipmapLimitGroupName: 
+  spritePackingTag: 
   pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
