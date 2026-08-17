@@ -38,24 +38,38 @@ namespace SuperQQ.Network
             go.AddComponent<NetGameFlowGate>();
         }
 
+        private bool _initialized;
+
         private void Awake()
+        {
+            // 跨场景存活：注册一次永久有效，避免场景切换导致注册丢失/时序竞争。
+            // 离线时保留物体但不做任何注册（Update 中检测到进房后再初始化）。
+            DontDestroyOnLoad(gameObject);
+        }
+
+        private void Update()
+        {
+            if (_initialized) return;
+            TryInit();
+        }
+
+        private void TryInit()
         {
             NetworkManager net = NetworkManager.Instance;
 
-            // 离线或未进房：不干预，自我销毁
+            // 未连接/未进房：等待（联机模式在进房后才接管）
             if (net == null || !net.IsConnected || string.IsNullOrEmpty(net.RoomId))
             {
-                Destroy(gameObject);
                 return;
             }
 
             GamePhaseManager flow = GamePhaseManager.Instance;
             if (flow == null)
             {
-                Destroy(gameObject);
                 return;
             }
 
+            _initialized = true;
             flow.SetStartFlowOnStart(false);
             flow.SuppressLocalTransitions = true;
             net.Register<ItemOfferList>(OnServerOffers);
@@ -191,6 +205,7 @@ namespace SuperQQ.Network
         {
             // 始终缓存最新发牌，供 PropSelectionDirector 进入阶段时消费
             _pendingOffers = list;
+            Debug.Log($"[NetWork] Gate 缓存发牌: round={list.Round} 道具数={list.Offers.Count} flowStarted={GamePhaseManager.Instance?.BFlowStarted}");
 
             GamePhaseManager flow = GamePhaseManager.Instance;
             if (flow != null && !flow.BFlowStarted)

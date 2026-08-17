@@ -230,6 +230,7 @@ namespace SuperQQ.Selection.Runtime
 
             // 首轮发牌可能先于本阶段注册到达（由 NetGameFlowGate 缓存），此处补消费
             ItemOfferList pendingOffers = NetGameFlowGate.ConsumePendingOffers();
+            Debug.Log($"{LOG_TAG} 消费缓存发牌: {(pendingOffers != null ? $"round={pendingOffers.Round} 道具数={pendingOffers.Offers.Count}" : "null")}");
 
             localPlayerKey = ResolveLocalPlayerKey();
             localSelectedItem = null;

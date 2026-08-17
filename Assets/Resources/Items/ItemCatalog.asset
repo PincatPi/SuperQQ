@@ -12,4 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49de42d7e48f9154dbce9fd2d51d8c23, type: 3}
   m_Name: ItemCatalog
   m_EditorClassIdentifier: 
-  entries: []
+  entries:
+  - itemId: 1
+    prefab: {fileID: 6617394574195921622, guid: 1139892b70a7cb541bc57b254a505365, type: 3}
+  - itemId: 2
+    prefab: {fileID: 3534714674349125797, guid: 1ca94a0fa931fc14bb3953bd1d5b288f, type: 3}
+  - itemId: 3
+    prefab: {fileID: 3394108681123455303, guid: 4671cce71bfe6c446a19da40430894c1, type: 3}
+  - itemId: 4
+    prefab: {fileID: 3718660179097218800, guid: fe149488e65a2ec44aaa08a8d4363a39, type: 3}
+  - itemId: 5
+    prefab: {fileID: 2311514974507089103, guid: 3aeeb4d4479c0b34189342c1c7566106, type: 3}
+  - itemId: 6
+    prefab: {fileID: 121029935845906448, guid: f95d8fdadb2602048a05b7feeaff7b63, type: 3}
+  - itemId: 7
+    prefab: {fileID: 611869782100177429, guid: 2f91ef6db78078e4e8d8257c1e803832, type: 3}
+  - itemId: 8
+    prefab: {fileID: 6639351512014222835, guid: 379c4f45b530315478a371487047ec18, type: 3}
+  - itemId: 9
+    prefab: {fileID: 5552733072379103896, guid: 5e067e7944961154792339aa4e23a04e, type: 3}
+  - itemId: 10
+    prefab: {fileID: 1250532944185585326, guid: 27e741ea1d149e544b16556a0a77b04d, type: 3}
+  - itemId: 11
+    prefab: {fileID: 942111552027511230, guid: 5b97972639ffc7548860d0fc2357a7b2, type: 3}
