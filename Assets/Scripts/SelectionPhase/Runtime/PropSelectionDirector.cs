@@ -19,7 +19,8 @@ namespace SuperQQ.Selection.Runtime
     /// 内部负责：本轮候选道具的随机抽取、选择面板搭建、点击选中与选中状态锁定。
     ///
     /// 流程：进入阶段时从候选池随机抽取若干不重复道具展示在选择面板上，
-    ///       场景角色被屏蔽（隐藏且停止响应输入），每名玩家以 Sprite 图标随机出现在面板的固定位 →
+    ///       场景角色被屏蔽（隐藏且停止响应输入），每名玩家以 Sprite 图标出现在面板固定位
+    ///       （按注册顺序使用前 N 个位置）→
     ///       本地玩家点击道具图标后，其玩家图标平滑飞向对应槽位，到达后才正式认领
     ///       （每名玩家每轮限选一件，认领即确认、不可更改）→
     ///       已被选中的道具显示选中者颜色标记，其他玩家不可再选 →
@@ -345,7 +346,7 @@ namespace SuperQQ.Selection.Runtime
 
         /// <summary>
         /// 为关卡内每名玩家生成面板图标：Sprite 取自玩家配置的标识图、染玩家颜色，
-        /// 随机分配到互不重复的固定出现位（玩家数多于出现位时允许复用）。
+        /// 按注册顺序依次使用前 N 个出现位（3 名玩家固定用前 3 个位置；玩家数多于出现位时循环复用）。
         /// 图标层与自动生成的出现位整体挂在面板根下，EndPhase 时一并销毁。
         /// </summary>
         private void SpawnPlayerIcons()
@@ -375,9 +376,6 @@ namespace SuperQQ.Selection.Runtime
             {
                 return;
             }
-
-            // 随机打散出现位后依次分配，玩家数不超过出现位时位置互不重复
-            ShuffleAnchors(anchors);
 
             IReadOnlyList<PlayerController> players = registry.Players;
             for (int i = 0; i < players.Count; i++)
@@ -592,17 +590,6 @@ namespace SuperQQ.Selection.Runtime
                 anchors.Add(rect);
             }
             return anchors;
-        }
-
-        private static void ShuffleAnchors(List<RectTransform> anchors)
-        {
-            for (int i = anchors.Count - 1; i > 0; i--)
-            {
-                int j = UnityEngine.Random.Range(0, i + 1);
-                RectTransform temp = anchors[i];
-                anchors[i] = anchors[j];
-                anchors[j] = temp;
-            }
         }
 
         /// <summary>RectTransform 在屏幕/世界坐标下的几何中心（与 pivot 无关）</summary>

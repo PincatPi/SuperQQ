@@ -2,8 +2,8 @@ namespace SuperQQ.Event
 {
     /// <summary>
     /// 关卡事件类型枚举
-    /// 定义关卡中可能触发的随机事件种类
-    /// 对应策划文档 4.6 节的两个必触发特殊事件
+    /// 定义关卡中可能触发的特殊事件种类
+    /// 每关开始前由 LevelEventAnnouncer 从中选定本关事件
     /// </summary>
     public enum LevelEventType
     {
@@ -13,8 +13,8 @@ namespace SuperQQ.Event
         BossPatrol,
 
         /// <summary>
-        /// 空调变冷：冷气命中后冻结玩家，需摇晃/连按解除
+        /// 小蛋糕陨石：周期性从关卡顶部落下陨石，命中玩家即死并击飞
         /// </summary>
-        ColdSnap
+        CakeMeteor = 1
     }
 }

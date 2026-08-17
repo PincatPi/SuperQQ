@@ -11,16 +11,12 @@ namespace SuperQQ.Player
     {
         private readonly PlayerController _ctx;
 
-        // 过渡时长（秒）：正值覆盖 PlayerController.DeathDuration，负值使用默认配置
-        private readonly float _durationOverride;
-
         // 剩余过渡时间（秒）
         private float _timer;
 
-        public PlayerDyingState(PlayerController ctx, float durationOverride = -1f)
+        public PlayerDyingState(PlayerController ctx)
         {
             _ctx = ctx;
-            _durationOverride = durationOverride;
         }
 
         // ==================== IPlayerState 查询 ====================
@@ -50,10 +46,11 @@ namespace SuperQQ.Player
         /// <summary>
         /// 进入死亡状态：启动过渡倒计时
         /// 不修改刚体速度与重力，保留死亡瞬间的运动状态（击飞/坠落）
+        /// 过渡时长统一取自 PlayerController.DeathDuration，全游戏唯一配置点
         /// </summary>
         public void Enter()
         {
-            _timer = _durationOverride >= 0f ? _durationOverride : _ctx.DeathDuration;
+            _timer = _ctx.DeathDuration;
         }
 
         /// <summary>

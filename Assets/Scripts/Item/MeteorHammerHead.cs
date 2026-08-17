@@ -35,7 +35,7 @@ namespace SuperQQ.Item
             // 弹飞死亡：沿锤头运动方向击飞（死亡表现），短暂延迟后进入幽灵状态
             Vector2 knockback = hammer.HeadVelocityDir.normalized * hammer.KnockbackSpeed
                               + Vector2.up * (hammer.KnockbackSpeed * 0.5f);
-            player.PlayerKnockbackDie(knockback, hammer.GhostDelay);
+            player.PlayerKnockbackDie(knockback);
         }
     }
 }

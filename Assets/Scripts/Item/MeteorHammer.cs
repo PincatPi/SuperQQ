@@ -34,8 +34,6 @@ namespace SuperQQ.Item
         [Header("命中表现")]
         [Tooltip("命中后沿锤头运动方向的弹飞速度（仅死亡表现）")]
         [SerializeField] private float knockbackSpeed = 8f;
-        [Tooltip("被击飞到进入幽灵状态的延迟（秒）")]
-        [SerializeField, Range(0.1f, 3f)] private float ghostDelay = 0.6f;
 
         private bool swinging;
         private float phaseTime;      // 当前在 [0, 2*sweepDuration] 相位中的时间
@@ -47,8 +45,6 @@ namespace SuperQQ.Item
         public Vector2 HeadVelocityDir { get; private set; } = Vector2.right;
         /// <summary>命中弹飞速度</summary>
         public float KnockbackSpeed => knockbackSpeed;
-        /// <summary>击飞到幽灵状态的延迟</summary>
-        public float GhostDelay => ghostDelay;
 
         private void Awake()
         {

@@ -466,10 +466,10 @@ namespace SuperQQ.Player
         /// <summary>
         /// 被击飞死亡：强制一个击飞速度并进入死亡过渡状态
         /// 过渡期间保留击飞动量、无法操作，倒计时结束后自动进入幽灵状态
+        /// 过渡时长统一使用 DeathDuration 配置，不允许外部覆盖
         /// </summary>
         /// <param name="knockbackVelocity">击飞速度（世界方向）</param>
-        /// <param name="ghostDelay">过渡时长（秒），覆盖默认死亡过渡时长</param>
-        public void PlayerKnockbackDie(Vector2 knockbackVelocity, float ghostDelay = 0.6f)
+        public void PlayerKnockbackDie(Vector2 knockbackVelocity)
         {
             if (BIsDead || BIsGhost)
             {
@@ -479,7 +479,7 @@ namespace SuperQQ.Player
             {
                 _rb.velocity = knockbackVelocity;
             }
-            TransitionTo(new PlayerDyingState(this, ghostDelay));
+            TransitionTo(new PlayerDyingState(this));
         }
 
         /// <summary>
