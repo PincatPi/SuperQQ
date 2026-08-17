@@ -22,6 +22,22 @@ namespace SuperQQ.Network
         /// <summary>最近一次收到的房间快照（供玩家列表 UI 等读取），无快照时为 null</summary>
         public RoomSnapshot LatestSnapshot { get; private set; }
 
+        /// <summary>
+        /// 自动创建 + 跨场景存活：大厅流程（Hall→Room→Level1）不经过 NetDebugBootstrap，
+        /// 移动同步组件需自行存在。进房后由 NetworkManager 驱动；未进房时注册着但不产生行为。
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void AutoSpawn()
+        {
+            if (FindFirstObjectByType<RoomSnapshotReceiver>() != null) return;
+            if (NetworkManager.Instance == null) return;
+
+            var go = new GameObject(nameof(RoomSnapshotReceiver));
+            DontDestroyOnLoad(go);
+            go.AddComponent<RoomSnapshotReceiver>();
+            go.AddComponent<LocalPlayerNetSetup>();
+        }
+
         private void OnEnable()
         {
             if (NetworkManager.Instance != null)
