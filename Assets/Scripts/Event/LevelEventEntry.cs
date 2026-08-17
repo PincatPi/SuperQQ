@@ -3,17 +3,24 @@ using UnityEngine;
 namespace SuperQQ.Event
 {
     /// <summary>
-    /// 关卡事件条目 — 事件类型与对应弹窗资源的映射数据
-    /// 用于 LevelEventConfig 中配置每个事件的展示信息
-    /// 作为 ScriptableObject 的可序列化数组成员使用
+    /// 关卡事件条目 — 一个可参与关卡选取的事件的完整配置
+    /// 事件的事实身份由 Modifier 资产承载，代码中直接持有条目引用，不按枚举查找
+    /// EventType 仅作为日志输出与联机同步的紧凑标识
+    /// 作为 LevelEventConfig 的可序列化数组成员使用
     /// </summary>
     [System.Serializable]
-    public struct LevelEventEntry
+    public class LevelEventEntry
     {
         /// <summary>
-        /// 事件类型
+        /// 事件类型标识，用于日志输出和联机同步
+        /// 逻辑层面不作为查找依据（选取结果直接持有条目引用）
         /// </summary>
         public LevelEventType EventType;
+
+        /// <summary>
+        /// 事件的中文显示名称，用于日志和调试
+        /// </summary>
+        public string DisplayName;
 
         /// <summary>
         /// 事件说明弹窗的 Prefab
@@ -22,16 +29,18 @@ namespace SuperQQ.Event
         public GameObject PopupPrefab;
 
         /// <summary>
-        /// 事件的中文显示名称，用于日志和调试
-        /// </summary>
-        public string DisplayName;
-
-        /// <summary>
         /// 是否为固定事件
         /// 为 true 时该事件不参与随机抽取，每次进入关卡都会执行
-        /// 为 false 时该事件参与随机抽取，每次进入关卡按随机结果决定是否执行
+        /// 为 false 时该事件参与随机抽取，每次进入关卡按权重决定是否执行
         /// </summary>
         public bool BIsFixed;
+
+        /// <summary>
+        /// 随机抽取权重，仅非固定事件生效
+        /// 权重越大被抽中的概率越高；为 0 时永远不会被随机抽中
+        /// </summary>
+        [Min(0f)]
+        public float Weight = 1f;
 
         /// <summary>
         /// 事件逻辑修饰符：事件被选中时调用其 Activate 方法启动事件逻辑

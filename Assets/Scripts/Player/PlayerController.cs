@@ -85,8 +85,6 @@ namespace SuperQQ.Player
         // ---------- 外部推力（排气扇风力等，多来源向量累加） ----------
         private Vector2 _windForce;
 
-        // ---------- 输入锁定（击飞死亡表现期间屏蔽操作） ----------
-        private bool _inputLocked;
 
         // ---------- 输入来源（本地键盘 / 联机远程快照） ----------
         private IPlayerInput _input;
@@ -471,10 +469,10 @@ namespace SuperQQ.Player
         /// <summary>
         /// 被击飞死亡：强制一个击飞速度并进入死亡过渡状态
         /// 过渡期间保留击飞动量、无法操作，倒计时结束后自动进入幽灵状态
+        /// 过渡时长统一使用 DeathDuration 配置，不允许外部覆盖
         /// </summary>
         /// <param name="knockbackVelocity">击飞速度（世界方向）</param>
-        /// <param name="ghostDelay">过渡时长（秒），覆盖默认死亡过渡时长</param>
-        public void PlayerKnockbackDie(Vector2 knockbackVelocity, float ghostDelay = 0.6f)
+        public void PlayerKnockbackDie(Vector2 knockbackVelocity)
         {
             if (BIsDead || BIsGhost)
             {
@@ -489,7 +487,7 @@ namespace SuperQQ.Player
                 Minigame.Room.V1.PlayerEventType.Hit, transform.position);
             SuperQQ.Network.NetEventSync.ReportEvent(
                 Minigame.Room.V1.PlayerEventType.Die, transform.position);
-            TransitionTo(new PlayerDyingState(this, ghostDelay));
+            TransitionTo(new PlayerDyingState(this));
         }
 
         /// <summary>

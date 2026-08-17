@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a41fb397f1d4dd983861ba89ff71912, type: 3}
+  m_Name: CakeMeteorModifier
+  m_EditorClassIdentifier: 
+  _meteorPrefab: {fileID: 8723000000000000006, guid: 0e3d9c0e589547e1a7961225288a55de, type: 3}
+  _firstDelay: 10
+  _minInterval: 5
+  _maxInterval: 10
+  _maxMeteorsPerSpawn: 3
+  _speed: 8
+  _minAngleDeviation: 30
+  _maxAngleDeviation: 45
+  _spawnCenter: {x: 9, y: 17}
+  _leftOffset: 10
+  _rightOffset: 10
+  _knockbackSpeed: 12
+  _maxLifetime: 15
+  _fixedSeed: 0

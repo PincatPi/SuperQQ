@@ -8,13 +8,12 @@ namespace SuperQQ.Event
 {
     /// <summary>
     /// 关卡事件播报器 — 场景级单例
-    /// 进入关卡时按以下规则选定本关事件：
-    ///   1. 配置表中所有 BIsFixed 为 true 的事件全部执行（固定事件）
-    ///   2. 从所有 BIsFixed 为 false 的事件中随机抽取一个执行（随机事件）
+    /// 进入关卡时经 LevelEventSelector 选定本关事件（固定事件全部执行，非固定事件按权重抽取一个）
     /// 事件选定后：
     ///   - 通过 PopupManager 依次播放每个事件的说明弹窗（3秒自动销毁）
     ///   - 调用每个事件对应 LevelEventModifier 的 Activate 方法启动事件逻辑
     /// 场景销毁时调用所有 Modifier 的 Deactivate 方法进行清理
+    /// 选取决策已抽离到 LevelEventSelector（纯 C#，可单元测试），本类只负责调度与播报
     /// </summary>
     public class LevelEventAnnouncer : MonoBehaviour
     {
@@ -32,8 +31,8 @@ namespace SuperQQ.Event
         // 避免多个弹窗同时弹出造成视觉叠加
         private const float POPUP_INTERVAL = 0.2f;
 
-        // 本关选中的所有事件类型（固定事件 + 随机事件）
-        private readonly List<LevelEventType> _selectedEvents = new();
+        // 本关选中的所有事件条目（固定事件 + 随机事件）
+        private readonly List<LevelEventEntry> _selectedEntries = new();
 
         // 是否已完成事件选取（播报协程可能仍在进行中）
         private bool _bHasAnnounced;
@@ -48,10 +47,10 @@ namespace SuperQQ.Event
 
         /// <summary>
         /// 事件选中事件：本关事件选取完成后触发
-        /// 参数为本关所有选中的事件类型列表（固定事件 + 随机事件）
-        /// 外部系统可订阅此事件做额外处理
+        /// 参数为本关所有选中的事件条目列表（固定事件 + 随机事件）
+        /// 外部系统可订阅此事件做额外处理（如联机同步、UI 展示）
         /// </summary>
-        public event Action<IReadOnlyList<LevelEventType>> OnEventsSelected;
+        public event Action<IReadOnlyList<LevelEventEntry>> OnEventsSelected;
 
         // ==================== 单例访问 ====================
 
@@ -73,14 +72,14 @@ namespace SuperQQ.Event
         // ==================== 公开查询 ====================
 
         /// <summary>
-        /// 本关选中的所有事件类型（只读视图，按固定事件在前、随机事件在后的顺序排列）
+        /// 本关选中的所有事件条目（只读视图，按固定事件在前、随机事件在后的顺序排列）
         /// </summary>
-        public IReadOnlyList<LevelEventType> SelectedEvents => _selectedEvents;
+        public IReadOnlyList<LevelEventEntry> SelectedEvents => _selectedEntries;
 
         /// <summary>
         /// 本关选中事件的数量
         /// </summary>
-        public int SelectedEventCount => _selectedEvents.Count;
+        public int SelectedEventCount => _selectedEntries.Count;
 
         /// <summary>
         /// 是否已完成事件选取
@@ -127,27 +126,31 @@ namespace SuperQQ.Event
 
         /// <summary>
         /// 选定本关事件并依次播报弹窗、激活事件逻辑
-        /// 固定事件全部执行，非固定事件随机抽取一个执行
+        /// 选取决策委托给 LevelEventSelector：固定事件全部执行，非固定事件按权重抽取一个
         /// 在 Start 中自动调用，确保每次进入关卡时都执行
         /// </summary>
-        public void SelectAndAnnounceEvents()
+        /// <param name="random">
+        /// 随机源，用于非固定事件的权重抽取；为 null 时使用时间种子
+        /// 联机模式下应由主机传入固定种子的实例，保证各端选取结果一致
+        /// </param>
+        public void SelectAndAnnounceEvents(System.Random random = null)
         {
             if (_bHasAnnounced)
             {
                 return;
             }
 
-            _selectedEvents.Clear();
+            _selectedEntries.Clear();
 
-            // 步骤1：收集所有固定事件
-            CollectFixedEvents();
-
-            // 步骤2：从非固定事件中随机抽取一个
-            SelectRandomFlexibleEvent();
+            // 选取决策委托给纯 C# 选取器（本类不感知选取规则细节）
+            if (_eventConfig != null)
+            {
+                _selectedEntries.AddRange(LevelEventSelector.SelectEvents(_eventConfig.Events, random));
+            }
 
             _bHasAnnounced = true;
 
-            if (_selectedEvents.Count == 0)
+            if (_selectedEntries.Count == 0)
             {
                 Debug.LogWarning("[LevelEventAnnouncer] 未选中任何事件，请检查配置表。");
                 return;
@@ -161,7 +164,7 @@ namespace SuperQQ.Event
             };
 
             // 通知外部：本关事件已选定
-            OnEventsSelected?.Invoke(_selectedEvents);
+            OnEventsSelected?.Invoke(_selectedEntries);
 
             // 激活所有选中事件的 Modifier，启动事件逻辑
             ActivateSelectedModifiers();
@@ -174,80 +177,24 @@ namespace SuperQQ.Event
             _popupPlaybackCoroutine = StartCoroutine(ShowEventPopupsSequentially());
         }
 
-        // ==================== 内部方法：事件选取 ====================
-
-        /// <summary>
-        /// 收集配置表中所有 BIsFixed 为 true 的固定事件
-        /// 这些事件每次进入关卡都会执行，不参与随机抽取
-        /// </summary>
-        private void CollectFixedEvents()
-        {
-            if (_eventConfig == null)
-            {
-                return;
-            }
-
-            IReadOnlyList<LevelEventEntry> events = _eventConfig.Events;
-            for (int i = 0; i < events.Count; i++)
-            {
-                if (events[i].BIsFixed)
-                {
-                    _selectedEvents.Add(events[i].EventType);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 从配置表中所有 BIsFixed 为 false 的非固定事件中随机抽取一个
-        /// 若无非固定事件则跳过
-        /// 使用 UnityEngine.Random 保证分布均匀
-        /// </summary>
-        private void SelectRandomFlexibleEvent()
-        {
-            if (_eventConfig == null)
-            {
-                return;
-            }
-
-            // 收集所有非固定事件类型
-            List<LevelEventType> flexibleEvents = new List<LevelEventType>();
-            IReadOnlyList<LevelEventEntry> events = _eventConfig.Events;
-            for (int i = 0; i < events.Count; i++)
-            {
-                if (!events[i].BIsFixed)
-                {
-                    flexibleEvents.Add(events[i].EventType);
-                }
-            }
-
-            if (flexibleEvents.Count == 0)
-            {
-                return;
-            }
-
-            int index = UnityEngine.Random.Range(0, flexibleEvents.Count);
-            _selectedEvents.Add(flexibleEvents[index]);
-        }
-
         // ==================== 内部方法：Modifier 激活/停用 ====================
 
         /// <summary>
         /// 激活本关所有选中事件对应的 Modifier
-        /// 通过配置表查找每个事件条目，调用其 Modifier.Activate 启动事件逻辑
+        /// 直接遍历条目引用调用 Modifier.Activate，无需按枚举回查配置表
         /// </summary>
         private void ActivateSelectedModifiers()
         {
-            if (_eventConfig == null || _eventContext == null)
+            if (_eventContext == null)
             {
                 return;
             }
 
-            for (int i = 0; i < _selectedEvents.Count; i++)
+            for (int i = 0; i < _selectedEntries.Count; i++)
             {
-                LevelEventEntry entry = _eventConfig.FindEntry(_selectedEvents[i]);
-                if (entry.Modifier != null)
+                if (_selectedEntries[i].Modifier != null)
                 {
-                    entry.Modifier.Activate(_eventContext);
+                    _selectedEntries[i].Modifier.Activate(_eventContext);
                 }
             }
         }
@@ -258,17 +205,16 @@ namespace SuperQQ.Event
         /// </summary>
         private void DeactivateAllModifiers()
         {
-            if (_eventConfig == null || _eventContext == null)
+            if (_eventContext == null)
             {
                 return;
             }
 
-            for (int i = 0; i < _selectedEvents.Count; i++)
+            for (int i = 0; i < _selectedEntries.Count; i++)
             {
-                LevelEventEntry entry = _eventConfig.FindEntry(_selectedEvents[i]);
-                if (entry.Modifier != null)
+                if (_selectedEntries[i].Modifier != null)
                 {
-                    entry.Modifier.Deactivate(_eventContext);
+                    _selectedEntries[i].Modifier.Deactivate(_eventContext);
                 }
             }
         }
@@ -282,12 +228,12 @@ namespace SuperQQ.Event
         /// </summary>
         private IEnumerator ShowEventPopupsSequentially()
         {
-            for (int i = 0; i < _selectedEvents.Count; i++)
+            for (int i = 0; i < _selectedEntries.Count; i++)
             {
-                ShowEventPopup(_selectedEvents[i]);
+                ShowEventPopup(_selectedEntries[i]);
 
                 // 最后一个事件无需等待
-                if (i < _selectedEvents.Count - 1)
+                if (i < _selectedEntries.Count - 1)
                 {
                     yield return new WaitForSeconds(POPUP_AUTO_CLOSE_DURATION + POPUP_INTERVAL);
                 }
@@ -300,20 +246,12 @@ namespace SuperQQ.Event
         /// 通过 PopupManager 播放单个事件说明弹窗
         /// 弹窗持续3秒后自动关闭
         /// </summary>
-        /// <param name="eventType">要播报的事件类型</param>
-        private void ShowEventPopup(LevelEventType eventType)
+        /// <param name="entry">要播报的事件条目</param>
+        private void ShowEventPopup(LevelEventEntry entry)
         {
-            if (_eventConfig == null)
-            {
-                Debug.LogWarning("[LevelEventAnnouncer] 事件配置表为空，无法播放事件弹窗。");
-                return;
-            }
-
-            LevelEventEntry entry = _eventConfig.FindEntry(eventType);
-
             if (entry.PopupPrefab == null)
             {
-                Debug.LogWarning($"[LevelEventAnnouncer] 事件 {eventType} 的弹窗 Prefab 未配置，无法播放事件弹窗。");
+                Debug.LogWarning($"[LevelEventAnnouncer] 事件 {entry.EventType} 的弹窗 Prefab 未配置，无法播放事件弹窗。");
                 return;
             }
 
@@ -324,7 +262,7 @@ namespace SuperQQ.Event
             }
 
             PopupManager.Instance.ShowPopup(entry.PopupPrefab, POPUP_AUTO_CLOSE_DURATION);
-            Debug.Log($"[LevelEventAnnouncer] 本关事件：{entry.DisplayName}（{eventType}），弹窗已播放。");
+            Debug.Log($"[LevelEventAnnouncer] 本关事件：{entry.DisplayName}（{entry.EventType}），弹窗已播放。");
         }
     }
 }

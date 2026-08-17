@@ -12,4 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abdcae80de3fae24ea81bb864915a97a, type: 3}
   m_Name: LevelEventConfig
   m_EditorClassIdentifier: 
-  _events: []
+  _events:
+  - EventType: 1
+    DisplayName: "小蛋糕陨石"
+    PopupPrefab: {fileID: 0}
+    BIsFixed: 0
+    Weight: 1
+    Modifier: {fileID: 11400000, guid: 6137f8b46c924c20a5726480e7c9814f, type: 2}
