@@ -354,6 +354,30 @@ namespace SuperQQ.Network
 
         public static long NowMs() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
+        // ---- 服务器时间估算（倒计时对时锚点）----
+        // 收到带 server_time_ms 的消息时记录"服务器时刻 + 本地接收时刻"，
+        // 之后估算服务器当前时间 = 记录的服务器时刻 + 本地经过的时间。
+        // 误差约为单向网络延迟（几十 ms），两端一致。
+        private static long _serverTimeAnchor;
+        private static float _serverTimeAnchorLocalTime;
+        private static bool _serverTimeSynced;
+
+        /// <summary>记录一次服务器时间锚点（收到含 server_time_ms 的消息时调用）</summary>
+        public static void SyncServerTime(long serverTimeMs)
+        {
+            if (serverTimeMs <= 0) return;
+            _serverTimeAnchor = serverTimeMs;
+            _serverTimeAnchorLocalTime = UnityEngine.Time.realtimeSinceStartup;
+            _serverTimeSynced = true;
+        }
+
+        /// <summary>估算当前服务器时间（毫秒）；未同步过时回退为本地 UTC 时间</summary>
+        public static long EstimatedServerNowMs()
+        {
+            if (!_serverTimeSynced) return NowMs();
+            return _serverTimeAnchor + (long)((UnityEngine.Time.realtimeSinceStartup - _serverTimeAnchorLocalTime) * 1000f);
+        }
+
         private void OnDestroy()
         {
             if (Instance == this) Instance = null;

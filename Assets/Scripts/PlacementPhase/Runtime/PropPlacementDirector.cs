@@ -731,6 +731,14 @@ namespace SuperQQ.Placement.Runtime
                 return;
             }
 
+            // 联机：以服务器 phase_end_time_ms 为锚点，与另一端显示严格一致
+            if (BNetMode && NetGameFlowGate.CurrentPhaseEndTimeMs > 0)
+            {
+                long remainMs = NetGameFlowGate.CurrentPhaseEndTimeMs - NetworkManager.EstimatedServerNowMs();
+                countdownText.text = Mathf.Max(0, Mathf.CeilToInt(remainMs / 1000f)).ToString();
+                return;
+            }
+
             if (activePhase == null)
             {
                 // 未经 GameFlow 驱动（如调试时直接调用 BeginPhase）时没有倒计时来源

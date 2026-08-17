@@ -138,10 +138,17 @@ namespace SuperQQ.Network
         }
 
         /// <summary>服务器下发的阶段切换指令：按阶段类型进入对应阶段</summary>
+        /// <summary>当前阶段的结束时刻（服务器毫秒）；0 表示无倒计时。供各阶段倒计时 UI 读取</summary>
+        public static long CurrentPhaseEndTimeMs { get; private set; }
+
         private void OnGamePhaseSync(GamePhaseSync sync)
         {
             GamePhaseManager flow = GamePhaseManager.Instance;
             if (flow == null) return;
+
+            // 服务器时间对时 + 记录本阶段结束时刻（倒计时锚点，两端一致）
+            NetworkManager.SyncServerTime(sync.ServerTimeMs);
+            CurrentPhaseEndTimeMs = sync.PhaseEndTimeMs;
 
             // 选择阶段外由门控负责缓存发牌消息（选择阶段内 Director 会覆盖注册并消费缓存），
             // 防止 ItemOfferList 早于 GamePhaseSync 处理完成而丢失

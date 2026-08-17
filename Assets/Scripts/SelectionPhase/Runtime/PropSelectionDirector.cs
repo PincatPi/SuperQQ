@@ -1276,11 +1276,22 @@ namespace SuperQQ.Selection.Runtime
 
         // ==================== 倒计时显示 ====================
 
-        /// <summary>刷新倒计时文本：取当前阶段条件的剩余时间，向上取整显示秒数</summary>
+        /// <summary>
+        /// 刷新倒计时文本：联机模式按服务器阶段结束时刻计算（两端锚点一致）；
+        /// 单机模式取当前阶段条件的本地剩余时间。
+        /// </summary>
         private void UpdateCountdownText()
         {
             if (countdownText == null)
             {
+                return;
+            }
+
+            // 联机：以服务器 phase_end_time_ms 为锚点，与另一端显示严格一致
+            if (BNetMode && NetGameFlowGate.CurrentPhaseEndTimeMs > 0)
+            {
+                long remainMs = NetGameFlowGate.CurrentPhaseEndTimeMs - NetworkManager.EstimatedServerNowMs();
+                countdownText.text = Mathf.Max(0, Mathf.CeilToInt(remainMs / 1000f)).ToString();
                 return;
             }
 
