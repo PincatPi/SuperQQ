@@ -1,0 +1,11 @@
+Source atlas: CharacterAnim_P1.png
+Output atlas: CharacterAnim_P1_Stylized.png
+Atlas size: 4096x4096
+Sprite metadata entries: 257
+Stylized Chicken frames repacked: 90
+Changed RGB pixels: 3076879
+Shared/alias pixels: 64149
+Atlas Alpha pixel match: PASS
+Untouched non-Chicken RGB match: PASS
+Re-extracted Chicken frame RGB match: PASS
+Original source overwritten: NO
