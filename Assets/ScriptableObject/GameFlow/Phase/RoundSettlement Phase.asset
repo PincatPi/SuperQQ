@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _displayName: "\u672C\u8F6E\u7ED3\u7B97\u9636\u6BB5"
   _scene:
-    _sceneAsset: {fileID: 102900000, guid: 0b237b75b84b20a4094073cec217f6ed, type: 3}
-    _sceneName: Settlement
+    _sceneAsset: {fileID: 0}
+    _sceneName: 
   _description: "\u6BCF\u8F6E\u5173\u5361\u7ED3\u675F\u540E\u5BF9\u672C\u8F6E\u5F97\u5206\u8FDB\u884C\u7ED3\u7B97\u7684\u9636\u6BB5"
   _transitions:
   - _targetPhase: {fileID: 11400000, guid: d41ba911a1cb0174fbc326b2e58c0965, type: 2}

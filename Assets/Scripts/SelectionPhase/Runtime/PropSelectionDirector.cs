@@ -423,6 +423,8 @@ namespace SuperQQ.Selection.Runtime
                 return;
             }
 
+            // 联机模式：座位由服务器进房顺序决定（房间玩家列表顺序即 color_index/seat 序号），
+            // 两端分配规则一致，玩家图标位置必然对齐；单机模式沿用注册表顺序。
             IReadOnlyList<PlayerController> players = registry.Players;
             for (int i = 0; i < players.Count; i++)
             {
@@ -432,12 +434,74 @@ namespace SuperQQ.Selection.Runtime
                     continue;
                 }
 
-                PropSelectionPlayerIcon icon = CreatePlayerIcon(player, anchors[i % anchors.Count]);
+                int seat = BNetMode
+                    ? GetRoomSeatIndex(player.IdentityKey, players.Count, i)
+                    : i;
+
+                PropSelectionPlayerIcon icon = CreatePlayerIcon(player, anchors[seat % anchors.Count]);
                 if (icon != null)
                 {
                     playerIcons[player.IdentityKey] = icon;
                 }
             }
+        }
+
+        /// <summary>
+        /// 取玩家在房间中的座位序号（0~3）：
+        /// ① 房间数据 RoomPlayerState.color_index（服务器按进房顺序分配，即座位号）；
+        /// ② 房间玩家列表下标（进房顺序）；③ 玩家ID字典序兜底（两端规则一致即可）。
+        /// </summary>
+        private static int GetRoomSeatIndex(string identityKey, int playerCount, int fallback)
+        {
+            Network.NetworkManager net = Network.NetworkManager.Instance;
+            Minigame.Room.V1.Room room = net != null ? net.JoinedRoom : null;
+            if (room != null && room.Players.Count > 0)
+            {
+                for (int i = 0; i < room.Players.Count; i++)
+                {
+                    Minigame.Room.V1.RoomPlayerState p = room.Players[i];
+                    if (p.Player?.PlayerId == identityKey)
+                    {
+                        // 优先用服务器分配的 color_index 作为座位号（与进房顺序同源）
+                        if (p.ColorIndex >= 0)
+                        {
+                            return p.ColorIndex;
+                        }
+                        return i;
+                    }
+                }
+            }
+
+            // 后进房的玩家不在 JoinedRoom 里：从最新房间快照取 color_index
+            Network.RoomSnapshotReceiver snapshotReceiver = UnityEngine.Object.FindFirstObjectByType<Network.RoomSnapshotReceiver>();
+            Minigame.Room.V1.RoomSnapshot snapshot = snapshotReceiver != null ? snapshotReceiver.LatestSnapshot : null;
+            if (snapshot != null)
+            {
+                foreach (Minigame.Room.V1.RoomPlayerState p in snapshot.Players)
+                {
+                    if (p.Player?.PlayerId == identityKey && p.ColorIndex >= 0)
+                    {
+                        return p.ColorIndex;
+                    }
+                }
+            }
+
+            // 兜底：按玩家ID字典序排序（两端排序结果一致，保证位置对齐）
+            LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
+            if (registry != null)
+            {
+                var ids = new List<string>();
+                IReadOnlyList<PlayerController> all = registry.Players;
+                for (int i = 0; i < all.Count; i++)
+                {
+                    if (all[i] != null) ids.Add(all[i].IdentityKey);
+                }
+                ids.Sort(System.StringComparer.Ordinal);
+                int idx = ids.IndexOf(identityKey);
+                if (idx >= 0) return idx;
+            }
+
+            return fallback % Mathf.Max(1, playerCount);
         }
 
         private void ClearPlayerIcons()
@@ -1098,13 +1162,18 @@ namespace SuperQQ.Selection.Runtime
                 return;
             }
 
+            // 全量打印后端下发内容，便于核对座位/道具字段
+            Debug.Log($"{LOG_TAG} ItemOfferList 原始内容: round={list.Round} offers={list.Offers.Count}\n{list}");
+
             List<ItemBase> items = new List<ItemBase>(list.Offers.Count);
             foreach (ItemOffer offer in list.Offers)
             {
                 ItemBase prefab = FindPoolItem(offer.ItemId);
                 if (prefab == null)
                 {
-                    Debug.LogWarning($"{LOG_TAG} 服务器下发的道具 {offer.ItemId} 不在本地候选池中，已跳过。");
+                    Debug.LogWarning($"{LOG_TAG} 服务器下发的道具 \"{offer.ItemId}\" 无法映射：目录与候选池中均不存在。"
+                        + $"可用目录: {(ItemCatalog.Instance != null ? ItemCatalog.Instance.DumpIds() : "(未配置)")}；"
+                        + $"候选池: [{string.Join(", ", itemPool.ConvertAll(p => p != null ? p.name : "null"))}]");
                     continue;
                 }
                 items.Add(prefab);
@@ -1115,9 +1184,18 @@ namespace SuperQQ.Selection.Runtime
             Debug.Log($"{LOG_TAG} 收到服务器道具列表: round={list.Round} 共 {items.Count} 件");
         }
 
-        /// <summary>按道具ID（= prefab 名称）在本地候选池中查找</summary>
+        /// <summary>
+        /// 按网络 itemId 查找道具：先查 ItemCatalog 目录（服务器数字/字符串 ID 映射），
+        /// 再按 prefab 名称匹配（兼容旧约定）。
+        /// </summary>
         private ItemBase FindPoolItem(string itemId)
         {
+            ItemBase fromCatalog = ItemCatalog.Instance != null ? ItemCatalog.Instance.Find(itemId) : null;
+            if (fromCatalog != null)
+            {
+                return fromCatalog;
+            }
+
             for (int i = 0; i < itemPool.Count; i++)
             {
                 if (itemPool[i] != null && itemPool[i].name == itemId)
@@ -1163,8 +1241,14 @@ namespace SuperQQ.Selection.Runtime
                 return;
             }
 
-            // 服务器已仲裁归属，本地会话应用结果（触发 HandleOfferClaimed 刷新表现）
-            session.TrySelect(result.PlayerId, result.SlotIndex);
+            // 服务器已仲裁归属，本地会话应用结果（触发 HandleOfferClaimed 刷新表现）。
+            // 注：服务器对未选择玩家的随机分配也走本条消息（success=true），
+            // localSelectedItem 在 HandleOfferClaimed 中缓存，阶段退出时正常推入放置阶段。
+            bool applied = session.TrySelect(result.PlayerId, result.SlotIndex);
+            if (applied && result.PlayerId == localPlayerKey)
+            {
+                Debug.Log($"{LOG_TAG} 已认领槽位 {result.SlotIndex}（含服务器分配）");
+            }
         }
 
         // ==================== 阶段摄像机 ====================
@@ -1192,11 +1276,22 @@ namespace SuperQQ.Selection.Runtime
 
         // ==================== 倒计时显示 ====================
 
-        /// <summary>刷新倒计时文本：取当前阶段条件的剩余时间，向上取整显示秒数</summary>
+        /// <summary>
+        /// 刷新倒计时文本：联机模式按服务器阶段结束时刻计算（两端锚点一致）；
+        /// 单机模式取当前阶段条件的本地剩余时间。
+        /// </summary>
         private void UpdateCountdownText()
         {
             if (countdownText == null)
             {
+                return;
+            }
+
+            // 联机：以服务器 phase_end_time_ms 为锚点，与另一端显示严格一致
+            if (BNetMode && NetGameFlowGate.CurrentPhaseEndTimeMs > 0)
+            {
+                long remainMs = NetGameFlowGate.CurrentPhaseEndTimeMs - NetworkManager.EstimatedServerNowMs();
+                countdownText.text = Mathf.Max(0, Mathf.CeilToInt(remainMs / 1000f)).ToString();
                 return;
             }
 
