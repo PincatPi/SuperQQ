@@ -2013,6 +2013,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _popupContainer: {fileID: 487748557}
+--- !u!1 &813179692
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 813179693}
+  m_Layer: 0
+  m_Name: Waves
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &813179693
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 813179692}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1742632237}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &854261310
 GameObject:
   m_ObjectHideFlags: 0
@@ -2582,6 +2613,7 @@ MonoBehaviour:
   placementCameraPriority: 20
   cursorMarkerOffset: {x: -1, y: -1}
   cursorMarkerSortingOrder: 100
+  placeStateReportRate: 10
 --- !u!4 &1186294222
 Transform:
   m_ObjectHideFlags: 0
@@ -2903,6 +2935,11 @@ GameObject:
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4307318718690916560, guid: c3c736933c09e4bb7b5953dbef6afc9e, type: 3}
   m_PrefabInstance: {fileID: 1651951733595449051}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1742632237 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8506215644074845502, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+  m_PrefabInstance: {fileID: 4761531829201894646}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1742744653
 GameObject:
@@ -4041,6 +4078,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Map
       objectReference: {fileID: 0}
+    - target: {fileID: 8406360666292664460, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8917994028245875475, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -4083,7 +4124,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8506215644074845502, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 813179693}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
 --- !u!1001 &4937873216469716726
@@ -4094,6 +4138,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1530836126952925576, guid: 6f43b9ef234ab494db16145c41f7cec2, type: 3}
+      propertyPath: deathDuration
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1530836126952925576, guid: 6f43b9ef234ab494db16145c41f7cec2, type: 3}
       propertyPath: selectionIconSprite
       value: 
