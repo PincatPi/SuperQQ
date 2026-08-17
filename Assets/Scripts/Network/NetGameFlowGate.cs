@@ -138,40 +138,38 @@ namespace SuperQQ.Network
         }
 
         /// <summary>
-        /// 对局开始时（首个 GamePhaseSync/ItemOfferList 到达）把房间内其他玩家注册档案并生成化身。
-        /// 大厅流程（Hall→Room→Level1）下 NetDebugBootstrap 不参与，远程玩家档案需在此补注册，
-        /// 否则选择阶段只有本地玩家图标、且两端座位都取 0 号位互相重叠。
+        /// 对局开始时把房间内其他玩家注册档案并生成化身。
+        /// 大厅流程（Hall→Room→Level1）下 NetDebugBootstrap 不参与，远程玩家档案需在此补注册。
+        /// 数据源优先取最新房间快照（含后加入的玩家），JoinedRoom 兜底。
         /// </summary>
-        private static void EnsureRemotePlayersRegistered()
+        public static void EnsureRemotePlayersReady()
         {
             NetworkManager net = NetworkManager.Instance;
             SuperQQ.Player.PlayerSessionManager session = SuperQQ.Player.PlayerSessionManager.Instance;
-            if (net == null || session == null || net.JoinedRoom == null)
+            if (net == null || session == null)
             {
                 return;
             }
 
-            int registered = 0;
-            foreach (Minigame.Room.V1.RoomPlayerState p in net.JoinedRoom.Players)
-            {
-                string playerId = p.Player?.PlayerId;
-                if (string.IsNullOrEmpty(playerId) || playerId == net.LocalPlayerId)
-                {
-                    continue;
-                }
-                if (session.HasPlayerByIdentity(playerId))
-                {
-                    continue;
-                }
+            // 数据源：最新快照优先（含 RoomUpdated 后加入的玩家），JoinedRoom 兜底
+            Minigame.Room.V1.RoomSnapshot snapshot = null;
+            RoomSnapshotReceiver receiver = UnityEngine.Object.FindFirstObjectByType<RoomSnapshotReceiver>();
+            if (receiver != null) snapshot = receiver.LatestSnapshot;
 
-                session.RegisterProfile(new SuperQQ.Player.PlayerProfile
+            int registered = 0;
+            if (snapshot != null)
+            {
+                foreach (Minigame.Room.V1.RoomPlayerState p in snapshot.Players)
                 {
-                    PlayerId = playerId,
-                    IsLocal = false,
-                    PlayerName = string.IsNullOrEmpty(p.Player.Nickname) ? $"Remote_{playerId}" : p.Player.Nickname,
-                    PlayerColor = PlayerColorPalette.Get(p.ColorIndex)
-                });
-                registered++;
+                    registered += TryRegisterRemote(net, session, p.Player?.PlayerId, p.Player?.Nickname, p.ColorIndex);
+                }
+            }
+            if (registered == 0 && net.JoinedRoom != null)
+            {
+                foreach (Minigame.Room.V1.RoomPlayerState p in net.JoinedRoom.Players)
+                {
+                    registered += TryRegisterRemote(net, session, p.Player?.PlayerId, p.Player?.Nickname, p.ColorIndex);
+                }
             }
 
             if (registered > 0)
@@ -179,6 +177,22 @@ namespace SuperQQ.Network
                 SuperQQ.Player.LevelPlayerRegistry.Instance?.SpawnMissingPlayerAvatars();
                 Debug.Log($"[NetWork] 对局开始：注册 {registered} 名远程玩家并生成化身");
             }
+        }
+
+        private static int TryRegisterRemote(NetworkManager net, SuperQQ.Player.PlayerSessionManager session,
+            string playerId, string nickname, int colorIndex)
+        {
+            if (string.IsNullOrEmpty(playerId) || playerId == net.LocalPlayerId) return 0;
+            if (session.HasPlayerByIdentity(playerId)) return 0;
+
+            session.RegisterProfile(new SuperQQ.Player.PlayerProfile
+            {
+                PlayerId = playerId,
+                IsLocal = false,
+                PlayerName = string.IsNullOrEmpty(nickname) ? $"Remote_{playerId}" : nickname,
+                PlayerColor = PlayerColorPalette.Get(colorIndex)
+            });
+            return 1;
         }
 
         private static string ResolveLocalPlayerName()
@@ -218,7 +232,7 @@ namespace SuperQQ.Network
             if (!flow.BFlowStarted)
             {
                 Debug.Log($"[NetWork] 服务器触发游戏流程: phase={sync.Phase} round={sync.Round}");
-                EnsureRemotePlayersRegistered();
+                EnsureRemotePlayersReady();
                 flow.StartGameFlow();
             }
 
@@ -255,7 +269,7 @@ namespace SuperQQ.Network
             Debug.Log($"[NetWork] Gate 缓存发牌: round={list.Round} 道具数={list.Offers.Count} flowStarted={GamePhaseManager.Instance?.BFlowStarted}");
 
             // 发牌到达即对局开始：确保远程玩家已注册（图标/化身依赖档案）
-            EnsureRemotePlayersRegistered();
+            EnsureRemotePlayersReady();
 
             GamePhaseManager flow = GamePhaseManager.Instance;
             if (flow != null && !flow.BFlowStarted)

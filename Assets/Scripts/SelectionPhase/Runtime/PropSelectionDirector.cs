@@ -191,9 +191,47 @@ namespace SuperQQ.Selection.Runtime
                 avatarGate.Suppress();
             }
 
+            // 联机：选择阶段进行中，化身晚于 BeginPhase 生成的玩家（快照兜底生成）补生成图标
+            if (BNetMode)
+            {
+                iconSpawnCheckTimer += Time.deltaTime;
+                if (iconSpawnCheckTimer >= 0.2f)
+                {
+                    iconSpawnCheckTimer = 0f;
+                    SpawnMissingPlayerIcons();
+                }
+            }
+
             phaseElapsed += Time.deltaTime;
             UpdateCountdownText();
             TickFakePickers();
+        }
+
+        private float iconSpawnCheckTimer;
+
+        /// <summary>为 registry 中已存在但还没有图标的玩家补生成图标（联机晚到化身）</summary>
+        private void SpawnMissingPlayerIcons()
+        {
+            if (playerSpotAnchors == null || playerSpotAnchors.Count == 0) return;
+            if (LevelPlayerRegistry.Instance == null) return;
+
+            IReadOnlyList<PlayerController> players = LevelPlayerRegistry.Instance.Players;
+            for (int i = 0; i < players.Count; i++)
+            {
+                PlayerController player = players[i];
+                if (player == null || playerIcons.ContainsKey(player.IdentityKey))
+                {
+                    continue;
+                }
+
+                int seat = GetRoomSeatIndex(player.IdentityKey, players.Count, i);
+                PropSelectionPlayerIcon icon = CreatePlayerIcon(player, playerSpotAnchors[seat % playerSpotAnchors.Count]);
+                if (icon != null)
+                {
+                    playerIcons[player.IdentityKey] = icon;
+                    Debug.Log($"{LOG_TAG} 补生成玩家图标: {player.IdentityKey} 座位={seat}");
+                }
+            }
         }
 
         // ==================== 阶段接口（供 GameFlow 调用） ====================
@@ -231,6 +269,9 @@ namespace SuperQQ.Selection.Runtime
             // 首轮发牌可能先于本阶段注册到达（由 NetGameFlowGate 缓存），此处补消费
             ItemOfferList pendingOffers = NetGameFlowGate.ConsumePendingOffers();
             Debug.Log($"{LOG_TAG} 消费缓存发牌: {(pendingOffers != null ? $"round={pendingOffers.Round} 道具数={pendingOffers.Offers.Count}" : "null")}");
+
+            // 对局开始（大厅流程）：确保远程玩家档案已注册并生成化身，再生成图标
+            NetGameFlowGate.EnsureRemotePlayersReady();
 
             localPlayerKey = ResolveLocalPlayerKey();
             localSelectedItem = null;
@@ -315,10 +356,15 @@ namespace SuperQQ.Selection.Runtime
                 return;
             }
 
-            // 联机模式：先上报认领意图（服务器透传广播，其他端让远端图标/化身也飞过去）。
-            // 已有待确认槽位时允许改选：图标飞向新槽位，打勾按钮跟随移动。
             if (BNetMode)
             {
+                // 已认领（含服务器分配）后禁止再点任何道具；待确认期间也不允许改选
+                if (session.BHasSelection(localPlayerKey) || confirmCheckSlot >= 0)
+                {
+                    return;
+                }
+
+                // 先上报认领意图（服务器透传广播，其他端让远端图标/化身也飞过去）
                 NetworkManager net = NetworkManager.Instance;
                 net.Send(new ItemClaimIntent
                 {
@@ -454,37 +500,24 @@ namespace SuperQQ.Selection.Runtime
         /// </summary>
         private static int GetRoomSeatIndex(string identityKey, int playerCount, int fallback)
         {
+            // 座位数据源优先级：最新房间快照 > JoinedRoom。
+            // 判定规则：若列表中"存在 colorIndex 互不相同且非全 0"的有效分配，用 colorIndex；
+            // 否则（后端未分配，全为 0）用玩家在列表中的下标（进房顺序，两端一致）。
             Network.NetworkManager net = Network.NetworkManager.Instance;
+            Network.RoomSnapshotReceiver snapshotReceiver = UnityEngine.Object.FindFirstObjectByType<Network.RoomSnapshotReceiver>();
+            Minigame.Room.V1.RoomSnapshot snapshot = snapshotReceiver != null ? snapshotReceiver.LatestSnapshot : null;
+
+            if (snapshot != null && snapshot.Players.Count > 0)
+            {
+                int seat = FindSeatInList(snapshot.Players, identityKey);
+                if (seat >= 0) return seat;
+            }
+
             Minigame.Room.V1.Room room = net != null ? net.JoinedRoom : null;
             if (room != null && room.Players.Count > 0)
             {
-                for (int i = 0; i < room.Players.Count; i++)
-                {
-                    Minigame.Room.V1.RoomPlayerState p = room.Players[i];
-                    if (p.Player?.PlayerId == identityKey)
-                    {
-                        // 优先用服务器分配的 color_index 作为座位号（与进房顺序同源）
-                        if (p.ColorIndex >= 0)
-                        {
-                            return p.ColorIndex;
-                        }
-                        return i;
-                    }
-                }
-            }
-
-            // 后进房的玩家不在 JoinedRoom 里：从最新房间快照取 color_index
-            Network.RoomSnapshotReceiver snapshotReceiver = UnityEngine.Object.FindFirstObjectByType<Network.RoomSnapshotReceiver>();
-            Minigame.Room.V1.RoomSnapshot snapshot = snapshotReceiver != null ? snapshotReceiver.LatestSnapshot : null;
-            if (snapshot != null)
-            {
-                foreach (Minigame.Room.V1.RoomPlayerState p in snapshot.Players)
-                {
-                    if (p.Player?.PlayerId == identityKey && p.ColorIndex >= 0)
-                    {
-                        return p.ColorIndex;
-                    }
-                }
+                int seat = FindSeatInList(room.Players, identityKey);
+                if (seat >= 0) return seat;
             }
 
             // 兜底：按玩家ID字典序排序（两端排序结果一致，保证位置对齐）
@@ -503,6 +536,34 @@ namespace SuperQQ.Selection.Runtime
             }
 
             return fallback % Mathf.Max(1, playerCount);
+        }
+
+        /// <summary>
+        /// 在玩家列表中定位座位：若列表存在有效的 colorIndex 分配（非全 0 且互不重复）则用之，
+        /// 否则用列表下标（进房顺序）。找不到该玩家返回 -1。
+        /// </summary>
+        private static int FindSeatInList(IReadOnlyList<Minigame.Room.V1.RoomPlayerState> players, string identityKey)
+        {
+            // 先判断 colorIndex 分配是否有效（全 0 = 后端未分配）
+            bool hasValidColorIndex = false;
+            var seen = new HashSet<int>();
+            for (int i = 0; i < players.Count; i++)
+            {
+                int ci = players[i].ColorIndex;
+                if (ci > 0 && seen.Add(ci))
+                {
+                    hasValidColorIndex = true;
+                }
+            }
+
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i].Player?.PlayerId == identityKey)
+                {
+                    return hasValidColorIndex ? players[i].ColorIndex : i;
+                }
+            }
+            return -1;
         }
 
         private void ClearPlayerIcons()
