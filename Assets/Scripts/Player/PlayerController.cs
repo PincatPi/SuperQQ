@@ -460,6 +460,9 @@ namespace SuperQQ.Player
             {
                 return;
             }
+            // 联机：上报死亡瞬间事件（远端播死亡表现），离线时为空操作
+            SuperQQ.Network.NetEventSync.ReportEvent(
+                Minigame.Room.V1.PlayerEventType.Die, transform.position);
             TransitionTo(new PlayerDyingState(this));
         }
 
@@ -479,6 +482,11 @@ namespace SuperQQ.Player
             {
                 _rb.velocity = knockbackVelocity;
             }
+            // 联机：受击+死亡事件（远端播受击闪色与死亡表现）
+            SuperQQ.Network.NetEventSync.ReportEvent(
+                Minigame.Room.V1.PlayerEventType.Hit, transform.position);
+            SuperQQ.Network.NetEventSync.ReportEvent(
+                Minigame.Room.V1.PlayerEventType.Die, transform.position);
             TransitionTo(new PlayerDyingState(this));
         }
 

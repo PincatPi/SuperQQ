@@ -62,6 +62,15 @@ namespace SuperQQ.Network
             { typeof(SetReadyRequest),          (e, m) => e.SetReady = (SetReadyRequest)m },
             { typeof(StartGameRequest),         (e, m) => e.StartGame = (StartGameRequest)m },
             { typeof(GetRoomRequest),           (e, m) => e.GetRoom = (GetRoomRequest)m },
+            { typeof(ItemClaimIntent),          (e, m) => e.ItemClaimIntent = (ItemClaimIntent)m },
+            { typeof(ItemClaimConfirm),         (e, m) => e.ItemClaimConfirm = (ItemClaimConfirm)m },
+            { typeof(ItemPlaceState),           (e, m) => e.ItemPlaceState = (ItemPlaceState)m },
+            { typeof(ItemPlaceConfirm),         (e, m) => e.ItemPlaceConfirm = (ItemPlaceConfirm)m },
+            { typeof(PlayerOutReport),          (e, m) => e.PlayerOutReport = (PlayerOutReport)m },
+            { typeof(RoundScoreReport),         (e, m) => e.RoundScoreReport = (RoundScoreReport)m },
+            { typeof(PlayerEvent),              (e, m) => e.PlayerEvent = (PlayerEvent)m },
+            { typeof(PickupClaim),              (e, m) => e.PickupClaim = (PickupClaim)m },
+            { typeof(ItemStateEvent),           (e, m) => e.ItemStateEvent = (ItemStateEvent)m },
         };
 
         // 接收侧：消息类型 -> 从 ServerEnvelope 取出的方式
@@ -84,6 +93,16 @@ namespace SuperQQ.Network
             { typeof(StartGameResponse),         e => e.StartGame },
             { typeof(RoomUpdated),               e => e.RoomUpdated },
             { typeof(GetRoomResponse),           e => e.GetRoom },
+            { typeof(ItemOfferList),             e => e.ItemOfferList },
+            { typeof(ItemClaimIntentBroadcast),  e => e.ItemClaimIntentBroadcast },
+            { typeof(ItemClaimResult),           e => e.ItemClaimResult },
+            { typeof(GamePhaseSync),             e => e.GamePhaseSync },
+            { typeof(ItemPlaceStateBroadcast),   e => e.ItemPlaceStateBroadcast },
+            { typeof(ItemPlaceResult),           e => e.ItemPlaceResult },
+            { typeof(PlayerOutBroadcast),        e => e.PlayerOutBroadcast },
+            { typeof(PlayerEventBroadcast),      e => e.PlayerEventBroadcast },
+            { typeof(PickupClaimBroadcast),      e => e.PickupClaimBroadcast },
+            { typeof(ItemStateEventBroadcast),   e => e.ItemStateEventBroadcast },
             { typeof(ErrorResponse),             e => e.Error },
         };
 

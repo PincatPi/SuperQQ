@@ -227,6 +227,10 @@ namespace SuperQQ.Network
                 {
                     player.gameObject.AddComponent<InputReporter>();
                 }
+                if (player.GetComponent<PlayerOutReporter>() == null)
+                {
+                    player.gameObject.AddComponent<PlayerOutReporter>();
+                }
 
                 Debug.Log($"[NetWork] 本地玩家已接入联机: {player.PlayerName} -> {_net.LocalPlayerId}");
                 return;
@@ -253,6 +257,7 @@ namespace SuperQQ.Network
 
                 if (!session.HasPlayerByIdentity(playerId))
                 {
+                    // 颜色：服务器按进房顺序分配的 color_index 查本地色板，各端一致
                     session.RegisterProfile(new PlayerProfile
                     {
                         PlayerId = playerId,
@@ -260,9 +265,9 @@ namespace SuperQQ.Network
                         PlayerName = string.IsNullOrEmpty(playerState.Player.Nickname)
                             ? $"Remote{index}"
                             : playerState.Player.Nickname,
-                        PlayerColor = Color.cyan
+                        PlayerColor = PlayerColorPalette.Get(playerState.ColorIndex)
                     });
-                    Debug.Log($"[NetWork] 已注册远程玩家档案: {playerState.Player.Nickname}({playerId})");
+                    Debug.Log($"[NetWork] 已注册远程玩家档案: {playerState.Player.Nickname}({playerId}) 色号={playerState.ColorIndex}");
                 }
                 index++;
             }

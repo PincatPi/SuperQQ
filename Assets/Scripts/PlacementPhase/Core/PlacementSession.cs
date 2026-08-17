@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using SuperQQ.Grid;
 using SuperQQ.Item;
 using UnityEngine;
@@ -53,6 +54,47 @@ namespace SuperQQ.Placement.Core
 
         /// <summary>是否已放置完毕（无待放置道具且当前没有待确认的摆放）</summary>
         public bool BIsFinished => !BIsPlacing && pendingPrefab == null;
+
+        /// <summary>摆放中道具的ID（prefab 名）；未摆放时为空串</summary>
+        public string CurrentItemId => currentItemId;
+
+        /// <summary>摆放中道具的 PlacementController；未摆放时为 null</summary>
+        public PlacementController CurrentPlacementController => currentPc;
+
+        /// <summary>摆放中道具是否旋转 90°；未摆放时为 false</summary>
+        public bool CurrentRotated => BIsPlacing && currentPc.IsRotated;
+
+        /// <summary>摆放中道具根节点的世界坐标；未摆放时为 null</summary>
+        public Vector2? CurrentPosition => BIsPlacing ? (Vector2?)current.transform.position : null;
+
+        /// <summary>摆放中道具按当前位置/朝向的锚点格子（footprint 左下角）；未摆放时为 null</summary>
+        public Vector2Int? CurrentAnchorCell =>
+            BIsPlacing ? (Vector2Int?)currentPc.GetAnchorCellAt(current.transform.position) : null;
+
+        /// <summary>摆放中道具按当前位置/朝向占据的全部格子（联机确认时上报服务器仲裁）；未摆放时为 null</summary>
+        public List<Vector2Int> CurrentOccupiedCells()
+        {
+            if (!BIsPlacing || GridManager.Instance == null)
+            {
+                return null;
+            }
+
+            Vector2Int anchor = currentPc.GetAnchorCellAt(current.transform.position);
+            FootprintBoxView box = current.GetComponent<FootprintBoxView>();
+            Vector2Int footprint = box != null ? box.Footprint : Vector2Int.one;
+            bool rotated = currentPc.IsRotated;
+            Vector2Int size = rotated ? new Vector2Int(footprint.y, footprint.x) : footprint;
+
+            var cells = new List<Vector2Int>(size.x * size.y);
+            for (int dx = 0; dx < size.x; dx++)
+            {
+                for (int dy = 0; dy < size.y; dy++)
+                {
+                    cells.Add(new Vector2Int(anchor.x + dx, anchor.y + dy));
+                }
+            }
+            return cells;
+        }
 
         // ==================== 放置流程 ====================
 

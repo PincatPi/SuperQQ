@@ -88,10 +88,25 @@ namespace SuperQQ.Item
         }
 
         /// <summary>被放置到网格后调用（GridManager.Place 完成时）</summary>
-        public virtual void OnPlaced() { }
+        public virtual void OnPlaced()
+        {
+            // 联机登记：金币进拾取注册表，所有道具进生命周期注册表（离线时为空操作）
+            if (this is Coin coin)
+            {
+                SuperQQ.Network.PickupRegistry.Register(coin);
+            }
+            SuperQQ.Network.ItemLifecycleSync.Register(this);
+        }
 
         /// <summary>被移除（拾回/拆除）前调用，用于清理运行状态</summary>
-        public virtual void OnRemoved() { }
+        public virtual void OnRemoved()
+        {
+            if (this is Coin coin)
+            {
+                SuperQQ.Network.PickupRegistry.Unregister(coin);
+            }
+            SuperQQ.Network.ItemLifecycleSync.Unregister(this);
+        }
 
         /// <summary>跑动阶段开始：机关启动（开始攻击循环、启动力场等）</summary>
         public virtual void OnRunPhaseStart() { }

@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
 using Cinemachine;
+using Minigame.Room.V1;
 using SuperQQ.GameFlow;
 using SuperQQ.Grid;
 using SuperQQ.Item;
+using SuperQQ.Network;
 using SuperQQ.Placement.Core;
 using SuperQQ.Player;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using Vector2 = UnityEngine.Vector2;
 
 namespace SuperQQ.Placement.Runtime
 {
@@ -83,6 +87,17 @@ namespace SuperQQ.Placement.Runtime
         private int selectFrame = -1;           // 取出道具发生的帧号（避免同帧点击直接误确认）
         private Vector2 lastPointerWorld;
 
+        [Header("联机同步")]
+        [Tooltip("拖拽状态上报频率（次/秒）")]
+        [SerializeField] private float placeStateReportRate = 10f;
+
+        // ---- 联机状态 ----
+        private float placeStateTimer;                                  // 拖拽上报节流
+        private bool awaitingPlaceResult;                               // 已发确认、等待服务器仲裁
+        private Button confirmPlaceButton;                              // 屏幕上方打勾确认按钮（运行时搭建）
+        private readonly Dictionary<string, GameObject> remoteGhosts = new(); // playerId -> 远端玩家摆放中的虚化道具
+        private readonly Dictionary<string, string> remoteGhostItemIds = new();
+
         /// <summary>本地玩家确认一次放置时触发（未来网络同步订阅点）</summary>
         public event Action<PlacementResult> OnLocalPlacementConfirmed;
 
@@ -141,6 +156,7 @@ namespace SuperQQ.Placement.Runtime
             TryBeginPendingItem();
             PollPointer();
             PollHotkeys();
+            TickPlaceStateReport();
         }
 
         // ==================== 阶段接口（供 GameFlow 调用） ====================
@@ -189,6 +205,12 @@ namespace SuperQQ.Placement.Runtime
             selectFrame = -1;
             BIsActive = true;
 
+            if (BNetMode)
+            {
+                RegisterNetHandlers();
+                ShowConfirmPlaceButton();
+            }
+
             // 发牌后立即开始跟随鼠标（等下一帧 Update 会晚一拍）
             TryBeginPendingItem();
             Debug.Log($"{LOG_TAG} 进入放置阶段，发放道具：{(item != null ? item.name : "无")}");
@@ -210,6 +232,11 @@ namespace SuperQQ.Placement.Runtime
                 localSession.OnPlacementConfirmed -= HandlePlacementConfirmed;
                 localSession = null;
             }
+
+            UnregisterNetHandlers();
+            HideConfirmPlaceButton();
+            ClearRemoteGhosts();
+            awaitingPlaceResult = false;
 
             GridManager.Instance?.HideGrid();
             avatarGate.Restore();
@@ -294,8 +321,10 @@ namespace SuperQQ.Placement.Runtime
                 localSession.Rotate();
             }
 
-            // 左键确认：取出道具的同帧、以及指针悬停在 UI 上时不触发
-            if (Input.GetMouseButtonDown(0)
+            // 左键确认：取出道具的同帧、以及指针悬停在 UI 上时不触发。
+            // 联机模式下确认统一由屏幕上方打勾按钮发起（需服务器仲裁占用），左键不再确认。
+            if (!BNetMode
+                && Input.GetMouseButtonDown(0)
                 && Time.frameCount != selectFrame
                 && (EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject()))
             {
@@ -319,6 +348,347 @@ namespace SuperQQ.Placement.Runtime
             Vector3 world = inputCamera.ScreenToWorldPoint(new Vector3(
                 Input.mousePosition.x, Input.mousePosition.y, -inputCamera.transform.position.z));
             return new Vector2(world.x, world.y);
+        }
+
+        // ==================== 联机同步（拖拽广播 + 服务器占用仲裁） ====================
+
+        /// <summary>是否处于联机模式：已连接且已进房时，拖拽同步与摆放确认以服务器为准</summary>
+        private static bool BNetMode =>
+            NetworkManager.Instance != null
+            && NetworkManager.Instance.IsConnected
+            && !string.IsNullOrEmpty(NetworkManager.Instance.RoomId);
+
+        private void RegisterNetHandlers()
+        {
+            NetworkManager net = NetworkManager.Instance;
+            if (net == null) return;
+            net.Register<ItemPlaceStateBroadcast>(HandleRemotePlaceState);
+            net.Register<ItemPlaceResult>(HandlePlaceResult);
+        }
+
+        private void UnregisterNetHandlers()
+        {
+            NetworkManager net = NetworkManager.Instance;
+            if (net == null) return;
+            net.Unregister<ItemPlaceStateBroadcast>();
+            net.Unregister<ItemPlaceResult>();
+        }
+
+        /// <summary>节流上报本地摆放中道具的位置/朝向（远端据此显示虚化道具跟随）</summary>
+        private void TickPlaceStateReport()
+        {
+            if (!BNetMode || localSession == null || !localSession.BIsPlacing || awaitingPlaceResult)
+            {
+                return;
+            }
+
+            placeStateTimer += Time.deltaTime;
+            if (placeStateTimer < 1f / placeStateReportRate)
+            {
+                return;
+            }
+            placeStateTimer = 0f;
+
+            Vector2? pos = localSession.CurrentPosition;
+            if (pos == null)
+            {
+                return;
+            }
+
+            NetworkManager net = NetworkManager.Instance;
+            net.Send(new ItemPlaceState
+            {
+                RoomId = net.RoomId,
+                PlayerId = net.LocalPlayerId,
+                ItemId = localSession.CurrentItemId,
+                Position = new Minigame.Room.V1.Vector2 { X = pos.Value.x, Y = pos.Value.y },
+                Rotated = localSession.CurrentRotated
+            });
+        }
+
+        // ---------- 远端玩家拖拽表现（虚化道具） ----------
+
+        private void HandleRemotePlaceState(ItemPlaceStateBroadcast msg)
+        {
+            if (!BIsActive || msg.PlayerId == NetworkManager.Instance.LocalPlayerId)
+            {
+                return;
+            }
+
+            GameObject ghost = GetOrCreateRemoteGhost(msg.PlayerId, msg.ItemId);
+            if (ghost == null)
+            {
+                return;
+            }
+
+            ghost.transform.position = new Vector3(msg.Position.X, msg.Position.Y, 0f);
+            ghost.transform.rotation = msg.Rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
+        }
+
+        /// <summary>按玩家获取/创建其摆放中的虚化道具（itemId 变化时重建）</summary>
+        private GameObject GetOrCreateRemoteGhost(string playerId, string itemId)
+        {
+            if (remoteGhosts.TryGetValue(playerId, out GameObject ghost)
+                && ghost != null
+                && remoteGhostItemIds.TryGetValue(playerId, out string oldId)
+                && oldId == itemId)
+            {
+                return ghost;
+            }
+
+            DestroyRemoteGhost(playerId);
+
+            ItemBase prefab = FindPoolItem(itemId);
+            if (prefab == null)
+            {
+                Debug.LogWarning($"{LOG_TAG} 远端道具 {itemId} 不在本地候选池中，跳过虚化显示。");
+                return null;
+            }
+
+            ghost = Instantiate(prefab.gameObject);
+            ghost.name = $"RemoteGhost_{playerId}_{itemId}";
+
+            // 虚化显示 + 关闭碰撞与摆放组件，纯表现不干扰本地判定
+            PlacementController pc = ghost.GetComponent<PlacementController>();
+            if (pc != null)
+            {
+                pc.DebugHotkeys = false;
+                pc.GhostOn();
+                pc.enabled = false;
+            }
+            foreach (Collider2D col in ghost.GetComponentsInChildren<Collider2D>(true))
+            {
+                col.enabled = false;
+            }
+
+            remoteGhosts[playerId] = ghost;
+            remoteGhostItemIds[playerId] = itemId;
+            return ghost;
+        }
+
+        private void DestroyRemoteGhost(string playerId)
+        {
+            if (remoteGhosts.TryGetValue(playerId, out GameObject ghost) && ghost != null)
+            {
+                Destroy(ghost);
+            }
+            remoteGhosts.Remove(playerId);
+            remoteGhostItemIds.Remove(playerId);
+        }
+
+        private void ClearRemoteGhosts()
+        {
+            foreach (KeyValuePair<string, GameObject> pair in remoteGhosts)
+            {
+                if (pair.Value != null)
+                {
+                    Destroy(pair.Value);
+                }
+            }
+            remoteGhosts.Clear();
+            remoteGhostItemIds.Clear();
+        }
+
+        // ---------- 打勾确认按钮 ----------
+
+        /// <summary>在屏幕上方搭建打勾确认按钮（联机模式；点击后向服务器请求占用仲裁）</summary>
+        private void ShowConfirmPlaceButton()
+        {
+            if (confirmPlaceButton != null)
+            {
+                confirmPlaceButton.gameObject.SetActive(true);
+                return;
+            }
+
+            Canvas canvas = FindFirstObjectByType<Canvas>();
+            if (canvas == null)
+            {
+                var canvasGo = new GameObject("PlacementCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+                canvas = canvasGo.GetComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.sortingOrder = 90;
+                CanvasScaler scaler = canvasGo.GetComponent<CanvasScaler>();
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1920f, 1080f);
+            }
+            EnsureEventSystem();
+
+            var btnGo = new GameObject("ConfirmPlaceButton", typeof(RectTransform), typeof(Image), typeof(Button));
+            btnGo.transform.SetParent(canvas.transform, false);
+            var rect = (RectTransform)btnGo.transform;
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, -30f);
+            rect.sizeDelta = new Vector2(120f, 80f);
+            btnGo.GetComponent<Image>().color = new Color(0.2f, 0.7f, 0.3f, 0.95f);
+
+            confirmPlaceButton = btnGo.GetComponent<Button>();
+            confirmPlaceButton.onClick.AddListener(OnConfirmPlaceClicked);
+
+            var labelGo = new GameObject("Check", typeof(RectTransform), typeof(TextMeshProUGUI));
+            labelGo.transform.SetParent(btnGo.transform, false);
+            var labelRect = (RectTransform)labelGo.transform;
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+            var tmp = labelGo.GetComponent<TextMeshProUGUI>();
+            tmp.text = "✔";
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.fontSize = 48f;
+            tmp.color = Color.white;
+            tmp.raycastTarget = false;
+        }
+
+        private void HideConfirmPlaceButton()
+        {
+            if (confirmPlaceButton != null)
+            {
+                confirmPlaceButton.gameObject.SetActive(false);
+            }
+        }
+
+        /// <summary>打勾按钮回调：落点本地合法才发确认请求，占据格子列表交服务器仲裁</summary>
+        private void OnConfirmPlaceClicked()
+        {
+            if (awaitingPlaceResult || localSession == null || !localSession.BIsPlacing)
+            {
+                return;
+            }
+
+            Vector2? pos = localSession.CurrentPosition;
+            Vector2Int? anchor = localSession.CurrentAnchorCell;
+            List<Vector2Int> cells = localSession.CurrentOccupiedCells();
+            if (pos == null || anchor == null || cells == null || cells.Count == 0)
+            {
+                return;
+            }
+
+            // 本地预检：明显不合法（出界/与已知占用冲突）时不发请求，省一次往返
+            PlacementController pc = localSession.CurrentPlacementController;
+            if (pc == null || !pc.CanPlaceAt(pos.Value))
+            {
+                Debug.LogWarning($"{LOG_TAG} 当前落点不合法，请移动到合法位置后再确认。");
+                return;
+            }
+
+            NetworkManager net = NetworkManager.Instance;
+            var confirm = new ItemPlaceConfirm
+            {
+                RoomId = net.RoomId,
+                PlayerId = net.LocalPlayerId,
+                ItemId = localSession.CurrentItemId,
+                AnchorCell = new GridCell { X = anchor.Value.x, Y = anchor.Value.y },
+                Rotated = localSession.CurrentRotated,
+                ClientTimeMs = NetworkManager.NowMs()
+            };
+            foreach (Vector2Int cell in cells)
+            {
+                confirm.Cells.Add(new GridCell { X = cell.x, Y = cell.y });
+            }
+
+            awaitingPlaceResult = true;
+            net.Send(confirm);
+        }
+
+        // ---------- 服务器仲裁结果 ----------
+
+        private void HandlePlaceResult(ItemPlaceResult result)
+        {
+            if (!BIsActive)
+            {
+                return;
+            }
+
+            NetworkManager net = NetworkManager.Instance;
+            bool isMine = result.PlayerId == net.LocalPlayerId;
+
+            if (!result.Success)
+            {
+                if (isMine)
+                {
+                    awaitingPlaceResult = false;
+                    Debug.LogWarning($"{LOG_TAG} 摆放失败：落点格子已被他人占用，请调整位置。");
+                }
+                return;
+            }
+
+            if (isMine)
+            {
+                // 服务器已批准：本地执行确认（登记占据、锁定道具；传送门等衔接摆放由会话内部处理）
+                awaitingPlaceResult = false;
+                localSession.Confirm();
+                Debug.Log($"{LOG_TAG} 摆放已确认: {result.ItemId} @ ({result.AnchorCell.X},{result.AnchorCell.Y})");
+            }
+            else
+            {
+                // 远端玩家摆放成功：生成实体道具并登记占用，其他玩家无法再摆到这些格子
+                PlaceRemoteItem(result);
+            }
+        }
+
+        /// <summary>远端玩家确认摆放后，在本地生成实体道具并登记网格占用</summary>
+        private void PlaceRemoteItem(ItemPlaceResult result)
+        {
+            DestroyRemoteGhost(result.PlayerId);
+
+            ItemBase prefab = FindPoolItem(result.ItemId);
+            GridManager grid = GridManager.Instance;
+            if (prefab == null || grid == null)
+            {
+                return;
+            }
+
+            var anchor = new Vector2Int(result.AnchorCell.X, result.AnchorCell.Y);
+            FootprintBoxView prefabBox = prefab.GetComponent<FootprintBoxView>();
+            Vector2Int footprint = prefabBox != null ? prefabBox.Footprint : Vector2Int.one;
+
+            Vector2 worldPos = grid.GetPlacementWorldPos(anchor, footprint, result.Rotated);
+            GameObject item = Instantiate(prefab.gameObject, worldPos,
+                result.Rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity);
+            item.name = $"RemotePlaced_{result.PlayerId}_{result.ItemId}";
+
+            // 登记占用：占据格子对所有人生效，本地落点合法性检查自动包含这些格子
+            var placed = item.AddComponent<PlacedItem>();
+            placed.Init(null, anchor, result.Rotated, -1);
+            grid.Occupy(anchor, footprint, placed, result.Rotated);
+
+            // 锁定：摆放组件与碰撞体不再需要参与交互
+            PlacementController pc = item.GetComponent<PlacementController>();
+            if (pc != null)
+            {
+                pc.DebugHotkeys = false;
+                pc.enabled = false;
+            }
+            ItemBase itemBase = item.GetComponent<ItemBase>();
+            if (itemBase != null)
+            {
+                itemBase.InitPlaced(placed, result.Rotated ? 1 : 0);
+                itemBase.OnPlaced();
+            }
+        }
+
+        private static void EnsureEventSystem()
+        {
+            if (EventSystem.current != null)
+            {
+                return;
+            }
+            var _ = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+        }
+
+        /// <summary>按道具ID（= prefab 名称）在本地候选池中查找</summary>
+        private ItemBase FindPoolItem(string itemId)
+        {
+            for (int i = 0; i < itemPool.Count; i++)
+            {
+                if (itemPool[i] != null && itemPool[i].name == itemId)
+                {
+                    return itemPool[i];
+                }
+            }
+            return null;
         }
 
         // ==================== 阶段摄像机 ====================

@@ -32,15 +32,24 @@ namespace SuperQQ.Network
         {
             public float Time;      // 本地接收时刻
             public Vector2 Pos;
-            public Vector2 Vel;     // 上报速度，用于外推
+            public Vector2 Vel;     // 上报速度，用于外推与动画
             public Vector2 Dir;
             public int PlayerState; // 0=存活 1=幽灵 2=已通关
             public bool FacingLeft;
+            public bool IsJumping;  // 滞空（跳跃/坠落），驱动 Animator bIsJumping
         }
 
         private readonly List<SnapshotPoint> _buffer = new(8);
         private SpriteRenderer _renderer;
         private Color _baseColor;
+        private Animator _animator;
+        private PlayerAnimationController _localAnimDriver;
+
+        // Animator 参数哈希（与 PlayerAnimationController 的约定一致）
+        private static readonly int VelocityXHash = Animator.StringToHash("VelocityX");
+        private static readonly int VelocityYHash = Animator.StringToHash("VelocityY");
+        private static readonly int IsDeadHash = Animator.StringToHash("bIsDead");
+        private static readonly int IsJumpingHash = Animator.StringToHash("bIsJumping");
 
         private void Awake()
         {
@@ -63,6 +72,21 @@ namespace SuperQQ.Network
                 rb.simulated = false;
                 rb.velocity = Vector2.zero;
             }
+
+            // 关闭本地动画驱动器（远端动画改由本组件按快照数据直接驱动，见 SetPosition）
+            _localAnimDriver = GetComponent<PlayerAnimationController>();
+            if (_localAnimDriver != null)
+            {
+                _localAnimDriver.enabled = false;
+            }
+            _animator = GetComponentInChildren<Animator>();
+
+            // 关闭碰撞体：远端化身不参与本端物理与道具触发
+            // （道具效果只作用于各端自己的本地玩家，效果经受害者自己的状态上报广播）
+            foreach (Collider2D col in GetComponentsInChildren<Collider2D>(true))
+            {
+                col.enabled = false;
+            }
         }
 
         /// <summary>由 RoomSnapshotReceiver 在收到快照时调用</summary>
@@ -81,7 +105,8 @@ namespace SuperQQ.Network
                     ? new Vector2(state.Direction.X, state.Direction.Y)
                     : Vector2.zero,
                 PlayerState = state.PlayerState,
-                FacingLeft = state.FacingLeft
+                FacingLeft = state.FacingLeft,
+                IsJumping = state.IsJumping
             });
 
             // 缓冲上限：保留最近 1 秒
@@ -120,9 +145,11 @@ namespace SuperQQ.Network
                 SetPosition(new SnapshotPoint
                 {
                     Pos = Vector2.LerpUnclamped(a.Pos, b.Pos, t),
+                    Vel = b.Vel,
                     Dir = b.Dir,
                     PlayerState = b.PlayerState,
-                    FacingLeft = b.FacingLeft
+                    FacingLeft = b.FacingLeft,
+                    IsJumping = b.IsJumping
                 });
                 return;
             }
@@ -151,6 +178,15 @@ namespace SuperQQ.Network
                 Color c = _baseColor;
                 c.a = point.PlayerState == 1 ? _baseColor.a * ghostAlpha : _baseColor.a;
                 _renderer.color = c;
+            }
+
+            // 动画：按快照数据直接驱动远端 Animator（与本地 PlayerAnimationController 参数约定一致）
+            if (_animator != null)
+            {
+                _animator.SetFloat(VelocityXHash, Mathf.Abs(point.Vel.x));
+                _animator.SetFloat(VelocityYHash, point.Vel.y);
+                _animator.SetBool(IsDeadHash, point.PlayerState == 1);
+                _animator.SetBool(IsJumpingHash, point.IsJumping);
             }
         }
     }

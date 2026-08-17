@@ -137,21 +137,34 @@ namespace SuperQQ.Network
             }
 
             // 晚进房的玩家：场景中还没有化身，注册档案并补生成
-            SpawnLateJoiner(playerId);
+            SpawnLateJoiner(playerId, FindPlayerState(playerId));
             return null;
         }
 
-        private void SpawnLateJoiner(string playerId)
+        /// <summary>从最近快照中查某玩家的完整状态（取昵称/色号用）</summary>
+        private RoomPlayerState FindPlayerState(string playerId)
+        {
+            RoomSnapshot snapshot = LatestSnapshot;
+            if (snapshot == null) return null;
+            foreach (RoomPlayerState p in snapshot.Players)
+            {
+                if (p.Player?.PlayerId == playerId) return p;
+            }
+            return null;
+        }
+
+        private void SpawnLateJoiner(string playerId, RoomPlayerState playerState)
         {
             PlayerSessionManager session = PlayerSessionManager.Instance;
             if (session == null || session.HasPlayerByIdentity(playerId)) return;
 
+            string nickname = playerState?.Player?.Nickname;
             session.RegisterProfile(new PlayerProfile
             {
                 PlayerId = playerId,
                 IsLocal = false,
-                PlayerName = $"Remote_{playerId}",
-                PlayerColor = Color.cyan
+                PlayerName = string.IsNullOrEmpty(nickname) ? $"Remote_{playerId}" : nickname,
+                PlayerColor = PlayerColorPalette.Get(playerState?.ColorIndex ?? -1)
             });
 
             LevelPlayerRegistry.Instance?.SpawnMissingPlayerAvatars();
