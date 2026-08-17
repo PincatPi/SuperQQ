@@ -1176,8 +1176,14 @@ namespace SuperQQ.Selection.Runtime
                 return;
             }
 
-            // 服务器已仲裁归属，本地会话应用结果（触发 HandleOfferClaimed 刷新表现）
-            session.TrySelect(result.PlayerId, result.SlotIndex);
+            // 服务器已仲裁归属，本地会话应用结果（触发 HandleOfferClaimed 刷新表现）。
+            // 注：服务器对未选择玩家的随机分配也走本条消息（success=true），
+            // localSelectedItem 在 HandleOfferClaimed 中缓存，阶段退出时正常推入放置阶段。
+            bool applied = session.TrySelect(result.PlayerId, result.SlotIndex);
+            if (applied && result.PlayerId == localPlayerKey)
+            {
+                Debug.Log($"{LOG_TAG} 已认领槽位 {result.SlotIndex}（含服务器分配）");
+            }
         }
 
         // ==================== 阶段摄像机 ====================
