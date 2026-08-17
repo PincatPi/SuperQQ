@@ -67,6 +67,28 @@ namespace SuperQQ.Settlement
 
         // ==================== 生命周期 ====================
 
+        /// <summary>
+        /// 自动创建兜底：结算阶段已改为场景内覆盖层（RoundSettlementPhase 不切场景），
+        /// Settlement 场景不再每轮加载，控制器需在任何场景下都能自动存在。
+        /// 配置从 Resources 加载；场景中预置的实例（带 Inspector 配置）优先，不重复创建。
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void AutoSpawn()
+        {
+            if (_instance != null || FindFirstObjectByType<SettlementController>() != null)
+            {
+                return;
+            }
+
+            var go = new GameObject(nameof(SettlementController));
+            var controller = go.AddComponent<SettlementController>();
+            controller._config = Resources.Load<ScorePillarConfig>("Settlement/ScorePillarConfig");
+            if (controller._config == null)
+            {
+                Debug.LogWarning("[SettlementController] 未找到 Resources/Settlement/ScorePillarConfig，结算展示将不可用。");
+            }
+        }
+
         private void Awake()
         {
             if (_instance != null && _instance != this)
@@ -84,11 +106,38 @@ namespace SuperQQ.Settlement
         private void OnEnable()
         {
             SceneManager.sceneLoaded += HandleSceneLoaded;
+            if (GamePhaseManager.Instance != null)
+            {
+                GamePhaseManager.Instance.OnPhaseChanged += HandlePhaseChanged;
+            }
         }
 
         private void OnDisable()
         {
             SceneManager.sceneLoaded -= HandleSceneLoaded;
+            if (GamePhaseManager.Instance != null)
+            {
+                GamePhaseManager.Instance.OnPhaseChanged -= HandlePhaseChanged;
+            }
+        }
+
+        /// <summary>
+        /// 阶段切换回调：进入单轮结算阶段时显示结算柱体并刷新（场景内覆盖层，不切场景）；
+        /// 离开结算阶段时隐藏。这是结算展示的主触发路径（RoundSettlementPhase 场景名为空）。
+        /// </summary>
+        private void HandlePhaseChanged(GamePhaseBase prev, GamePhaseBase next)
+        {
+            if (next is RoundSettlementPhase)
+            {
+                _tracksRoot.gameObject.SetActive(true);
+                _debugFlowText = "";
+                RefreshSettlement();
+            }
+            else if (prev is RoundSettlementPhase)
+            {
+                _tracksRoot.gameObject.SetActive(false);
+                _debugFlowText = "";
+            }
         }
 
         private void OnDestroy()
@@ -203,6 +252,13 @@ namespace SuperQQ.Settlement
             {
                 StopCoroutine(_settlementFlowCoroutine);
                 _settlementFlowCoroutine = null;
+            }
+
+            // 场景内覆盖层：轨道根对齐当前相机中心（Level1 相机跟随玩家，需归位才能看到结算）
+            if (Camera.main != null)
+            {
+                Vector3 camPos = Camera.main.transform.position;
+                _tracksRoot.position = new Vector3(camPos.x, camPos.y, 0f);
             }
 
             // 清除旧轨道内容并重建

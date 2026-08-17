@@ -2,6 +2,7 @@ using System.Text;
 using Minigame.Common.V1;
 using Minigame.Gateway.V1;
 using Minigame.Room.V1;
+using SuperQQ.Microphone;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -50,6 +51,9 @@ namespace SuperQQ.Network
         {
             _net = NetworkManager.Instance;
             _room = _net != null ? _net.JoinedRoom : null;
+
+            // 进入房间即开麦（音量检测），失败会自动重试直到成功
+            MicVolumeManager.EnsureExists().StartMic();
 
             BuildUI();
 

@@ -681,6 +681,12 @@ namespace SuperQQ.Placement.Runtime
         /// <summary>按道具ID（= prefab 名称）在本地候选池中查找</summary>
         private ItemBase FindPoolItem(string itemId)
         {
+            ItemBase fromCatalog = ItemCatalog.Instance != null ? ItemCatalog.Instance.Find(itemId) : null;
+            if (fromCatalog != null)
+            {
+                return fromCatalog;
+            }
+
             for (int i = 0; i < itemPool.Count; i++)
             {
                 if (itemPool[i] != null && itemPool[i].name == itemId)
@@ -722,6 +728,14 @@ namespace SuperQQ.Placement.Runtime
         {
             if (countdownText == null)
             {
+                return;
+            }
+
+            // 联机：以服务器 phase_end_time_ms 为锚点，与另一端显示严格一致
+            if (BNetMode && NetGameFlowGate.CurrentPhaseEndTimeMs > 0)
+            {
+                long remainMs = NetGameFlowGate.CurrentPhaseEndTimeMs - NetworkManager.EstimatedServerNowMs();
+                countdownText.text = Mathf.Max(0, Mathf.CeilToInt(remainMs / 1000f)).ToString();
                 return;
             }
 

@@ -263,6 +263,9 @@ message GamePhaseSync {
   GamePhaseKind phase = 2;
   int32 round = 3;              // 当前轮次（从 1 开始）
   int64 server_time_ms = 4;
+  // 本阶段结束的服务器时刻（毫秒）。客户端以此作为倒计时锚点，两端显示一致；
+  // 为 0 表示该阶段无倒计时（如游玩阶段）。
+  int64 phase_end_time_ms = 5;
 }
 
 // ==================== 道具摆放阶段同步 ====================
