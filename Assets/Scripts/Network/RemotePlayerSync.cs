@@ -94,6 +94,10 @@ namespace SuperQQ.Network
         {
             if (state?.Position == null) return;
 
+            // 玩家从未上报过状态时，服务器缓存的位置是无效的零值（proto 默认 0,0），
+            // 应用会把化身瞬移到原点并与其他玩家重叠——state_seq=0 即"从未上报"，跳过。
+            if (state.StateSeq == 0) return;
+
             _buffer.Add(new SnapshotPoint
             {
                 Time = UnityEngine.Time.time,
