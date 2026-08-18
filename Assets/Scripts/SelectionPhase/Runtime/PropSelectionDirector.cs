@@ -414,6 +414,10 @@ namespace SuperQQ.Selection.Runtime
             if (result.PlayerKey == localPlayerKey)
             {
                 localSelectedItem = session != null ? session.GetSelectedItem(localPlayerKey) : null;
+                string mappedId = (ItemCatalog.Instance != null && localSelectedItem != null)
+                    ? ItemCatalog.Instance.GetItemId(localSelectedItem) ?? "(未在目录)"
+                    : "(无目录)";
+                Debug.Log($"{LOG_TAG} 本地选中的道具: prefab={(localSelectedItem != null ? localSelectedItem.name : "null")} 反查数字ID={mappedId} 槽位={result.SlotIndex}");
 
                 // 本地玩家已完成认领：锁定全部槽位的本地点击（其他玩家的认领仍正常刷新表现）
                 for (int i = 0; i < slotViews.Count; i++)

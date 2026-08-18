@@ -214,7 +214,10 @@ namespace SuperQQ.Placement.Runtime
 
             // 发牌后立即开始跟随鼠标（等下一帧 Update 会晚一拍）
             TryBeginPendingItem();
-            Debug.Log($"{LOG_TAG} 进入放置阶段，发放道具：{(item != null ? item.name : "无")}");
+            string dealId = (ItemCatalog.Instance != null && item != null)
+                ? ItemCatalog.Instance.GetItemId(item) ?? "(未在目录)"
+                : "(无目录)";
+            Debug.Log($"{LOG_TAG} 进入放置阶段，发放道具：{(item != null ? item.name : "无")} 数字ID={dealId}");
         }
 
         /// <summary>
