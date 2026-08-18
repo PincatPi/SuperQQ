@@ -27,6 +27,24 @@ namespace SuperQQ.Network
         [Header("幽灵状态透明度（与本地 PlayerController 默认值一致）")]
         [SerializeField] private float ghostAlpha = 0.5f;
 
+        [Header("死亡动画过渡时长（秒，0=自动读 PlayerController.DeathDuration）")]
+        [SerializeField] private float deathTransitionDuration = 0f;
+
+        // 实际生效的死亡过渡时长
+        private float EffectiveDeathDuration
+        {
+            get
+            {
+                if (deathTransitionDuration > 0f) return deathTransitionDuration;
+                PlayerController pc = GetComponent<PlayerController>();
+                return pc != null ? pc.DeathDuration : 0.6f;
+            }
+        }
+
+        // 远端进入幽灵表现的时刻（收到首个 player_state=1 时起算，期间播死亡动画）
+        private float _ghostEnterTime = -1f;
+        private bool _wasGhost;
+
         // 快照缓冲：按接收时间升序
         private struct SnapshotPoint
         {
@@ -184,12 +202,30 @@ namespace SuperQQ.Network
                 _renderer.color = c;
             }
 
-            // 动画：按快照数据直接驱动远端 Animator（与本地 PlayerAnimationController 参数约定一致）
+            // 动画：按快照数据直接驱动远端 Animator（与本地 PlayerAnimationController 参数约定一致）。
+            // 死亡表现与本地一致：收到 player_state=1 后先播死亡动画（躺），过渡时长后退出死亡动画
+            // 进入幽灵表现（半透明站立漂浮），避免 bIsDead 恒 true 导致死亡动画卡在最后一帧。
+            bool isGhost = point.PlayerState == 1;
+            if (isGhost && !_wasGhost)
+            {
+                _ghostEnterTime = UnityEngine.Time.time;   // 首次进入幽灵，开始死亡动画过渡
+            }
+            if (!isGhost)
+            {
+                _ghostEnterTime = -1f;
+            }
+            _wasGhost = isGhost;
+
+            // 死亡动画仅在过渡期内为 true；过渡期后退出（与本地 Dying→Ghost 一致）
+            bool playingDeath = isGhost
+                && _ghostEnterTime >= 0f
+                && (UnityEngine.Time.time - _ghostEnterTime) < EffectiveDeathDuration;
+
             if (_animator != null)
             {
                 _animator.SetFloat(VelocityXHash, Mathf.Abs(point.Vel.x));
                 _animator.SetFloat(VelocityYHash, point.Vel.y);
-                _animator.SetBool(IsDeadHash, point.PlayerState == 1);
+                _animator.SetBool(IsDeadHash, playingDeath);
                 _animator.SetBool(IsJumpingHash, point.IsJumping);
             }
         }

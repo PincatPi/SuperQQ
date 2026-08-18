@@ -97,6 +97,7 @@ namespace SuperQQ.Placement.Runtime
         private Button confirmPlaceButton;                              // 屏幕上方打勾确认按钮（运行时搭建）
         private readonly Dictionary<string, GameObject> remoteGhosts = new(); // playerId -> 远端玩家摆放中的虚化道具
         private readonly Dictionary<string, string> remoteGhostItemIds = new();
+        private readonly Dictionary<string, SpriteRenderer> remoteCursors = new(); // playerId -> 远端玩家的光标标记
 
         /// <summary>本地玩家确认一次放置时触发（未来网络同步订阅点）</summary>
         public event Action<PlacementResult> OnLocalPlacementConfirmed;
@@ -154,7 +155,7 @@ namespace SuperQQ.Placement.Runtime
 
             UpdateCountdownText();
             TryBeginPendingItem();
-            PollPointer();
+            PollDrag();
             PollHotkeys();
             TickPlaceStateReport();
         }
@@ -271,12 +272,22 @@ namespace SuperQQ.Placement.Runtime
 
         // ==================== 输入采集 ====================
 
-        /// <summary>有待放置道具且当前未在摆放时自动取出跟随鼠标（发牌后、Esc 取消后都经由此处）</summary>
+        // 拖拽状态：道具仅在按住拖拽时跟随指针，松开后停留在原地（适配触屏与鼠标）
+        private bool isDragging;
+
+        /// <summary>
+        /// 有待放置道具时取出开始摆放。触屏/拖拽模式（联机）下不自动取出，
+        /// 由 PollDrag 的按下手势触发取出，避免道具无故跟随手指。
+        /// </summary>
         private void TryBeginPendingItem()
         {
             if (localSession.BIsPlacing || !localSession.BHasPendingItem)
             {
                 return;
+            }
+            if (BNetMode)
+            {
+                return; // 联机（触屏/拖拽）模式：等待按下手势再取出
             }
 
             if (localSession.BeginPlace(PointerWorldPos()))
@@ -286,22 +297,61 @@ namespace SuperQQ.Placement.Runtime
             }
         }
 
-        /// <summary>把鼠标世界坐标喂给放置会话，同步光标玩家标记位置，并对外发布光标位置变化</summary>
-        private void PollPointer()
+        /// <summary>
+        /// 拖拽驱动摆放：按下开始拖拽并取出道具，拖动期间道具跟随指针，
+        /// 松开后道具停留在原地。确认统一由打勾按钮（联机）或左键（单机）发起。
+        /// 同时更新光标标记位置与光标位置变化事件。
+        /// </summary>
+        private void PollDrag()
         {
             Vector2 pointerWorld = PointerWorldPos();
-            localSession.UpdatePointer(pointerWorld);
 
+            // 按下：开始拖拽；若还有待放置道具则取出
+            if (Input.GetMouseButtonDown(0) && !IsPointerOverUI())
+            {
+                isDragging = true;
+                if (!localSession.BIsPlacing && localSession.BHasPendingItem)
+                {
+                    if (localSession.BeginPlace(pointerWorld))
+                    {
+                        selectFrame = Time.frameCount;
+                    }
+                }
+            }
+
+            // 松开：结束拖拽，道具停留在当前位置
+            if (Input.GetMouseButtonUp(0))
+            {
+                isDragging = false;
+            }
+
+            // 拖拽中：道具跟随指针
+            if (isDragging && localSession.BIsPlacing)
+            {
+                localSession.UpdatePointer(pointerWorld);
+            }
+
+            // 光标标记与事件（始终跟随指针，便于观察）
             if (cursorMarker != null && cursorMarker.enabled)
             {
                 cursorMarker.transform.position = pointerWorld + cursorMarkerOffset;
             }
-
             if (pointerWorld != lastPointerWorld)
             {
                 lastPointerWorld = pointerWorld;
                 OnLocalPointerMoved?.Invoke(pointerWorld);
             }
+        }
+
+        /// <summary>指针是否悬停在 UI 上（触屏与鼠标统一判断）</summary>
+        private static bool IsPointerOverUI()
+        {
+            if (EventSystem.current == null) return false;
+            if (Input.touchCount > 0)
+            {
+                return EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+            }
+            return EventSystem.current.IsPointerOverGameObject();
         }
 
         private void PollHotkeys()
@@ -322,15 +372,31 @@ namespace SuperQQ.Placement.Runtime
             }
 
             // 左键确认：取出道具的同帧、以及指针悬停在 UI 上时不触发。
-            // 联机模式下确认统一由屏幕上方打勾按钮发起（需服务器仲裁占用），左键不再确认。
-            if (!BNetMode
+            // PC 调试（编辑器/Standalone）允许左键确认；手机触屏只允许打勾按钮（避免与拖拽冲突）。
+            // 联机模式左键确认走服务器仲裁，单机走本地直接确认。
+            bool allowClickConfirm = !BNetMode || BIsPCDebug;
+            if (allowClickConfirm
                 && Input.GetMouseButtonDown(0)
                 && Time.frameCount != selectFrame
                 && (EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject()))
             {
-                localSession.Confirm();
+                if (BNetMode)
+                {
+                    OnConfirmPlaceClicked(); // 联机：发 ItemPlaceConfirm 等服务器仲裁
+                }
+                else
+                {
+                    localSession.Confirm();
+                }
             }
         }
+
+        /// <summary>是否为 PC 调试环境（编辑器或桌面平台）：此类平台允许鼠标左键确认摆放</summary>
+        private static bool BIsPCDebug =>
+            Application.isEditor
+            || Application.platform == RuntimePlatform.WindowsPlayer
+            || Application.platform == RuntimePlatform.OSXPlayer
+            || Application.platform == RuntimePlatform.LinuxPlayer;
 
         /// <summary>鼠标当前的世界坐标（2D 平面）</summary>
         private Vector2 PointerWorldPos()
@@ -423,6 +489,49 @@ namespace SuperQQ.Placement.Runtime
 
             ghost.transform.position = new Vector3(msg.Position.X, msg.Position.Y, 0f);
             ghost.transform.rotation = msg.Rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
+
+            // 远端玩家的光标标记：跟随其道具位置（与本地 Cursor 一致的偏移与配色）
+            ShowRemoteCursor(msg.PlayerId, new Vector2(msg.Position.X, msg.Position.Y));
+        }
+
+        /// <summary>显示/更新远端玩家的光标标记（Sprite 取自该玩家化身的 CursorMarkerSprite，颜色用其玩家色）</summary>
+        private void ShowRemoteCursor(string playerId, Vector2 itemPos)
+        {
+            PlayerController remote = FindPlayerByIdentity(playerId);
+            Sprite sprite = remote != null ? remote.CursorMarkerSprite : null;
+            if (sprite == null)
+            {
+                return; // 化身未生成或未配置标识图时静默跳过
+            }
+
+            if (!remoteCursors.TryGetValue(playerId, out SpriteRenderer cursor) || cursor == null)
+            {
+                var go = new GameObject($"RemoteCursor_{playerId}");
+                go.transform.SetParent(transform, false);
+                cursor = go.AddComponent<SpriteRenderer>();
+                cursor.sortingOrder = cursorMarkerSortingOrder;
+                remoteCursors[playerId] = cursor;
+            }
+
+            cursor.sprite = sprite;
+            cursor.color = remote.PlayerColor;
+            cursor.transform.position = itemPos + cursorMarkerOffset;
+            cursor.enabled = true;
+        }
+
+        /// <summary>按 playerId 在注册表中找玩家化身</summary>
+        private static PlayerController FindPlayerByIdentity(string playerId)
+        {
+            if (LevelPlayerRegistry.Instance == null) return null;
+            System.Collections.Generic.IReadOnlyList<PlayerController> players = LevelPlayerRegistry.Instance.Players;
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i] != null && players[i].IdentityKey == playerId)
+                {
+                    return players[i];
+                }
+            }
+            return null;
         }
 
         /// <summary>按玩家获取/创建其摆放中的虚化道具（itemId 变化时重建）</summary>
@@ -474,6 +583,13 @@ namespace SuperQQ.Placement.Runtime
             }
             remoteGhosts.Remove(playerId);
             remoteGhostItemIds.Remove(playerId);
+
+            // 同步清理其光标标记（确认摆放后道具转实体，光标应消失）
+            if (remoteCursors.TryGetValue(playerId, out SpriteRenderer cursor) && cursor != null)
+            {
+                Destroy(cursor.gameObject);
+            }
+            remoteCursors.Remove(playerId);
         }
 
         private void ClearRemoteGhosts()
@@ -487,6 +603,15 @@ namespace SuperQQ.Placement.Runtime
             }
             remoteGhosts.Clear();
             remoteGhostItemIds.Clear();
+
+            foreach (KeyValuePair<string, SpriteRenderer> pair in remoteCursors)
+            {
+                if (pair.Value != null)
+                {
+                    Destroy(pair.Value.gameObject);
+                }
+            }
+            remoteCursors.Clear();
         }
 
         // ---------- 打勾确认按钮 ----------

@@ -350,12 +350,19 @@ namespace SuperQQ.Player
         private void Update()
         {
             ReadInput();
-            _currentState.Update();
+            // 状态机在 Start 初始化；晚生成的远端化身首帧可能先于 Start 执行 Update
+            if (_currentState != null)
+            {
+                _currentState.Update();
+            }
         }
 
         private void FixedUpdate()
         {
-            _currentState.FixedUpdate();
+            if (_currentState != null)
+            {
+                _currentState.FixedUpdate();
+            }
         }
 
         // ==================== 输入读取 ====================

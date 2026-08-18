@@ -134,6 +134,27 @@ namespace SuperQQ.Grid
             return new Vector2Int(footprint.y - 1 - pivot.y, pivot.x);
         }
 
+        /// <summary>按旋转档（0=0° 1=90° 2=180° 3=270°）求占位尺寸；90/270 宽高互换</summary>
+        public static Vector2Int GetRotatedSize(Vector2Int footprint, int rotationSteps)
+        {
+            return (rotationSteps % 2 == 1) ? new Vector2Int(footprint.y, footprint.x) : footprint;
+        }
+
+        /// <summary>按旋转档求锚点格子在新占位矩形内的索引（90° 步进顺时针）</summary>
+        public static Vector2Int GetRotatedPivot(Vector2Int pivot, Vector2Int footprint, int rotationSteps)
+        {
+            rotationSteps = ((rotationSteps % 4) + 4) % 4;
+            Vector2Int p = pivot;
+            Vector2Int size = footprint;
+            for (int i = 0; i < rotationSteps; i++)
+            {
+                // 顺时针 90°：(x,y) -> (size.y-1-y, x)，新尺寸宽高互换
+                p = new Vector2Int(size.y - 1 - p.y, p.x);
+                size = new Vector2Int(size.y, size.x);
+            }
+            return p;
+        }
+
         /// <summary>
         /// 解析道具的锚点格子：优先读 prefab 上 FootprintBoxView 的配置，缺省取中心格子
         /// </summary>
