@@ -169,18 +169,37 @@ namespace SuperQQ.Network
             return null;
         }
 
+        /// <summary>按房间快照列表下标取座位/颜色索引（进房顺序，两端一致）；找不到返回 -1</summary>
+        private int GetSeatIndex(string playerId)
+        {
+            RoomSnapshot snapshot = LatestSnapshot;
+            if (snapshot != null)
+            {
+                for (int i = 0; i < snapshot.Players.Count; i++)
+                {
+                    if (snapshot.Players[i].Player?.PlayerId == playerId)
+                    {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+
         private void SpawnLateJoiner(string playerId, RoomPlayerState playerState)
         {
             PlayerSessionManager session = PlayerSessionManager.Instance;
             if (session == null || session.HasPlayerByIdentity(playerId)) return;
 
             string nickname = playerState?.Player?.Nickname;
+            // 颜色按房间列表下标（进房顺序，两端一致），与 NetGameFlowGate 的取色规则统一
+            int seatIndex = GetSeatIndex(playerId);
             session.RegisterProfile(new PlayerProfile
             {
                 PlayerId = playerId,
                 IsLocal = false,
                 PlayerName = string.IsNullOrEmpty(nickname) ? $"Remote_{playerId}" : nickname,
-                PlayerColor = PlayerColorPalette.Get(playerState?.ColorIndex ?? -1)
+                PlayerColor = PlayerColorPalette.Get(seatIndex)
             });
 
             LevelPlayerRegistry.Instance?.SpawnMissingPlayerAvatars();

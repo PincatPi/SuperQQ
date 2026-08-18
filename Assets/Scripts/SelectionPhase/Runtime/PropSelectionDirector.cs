@@ -358,14 +358,21 @@ namespace SuperQQ.Selection.Runtime
 
             if (BNetMode)
             {
-                // 已认领（含服务器分配）后禁止再点任何道具；待确认期间也不允许改选
-                if (session.BHasSelection(localPlayerKey) || confirmCheckSlot >= 0)
+                // 已确认认领（含服务器分配）后禁止再点任何道具；
+                // 待确认期间（图标已飞到、未点打勾）允许改选：图标飞向新槽位，✔按钮跟随移动
+                if (session.BHasSelection(localPlayerKey))
                 {
                     return;
+                }
+                // 改选新槽位前，清掉旧的待确认状态
+                if (confirmCheckSlot >= 0)
+                {
+                    HideConfirmCheck();
                 }
 
                 // 先上报认领意图（服务器透传广播，其他端让远端图标/化身也飞过去）
                 NetworkManager net = NetworkManager.Instance;
+                Debug.Log($"{LOG_TAG} 发送认领意图: slot={slotIndex} localKey={localPlayerKey} netPlayerId={net.LocalPlayerId}");
                 net.Send(new ItemClaimIntent
                 {
                     RoomId = net.RoomId,
@@ -1009,7 +1016,9 @@ namespace SuperQQ.Selection.Runtime
         private void SetupFakePickers()
         {
             fakePickers.Clear();
-            if (!debugSimulateOtherPlayers)
+            // 联机模式下禁用：远端玩家的行为由网络驱动（意图/仲裁广播），
+            // 本地模拟会把真实远端玩家当假玩家，导致其图标无操作自动飞向槽位
+            if (!debugSimulateOtherPlayers || BNetMode)
             {
                 return;
             }
@@ -1271,6 +1280,7 @@ namespace SuperQQ.Selection.Runtime
         /// <summary>远端玩家的认领意图：只驱动其图标飞向槽位做表现，不产生任何认领效果</summary>
         private void HandleRemoteClaimIntent(ItemClaimIntentBroadcast msg)
         {
+            Debug.Log($"{LOG_TAG} 收到远端认领意图: playerId={msg.PlayerId} slot={msg.SlotIndex} localKey={localPlayerKey} 是自己={msg.PlayerId == localPlayerKey}");
             if (!BIsActive || msg.PlayerId == localPlayerKey)
             {
                 return;
@@ -1281,6 +1291,7 @@ namespace SuperQQ.Selection.Runtime
         /// <summary>服务器认领仲裁结果：成功方应用认领；本地失败则图标飞回出现位可重选</summary>
         private void HandleClaimResult(ItemClaimResult result)
         {
+            Debug.Log($"{LOG_TAG} 收到认领结果: playerId={result.PlayerId} slot={result.SlotIndex} item={result.ItemId} success={result.Success} localKey={localPlayerKey}");
             if (!BIsActive || session == null)
             {
                 return;

@@ -156,26 +156,63 @@ namespace SuperQQ.Network
             RoomSnapshotReceiver receiver = UnityEngine.Object.FindFirstObjectByType<RoomSnapshotReceiver>();
             if (receiver != null) snapshot = receiver.LatestSnapshot;
 
+            // 选定玩家列表（快照优先），颜色/座位统一按"列表下标（=进房顺序）"计算，
+            // 两端必然一致；color_index 后端若已正确分配则与下标等价，此处不依赖其正确性。
+            System.Collections.Generic.IList<Minigame.Room.V1.RoomPlayerState> players = null;
+            if (snapshot != null && snapshot.Players.Count > 0)
+            {
+                players = snapshot.Players;
+            }
+            else if (net.JoinedRoom != null && net.JoinedRoom.Players.Count > 0)
+            {
+                players = net.JoinedRoom.Players;
+            }
+
+            if (players == null)
+            {
+                return;
+            }
+
             int registered = 0;
-            if (snapshot != null)
+            for (int i = 0; i < players.Count; i++)
             {
-                foreach (Minigame.Room.V1.RoomPlayerState p in snapshot.Players)
-                {
-                    registered += TryRegisterRemote(net, session, p.Player?.PlayerId, p.Player?.Nickname, p.ColorIndex);
-                }
+                Minigame.Room.V1.RoomPlayerState p = players[i];
+                registered += TryRegisterRemote(net, session, p.Player?.PlayerId, p.Player?.Nickname, i);
             }
-            if (registered == 0 && net.JoinedRoom != null)
-            {
-                foreach (Minigame.Room.V1.RoomPlayerState p in net.JoinedRoom.Players)
-                {
-                    registered += TryRegisterRemote(net, session, p.Player?.PlayerId, p.Player?.Nickname, p.ColorIndex);
-                }
-            }
+
+            // 本地玩家也按同一下标规则着色（覆盖场景 prefab 的默认色），保证两端颜色统一
+            ApplyLocalPlayerColor(net, players);
 
             if (registered > 0)
             {
                 SuperQQ.Player.LevelPlayerRegistry.Instance?.SpawnMissingPlayerAvatars();
                 Debug.Log($"[NetWork] 对局开始：注册 {registered} 名远程玩家并生成化身");
+            }
+        }
+
+        /// <summary>按房间列表下标给本地玩家着色（两端对同一 playerId 算出相同颜色）</summary>
+        private static void ApplyLocalPlayerColor(NetworkManager net,
+            System.Collections.Generic.IList<Minigame.Room.V1.RoomPlayerState> players)
+        {
+            SuperQQ.Player.LevelPlayerRegistry registry = SuperQQ.Player.LevelPlayerRegistry.Instance;
+            if (registry == null) return;
+
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i].Player?.PlayerId != net.LocalPlayerId) continue;
+
+                System.Collections.Generic.IReadOnlyList<SuperQQ.Player.PlayerController> all = registry.Players;
+                for (int j = 0; j < all.Count; j++)
+                {
+                    if (all[j] != null && all[j].BIsLocal)
+                    {
+                        SuperQQ.Player.PlayerProfile profile = all[j].BuildProfile();
+                        profile.PlayerColor = PlayerColorPalette.Get(i);
+                        all[j].ApplyProfile(profile);
+                        Debug.Log($"[NetWork] 本地玩家着色: 下标={i} 颜色={PlayerColorPalette.Get(i)}");
+                    }
+                }
+                return;
             }
         }
 
