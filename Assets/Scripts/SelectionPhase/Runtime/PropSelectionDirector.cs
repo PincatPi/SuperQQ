@@ -411,9 +411,17 @@ namespace SuperQQ.Selection.Runtime
             // 远端/直接认领路径（ApplyRemoteSelection 等）由认领事件驱动图标飞过去
             MovePlayerIconToSlot(result.PlayerKey, result.SlotIndex);
 
-            if (result.PlayerKey == localPlayerKey)
+            // 判断是否本地玩家：联机模式下 result.PlayerKey 是服务器 playerId，
+            // 与 localPlayerKey（角色名）不同源，需用 NetworkManager.LocalPlayerId 对比
+            bool isLocal = BNetMode
+                ? (NetworkManager.Instance != null && result.PlayerKey == NetworkManager.Instance.LocalPlayerId)
+                : (result.PlayerKey == localPlayerKey);
+
+            if (isLocal)
             {
-                localSelectedItem = session != null ? session.GetSelectedItem(localPlayerKey) : null;
+                // 联机认领的 key 是服务器 playerId，取值要用同一个 key
+                string selfKey = BNetMode ? result.PlayerKey : localPlayerKey;
+                localSelectedItem = session != null ? session.GetSelectedItem(selfKey) : null;
                 string mappedId = (ItemCatalog.Instance != null && localSelectedItem != null)
                     ? ItemCatalog.Instance.GetItemId(localSelectedItem) ?? "(未在目录)"
                     : "(无目录)";
