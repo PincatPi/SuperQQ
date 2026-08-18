@@ -724,13 +724,14 @@ namespace SuperQQ.Placement.Runtime
 
         private void HandlePlaceResult(ItemPlaceResult result)
         {
+            NetworkManager net = NetworkManager.Instance;
+            bool isMine = result.PlayerId == net.LocalPlayerId;
+            Debug.Log($"{LOG_TAG} 收到摆放结果: playerId={result.PlayerId} itemId={result.ItemId} success={result.Success} isMine={isMine} BIsActive={BIsActive} anchor=({result.AnchorCell.X},{result.AnchorCell.Y})");
+
             if (!BIsActive)
             {
                 return;
             }
-
-            NetworkManager net = NetworkManager.Instance;
-            bool isMine = result.PlayerId == net.LocalPlayerId;
 
             if (!result.Success)
             {
@@ -772,8 +773,11 @@ namespace SuperQQ.Placement.Runtime
             }
             if (grid == null)
             {
+                Debug.LogWarning($"{LOG_TAG} 远端道具 \"{result.ItemId}\" 生成失败：GridManager.Instance 为 null");
                 return;
             }
+
+            Debug.Log($"{LOG_TAG} 开始生成远端道具: itemId={result.ItemId} prefab={prefab.name} anchor=({result.AnchorCell.X},{result.AnchorCell.Y})");
 
             var anchor = new Vector2Int(result.AnchorCell.X, result.AnchorCell.Y);
             FootprintBoxView prefabBox = prefab.GetComponent<FootprintBoxView>();
@@ -802,6 +806,7 @@ namespace SuperQQ.Placement.Runtime
                 itemBase.InitPlaced(placed, result.Rotated ? 1 : 0);
                 itemBase.OnPlaced();
             }
+            Debug.Log($"{LOG_TAG} 远端道具生成完成: {item.name} 位置=({worldPos.x},{worldPos.y})");
         }
 
         private static void EnsureEventSystem()

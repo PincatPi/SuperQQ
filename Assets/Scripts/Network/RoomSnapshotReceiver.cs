@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using Minigame.Room.V1;
+using SuperQQ.Grid;
+using SuperQQ.Item;
 using SuperQQ.Player;
 using UnityEngine;
+using Vector2 = UnityEngine.Vector2;
 
 namespace SuperQQ.Network
 {
@@ -88,6 +91,86 @@ namespace SuperQQ.Network
                     SyncRemotePlayerState(sync, playerState.Transform);
                 }
             }
+
+            // 恢复已摆放道具：断连/迟到时 ItemPlaceResult 已错过，靠快照里的 placed_items 补齐
+            RestorePlacedItems(snapshot, net.LocalPlayerId);
+        }
+
+        // 已恢复的远端道具：anchorCell key -> 实例，避免每次快照重复生成
+        private readonly HashSet<string> _restoredItems = new();
+
+        /// <summary>
+        /// 按快照恢复房间内已摆放的道具：本地还没有的（错过实时广播）就实例化并登记占用。
+        /// 只恢复【远端玩家】摆放的道具；本地玩家自己摆的本地已有实体。
+        /// </summary>
+        private void RestorePlacedItems(RoomSnapshot snapshot, string localPlayerId)
+        {
+            if (snapshot.PlacedItems == null || snapshot.PlacedItems.Count == 0) return;
+            if (GridManager.Instance == null) return;
+
+            foreach (PlacedItemState placed in snapshot.PlacedItems)
+            {
+                if (placed.AnchorCell == null) continue;
+
+                // 本地玩家自己摆的，本地已有实体，跳过
+                if (placed.PlayerId == localPlayerId) continue;
+
+                string key = $"{placed.ItemId}_{placed.AnchorCell.X}_{placed.AnchorCell.Y}";
+                if (_restoredItems.Contains(key)) continue;
+
+                // 判重：该锚点格已被占用（实时 ItemPlaceResult 已生成过），跳过避免重复实例化
+                var anchorCell = new Vector2Int(placed.AnchorCell.X, placed.AnchorCell.Y);
+                if (GridManager.Instance.GetItemAt(anchorCell) != null)
+                {
+                    _restoredItems.Add(key);
+                    continue;
+                }
+
+                ItemBase prefab = FindItemPrefab(placed.ItemId);
+                if (prefab == null)
+                {
+                    Debug.LogWarning($"[NetWork] 快照恢复道具失败：itemId={placed.ItemId} 无对应 prefab");
+                    continue;
+                }
+
+                GridManager grid = GridManager.Instance;
+                var anchor = new Vector2Int(placed.AnchorCell.X, placed.AnchorCell.Y);
+                FootprintBoxView prefabBox = prefab.GetComponent<FootprintBoxView>();
+                Vector2Int footprint = prefabBox != null ? prefabBox.Footprint : Vector2Int.one;
+
+                Vector2 worldPos = grid.GetPlacementWorldPos(anchor, footprint, placed.Rotated);
+                GameObject item = Instantiate(prefab.gameObject, worldPos,
+                    placed.Rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity);
+                item.name = $"Restored_{placed.PlayerId}_{prefab.name}";
+
+                var placedItem = item.AddComponent<PlacedItem>();
+                placedItem.Init(null, anchor, placed.Rotated, -1);
+                grid.Occupy(anchor, footprint, placedItem, placed.Rotated);
+
+                PlacementController pc = item.GetComponent<PlacementController>();
+                if (pc != null)
+                {
+                    pc.DebugHotkeys = false;
+                    pc.enabled = false;
+                }
+                ItemBase itemBase = item.GetComponent<ItemBase>();
+                if (itemBase != null)
+                {
+                    itemBase.InitPlaced(placedItem, placed.Rotated ? 1 : 0);
+                    itemBase.OnPlaced();
+                }
+
+                _restoredItems.Add(key);
+                Debug.Log($"[NetWork] 快照恢复道具: {prefab.name}(itemId={placed.ItemId}) @ ({anchor.x},{anchor.y}) 摆放者={placed.PlayerId}");
+            }
+        }
+
+        /// <summary>按 itemId 查道具 prefab：目录数字代号优先，名字兜底</summary>
+        private static ItemBase FindItemPrefab(string itemId)
+        {
+            if (ItemCatalog.Instance == null) return null;
+            ItemBase byId = ItemCatalog.Instance.Find(itemId);
+            return byId != null ? byId : ItemCatalog.Instance.FindByPrefabName(itemId);
         }
 
         /// <summary>
