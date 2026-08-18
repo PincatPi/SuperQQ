@@ -19,6 +19,7 @@
 - [x] Verify Unity compilation and Console.
 - [x] Create `RoundResultsDemo.unity` with Camera, Light, Canvas, EventSystem and live demo controller.
 - [x] Save the scene, render the Game View and leave the demo scene active.
+- [x] Reproduce the Play Mode row overlap, force layout before animation caching, and verify four distinct row positions.
 
 ## Stop condition
 

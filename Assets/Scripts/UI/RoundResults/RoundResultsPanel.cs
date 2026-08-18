@@ -170,6 +170,15 @@ private int PrepareView(
                 }
             }
 
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_rowsRoot);
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                _rows[i].CaptureLayoutPosition();
+                _rows[i].SetReveal(0f);
+            }
+
             return entries.Count;
         }
 

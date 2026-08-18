@@ -86,6 +86,9 @@ namespace SuperQQ.UI.RoundResults
                 rect.SetParent(_segmentRoot, false);
                 SetAnchors(rect, cursor, next);
                 Image image = segmentObject.GetComponent<Image>();
+                image.sprite = _previousFill.sprite;
+                image.type = _previousFill.type;
+                image.pixelsPerUnitMultiplier = _previousFill.pixelsPerUnitMultiplier;
                 image.color = segment.Color;
                 image.raycastTarget = false;
                 cursor = next;
@@ -157,5 +160,14 @@ namespace SuperQQ.UI.RoundResults
             string trimmed = playerName.Trim();
             return trimmed.Substring(0, 1).ToUpperInvariant();
         }
-    }
+    
+
+public void CaptureLayoutPosition()
+        {
+            if (_rowRect != null)
+            {
+                _restPosition = _rowRect.anchoredPosition;
+            }
+        }
+}
 }

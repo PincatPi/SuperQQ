@@ -34,7 +34,9 @@
 - Preview: `Assets/Art/UI/RoundResults/round_results_preview.png`.
 - Demo scene is saved, active and clean; hierarchy contains Camera, Directional Light, Canvas, EventSystem and demo controller.
 - Camera-rendered Game View validation: `Assets/Art/UI/RoundResults/round_results_demo_scene.png`; final Console errors: 0.
+- Runtime row-layout regression fixed by forcing `Rows` layout before caching animation rest positions. Play Mode positions are `(515,-46)`, `(515,-150)`, `(515,-254)`, `(515,-358)`; validation image: `Assets/Art/UI/RoundResults/round_results_runtime_fixed.png`.
+- Dynamic current-round segments now reuse `ui_rounded_rect` with `Image.Type.Sliced`, matching the rounded historical-score fill. Runtime validation: `Assets/Art/UI/RoundResults/round_results_rounded_segments.png`.
 
 ## Next action
 
-Open or Play `RoundResultsDemo`; press `R` in Play Mode to replay the reveal. Programmer then chooses either direct `RoundResultsPanel.ShowCurrentRound` integration or `RoundResultsPanelHost`; ensure only one settlement presenter notifies `GamePhaseManager`.
+`RoundResultsDemo` is currently running in Play Mode with the corrected four-row layout; press `R` to replay the reveal. Programmer then chooses either direct `RoundResultsPanel.ShowCurrentRound` integration or `RoundResultsPanelHost`; ensure only one settlement presenter notifies `GamePhaseManager`.
