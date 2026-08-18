@@ -126,7 +126,10 @@ namespace SuperQQ.Placement.Core
 
             currentPrefab = pendingPrefab;
             pendingPrefab = null;
-            currentItemId = currentPrefab.name;
+            // 优先用 ItemCatalog 的数字 itemId（与服务器发牌代号一致），未配置时回退 prefab 名
+            currentItemId = ItemCatalog.Instance != null
+                ? ItemCatalog.Instance.GetItemId(currentPrefab) ?? currentPrefab.name
+                : currentPrefab.name;
             Adopt(UnityEngine.Object.Instantiate(currentPrefab.gameObject, worldPos, Quaternion.identity));
             UpdatePointer(worldPos);
             return true;

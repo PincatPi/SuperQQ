@@ -58,6 +58,38 @@ namespace SuperQQ.Item
             return null;
         }
 
+        /// <summary>反查：由 prefab 求数字 itemId（摆放上报时用，与服务器发牌的代号一致）；未命中返回 null</summary>
+        public string GetItemId(ItemBase prefab)
+        {
+            if (prefab == null) return null;
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                Entry e = entries[i];
+                if (e != null && e.prefab == prefab)
+                {
+                    return e.itemId;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>按 prefab 名称查找（服务器下发名字而非 itemId 时的兜底）；未命中返回 null</summary>
+        public ItemBase FindByPrefabName(string prefabName)
+        {
+            if (string.IsNullOrEmpty(prefabName)) return null;
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                Entry e = entries[i];
+                if (e != null && e.prefab != null && e.prefab.name == prefabName)
+                {
+                    return e.prefab;
+                }
+            }
+            return null;
+        }
+
         /// <summary>列出目录中全部 itemId（排查映射失败时打日志用）</summary>
         public string DumpIds()
         {

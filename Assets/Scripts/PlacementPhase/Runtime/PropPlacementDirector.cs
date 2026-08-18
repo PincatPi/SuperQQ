@@ -760,7 +760,14 @@ namespace SuperQQ.Placement.Runtime
 
             ItemBase prefab = FindPoolItem(result.ItemId);
             GridManager grid = GridManager.Instance;
-            if (prefab == null || grid == null)
+            if (prefab == null)
+            {
+                Debug.LogWarning($"{LOG_TAG} 远端道具 \"{result.ItemId}\" 无法实例化：目录与摆放池中均不存在。"
+                    + $"可用目录: {(ItemCatalog.Instance != null ? ItemCatalog.Instance.DumpIds() : "(未配置)")}；"
+                    + $"摆放池: [{string.Join(", ", itemPool.ConvertAll(p => p != null ? p.name : "null"))}]");
+                return;
+            }
+            if (grid == null)
             {
                 return;
             }
@@ -806,17 +813,29 @@ namespace SuperQQ.Placement.Runtime
         /// <summary>按道具ID（= prefab 名称）在本地候选池中查找</summary>
         private ItemBase FindPoolItem(string itemId)
         {
+            // 1. ItemCatalog 目录按 itemId 精确匹配
             ItemBase fromCatalog = ItemCatalog.Instance != null ? ItemCatalog.Instance.Find(itemId) : null;
             if (fromCatalog != null)
             {
                 return fromCatalog;
             }
 
+            // 2. 摆放池按 prefab 名匹配
             for (int i = 0; i < itemPool.Count; i++)
             {
                 if (itemPool[i] != null && itemPool[i].name == itemId)
                 {
                     return itemPool[i];
+                }
+            }
+
+            // 3. 兜底：从目录所有 prefab 里按 prefab 名匹配（服务器发名字而非数字ID时兜底）
+            if (ItemCatalog.Instance != null)
+            {
+                ItemBase byName = ItemCatalog.Instance.FindByPrefabName(itemId);
+                if (byName != null)
+                {
+                    return byName;
                 }
             }
             return null;

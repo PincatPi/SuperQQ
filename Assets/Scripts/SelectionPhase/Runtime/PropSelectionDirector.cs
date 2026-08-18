@@ -1274,6 +1274,16 @@ namespace SuperQQ.Selection.Runtime
                     return itemPool[i];
                 }
             }
+
+            // 兜底：从目录所有 prefab 里按 prefab 名匹配（服务器发名字而非数字ID时兜底）
+            if (ItemCatalog.Instance != null)
+            {
+                ItemBase byName = ItemCatalog.Instance.FindByPrefabName(itemId);
+                if (byName != null)
+                {
+                    return byName;
+                }
+            }
             return null;
         }
 
