@@ -240,8 +240,19 @@ namespace SuperQQ.Placement.Core
             currentPc = instance.GetComponent<PlacementController>();
             if (currentPc == null)
             {
-                // 未挂吸附组件的 prefab（如拆除类）运行时补挂，RequireComponent 会自动补齐依赖组件
+                // PlacementController 要求根物体带 Collider2D（RequireComponent）。
+                // 部分道具（如流星锤）碰撞体在子物体、根物体没有，AddComponent 会失败返回 null，
+                // 导致后续 BeginPlace/UpdatePointer 空引用。先确保根物体有碰撞体再补挂。
+                if (instance.GetComponent<Collider2D>() == null)
+                {
+                    instance.AddComponent<BoxCollider2D>();
+                }
                 currentPc = instance.AddComponent<PlacementController>();
+                if (currentPc == null)
+                {
+                    Debug.LogError($"[PlacementSession] 道具 {instance.name} 补挂 PlacementController 失败（根物体缺碰撞体且无法补齐）");
+                    return;
+                }
             }
 
             currentPc.enabled = false;      // 屏蔽长按拖拽轮询

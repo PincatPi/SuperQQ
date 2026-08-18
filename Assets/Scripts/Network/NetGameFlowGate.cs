@@ -49,9 +49,19 @@ namespace SuperQQ.Network
 
         private void Update()
         {
-            if (_initialized) return;
-            TryInit();
+            if (!_initialized)
+            {
+                TryInit();
+            }
+            // SuppressLocalTransitions 必须在 GamePhaseManager 就绪后设置（它在 Level1 场景，
+            // 可能晚于本 Gate 初始化）。消息注册后持续重试，直到设置成功，否则本地条件会切阶段。
+            else if (!_flowSuppressed)
+            {
+                TrySuppressFlow();
+            }
         }
+
+        private bool _flowSuppressed;
 
         private void TryInit()
         {
@@ -64,21 +74,30 @@ namespace SuperQQ.Network
             }
 
             // 关键：消息注册不依赖 GamePhaseManager 就绪——发牌/阶段消息可能在 Level1
-            // 加载（GamePhaseManager 创建）之前到达，必须先注册才能缓存。阶段切换 handler
-            // 内部自行判空 GamePhaseManager，未就绪时消息已缓存、后续补消费。
+            // 加载（GamePhaseManager 创建）之前到达，必须先注册才能缓存。
             _initialized = true;
             net.Register<ItemOfferList>(OnServerOffers);
             net.Register<GamePhaseSync>(OnGamePhaseSync);
             net.Register<PlayerOutBroadcast>(OnPlayerOut);
             net.Register<global::Minigame.Room.V1.Settlement>(OnSettlement);
-
-            GamePhaseManager flow = GamePhaseManager.Instance;
-            if (flow != null)
-            {
-                flow.SetStartFlowOnStart(false);
-                flow.SuppressLocalTransitions = true;
-            }
             Debug.Log("[NetWork] 联机模式：游戏流程与阶段切换由服务器驱动（ItemOfferList / GamePhaseSync）");
+
+            TrySuppressFlow();
+        }
+
+        /// <summary>GamePhaseManager 就绪后设置本地转移屏蔽（持续重试直到成功）</summary>
+        private void TrySuppressFlow()
+        {
+            GamePhaseManager flow = GamePhaseManager.Instance;
+            if (flow == null)
+            {
+                return;
+            }
+
+            _flowSuppressed = true;
+            flow.SetStartFlowOnStart(false);
+            flow.SuppressLocalTransitions = true;
+            Debug.Log("[NetWork] 已屏蔽本地阶段切换（阶段切换由服务器 GamePhaseSync 统一驱动）");
         }
 
         /// <summary>服务器出局裁决：记录名次并广播日志（结算展示数据以服务器为准）</summary>
