@@ -186,7 +186,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _config: {fileID: 11400000, guid: b10e25c84f37bde46a84e041138a06ed, type: 2}
   _cameraOrthographicSize: 6
-  _levelSceneName: Level1
   _settlementEndDelay: 3
 --- !u!4 &194503595
 Transform:
@@ -381,19 +380,24 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 256
+  deathDuration: 0.6
   ghostMoveSpeed: 10
   ghostAcceleration: 80
   ghostDeceleration: 100
   ghostAlpha: 0.5
   ghostSpawnPosition: {x: 0, y: 0, z: 0}
+  levelBounds: {fileID: 0}
+  playerId: 
+  isLocal: 1
   playerName: Player1
   playerColor: {r: 1, g: 1, b: 1, a: 1}
+  cursorMarkerSprite: {fileID: 0}
+  selectionIconSprite: {fileID: 0}
   leftKey: 97
   rightKey: 100
   jumpKey: 32
   jumpKeyAlt: 119
   downKey: 115
-  rebornPosition: {x: -15, y: -4, z: 0}
 --- !u!50 &803017580
 Rigidbody2D:
   serializedVersion: 4
@@ -817,19 +821,24 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 256
+  deathDuration: 0.6
   ghostMoveSpeed: 10
   ghostAcceleration: 80
   ghostDeceleration: 100
   ghostAlpha: 0.5
   ghostSpawnPosition: {x: 0, y: 0, z: 0}
+  levelBounds: {fileID: 0}
+  playerId: 
+  isLocal: 1
   playerName: Player2
   playerColor: {r: 1, g: 0.6144982, b: 0, a: 1}
+  cursorMarkerSprite: {fileID: 0}
+  selectionIconSprite: {fileID: 0}
   leftKey: 276
   rightKey: 275
   jumpKey: 273
   jumpKeyAlt: 273
   downKey: 274
-  rebornPosition: {x: -15, y: -4, z: 0}
 --- !u!50 &1618260253
 Rigidbody2D:
   serializedVersion: 4
