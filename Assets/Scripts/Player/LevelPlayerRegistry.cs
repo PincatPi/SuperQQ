@@ -404,11 +404,11 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
-        /// 获取当前唯一的存活玩家
+        /// 获取当前唯一的在场玩家（存活或冻结）
         /// 仅在 BIsLastPlayerStanding 为 true 时有效
         /// 用于提前放弃长按检测时确认当前存活玩家身份
         /// </summary>
-        /// <returns>唯一存活玩家的 PlayerController，无存活玩家或多人存活时返回 null</returns>
+        /// <returns>唯一在场玩家的 PlayerController，无在场玩家或多人在场时返回 null</returns>
         public PlayerController GetLastAlivePlayer()
         {
             PlayerController lastAlive = null;
@@ -420,11 +420,11 @@ namespace SuperQQ.Player
                     continue;
                 }
 
-                if (_playerStates.TryGetValue(player, out PlayerStateType state) && state == PlayerStateType.Alive)
+                if (_playerStates.TryGetValue(player, out PlayerStateType state) && IsInPlay(state))
                 {
                     if (lastAlive != null)
                     {
-                        // 多于一名存活玩家，返回 null
+                        // 多于一名在场玩家，返回 null
                         return null;
                     }
                     lastAlive = player;
@@ -489,8 +489,17 @@ namespace SuperQQ.Player
         // ==================== 出局检测 ====================
 
         /// <summary>
+        /// 判断状态是否视为"在场未出局"：存活或冻结
+        /// 冻结玩家仍在场上（解冻后恢复存活），不参与出局/结算判定
+        /// </summary>
+        private static bool IsInPlay(PlayerStateType state)
+        {
+            return state == PlayerStateType.Alive || state == PlayerStateType.Frozen;
+        }
+
+        /// <summary>
         /// 检查本关是否所有玩家都已出局（通关或死亡）
-        /// 至少有一名玩家且无存活玩家时触发 OnAllPlayersOut 事件
+        /// 至少有一名玩家且无在场玩家时触发 OnAllPlayersOut 事件
         /// </summary>
         private void CheckAllPlayersOut()
         {
@@ -509,15 +518,15 @@ namespace SuperQQ.Player
 
                 if (_playerStates.TryGetValue(player, out PlayerStateType state))
                 {
-                    if (state == PlayerStateType.Alive)
+                    if (IsInPlay(state))
                     {
-                        // 仍有存活玩家，未到结算时机
+                        // 仍有在场玩家，未到结算时机
                         return;
                     }
                 }
                 else
                 {
-                    // 状态未知，按存活处理
+                    // 状态未知，按在场处理
                     return;
                 }
             }
@@ -554,7 +563,7 @@ namespace SuperQQ.Player
                     continue;
                 }
 
-                if (_playerStates.TryGetValue(player, out PlayerStateType state) && state == PlayerStateType.Alive)
+                if (_playerStates.TryGetValue(player, out PlayerStateType state) && IsInPlay(state))
                 {
                     aliveCount++;
                     if (aliveCount > 1)

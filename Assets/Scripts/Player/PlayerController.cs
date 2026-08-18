@@ -186,6 +186,8 @@ namespace SuperQQ.Player
         // 仅幽灵状态中视为幽灵，与 BIsDead 互斥
         public bool BIsGhost => _currentState is PlayerGhostState;
         public bool BIsFinished => _currentState is PlayerFinishedState;
+        // 冻结状态：无法操作但仍视为在场，可被击杀，解冻后恢复存活
+        public bool BIsFrozen => _currentState is PlayerFrozenState;
         public float HorizontalVelocity => _currentState?.HorizontalVelocity ?? 0f;
 
         /// <summary>
@@ -454,6 +456,7 @@ namespace SuperQQ.Player
             // 死亡过渡视为 Ghost 记录（对外等价于已死亡）
             PlayerStateType stateType = _currentState is PlayerGhostState || _currentState is PlayerDyingState ? PlayerStateType.Ghost
                 : _currentState is PlayerFinishedState ? PlayerStateType.Finished
+                : _currentState is PlayerFrozenState ? PlayerStateType.Frozen
                 : PlayerStateType.Alive;
             LevelPlayerRegistry.Instance.UpdatePlayerState(this, stateType);
         }
@@ -495,6 +498,32 @@ namespace SuperQQ.Player
             SuperQQ.Network.NetEventSync.ReportEvent(
                 Minigame.Room.V1.PlayerEventType.Die, transform.position);
             TransitionTo(new PlayerDyingState(this));
+        }
+
+        /// <summary>
+        /// 冻结：进入冻结状态（无法操作、刚体全约束，但仍可被击杀）
+        /// 已死亡/幽灵/通关/已冻结的玩家不重复进入
+        /// </summary>
+        public void Freeze()
+        {
+            if (BIsDead || BIsGhost || BIsFinished || BIsFrozen)
+            {
+                return;
+            }
+            TransitionTo(new PlayerFrozenState(this));
+        }
+
+        /// <summary>
+        /// 解冻：从冻结状态恢复为正常存活状态
+        /// 非冻结状态下调用为空操作
+        /// </summary>
+        public void Unfreeze()
+        {
+            if (!BIsFrozen)
+            {
+                return;
+            }
+            TransitionTo(new PlayerAliveState(this));
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using SuperQQ.GameFlow;
 using SuperQQ.UI;
 using UnityEngine;
 
@@ -11,7 +12,8 @@ namespace SuperQQ.Event
     /// 进入关卡时经 LevelEventSelector 选定本关事件（固定事件全部执行，非固定事件按权重抽取一个）
     /// 事件选定后：
     ///   - 通过 PopupManager 依次播放每个事件的说明弹窗（3秒自动销毁）
-    ///   - 调用每个事件对应 LevelEventModifier 的 Activate 方法启动事件逻辑
+    ///   - 待进入 Playing 游玩阶段时，调用每个事件对应 LevelEventModifier 的 Activate 方法启动事件逻辑
+    ///     （事件计时统一从游玩阶段起算，道具选择/放置阶段不推进计时）
     /// 场景销毁时调用所有 Modifier 的 Deactivate 方法进行清理
     /// 选取决策已抽离到 LevelEventSelector（纯 C#，可单元测试），本类只负责调度与播报
     /// </summary>
@@ -36,6 +38,9 @@ namespace SuperQQ.Event
 
         // 是否已完成事件选取（播报协程可能仍在进行中）
         private bool _bHasAnnounced;
+
+        // 是否已激活事件 Modifier（游玩阶段闸门保证只激活一次）
+        private bool _bModifiersActivated;
 
         // 弹窗依次播放的协程引用
         private Coroutine _popupPlaybackCoroutine;
@@ -106,6 +111,12 @@ namespace SuperQQ.Event
                 _instance = null;
             }
 
+            // 场景销毁时退订阶段切换（若事件尚未等到游玩阶段激活）
+            if (GamePhaseManager.Instance != null)
+            {
+                GamePhaseManager.Instance.OnPhaseChanged -= HandlePhaseChangedForActivation;
+            }
+
             // 场景销毁时停止弹窗播放协程
             if (_popupPlaybackCoroutine != null)
             {
@@ -166,8 +177,8 @@ namespace SuperQQ.Event
             // 通知外部：本关事件已选定
             OnEventsSelected?.Invoke(_selectedEntries);
 
-            // 激活所有选中事件的 Modifier，启动事件逻辑
-            ActivateSelectedModifiers();
+            // 激活所有选中事件的 Modifier（进入游玩阶段后才真正启动，事件计时从游玩阶段起算）
+            ActivateModifiersWhenPlaying();
 
             // 依次播放每个事件的说明弹窗
             if (_popupPlaybackCoroutine != null)
@@ -180,15 +191,54 @@ namespace SuperQQ.Event
         // ==================== 内部方法：Modifier 激活/停用 ====================
 
         /// <summary>
-        /// 激活本关所有选中事件对应的 Modifier
-        /// 直接遍历条目引用调用 Modifier.Activate，无需按枚举回查配置表
+        /// 游玩阶段闸门：事件 Modifier 的计时（首次落石延迟、随机触发时机等）从
+        /// Playing 游玩阶段开始才起算，道具选择/放置等其它阶段不推进事件计时
+        /// 当前已在游玩阶段或场景中无 GamePhaseManager（纯测试场景）时立即激活；
+        /// 否则订阅阶段切换事件，待进入游玩阶段时激活
         /// </summary>
-        private void ActivateSelectedModifiers()
+        private void ActivateModifiersWhenPlaying()
         {
-            if (_eventContext == null)
+            GamePhaseManager phaseManager = GamePhaseManager.Instance;
+            if (phaseManager == null || phaseManager.CurrentPhaseAsset is PlayingPhase)
+            {
+                ActivateSelectedModifiers();
+                return;
+            }
+
+            phaseManager.OnPhaseChanged += HandlePhaseChangedForActivation;
+        }
+
+        /// <summary>
+        /// 阶段切换回调：进入游玩阶段时激活事件 Modifier，并退订（只激活一次）
+        /// 单机走本地条件转移、联机走服务器 GamePhaseSync，二者均经 EnterPhase 触发本事件
+        /// </summary>
+        private void HandlePhaseChangedForActivation(GamePhaseBase previousPhase, GamePhaseBase nextPhase)
+        {
+            if (!(nextPhase is PlayingPhase))
             {
                 return;
             }
+
+            if (GamePhaseManager.Instance != null)
+            {
+                GamePhaseManager.Instance.OnPhaseChanged -= HandlePhaseChangedForActivation;
+            }
+
+            ActivateSelectedModifiers();
+        }
+
+        /// <summary>
+        /// 激活本关所有选中事件对应的 Modifier
+        /// 直接遍历条目引用调用 Modifier.Activate，无需按枚举回查配置表
+        /// 幂等：游玩阶段闸门保证只激活一次，重复调用为空操作
+        /// </summary>
+        private void ActivateSelectedModifiers()
+        {
+            if (_bModifiersActivated || _eventContext == null)
+            {
+                return;
+            }
+            _bModifiersActivated = true;
 
             for (int i = 0; i < _selectedEntries.Count; i++)
             {

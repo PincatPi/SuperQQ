@@ -84,13 +84,14 @@ namespace SuperQQ.CameraControl
         /// 判断玩家是否应留在镜头目标组中
         /// 规则：
         /// - 存活玩家：始终入组
+        /// - 冻结玩家：始终入组（被冰封但仍在场上，解冻后恢复存活，镜头保持取景）
         /// - 远端玩家：非存活（幽灵/通关）即移出
         /// - 本地玩家：幽灵状态保留（玩家仍在操控幽灵移动，镜头需跟随）
         ///             通关状态移出（已停止行为，无需再框选）
         /// </summary>
         protected virtual bool ShouldTrack(PlayerController player, PlayerStateType state)
         {
-            if (state == PlayerStateType.Alive)
+            if (state == PlayerStateType.Alive || state == PlayerStateType.Frozen)
             {
                 return true;
             }

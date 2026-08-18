@@ -15,6 +15,11 @@ namespace SuperQQ.Event
         /// <summary>
         /// 小蛋糕陨石：周期性从关卡顶部落下陨石，命中玩家即死并击飞
         /// </summary>
-        CakeMeteor = 1
+        CakeMeteor = 1,
+
+        /// <summary>
+        /// 液氮泄露：随机触发一次，预警后冻结所有存活玩家，摇晃手机累积进度解冻
+        /// </summary>
+        LiquidNitrogenLeak = 2
     }
 }
