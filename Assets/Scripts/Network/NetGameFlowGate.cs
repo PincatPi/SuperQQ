@@ -151,6 +151,10 @@ namespace SuperQQ.Network
                 return;
             }
 
+            // 选择阶段可能早于 LocalPlayerNetSetup.Update 启动；生成图标前必须先写入本地 playerId，
+            // 否则 PlayerController.IdentityKey 会从场景名后变成服务器 ID，被补生成逻辑误判为新玩家。
+            LocalPlayerNetSetup.TrySetupLocalPlayer();
+
             // 数据源：最新快照优先（含 RoomUpdated 后加入的玩家），JoinedRoom 兜底
             Minigame.Room.V1.RoomSnapshot snapshot = null;
             RoomSnapshotReceiver receiver = UnityEngine.Object.FindFirstObjectByType<RoomSnapshotReceiver>();

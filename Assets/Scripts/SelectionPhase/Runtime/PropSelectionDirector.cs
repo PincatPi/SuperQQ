@@ -117,6 +117,7 @@ namespace SuperQQ.Selection.Runtime
         private readonly List<PropSelectionSlotView> slotViews = new List<PropSelectionSlotView>();
         private readonly List<FakePicker> fakePickers = new List<FakePicker>();
         private readonly Dictionary<string, PropSelectionPlayerIcon> playerIcons = new Dictionary<string, PropSelectionPlayerIcon>();
+        private readonly Dictionary<PlayerController, string> playerIconOwners = new Dictionary<PlayerController, string>(); // 玩家实例 -> 当前图标 key（身份变更时防重复生成）
         private readonly Dictionary<string, int> pendingClaims = new Dictionary<string, int>();   // 飞行中的待生效认领：playerKey -> 槽位下标
         private readonly PlayerAvatarGate avatarGate = new PlayerAvatarGate();
         private RectTransform iconLayer;                    // 玩家图标层（BeginPhase 创建，EndPhase 销毁；自动生成的出现位也挂在其下）
@@ -219,7 +220,7 @@ namespace SuperQQ.Selection.Runtime
             for (int i = 0; i < players.Count; i++)
             {
                 PlayerController player = players[i];
-                if (player == null || playerIcons.ContainsKey(player.IdentityKey))
+                if (player == null || TryRefreshPlayerIconKey(player))
                 {
                     continue;
                 }
@@ -229,9 +230,51 @@ namespace SuperQQ.Selection.Runtime
                 if (icon != null)
                 {
                     playerIcons[player.IdentityKey] = icon;
+                    playerIconOwners[player] = player.IdentityKey;
                     Debug.Log($"{LOG_TAG} 补生成玩家图标: {player.IdentityKey} 座位={seat}");
                 }
             }
+        }
+
+        /// <summary>
+        /// 按玩家实例确认是否已有图标；联机身份从场景名切换为服务器 playerId 时迁移字典 key，
+        /// 防止同一 PlayerController 因 IdentityKey 改变而被误认为新玩家并重复生成图标。
+        /// </summary>
+        private bool TryRefreshPlayerIconKey(PlayerController player)
+        {
+            if (!playerIconOwners.TryGetValue(player, out string oldKey))
+            {
+                return false;
+            }
+
+            if (!playerIcons.TryGetValue(oldKey, out PropSelectionPlayerIcon icon) || icon == null)
+            {
+                playerIconOwners.Remove(player);
+                return false;
+            }
+
+            string newKey = player.IdentityKey;
+            if (oldKey == newKey)
+            {
+                return true;
+            }
+
+            playerIcons.Remove(oldKey);
+            playerIcons[newKey] = icon;
+            playerIconOwners[player] = newKey;
+
+            if (pendingClaims.TryGetValue(oldKey, out int slotIndex))
+            {
+                pendingClaims.Remove(oldKey);
+                pendingClaims[newKey] = slotIndex;
+            }
+            if (localPlayerKey == oldKey)
+            {
+                localPlayerKey = newKey;
+            }
+
+            Debug.Log($"{LOG_TAG} 玩家身份已更新，迁移选择图标: {oldKey} -> {newKey}");
+            return true;
         }
 
         // ==================== 阶段接口（供 GameFlow 调用） ====================
@@ -464,6 +507,7 @@ namespace SuperQQ.Selection.Runtime
         private void SpawnPlayerIcons()
         {
             playerIcons.Clear();
+            playerIconOwners.Clear();
 
             Transform panelRoot = ResolvePanelRoot();
             if (panelRoot == null)
@@ -508,6 +552,7 @@ namespace SuperQQ.Selection.Runtime
                 if (icon != null)
                 {
                     playerIcons[player.IdentityKey] = icon;
+                    playerIconOwners[player] = player.IdentityKey;
                 }
             }
         }
@@ -588,6 +633,7 @@ namespace SuperQQ.Selection.Runtime
         private void ClearPlayerIcons()
         {
             playerIcons.Clear();
+            playerIconOwners.Clear();
             pendingClaims.Clear();
             if (iconLayer != null)
             {
