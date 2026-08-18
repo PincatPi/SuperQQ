@@ -172,6 +172,9 @@ message RoomSnapshot {
   repeated RoomPlayerState players = 4;
   int64 server_time_ms = 5;
   minigame.common.v1.TraceContext trace = 6;
+  // 房间内已确认摆放的道具列表（断连重连/迟到加入时客户端据此恢复现场）。
+  // 服务器在 ItemPlaceConfirm 仲裁成功后记录，ItemStateEvent(DESTROYED) 后移除。
+  repeated PlacedItemState placed_items = 7;
 }
 
 message SettlementPlayerResult {
@@ -274,6 +277,14 @@ message GamePhaseSync {
 message GridCell {
   int32 x = 1;
   int32 y = 2;
+}
+
+// 已确认摆放的道具状态（房间快照携带，用于断连恢复与现场一致性）
+message PlacedItemState {
+  string player_id = 1;         // 摆放者
+  string item_id = 2;           // 数字代号（与 ItemCatalog 一致）
+  GridCell anchor_cell = 3;     // 锚点格子（footprint 左下角）
+  bool rotated = 4;             // 是否旋转 90°
 }
 
 // 客户端 → 服务器：摆放中道具的拖拽状态（约 10Hz 节流上报，仅表现用）。
