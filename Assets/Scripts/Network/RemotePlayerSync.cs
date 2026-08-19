@@ -71,7 +71,8 @@ namespace SuperQQ.Network
 
         private void Awake()
         {
-            _renderer = GetComponent<SpriteRenderer>();
+            // 角色 SpriteRenderer 在子物体 Visual 上，需从子级查找（与 PlayerController 一致）
+            _renderer = GetComponentInChildren<SpriteRenderer>();
             if (_renderer != null)
             {
                 _baseColor = _renderer.color;
@@ -196,9 +197,12 @@ namespace SuperQQ.Network
             {
                 _renderer.flipX = point.FacingLeft;
 
-                // 状态表现：幽灵半透明，其余恢复正常
-                Color c = _baseColor;
-                c.a = point.PlayerState == 1 ? _baseColor.a * ghostAlpha : _baseColor.a;
+                // 状态表现：幽灵半透明，其余恢复正常。
+                // 基于当前颜色只调 alpha（保留玩家座位色的 RGB），不用 Awake 时的旧色，
+                // 避免把 ApplyProfile 设置的玩家色覆盖、且 alpha 算在过期颜色上。
+                Color c = _renderer.color;
+                float baseAlpha = _baseColor.a;
+                c.a = point.PlayerState == 1 ? baseAlpha * ghostAlpha : baseAlpha;
                 _renderer.color = c;
             }
 
