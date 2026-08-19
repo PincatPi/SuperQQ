@@ -185,6 +185,8 @@ namespace SuperQQ.Placement.Core
             // 位置锁定：占据已登记、PlacedItem 已补挂，销毁摆放组件后道具不可能再被移动/虚化
             // （仅 enabled = false 的软锁定会被场景级调试热键等外部激活绕过）
             PlacedItem placed = current.GetComponent<PlacedItem>();
+            // 写入放置者归属：陷阱击杀计分（RecordTrapKill）按此归属计分
+            placed?.SetOwnerKey(playerKey);
             bool bRotated = currentPc.IsRotated;
             UnityEngine.Object.Destroy(currentPc);
 

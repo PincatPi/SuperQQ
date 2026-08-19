@@ -1283,6 +1283,12 @@ namespace SuperQQ.Selection.Runtime
             net.Unregister<ItemClaimResult>();
         }
 
+        /// <summary>供 NetGameFlowGate 在其注册覆盖本 Director 注册的竞争场景下转发发牌（与直接收包等价）</summary>
+        public void ReceiveOffers(ItemOfferList list)
+        {
+            HandleServerOffers(list);
+        }
+
         /// <summary>收到服务器下发的道具列表：按 itemId 映射本地 prefab 并发牌建槽位</summary>
         private void HandleServerOffers(ItemOfferList list)
         {

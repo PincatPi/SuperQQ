@@ -31,7 +31,7 @@ namespace Minigame.Gateway.V1 {
             "ASgDIkMKEUhlYXJ0YmVhdFJlc3BvbnNlEhYKDnNlcnZlcl90aW1lX21zGAEg",
             "ASgDEhYKDmNsaWVudF90aW1lX21zGAIgASgDIlIKDUVycm9yUmVzcG9uc2US",
             "MgoGc3RhdHVzGAEgASgLMiIubWluaWdhbWUuY29tbW9uLnYxLlJlc3BvbnNl",
-            "U3RhdHVzEg0KBXJvdXRlGAIgASgJIpsLCg5DbGllbnRFbnZlbG9wZRIvCgV0",
+            "U3RhdHVzEg0KBXJvdXRlGAIgASgJItcLCg5DbGllbnRFbnZlbG9wZRIvCgV0",
             "cmFjZRgBIAEoCzIgLm1pbmlnYW1lLmNvbW1vbi52MS5UcmFjZUNvbnRleHQS",
             "CwoDc2VxGAIgASgEEjoKCWhlYXJ0YmVhdBgKIAEoCzIlLm1pbmlnYW1lLmdh",
             "dGV3YXkudjEuSGVhcnRiZWF0UmVxdWVzdEgAEjIKBWxvZ2luGAsgASgLMiEu",
@@ -63,58 +63,61 @@ namespace Minigame.Gateway.V1 {
             "Z2FtZS5yb29tLnYxLlBsYXllckV2ZW50SAASNQoMcGlja3VwX2NsYWltGB4g",
             "ASgLMh0ubWluaWdhbWUucm9vbS52MS5QaWNrdXBDbGFpbUgAEjwKEGl0ZW1f",
             "c3RhdGVfZXZlbnQYHyABKAsyIC5taW5pZ2FtZS5yb29tLnYxLkl0ZW1TdGF0",
-            "ZUV2ZW50SABCCQoHcGF5bG9hZCLYDgoOU2VydmVyRW52ZWxvcGUSLwoFdHJh",
-            "Y2UYASABKAsyIC5taW5pZ2FtZS5jb21tb24udjEuVHJhY2VDb250ZXh0EgsK",
-            "A3NlcRgCIAEoBBI7CgloZWFydGJlYXQYCiABKAsyJi5taW5pZ2FtZS5nYXRl",
-            "d2F5LnYxLkhlYXJ0YmVhdFJlc3BvbnNlSAASMwoFbG9naW4YCyABKAsyIi5t",
-            "aW5pZ2FtZS5hY2NvdW50LnYxLkxvZ2luUmVzcG9uc2VIABI8CgpnZXRfcGxh",
-            "eWVyGAwgASgLMiYubWluaWdhbWUuYWNjb3VudC52MS5HZXRQbGF5ZXJSZXNw",
-            "b25zZUgAEjwKC3N0YXJ0X21hdGNoGA0gASgLMiUubWluaWdhbWUubWF0Y2gu",
-            "djEuU3RhcnRNYXRjaFJlc3BvbnNlSAASPgoMY2FuY2VsX21hdGNoGA4gASgL",
-            "MiYubWluaWdhbWUubWF0Y2gudjEuQ2FuY2VsTWF0Y2hSZXNwb25zZUgAEjoK",
-            "CmdldF90aWNrZXQYDyABKAsyJC5taW5pZ2FtZS5tYXRjaC52MS5HZXRUaWNr",
-            "ZXRSZXNwb25zZUgAEj4KEG1hdGNoX2Fzc2lnbm1lbnQYECABKAsyIi5taW5p",
-            "Z2FtZS5tYXRjaC52MS5NYXRjaEFzc2lnbm1lbnRIABI3Cglqb2luX3Jvb20Y",
-            "ESABKAsyIi5taW5pZ2FtZS5yb29tLnYxLkpvaW5Sb29tUmVzcG9uc2VIABI3",
-            "Cg1yb29tX3NuYXBzaG90GBIgASgLMh4ubWluaWdhbWUucm9vbS52MS5Sb29t",
-            "U25hcHNob3RIABIyCgpzZXR0bGVtZW50GBMgASgLMhwubWluaWdhbWUucm9v",
-            "bS52MS5TZXR0bGVtZW50SAASSgoTc3VibWl0X3BsYXllcl9pbnB1dBgUIAEo",
-            "CzIrLm1pbmlnYW1lLnJvb20udjEuU3VibWl0UGxheWVySW5wdXRSZXNwb25z",
-            "ZUgAEjsKC2NyZWF0ZV9yb29tGBUgASgLMiQubWluaWdhbWUucm9vbS52MS5D",
-            "cmVhdGVSb29tUmVzcG9uc2VIABJGChFzeW5jX3BsYXllcl9zdGF0ZRgWIAEo",
-            "CzIpLm1pbmlnYW1lLnJvb20udjEuU3luY1BsYXllclN0YXRlUmVzcG9uc2VI",
-            "ABI3CglzZXRfcmVhZHkYFyABKAsyIi5taW5pZ2FtZS5yb29tLnYxLlNldFJl",
-            "YWR5UmVzcG9uc2VIABI5CgpzdGFydF9nYW1lGBggASgLMiMubWluaWdhbWUu",
-            "cm9vbS52MS5TdGFydEdhbWVSZXNwb25zZUgAEjUKDHJvb21fdXBkYXRlZBgZ",
-            "IAEoCzIdLm1pbmlnYW1lLnJvb20udjEuUm9vbVVwZGF0ZWRIABI1CghnZXRf",
-            "cm9vbRgaIAEoCzIhLm1pbmlnYW1lLnJvb20udjEuR2V0Um9vbVJlc3BvbnNl",
-            "SAASOgoPaXRlbV9vZmZlcl9saXN0GBsgASgLMh8ubWluaWdhbWUucm9vbS52",
-            "MS5JdGVtT2ZmZXJMaXN0SAASUQobaXRlbV9jbGFpbV9pbnRlbnRfYnJvYWRj",
-            "YXN0GBwgASgLMioubWluaWdhbWUucm9vbS52MS5JdGVtQ2xhaW1JbnRlbnRC",
-            "cm9hZGNhc3RIABI+ChFpdGVtX2NsYWltX3Jlc3VsdBgdIAEoCzIhLm1pbmln",
-            "YW1lLnJvb20udjEuSXRlbUNsYWltUmVzdWx0SAASOgoPZ2FtZV9waGFzZV9z",
-            "eW5jGB4gASgLMh8ubWluaWdhbWUucm9vbS52MS5HYW1lUGhhc2VTeW5jSAAS",
-            "TwoaaXRlbV9wbGFjZV9zdGF0ZV9icm9hZGNhc3QYHyABKAsyKS5taW5pZ2Ft",
-            "ZS5yb29tLnYxLkl0ZW1QbGFjZVN0YXRlQnJvYWRjYXN0SAASPgoRaXRlbV9w",
-            "bGFjZV9yZXN1bHQYICABKAsyIS5taW5pZ2FtZS5yb29tLnYxLkl0ZW1QbGFj",
-            "ZVJlc3VsdEgAEkQKFHBsYXllcl9vdXRfYnJvYWRjYXN0GCEgASgLMiQubWlu",
-            "aWdhbWUucm9vbS52MS5QbGF5ZXJPdXRCcm9hZGNhc3RIABJIChZwbGF5ZXJf",
-            "ZXZlbnRfYnJvYWRjYXN0GCIgASgLMiYubWluaWdhbWUucm9vbS52MS5QbGF5",
-            "ZXJFdmVudEJyb2FkY2FzdEgAEkgKFnBpY2t1cF9jbGFpbV9icm9hZGNhc3QY",
-            "IyABKAsyJi5taW5pZ2FtZS5yb29tLnYxLlBpY2t1cENsYWltQnJvYWRjYXN0",
-            "SAASTwoaaXRlbV9zdGF0ZV9ldmVudF9icm9hZGNhc3QYJCABKAsyKS5taW5p",
-            "Z2FtZS5yb29tLnYxLkl0ZW1TdGF0ZUV2ZW50QnJvYWRjYXN0SAASMwoFZXJy",
-            "b3IYWiABKAsyIi5taW5pZ2FtZS5nYXRld2F5LnYxLkVycm9yUmVzcG9uc2VI",
-            "AEIJCgdwYXlsb2FkQiZaJG1pbmlnYW1lL2dlbi9nby9nYXRld2F5L3YxO2dh",
-            "dGV3YXl2MWIGcHJvdG8z"));
+            "ZUV2ZW50SAASOgoPdHJhcF9raWxsX2V2ZW50GCAgASgLMh8ubWluaWdhbWUu",
+            "cm9vbS52MS5UcmFwS2lsbEV2ZW50SABCCQoHcGF5bG9hZCKcDwoOU2VydmVy",
+            "RW52ZWxvcGUSLwoFdHJhY2UYASABKAsyIC5taW5pZ2FtZS5jb21tb24udjEu",
+            "VHJhY2VDb250ZXh0EgsKA3NlcRgCIAEoBBI7CgloZWFydGJlYXQYCiABKAsy",
+            "Ji5taW5pZ2FtZS5nYXRld2F5LnYxLkhlYXJ0YmVhdFJlc3BvbnNlSAASMwoF",
+            "bG9naW4YCyABKAsyIi5taW5pZ2FtZS5hY2NvdW50LnYxLkxvZ2luUmVzcG9u",
+            "c2VIABI8CgpnZXRfcGxheWVyGAwgASgLMiYubWluaWdhbWUuYWNjb3VudC52",
+            "MS5HZXRQbGF5ZXJSZXNwb25zZUgAEjwKC3N0YXJ0X21hdGNoGA0gASgLMiUu",
+            "bWluaWdhbWUubWF0Y2gudjEuU3RhcnRNYXRjaFJlc3BvbnNlSAASPgoMY2Fu",
+            "Y2VsX21hdGNoGA4gASgLMiYubWluaWdhbWUubWF0Y2gudjEuQ2FuY2VsTWF0",
+            "Y2hSZXNwb25zZUgAEjoKCmdldF90aWNrZXQYDyABKAsyJC5taW5pZ2FtZS5t",
+            "YXRjaC52MS5HZXRUaWNrZXRSZXNwb25zZUgAEj4KEG1hdGNoX2Fzc2lnbm1l",
+            "bnQYECABKAsyIi5taW5pZ2FtZS5tYXRjaC52MS5NYXRjaEFzc2lnbm1lbnRI",
+            "ABI3Cglqb2luX3Jvb20YESABKAsyIi5taW5pZ2FtZS5yb29tLnYxLkpvaW5S",
+            "b29tUmVzcG9uc2VIABI3Cg1yb29tX3NuYXBzaG90GBIgASgLMh4ubWluaWdh",
+            "bWUucm9vbS52MS5Sb29tU25hcHNob3RIABIyCgpzZXR0bGVtZW50GBMgASgL",
+            "MhwubWluaWdhbWUucm9vbS52MS5TZXR0bGVtZW50SAASSgoTc3VibWl0X3Bs",
+            "YXllcl9pbnB1dBgUIAEoCzIrLm1pbmlnYW1lLnJvb20udjEuU3VibWl0UGxh",
+            "eWVySW5wdXRSZXNwb25zZUgAEjsKC2NyZWF0ZV9yb29tGBUgASgLMiQubWlu",
+            "aWdhbWUucm9vbS52MS5DcmVhdGVSb29tUmVzcG9uc2VIABJGChFzeW5jX3Bs",
+            "YXllcl9zdGF0ZRgWIAEoCzIpLm1pbmlnYW1lLnJvb20udjEuU3luY1BsYXll",
+            "clN0YXRlUmVzcG9uc2VIABI3CglzZXRfcmVhZHkYFyABKAsyIi5taW5pZ2Ft",
+            "ZS5yb29tLnYxLlNldFJlYWR5UmVzcG9uc2VIABI5CgpzdGFydF9nYW1lGBgg",
+            "ASgLMiMubWluaWdhbWUucm9vbS52MS5TdGFydEdhbWVSZXNwb25zZUgAEjUK",
+            "DHJvb21fdXBkYXRlZBgZIAEoCzIdLm1pbmlnYW1lLnJvb20udjEuUm9vbVVw",
+            "ZGF0ZWRIABI1CghnZXRfcm9vbRgaIAEoCzIhLm1pbmlnYW1lLnJvb20udjEu",
+            "R2V0Um9vbVJlc3BvbnNlSAASOgoPaXRlbV9vZmZlcl9saXN0GBsgASgLMh8u",
+            "bWluaWdhbWUucm9vbS52MS5JdGVtT2ZmZXJMaXN0SAASUQobaXRlbV9jbGFp",
+            "bV9pbnRlbnRfYnJvYWRjYXN0GBwgASgLMioubWluaWdhbWUucm9vbS52MS5J",
+            "dGVtQ2xhaW1JbnRlbnRCcm9hZGNhc3RIABI+ChFpdGVtX2NsYWltX3Jlc3Vs",
+            "dBgdIAEoCzIhLm1pbmlnYW1lLnJvb20udjEuSXRlbUNsYWltUmVzdWx0SAAS",
+            "OgoPZ2FtZV9waGFzZV9zeW5jGB4gASgLMh8ubWluaWdhbWUucm9vbS52MS5H",
+            "YW1lUGhhc2VTeW5jSAASTwoaaXRlbV9wbGFjZV9zdGF0ZV9icm9hZGNhc3QY",
+            "HyABKAsyKS5taW5pZ2FtZS5yb29tLnYxLkl0ZW1QbGFjZVN0YXRlQnJvYWRj",
+            "YXN0SAASPgoRaXRlbV9wbGFjZV9yZXN1bHQYICABKAsyIS5taW5pZ2FtZS5y",
+            "b29tLnYxLkl0ZW1QbGFjZVJlc3VsdEgAEkQKFHBsYXllcl9vdXRfYnJvYWRj",
+            "YXN0GCEgASgLMiQubWluaWdhbWUucm9vbS52MS5QbGF5ZXJPdXRCcm9hZGNh",
+            "c3RIABJIChZwbGF5ZXJfZXZlbnRfYnJvYWRjYXN0GCIgASgLMiYubWluaWdh",
+            "bWUucm9vbS52MS5QbGF5ZXJFdmVudEJyb2FkY2FzdEgAEkgKFnBpY2t1cF9j",
+            "bGFpbV9icm9hZGNhc3QYIyABKAsyJi5taW5pZ2FtZS5yb29tLnYxLlBpY2t1",
+            "cENsYWltQnJvYWRjYXN0SAASTwoaaXRlbV9zdGF0ZV9ldmVudF9icm9hZGNh",
+            "c3QYJCABKAsyKS5taW5pZ2FtZS5yb29tLnYxLkl0ZW1TdGF0ZUV2ZW50QnJv",
+            "YWRjYXN0SAASQgoTdHJhcF9raWxsX2Jyb2FkY2FzdBglIAEoCzIjLm1pbmln",
+            "YW1lLnJvb20udjEuVHJhcEtpbGxCcm9hZGNhc3RIABIzCgVlcnJvchhaIAEo",
+            "CzIiLm1pbmlnYW1lLmdhdGV3YXkudjEuRXJyb3JSZXNwb25zZUgAQgkKB3Bh",
+            "eWxvYWRCJlokbWluaWdhbWUvZ2VuL2dvL2dhdGV3YXkvdjE7Z2F0ZXdheXYx",
+            "YgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Minigame.Account.V1.AccountReflection.Descriptor, global::Minigame.Common.V1.CommonReflection.Descriptor, global::Minigame.Match.V1.MatchReflection.Descriptor, global::Minigame.Room.V1.RoomReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.HeartbeatRequest), global::Minigame.Gateway.V1.HeartbeatRequest.Parser, new[]{ "ClientTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.HeartbeatResponse), global::Minigame.Gateway.V1.HeartbeatResponse.Parser, new[]{ "ServerTimeMs", "ClientTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ErrorResponse), global::Minigame.Gateway.V1.ErrorResponse.Parser, new[]{ "Status", "Route" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ClientEnvelope), global::Minigame.Gateway.V1.ClientEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "JoinRoom", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "GetRoom", "ItemClaimIntent", "ItemClaimConfirm", "ItemPlaceState", "ItemPlaceConfirm", "PlayerOutReport", "RoundScoreReport", "PlayerEvent", "PickupClaim", "ItemStateEvent" }, new[]{ "Payload" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ServerEnvelope), global::Minigame.Gateway.V1.ServerEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "MatchAssignment", "JoinRoom", "RoomSnapshot", "Settlement", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "RoomUpdated", "GetRoom", "ItemOfferList", "ItemClaimIntentBroadcast", "ItemClaimResult", "GamePhaseSync", "ItemPlaceStateBroadcast", "ItemPlaceResult", "PlayerOutBroadcast", "PlayerEventBroadcast", "PickupClaimBroadcast", "ItemStateEventBroadcast", "Error" }, new[]{ "Payload" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ClientEnvelope), global::Minigame.Gateway.V1.ClientEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "JoinRoom", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "GetRoom", "ItemClaimIntent", "ItemClaimConfirm", "ItemPlaceState", "ItemPlaceConfirm", "PlayerOutReport", "RoundScoreReport", "PlayerEvent", "PickupClaim", "ItemStateEvent", "TrapKillEvent" }, new[]{ "Payload" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ServerEnvelope), global::Minigame.Gateway.V1.ServerEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "MatchAssignment", "JoinRoom", "RoomSnapshot", "Settlement", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "RoomUpdated", "GetRoom", "ItemOfferList", "ItemClaimIntentBroadcast", "ItemClaimResult", "GamePhaseSync", "ItemPlaceStateBroadcast", "ItemPlaceResult", "PlayerOutBroadcast", "PlayerEventBroadcast", "PickupClaimBroadcast", "ItemStateEventBroadcast", "TrapKillBroadcast", "Error" }, new[]{ "Payload" }, null, null, null)
           }));
     }
     #endregion
@@ -911,6 +914,9 @@ namespace Minigame.Gateway.V1 {
         case PayloadOneofCase.ItemStateEvent:
           ItemStateEvent = other.ItemStateEvent.Clone();
           break;
+        case PayloadOneofCase.TrapKillEvent:
+          TrapKillEvent = other.TrapKillEvent.Clone();
+          break;
       }
 
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -1210,6 +1216,18 @@ namespace Minigame.Gateway.V1 {
       }
     }
 
+    /// <summary>Field number for the "trap_kill_event" field.</summary>
+    public const int TrapKillEventFieldNumber = 32;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.TrapKillEvent TrapKillEvent {
+      get { return payloadCase_ == PayloadOneofCase.TrapKillEvent ? (global::Minigame.Room.V1.TrapKillEvent) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.TrapKillEvent;
+      }
+    }
+
     private object payload_;
     /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
@@ -1236,6 +1254,7 @@ namespace Minigame.Gateway.V1 {
       PlayerEvent = 29,
       PickupClaim = 30,
       ItemStateEvent = 31,
+      TrapKillEvent = 32,
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1290,6 +1309,7 @@ namespace Minigame.Gateway.V1 {
       if (!object.Equals(PlayerEvent, other.PlayerEvent)) return false;
       if (!object.Equals(PickupClaim, other.PickupClaim)) return false;
       if (!object.Equals(ItemStateEvent, other.ItemStateEvent)) return false;
+      if (!object.Equals(TrapKillEvent, other.TrapKillEvent)) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -1322,6 +1342,7 @@ namespace Minigame.Gateway.V1 {
       if (payloadCase_ == PayloadOneofCase.PlayerEvent) hash ^= PlayerEvent.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.PickupClaim) hash ^= PickupClaim.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.ItemStateEvent) hash ^= ItemStateEvent.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.TrapKillEvent) hash ^= TrapKillEvent.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -1437,6 +1458,10 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(250, 1);
         output.WriteMessage(ItemStateEvent);
       }
+      if (payloadCase_ == PayloadOneofCase.TrapKillEvent) {
+        output.WriteRawTag(130, 2);
+        output.WriteMessage(TrapKillEvent);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1543,6 +1568,10 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(250, 1);
         output.WriteMessage(ItemStateEvent);
       }
+      if (payloadCase_ == PayloadOneofCase.TrapKillEvent) {
+        output.WriteRawTag(130, 2);
+        output.WriteMessage(TrapKillEvent);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1624,6 +1653,9 @@ namespace Minigame.Gateway.V1 {
       }
       if (payloadCase_ == PayloadOneofCase.ItemStateEvent) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(ItemStateEvent);
+      }
+      if (payloadCase_ == PayloadOneofCase.TrapKillEvent) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(TrapKillEvent);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1778,6 +1810,12 @@ namespace Minigame.Gateway.V1 {
             ItemStateEvent = new global::Minigame.Room.V1.ItemStateEvent();
           }
           ItemStateEvent.MergeFrom(other.ItemStateEvent);
+          break;
+        case PayloadOneofCase.TrapKillEvent:
+          if (TrapKillEvent == null) {
+            TrapKillEvent = new global::Minigame.Room.V1.TrapKillEvent();
+          }
+          TrapKillEvent.MergeFrom(other.TrapKillEvent);
           break;
       }
 
@@ -2009,6 +2047,15 @@ namespace Minigame.Gateway.V1 {
             ItemStateEvent = subBuilder;
             break;
           }
+          case 258: {
+            global::Minigame.Room.V1.TrapKillEvent subBuilder = new global::Minigame.Room.V1.TrapKillEvent();
+            if (payloadCase_ == PayloadOneofCase.TrapKillEvent) {
+              subBuilder.MergeFrom(TrapKillEvent);
+            }
+            input.ReadMessage(subBuilder);
+            TrapKillEvent = subBuilder;
+            break;
+          }
         }
       }
     #endif
@@ -2237,6 +2284,15 @@ namespace Minigame.Gateway.V1 {
             ItemStateEvent = subBuilder;
             break;
           }
+          case 258: {
+            global::Minigame.Room.V1.TrapKillEvent subBuilder = new global::Minigame.Room.V1.TrapKillEvent();
+            if (payloadCase_ == PayloadOneofCase.TrapKillEvent) {
+              subBuilder.MergeFrom(TrapKillEvent);
+            }
+            input.ReadMessage(subBuilder);
+            TrapKillEvent = subBuilder;
+            break;
+          }
         }
       }
     }
@@ -2365,6 +2421,9 @@ namespace Minigame.Gateway.V1 {
           break;
         case PayloadOneofCase.ItemStateEventBroadcast:
           ItemStateEventBroadcast = other.ItemStateEventBroadcast.Clone();
+          break;
+        case PayloadOneofCase.TrapKillBroadcast:
+          TrapKillBroadcast = other.TrapKillBroadcast.Clone();
           break;
         case PayloadOneofCase.Error:
           Error = other.Error.Clone();
@@ -2728,6 +2787,18 @@ namespace Minigame.Gateway.V1 {
       }
     }
 
+    /// <summary>Field number for the "trap_kill_broadcast" field.</summary>
+    public const int TrapKillBroadcastFieldNumber = 37;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.TrapKillBroadcast TrapKillBroadcast {
+      get { return payloadCase_ == PayloadOneofCase.TrapKillBroadcast ? (global::Minigame.Room.V1.TrapKillBroadcast) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.TrapKillBroadcast;
+      }
+    }
+
     /// <summary>Field number for the "error" field.</summary>
     public const int ErrorFieldNumber = 90;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2771,6 +2842,7 @@ namespace Minigame.Gateway.V1 {
       PlayerEventBroadcast = 34,
       PickupClaimBroadcast = 35,
       ItemStateEventBroadcast = 36,
+      TrapKillBroadcast = 37,
       Error = 90,
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
@@ -2831,6 +2903,7 @@ namespace Minigame.Gateway.V1 {
       if (!object.Equals(PlayerEventBroadcast, other.PlayerEventBroadcast)) return false;
       if (!object.Equals(PickupClaimBroadcast, other.PickupClaimBroadcast)) return false;
       if (!object.Equals(ItemStateEventBroadcast, other.ItemStateEventBroadcast)) return false;
+      if (!object.Equals(TrapKillBroadcast, other.TrapKillBroadcast)) return false;
       if (!object.Equals(Error, other.Error)) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -2869,6 +2942,7 @@ namespace Minigame.Gateway.V1 {
       if (payloadCase_ == PayloadOneofCase.PlayerEventBroadcast) hash ^= PlayerEventBroadcast.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.PickupClaimBroadcast) hash ^= PickupClaimBroadcast.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.ItemStateEventBroadcast) hash ^= ItemStateEventBroadcast.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.TrapKillBroadcast) hash ^= TrapKillBroadcast.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.Error) hash ^= Error.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
@@ -3005,6 +3079,10 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(162, 2);
         output.WriteMessage(ItemStateEventBroadcast);
       }
+      if (payloadCase_ == PayloadOneofCase.TrapKillBroadcast) {
+        output.WriteRawTag(170, 2);
+        output.WriteMessage(TrapKillBroadcast);
+      }
       if (payloadCase_ == PayloadOneofCase.Error) {
         output.WriteRawTag(210, 5);
         output.WriteMessage(Error);
@@ -3135,6 +3213,10 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(162, 2);
         output.WriteMessage(ItemStateEventBroadcast);
       }
+      if (payloadCase_ == PayloadOneofCase.TrapKillBroadcast) {
+        output.WriteRawTag(170, 2);
+        output.WriteMessage(TrapKillBroadcast);
+      }
       if (payloadCase_ == PayloadOneofCase.Error) {
         output.WriteRawTag(210, 5);
         output.WriteMessage(Error);
@@ -3235,6 +3317,9 @@ namespace Minigame.Gateway.V1 {
       }
       if (payloadCase_ == PayloadOneofCase.ItemStateEventBroadcast) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(ItemStateEventBroadcast);
+      }
+      if (payloadCase_ == PayloadOneofCase.TrapKillBroadcast) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(TrapKillBroadcast);
       }
       if (payloadCase_ == PayloadOneofCase.Error) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(Error);
@@ -3422,6 +3507,12 @@ namespace Minigame.Gateway.V1 {
             ItemStateEventBroadcast = new global::Minigame.Room.V1.ItemStateEventBroadcast();
           }
           ItemStateEventBroadcast.MergeFrom(other.ItemStateEventBroadcast);
+          break;
+        case PayloadOneofCase.TrapKillBroadcast:
+          if (TrapKillBroadcast == null) {
+            TrapKillBroadcast = new global::Minigame.Room.V1.TrapKillBroadcast();
+          }
+          TrapKillBroadcast.MergeFrom(other.TrapKillBroadcast);
           break;
         case PayloadOneofCase.Error:
           if (Error == null) {
@@ -3704,6 +3795,15 @@ namespace Minigame.Gateway.V1 {
             ItemStateEventBroadcast = subBuilder;
             break;
           }
+          case 298: {
+            global::Minigame.Room.V1.TrapKillBroadcast subBuilder = new global::Minigame.Room.V1.TrapKillBroadcast();
+            if (payloadCase_ == PayloadOneofCase.TrapKillBroadcast) {
+              subBuilder.MergeFrom(TrapKillBroadcast);
+            }
+            input.ReadMessage(subBuilder);
+            TrapKillBroadcast = subBuilder;
+            break;
+          }
           case 722: {
             global::Minigame.Gateway.V1.ErrorResponse subBuilder = new global::Minigame.Gateway.V1.ErrorResponse();
             if (payloadCase_ == PayloadOneofCase.Error) {
@@ -3984,6 +4084,15 @@ namespace Minigame.Gateway.V1 {
             }
             input.ReadMessage(subBuilder);
             ItemStateEventBroadcast = subBuilder;
+            break;
+          }
+          case 298: {
+            global::Minigame.Room.V1.TrapKillBroadcast subBuilder = new global::Minigame.Room.V1.TrapKillBroadcast();
+            if (payloadCase_ == PayloadOneofCase.TrapKillBroadcast) {
+              subBuilder.MergeFrom(TrapKillBroadcast);
+            }
+            input.ReadMessage(subBuilder);
+            TrapKillBroadcast = subBuilder;
             break;
           }
           case 722: {

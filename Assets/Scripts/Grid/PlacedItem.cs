@@ -19,6 +19,18 @@ namespace SuperQQ.Grid
         public int OwnerPlayerId { get; private set; }
 
         /// <summary>
+        /// 放置者身份标识（联机为 playerId，单机为 PlayerController.IdentityKey；关卡初始物体为空串）。
+        /// 陷阱击杀计分归属以此为准，由摆放确认路径写入
+        /// </summary>
+        public string OwnerKey { get; private set; } = string.Empty;
+
+        /// <summary>写入放置者身份标识（仅摆放确认/远端生成/快照恢复路径调用）</summary>
+        public void SetOwnerKey(string ownerKey)
+        {
+            OwnerKey = ownerKey ?? string.Empty;
+        }
+
+        /// <summary>
         /// 初始化放置数据（仅由 GridManager 调用）
         /// </summary>
         public void Init(PlacableItemDef def, Vector2Int anchorCell, bool rotated, int ownerPlayerId)

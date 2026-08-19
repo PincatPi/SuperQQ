@@ -145,6 +145,7 @@ namespace SuperQQ.Network
 
                 var placedItem = item.AddComponent<PlacedItem>();
                 placedItem.Init(null, anchor, placed.Rotated, -1);
+                placedItem.SetOwnerKey(placed.PlayerId); // 陷阱击杀计分归属
                 grid.Occupy(anchor, footprint, placedItem, placed.Rotated);
 
                 PlacementController pc = item.GetComponent<PlacementController>();
