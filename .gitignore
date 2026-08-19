@@ -114,3 +114,5 @@ InitTestScene*.unity*
 
 # CodeBuddy IDE config
 .codebuddy/
+# VSCode
+.vscode/
