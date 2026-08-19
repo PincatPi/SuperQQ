@@ -18,7 +18,8 @@ namespace SuperQQ.Network
 
         private void Awake()
         {
-            _renderer = GetComponent<SpriteRenderer>();
+            // 角色 SpriteRenderer 在子物体 Visual 上，需从子级查找（与 PlayerController 一致）
+            _renderer = GetComponentInChildren<SpriteRenderer>();
             if (_renderer != null) _baseColor = _renderer.color;
         }
 
