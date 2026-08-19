@@ -14,9 +14,10 @@ namespace SuperQQ.Network
     ///
     /// 功能（迁移自旧 RoomController）：
     ///   - 房间码 / 准备进度 / 准备按钮状态 的数据刷新
-    ///   - 准备 ↔ 取消准备切换（SetReadyRequest，等推送刷新，不做本地预判）
+    ///   - 普通玩家：准备 ↔ 取消准备切换（SetReadyRequest，等推送刷新，不做本地预判）
+    ///   - 房主：按钮切为"开始游戏"，全员准备才可点（StartGameRequest，带超时保护）
     ///   - 房间状态同步：RoomUpdated 推送 + GetRoom 轮询兜底
-    ///   - phase 推进到 Loading/Battle 或收到 game_started 推送时切对局场景
+    ///   - phase 推进到 Loading/Battle 或收到 game_started 推送时切对局场景（进入 PropSelection 阶段）
     /// 依赖：场景中有 NetworkManager（大厅进房时已存在）。
     /// </summary>
     public class UIRoomController : MonoBehaviour
@@ -40,9 +41,15 @@ namespace SuperQQ.Network
         [Header("轮询间隔（秒）：后端未实现 RoomUpdated 推送时，轮询 GetRoom 兜底同步房间状态")]
         [SerializeField] private float pollInterval = 2f;
 
+        [Header("开始游戏请求超时（秒）：超时未收到成功响应则恢复按钮，防止后端未实现该路由时卡死")]
+        [SerializeField] private float startGameTimeout = 6f;
+
         private NetworkManager _net;
         private Room _room;
         private float _pollTimer;
+
+        private bool _starting;
+        private float _startRequestTime;
 
         private void Start()
         {
@@ -59,6 +66,7 @@ namespace SuperQQ.Network
             }
 
             view.ReadyClicked += OnReadyClicked;
+            view.StartClicked += OnStartClicked;
 
             if (_net == null || string.IsNullOrEmpty(_net.RoomId) || _room == null)
             {
@@ -69,6 +77,7 @@ namespace SuperQQ.Network
 
             _net.Register<RoomUpdated>(OnRoomUpdated);
             _net.Register<SetReadyResponse>(OnSetReady);
+            _net.Register<StartGameResponse>(OnStartGame);
             _net.Register<GetRoomResponse>(OnGetRoom);
             _net.Register<ErrorResponse>(OnError);
 
@@ -78,6 +87,14 @@ namespace SuperQQ.Network
         private void Update()
         {
             if (_net == null || _room == null || string.IsNullOrEmpty(_net.RoomId)) return;
+
+            // 开始游戏请求超时保护：未收到响应/推送时恢复按钮，避免后端未实现该路由时永久卡死
+            if (_starting && Time.unscaledTime - _startRequestTime >= startGameTimeout)
+            {
+                _starting = false;
+                Debug.LogWarning("[NetWork] 开始游戏超时：服务器可能未实现该接口");
+                Refresh();
+            }
 
             // 等待阶段轮询房间状态（成员进出/准备变化）。后端实现 RoomUpdated 推送后此逻辑可移除。
             if (_room.Phase != RoomPhase.Unspecified && _room.Phase != RoomPhase.Waiting) return;
@@ -92,10 +109,15 @@ namespace SuperQQ.Network
 
         private void OnDestroy()
         {
-            if (view != null) view.ReadyClicked -= OnReadyClicked;
+            if (view != null)
+            {
+                view.ReadyClicked -= OnReadyClicked;
+                view.StartClicked -= OnStartClicked;
+            }
             if (_net == null) return;
             _net.Unregister<RoomUpdated>();
             _net.Unregister<SetReadyResponse>();
+            _net.Unregister<StartGameResponse>();
             _net.Unregister<GetRoomResponse>();
             _net.Unregister<ErrorResponse>();
         }
@@ -119,22 +141,42 @@ namespace SuperQQ.Network
             return null;
         }
 
-        /// <summary>把房间数据推给视图：房间码、准备进度（n/m + 进度条）、自身准备按钮文案</summary>
+        private bool IsOwner => _room != null && _net != null && _room.OwnerPlayerId == _net.LocalPlayerId;
+
+        /// <summary>把房间数据推给视图：房间码、准备进度（n/m + 进度条）、按身份切换按钮模式</summary>
         private void Refresh()
         {
             if (_room == null || view == null) return;
 
             view.SetRoomCode(_room.RoomId);
+            view.SetPlayerCount(_room.Players.Count);
 
             int readyCount = 0;
-            foreach (RoomPlayerState p in _room.Players)
+            for (int i = 0; i < _room.Players.Count; i++)
             {
-                if (IsReady(p)) readyCount++;
+                RoomPlayerState p = _room.Players[i];
+                bool ready = IsReady(p);
+                if (ready) readyCount++;
+
+                string playerId = p.Player != null ? p.Player.PlayerId : "?";
+                string nickname = p.Player != null && !string.IsNullOrEmpty(p.Player.Nickname)
+                    ? p.Player.Nickname : playerId;
+                view.SetSlotPlayer(i, nickname, ready);
             }
             view.SetReadyProgress(readyCount, _room.Players.Count);
 
-            RoomPlayerState self = FindSelf();
-            view.SetSelfReady(self != null && IsReady(self));
+            if (!IsOwner)
+            {
+                // 普通玩家：准备/取消准备切换
+                RoomPlayerState self = FindSelf();
+                view.SetReadyMode(self != null && IsReady(self));
+            }
+            else
+            {
+                // 房主（恒定视为已准备）：全员准备才可点开始，开局请求中保持置灰
+                bool allReady = readyCount == _room.Players.Count;
+                view.SetStartMode(allReady && !_starting);
+            }
         }
 
         // ==================== 网络交互 ====================
@@ -163,6 +205,35 @@ namespace SuperQQ.Network
             {
                 Debug.LogWarning($"[NetWork] 设置准备状态失败: {resp.Status?.Message}");
             }
+        }
+
+        /// <summary>房主点击开始游戏：发起 StartGameRequest，等待服务端广播 game_started 后全员切场景</summary>
+        private void OnStartClicked()
+        {
+            if (!IsOwner || _starting) return;
+
+            _starting = true;
+            _startRequestTime = Time.unscaledTime;
+            view.SetStartMode(false);
+
+            Debug.Log("[NetWork] 房主发起开始游戏");
+            _net.Send(new StartGameRequest
+            {
+                RoomId = _net.RoomId,
+                PlayerId = _net.LocalPlayerId
+            });
+        }
+
+        private void OnStartGame(StartGameResponse resp)
+        {
+            if (resp.Status == null || resp.Status.Code != ResultCode.Ok)
+            {
+                _starting = false;
+                Debug.LogWarning($"[NetWork] 开始游戏失败: {resp.Status?.Message}");
+                Refresh();
+                return;
+            }
+            // 成功时服务端会广播 RoomUpdated(game_started)，全员统一在推送里切场景
         }
 
         /// <summary>轮询回包：合并服务器房间状态（保留本端房主标记，防止后端未填 owner 时丢身份）</summary>
@@ -217,8 +288,14 @@ namespace SuperQQ.Network
 
         private void OnError(ErrorResponse err)
         {
-            // 房间阶段无状态栏 UI，统一记日志；状态由推送/轮询纠正
             Debug.LogWarning($"[NetWork] 服务端错误: route={err.Route} code={err.Status?.Code} msg={err.Status?.Message}");
+
+            // 后端未识别新路由时统一回 route=unknown：若正处于开局请求中，按开局失败恢复，防止卡死
+            if (err.Route == "start_game" || (err.Route == "unknown" && _starting))
+            {
+                _starting = false;
+                Refresh();
+            }
         }
     }
 }
