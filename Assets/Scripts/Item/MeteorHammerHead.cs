@@ -26,6 +26,8 @@ namespace SuperQQ.Item
                 return;
             }
 
+            TrapKillReporter.ReportKill(this, player);
+
             if (hammer == null)
             {
                 player.PlayerDie();

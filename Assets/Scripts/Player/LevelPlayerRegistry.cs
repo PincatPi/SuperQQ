@@ -23,6 +23,10 @@ namespace SuperQQ.Player
         // 每名玩家的状态类型，键为 PlayerController 实例
         private readonly Dictionary<PlayerController, PlayerStateType> _playerStates = new();
 
+        // 每名玩家注册时的初始位置（第一轮实际出生点），跨轮复活传送以此为依据，
+        // 避免按注册列表下标取出生点与座位下标错位（玩家可能被传送到未配置的点位，例如水里）
+        private readonly Dictionary<PlayerController, Vector3> _initialSpawnPositions = new();
+
         [Header("玩家预制体")]
         [SerializeField] private PlayerController _playerPrefab;           // 玩家预制体，若为空则创建空 GameObject 挂载 PlayerController
 
@@ -278,6 +282,37 @@ namespace SuperQQ.Player
             return transform.position;
         }
 
+        /// <summary>
+        /// 新一轮开始：复活所有本地玩家并传送回各自出生点。
+        /// 联机模式同场景跨轮复用玩家实例，上一轮死亡/通关的玩家仍是幽灵/通关状态，
+        /// 必须显式复活回 Alive；远端玩家由各端自己复活后经状态上报同步，本端不处理。
+        /// 单机模式每轮换场景生成新实例，Revive 对存活玩家为空操作，可安全调用。
+        /// </summary>
+        public void ReviveLocalPlayersForNewRound()
+        {
+            for (int i = 0; i < _players.Count; i++)
+            {
+                PlayerController player = _players[i];
+                if (player == null || !player.BIsLocal)
+                {
+                    continue;
+                }
+
+                player.Revive();
+
+                // 传回第一轮的实际出生点（注册时记录）；缺失时回退到按座位下标取出生点
+                Vector3 spawnPosition = _initialSpawnPositions.TryGetValue(player, out Vector3 initialPosition)
+                    ? initialPosition
+                    : GetSpawnPosition(i);
+                player.transform.position = spawnPosition;
+                if (player.Rb != null)
+                {
+                    player.Rb.position = spawnPosition;
+                    player.Rb.velocity = Vector2.zero;
+                }
+            }
+        }
+
         // ==================== 注册与注销 ====================
 
         /// <summary>
@@ -296,6 +331,7 @@ namespace SuperQQ.Player
             {
                 _players.Add(player);
                 _playerStates[player] = PlayerStateType.Alive;
+                _initialSpawnPositions[player] = player.transform.position;
                 OnPlayersChanged?.Invoke();
             }
         }

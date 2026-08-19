@@ -275,6 +275,12 @@ namespace SuperQQ.Network
         /// <summary>当前阶段的结束时刻（服务器毫秒）；0 表示无倒计时。供各阶段倒计时 UI 读取</summary>
         public static long CurrentPhaseEndTimeMs { get; private set; }
 
+        /// <summary>
+        /// 服务器下发的当前轮次（GamePhaseSync.round）；0 表示尚未收到。
+        /// 联机模式下 PlayerScoreManager.CurrentRoundIndex 不被推进，轮次以此为准（昼夜切换等表现层读取）
+        /// </summary>
+        public static int CurrentServerRound { get; private set; }
+
         private void OnGamePhaseSync(GamePhaseSync sync)
         {
             GamePhaseManager flow = GamePhaseManager.Instance;
@@ -283,6 +289,7 @@ namespace SuperQQ.Network
             // 服务器时间对时 + 记录本阶段结束时刻（倒计时锚点，两端一致）
             NetworkManager.SyncServerTime(sync.ServerTimeMs);
             CurrentPhaseEndTimeMs = sync.PhaseEndTimeMs;
+            CurrentServerRound = sync.Round;
 
             // 选择阶段外由门控负责缓存发牌消息（选择阶段内 Director 会覆盖注册并消费缓存），
             // 防止 ItemOfferList 早于 GamePhaseSync 处理完成而丢失
@@ -324,6 +331,19 @@ namespace SuperQQ.Network
 
         private void OnServerOffers(ItemOfferList list)
         {
+            // 选择阶段已激活时，Director 的注册可能被本 Gate 重新注册覆盖（本地流程先于服务器
+            // 消息启动的竞争场景：BeginPhase 注册 → OnGamePhaseSync 第289行覆盖 → 发牌到达）。
+            // 此时缓存将无人消费，直接把发牌转发给激活中的 Director 并清缓存。
+            SuperQQ.Selection.Runtime.PropSelectionDirector director =
+                UnityEngine.Object.FindFirstObjectByType<SuperQQ.Selection.Runtime.PropSelectionDirector>();
+            if (director != null && director.BIsActive)
+            {
+                _pendingOffers = null;
+                director.ReceiveOffers(list);
+                Debug.Log($"[NetWork] Gate 转发发牌给激活中的选择阶段: round={list.Round} 道具数={list.Offers.Count}");
+                return;
+            }
+
             // 始终缓存最新发牌，供 PropSelectionDirector 进入阶段时消费
             _pendingOffers = list;
             Debug.Log($"[NetWork] Gate 缓存发牌: round={list.Round} 道具数={list.Offers.Count} flowStarted={GamePhaseManager.Instance?.BFlowStarted}");

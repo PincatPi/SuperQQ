@@ -443,6 +443,24 @@ message ItemStateEventBroadcast {
   int64 server_time_ms = 5;
 }
 
+// 客户端 → 服务器：本地玩家被其他玩家摆放的陷阱击杀时上报，服务器原样广播。
+// 计分归属用：各端收到后为 owner_player_id 记一次陷阱有效击杀（ScoreCalculator 每次+5、单轮上限2次）。
+// 自杀（owner == 受害者）与关卡原生陷阱（无归属）不上报。
+message TrapKillEvent {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;             // 受害者（上报端本地玩家）
+  string owner_player_id = 4;       // 陷阱放置者
+}
+
+// 服务器 → 全房间：透传陷阱击杀事件。
+message TrapKillBroadcast {
+  string room_id = 1;
+  string player_id = 2;             // 受害者
+  string owner_player_id = 3;       // 陷阱放置者
+  int64 server_time_ms = 4;
+}
+
 service RoomService {
   rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
   rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);

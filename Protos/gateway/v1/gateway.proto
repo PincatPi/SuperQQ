@@ -53,6 +53,7 @@ message ClientEnvelope {
     minigame.room.v1.PlayerEvent player_event = 29;
     minigame.room.v1.PickupClaim pickup_claim = 30;
     minigame.room.v1.ItemStateEvent item_state_event = 31;
+    minigame.room.v1.TrapKillEvent trap_kill_event = 32;
   }
 }
 
@@ -89,6 +90,7 @@ message ServerEnvelope {
     minigame.room.v1.PlayerEventBroadcast player_event_broadcast = 34;
     minigame.room.v1.PickupClaimBroadcast pickup_claim_broadcast = 35;
     minigame.room.v1.ItemStateEventBroadcast item_state_event_broadcast = 36;
+    minigame.room.v1.TrapKillBroadcast trap_kill_broadcast = 37;
     ErrorResponse error = 90;
   }
 }

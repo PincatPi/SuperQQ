@@ -95,6 +95,7 @@ namespace SuperQQ.Placement.Runtime
         private float placeStateTimer;                                  // 拖拽上报节流
         private bool awaitingPlaceResult;                               // 已发确认、等待服务器仲裁
         private Button confirmPlaceButton;                              // 屏幕上方打勾确认按钮（运行时搭建）
+        private Button rotateButton;                                    // 屏幕上方旋转按钮（运行时搭建）
         private readonly Dictionary<string, GameObject> remoteGhosts = new(); // playerId -> 远端玩家摆放中的虚化道具
         private readonly Dictionary<string, string> remoteGhostItemIds = new();
         private readonly Dictionary<string, SpriteRenderer> remoteCursors = new(); // playerId -> 远端玩家的光标标记
@@ -619,12 +620,16 @@ namespace SuperQQ.Placement.Runtime
 
         // ---------- 打勾确认按钮 ----------
 
-        /// <summary>在屏幕上方搭建打勾确认按钮（联机模式；点击后向服务器请求占用仲裁）</summary>
+        /// <summary>在屏幕上方搭建打勾确认按钮与旋转按钮（联机模式；确认点击后向服务器请求占用仲裁）</summary>
         private void ShowConfirmPlaceButton()
         {
             if (confirmPlaceButton != null)
             {
                 confirmPlaceButton.gameObject.SetActive(true);
+                if (rotateButton != null)
+                {
+                    rotateButton.gameObject.SetActive(true);
+                }
                 return;
             }
 
@@ -641,20 +646,29 @@ namespace SuperQQ.Placement.Runtime
             }
             EnsureEventSystem();
 
-            var btnGo = new GameObject("ConfirmPlaceButton", typeof(RectTransform), typeof(Image), typeof(Button));
-            btnGo.transform.SetParent(canvas.transform, false);
+            confirmPlaceButton = CreateActionButton(canvas.transform, "ConfirmPlaceButton", "✔",
+                new Vector2(90f, -30f), new Color(0.2f, 0.7f, 0.3f, 0.95f));
+            confirmPlaceButton.onClick.AddListener(OnConfirmPlaceClicked);
+
+            rotateButton = CreateActionButton(canvas.transform, "RotatePlaceButton", "⟳",
+                new Vector2(-90f, -30f), new Color(0.25f, 0.45f, 0.85f, 0.95f));
+            rotateButton.onClick.AddListener(OnRotateClicked);
+        }
+
+        /// <summary>在屏幕上方创建一个操作按钮（锚定顶部居中，offsetX 相对中心偏移）</summary>
+        private static Button CreateActionButton(Transform parent, string name, string label, Vector2 anchoredPos, Color color)
+        {
+            var btnGo = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+            btnGo.transform.SetParent(parent, false);
             var rect = (RectTransform)btnGo.transform;
             rect.anchorMin = new Vector2(0.5f, 1f);
             rect.anchorMax = new Vector2(0.5f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
-            rect.anchoredPosition = new Vector2(0f, -30f);
+            rect.anchoredPosition = anchoredPos;
             rect.sizeDelta = new Vector2(120f, 80f);
-            btnGo.GetComponent<Image>().color = new Color(0.2f, 0.7f, 0.3f, 0.95f);
+            btnGo.GetComponent<Image>().color = color;
 
-            confirmPlaceButton = btnGo.GetComponent<Button>();
-            confirmPlaceButton.onClick.AddListener(OnConfirmPlaceClicked);
-
-            var labelGo = new GameObject("Check", typeof(RectTransform), typeof(TextMeshProUGUI));
+            var labelGo = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
             labelGo.transform.SetParent(btnGo.transform, false);
             var labelRect = (RectTransform)labelGo.transform;
             labelRect.anchorMin = Vector2.zero;
@@ -662,11 +676,13 @@ namespace SuperQQ.Placement.Runtime
             labelRect.offsetMin = Vector2.zero;
             labelRect.offsetMax = Vector2.zero;
             var tmp = labelGo.GetComponent<TextMeshProUGUI>();
-            tmp.text = "✔";
+            tmp.text = label;
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.fontSize = 48f;
             tmp.color = Color.white;
             tmp.raycastTarget = false;
+
+            return btnGo.GetComponent<Button>();
         }
 
         private void HideConfirmPlaceButton()
@@ -675,6 +691,23 @@ namespace SuperQQ.Placement.Runtime
             {
                 confirmPlaceButton.gameObject.SetActive(false);
             }
+            if (rotateButton != null)
+            {
+                rotateButton.gameObject.SetActive(false);
+            }
+        }
+
+        /// <summary>旋转按钮回调：旋转本地摆放中的道具；朝向随下一次 ItemPlaceState 广播同步到远端，
+        /// 此处把节流计时器拉满让下一帧立即上报，远端虚化道具即时跟随</summary>
+        private void OnRotateClicked()
+        {
+            if (awaitingPlaceResult || localSession == null || !localSession.BIsPlacing)
+            {
+                return;
+            }
+
+            localSession.Rotate();
+            placeStateTimer = 1f / placeStateReportRate;
         }
 
         /// <summary>打勾按钮回调：落点本地合法才发确认请求，占据格子列表交服务器仲裁</summary>
@@ -791,6 +824,7 @@ namespace SuperQQ.Placement.Runtime
             // 登记占用：占据格子对所有人生效，本地落点合法性检查自动包含这些格子
             var placed = item.AddComponent<PlacedItem>();
             placed.Init(null, anchor, result.Rotated, -1);
+            placed.SetOwnerKey(result.PlayerId); // 陷阱击杀计分归属
             grid.Occupy(anchor, footprint, placed, result.Rotated);
 
             // 锁定：摆放组件与碰撞体不再需要参与交互

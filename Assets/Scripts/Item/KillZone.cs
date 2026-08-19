@@ -70,6 +70,7 @@ namespace SuperQQ.Item
             foreach (PlayerController player in _expiredBuffer)
             {
                 _dyingPlayers.Remove(player);
+                TrapKillReporter.ReportKill(this, player);
                 player.PlayerDie();
             }
         }

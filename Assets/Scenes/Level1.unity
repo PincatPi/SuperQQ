@@ -3981,6 +3981,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: Map
       objectReference: {fileID: 0}
+    - target: {fileID: 7497729260952361192, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: nightTint.b
+      value: 0.8528302
+      objectReference: {fileID: 0}
+    - target: {fileID: 7497729260952361192, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: nightTint.g
+      value: 0.47156486
+      objectReference: {fileID: 0}
+    - target: {fileID: 7497729260952361192, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: nightTint.r
+      value: 0.34113204
+      objectReference: {fileID: 0}
     - target: {fileID: 8917994028245875475, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

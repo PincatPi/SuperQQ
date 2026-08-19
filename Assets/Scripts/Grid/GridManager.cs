@@ -392,6 +392,22 @@ namespace SuperQQ.Grid
         /// <summary>当前加载的区域配置（可能为 null）</summary>
         public LevelZoneConfig ZoneConfig => zoneConfig;
 
+        // 水面垂直偏移（格数）：夜晚水位上升时由外部（MapDayNightController）设置，
+        // 查询 Water 区域时把查询点向下偏移该格数，等效于水域整体上移
+        private int waterYOffsetCells;
+
+        /// <summary>
+        /// 设置水面垂直偏移（格数，正值=水位上升）。
+        /// 影响所有区域查询：Water 条目的判定范围随之上移。
+        /// </summary>
+        public void SetWaterYOffset(int cells)
+        {
+            waterYOffsetCells = cells;
+        }
+
+        /// <summary>当前水面垂直偏移（格数）</summary>
+        public int WaterYOffsetCells => waterYOffsetCells;
+
         /// <summary>
         /// 加载区域配置资产（关卡初始化时可由外部注入，覆盖 Inspector 配置）
         /// </summary>
@@ -412,7 +428,13 @@ namespace SuperQQ.Grid
             }
             foreach (LevelZoneConfig.ZoneEntry zone in zoneConfig.Zones)
             {
-                if (zone.cells.Contains(cell))
+                // Water 条目：查询点按水位偏移下移后判定，等效水域整体上移
+                Vector2Int queryCell = cell;
+                if (waterYOffsetCells != 0 && (zone.zoneType & GridZoneType.Water) != 0)
+                {
+                    queryCell.y -= waterYOffsetCells;
+                }
+                if (zone.cells.Contains(queryCell))
                 {
                     result |= zone.zoneType;
                 }
@@ -445,7 +467,13 @@ namespace SuperQQ.Grid
             }
             foreach (LevelZoneConfig.ZoneEntry zone in zoneConfig.Zones)
             {
-                if (RectOverlaps(zone.cells, cellRect))
+                // Water 条目：查询矩形按水位偏移下移后判定，与 GetZonesAt(cell) 口径一致
+                RectInt queryRect = cellRect;
+                if (waterYOffsetCells != 0 && (zone.zoneType & GridZoneType.Water) != 0)
+                {
+                    queryRect.y -= waterYOffsetCells;
+                }
+                if (RectOverlaps(zone.cells, queryRect))
                 {
                     result |= zone.zoneType;
                 }

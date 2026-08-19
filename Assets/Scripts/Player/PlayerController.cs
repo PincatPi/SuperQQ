@@ -503,11 +503,31 @@ namespace SuperQQ.Player
         /// </summary>
         public void PlayerFinish()
         {
-            if (BIsFinished || BIsDead || BIsGhost) 
+            if (BIsFinished || BIsDead || BIsGhost)
             {
                 return;
             }
             TransitionTo(new PlayerFinishedState(this));
+        }
+
+        /// <summary>
+        /// 复活：从死亡/幽灵/通关状态回到存活状态（新一轮开始时调用）。
+        /// 联机模式同场景跨轮复用玩家实例，必须显式复活；单机每轮换场景重生实例，此处为空操作。
+        /// 状态 Exit 负责恢复碰撞体/重力/透明度，此处只需清零速度并切换状态。
+        /// </summary>
+        public void Revive()
+        {
+            if (!BIsDead && !BIsGhost && !BIsFinished)
+            {
+                return; // 已存活，无需复活
+            }
+
+            if (_rb != null)
+            {
+                _rb.velocity = Vector2.zero;
+            }
+            ClearWindForce();
+            TransitionTo(new PlayerAliveState(this));
         }
 
         // ==================== 调试可视化 ====================
