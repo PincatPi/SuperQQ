@@ -1,3 +1,2 @@
-m_EditorVersion: 2022.3.62t8
-m_EditorVersionWithRevision: 2022.3.62t8 (eaa6929bf4e5)
-m_TuanjieEditorVersion: 1.9.0
+m_EditorVersion: 2022.3.62f3c1
+m_EditorVersionWithRevision: 2022.3.62f3c1 (1623fc0bbb97)
