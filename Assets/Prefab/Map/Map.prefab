@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2762917248568804975}
   - component: {fileID: 6289983880000679882}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: colidder (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -86,7 +86,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 472809467634212792}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: LevelMap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -123,7 +123,7 @@ GameObject:
   - component: {fileID: 3518039241284386207}
   - component: {fileID: 6930108841777334130}
   - component: {fileID: 2028894264217980298}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: Portal_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -348,7 +348,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4130042143235980134}
   - component: {fileID: 4049387418206894197}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: colidder (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -555,7 +555,7 @@ GameObject:
   m_Component:
   - component: {fileID: 596154385483149347}
   - component: {fileID: 3153804207025468865}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: Water (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -639,7 +639,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7817593814648994490}
   - component: {fileID: 2755805642286425753}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: w (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -716,7 +716,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3675329051743820010}
   - component: {fileID: 8127179891647585890}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: colidder (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1194,7 +1194,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5812474038916664433}
   - component: {fileID: 2737875095120430226}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: colidder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1401,7 +1401,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7760364645058386372}
   - component: {fileID: 3403482365641398623}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: colidder (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1685,8 +1685,8 @@ Transform:
   m_GameObject: {fileID: 5514021760343656803}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.5253, y: 7.1676, z: 0}
-  m_LocalScale: {x: 2.5337255, y: 2.1273944, z: 1}
+  m_LocalPosition: {x: 2.7148, y: 7.1676, z: 0}
+  m_LocalScale: {x: 2.0317943, y: 1.6652585, z: 0.782769}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 410331690379907434}
@@ -1839,7 +1839,7 @@ GameObject:
   - component: {fileID: 5398532416977474687}
   - component: {fileID: 2272109380125762548}
   - component: {fileID: 1032539388440247214}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: MapBoundary
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2013,7 +2013,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5938943284685424535}
   - component: {fileID: 5223838664824325081}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: w (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2121,7 +2121,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7280451064507653126}
   - component: {fileID: 3669280470378121123}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: colidder (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2198,7 +2198,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8917994028245875475}
   - component: {fileID: 7497729260952361192}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: Map
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2265,7 +2265,7 @@ MonoBehaviour:
   - {fileID: 2807588476118726239}
   riseCells: 6
   riseFadeDuration: 1.5
-  nightTint: {r: 0.35, g: 0.45, b: 0.75, a: 1}
+  nightTint: {r: 0.34113204, g: 0.47156486, b: 0.8528302, a: 1}
   tintFadeDuration: 1.5
   debugOverride: -1
 --- !u!1 &7326436642977860894
@@ -2278,7 +2278,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6282121615468008070}
   - component: {fileID: 4409200722462767927}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: colidder (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2546,7 +2546,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7232956525187524792}
   - component: {fileID: 8687565403881823730}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: Water
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2630,7 +2630,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5113182079015590645}
   - component: {fileID: 2393935770174800965}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: w
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2707,7 +2707,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7989126443154390684}
   - component: {fileID: 1106851247166283788}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: colidder (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2784,7 +2784,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1450930084925725194}
   - component: {fileID: 8785792914888024599}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: w (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2861,7 +2861,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6329418409100849881}
   - component: {fileID: 5519354776319198312}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: colidder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2938,7 +2938,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7000618073818601092}
   - component: {fileID: 1114506269944662057}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: colidder (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
