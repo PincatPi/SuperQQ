@@ -19,51 +19,33 @@ namespace SuperQQ.Network
         private void Update()
         {
             if (_done) return;
-            _done = TrySetupLocalPlayer() != null;
-        }
 
-        /// <summary>
-        /// 立即为场景中的本地玩家写入网络身份并挂载上报组件。
-        /// 选择阶段可能早于本组件的 Update 启动，网络门控会在生成选择图标前同步调用本方法。
-        /// </summary>
-        public static PlayerController TrySetupLocalPlayer()
-        {
             NetworkManager net = NetworkManager.Instance;
             if (net == null || !net.IsConnected
                 || string.IsNullOrEmpty(net.RoomId)
-                || string.IsNullOrEmpty(net.LocalPlayerId)) return null;
+                || string.IsNullOrEmpty(net.LocalPlayerId)) return;
 
             PlayerController local = FindLocalPlayer();
-            if (local == null) return null;
+            if (local == null) return;
 
-            bool needsIdentity = local.PlayerId != net.LocalPlayerId || !local.BIsLocal;
-            bool needsInputReporter = local.GetComponent<InputReporter>() == null;
-            bool needsOutReporter = local.GetComponent<PlayerOutReporter>() == null;
-            if (!needsIdentity && !needsInputReporter && !needsOutReporter)
-            {
-                return local;
-            }
+            _done = true;
 
             // 写入网络身份（与 NetDebugBootstrap 一致：注册表/上报都以服务端 playerId 为准）
-            if (needsIdentity)
-            {
-                PlayerProfile profile = local.BuildProfile();
-                profile.PlayerId = net.LocalPlayerId;
-                profile.IsLocal = true;
-                local.ApplyProfile(profile);
-            }
+            PlayerProfile profile = local.BuildProfile();
+            profile.PlayerId = net.LocalPlayerId;
+            profile.IsLocal = true;
+            local.ApplyProfile(profile);
 
-            if (needsInputReporter)
+            if (local.GetComponent<InputReporter>() == null)
             {
                 local.gameObject.AddComponent<InputReporter>();
             }
-            if (needsOutReporter)
+            if (local.GetComponent<PlayerOutReporter>() == null)
             {
                 local.gameObject.AddComponent<PlayerOutReporter>();
             }
 
             Debug.Log($"[NetWork] 本地玩家已接入联机（大厅流程）: playerId={net.LocalPlayerId} name={local.PlayerName}");
-            return local;
         }
 
         private static PlayerController FindLocalPlayer()
