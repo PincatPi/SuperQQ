@@ -48,6 +48,17 @@ namespace SuperQQ.Event
         // 运行时上下文，在事件激活时创建，传递给各 LevelEventModifier
         private LevelEventContext _eventContext;
 
+        // ==================== 联机事件同步状态 ====================
+
+        // 服务器已下发事件的轮次（按轮幂等，同一轮重复 ApplyServerEvent 为空操作）
+        private int _serverEventRound;
+
+        // 本轮服务器事件是否已触发（快照 event_triggered 翻牌去重）
+        private bool _bServerEventTriggered;
+
+        // 服务器触发时刻的定时引爆协程
+        private Coroutine _serverTriggerCoroutine;
+
         // ==================== 公开事件 ====================
 
         /// <summary>
@@ -130,7 +141,146 @@ namespace SuperQQ.Event
 
         private void Start()
         {
+            // 联机模式：本轮事件由服务器 GamePhaseSync(event_id/random_seed) 决定，
+            // 触发时机由 RoomSnapshot.event_triggered 翻牌驱动，本地不做随机选取
+            if (IsNetMode())
+            {
+                Debug.Log("[LevelEventAnnouncer] 联机模式：等待服务器下发本轮事件。");
+                return;
+            }
+
             SelectAndAnnounceEvents();
+        }
+
+        /// <summary>联机模式判定：已连接且在房间内</summary>
+        private static bool IsNetMode()
+        {
+            Network.NetworkManager net = Network.NetworkManager.Instance;
+            return net != null && net.IsConnected && !string.IsNullOrEmpty(net.RoomId);
+        }
+
+        // ==================== 联机事件同步 ====================
+
+        /// <summary>
+        /// 应用服务器下发的本轮事件（联机模式，由 NetGameFlowGate 在收到 GamePhaseSync 时调用）。
+        /// 以 event_id 从配置表取对应条目（固定事件照常执行），以 random_seed 作为事件随机源种子。
+        /// 按轮幂等：同一轮重复调用为空操作；新一轮调用会重置触发状态。
+        /// </summary>
+        /// <param name="eventId">服务器下发的事件 ID（对应 LevelEventType 枚举值）</param>
+        /// <param name="randomSeed">本轮随机种子，事件内部随机过程（如陨石落点序列）各端一致</param>
+        /// <param name="round">当前轮次（从 1 开始）</param>
+        public void ApplyServerEvent(int eventId, int randomSeed, int round)
+        {
+            if (!IsNetMode())
+            {
+                return;
+            }
+
+            if (_serverEventRound == round && _bHasAnnounced)
+            {
+                return; // 同一轮重复下发，幂等
+            }
+
+            // 新一轮：重置触发状态，停掉上一轮的引爆协程
+            _serverEventRound = round;
+            _bServerEventTriggered = false;
+            if (_serverTriggerCoroutine != null)
+            {
+                StopCoroutine(_serverTriggerCoroutine);
+                _serverTriggerCoroutine = null;
+            }
+
+            _selectedEntries.Clear();
+            if (_eventConfig != null)
+            {
+                IReadOnlyList<LevelEventEntry> pool = _eventConfig.Events;
+                for (int i = 0; i < pool.Count; i++)
+                {
+                    LevelEventEntry entry = pool[i];
+                    if (entry == null)
+                    {
+                        continue;
+                    }
+
+                    // 固定事件照常执行；随机事件由服务器 event_id 指定
+                    if (entry.BIsFixed || (int)entry.EventType == eventId)
+                    {
+                        _selectedEntries.Add(entry);
+                    }
+                }
+            }
+
+            _bHasAnnounced = true;
+
+            if (_selectedEntries.Count == 0)
+            {
+                Debug.LogWarning($"[LevelEventAnnouncer] 服务器事件 ID={eventId} 在配置表中无对应条目。");
+                return;
+            }
+
+            // 上下文注入服务器种子 + 等待触发标记：Modifier 只做准备，落石等服务器翻牌
+            _eventContext = new LevelEventContext
+            {
+                CoroutineRunner = this,
+                SceneRoot = transform,
+                RandomSeed = randomSeed,
+                WaitForTrigger = true
+            };
+
+            OnEventsSelected?.Invoke(_selectedEntries);
+            ActivateModifiersWhenPlaying();
+
+            if (_popupPlaybackCoroutine != null)
+            {
+                StopCoroutine(_popupPlaybackCoroutine);
+            }
+            _popupPlaybackCoroutine = StartCoroutine(ShowEventPopupsSequentially());
+
+            Debug.Log($"[LevelEventAnnouncer] 应用服务器事件: id={eventId} seed={randomSeed} round={round} 事件数={_selectedEntries.Count}");
+        }
+
+        /// <summary>
+        /// 服务器事件触发翻牌（由 RoomSnapshotReceiver 在 RoomSnapshot.event_triggered 变 true 时调用）。
+        /// 以服务器触发时刻为锚点定时引爆：两端对齐到同一服务器时刻，而非各自收到包的时刻；
+        /// 时刻已过（延迟大/断线重连）立即补爆。按轮去重，快照重复下发不会重复触发。
+        /// </summary>
+        /// <param name="triggeredAtMs">服务器事件触发时刻（毫秒时间戳）</param>
+        public void OnServerEventTriggered(long triggeredAtMs)
+        {
+            if (!IsNetMode() || _bServerEventTriggered || !_bHasAnnounced)
+            {
+                return;
+            }
+            _bServerEventTriggered = true;
+
+            Network.NetworkManager net = Network.NetworkManager.Instance;
+            long delayMs = triggeredAtMs > 0 ? triggeredAtMs - Network.NetworkManager.EstimatedServerNowMs() : 0;
+            float delaySeconds = Mathf.Max(0f, delayMs / 1000f);
+            _serverTriggerCoroutine = StartCoroutine(ServerTriggerAfterDelay(delaySeconds));
+            Debug.Log($"[LevelEventAnnouncer] 服务器事件已掷签: 触发时刻={triggeredAtMs} 预计 {delaySeconds:F2}s 后引爆");
+        }
+
+        /// <summary>按服务器时钟锚点延时后，触发本轮事件的 Modifier 逻辑</summary>
+        private IEnumerator ServerTriggerAfterDelay(float delaySeconds)
+        {
+            if (delaySeconds > 0f)
+            {
+                yield return new WaitForSeconds(delaySeconds);
+            }
+            _serverTriggerCoroutine = null;
+
+            if (_eventContext == null)
+            {
+                yield break;
+            }
+
+            for (int i = 0; i < _selectedEntries.Count; i++)
+            {
+                if (_selectedEntries[i].Modifier != null)
+                {
+                    _selectedEntries[i].Modifier.OnServerTrigger(_eventContext);
+                }
+            }
         }
 
         // ==================== 核心流程 ====================

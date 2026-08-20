@@ -45,12 +45,68 @@ namespace SuperQQ.Item
         /// </summary>
         protected abstract Vector2Int DefaultFootprint { get; }
 
+        // 联机模式下等待服务器拆除仲裁的本地炸弹（锚点 → 实例）：
+        // 本地放置后挂起不引爆，ItemDemolishResult 到达时统一引爆，保证各端移除集合一致
+        private static readonly Dictionary<Vector2Int, DemolitionItemBase> _pendingByAnchor = new();
+
+        /// <summary>是否处于联机模式（已连接且已进房）</summary>
+        private static bool BNetMode =>
+            SuperQQ.Network.NetworkManager.Instance != null
+            && SuperQQ.Network.NetworkManager.Instance.IsConnected
+            && !string.IsNullOrEmpty(SuperQQ.Network.NetworkManager.Instance.RoomId);
+
         /// <summary>
-        /// 放置完成后自动进入引爆流程（拆除类道具即放即爆）
+        /// 放置完成后进入引爆流程（拆除类道具即放即爆）：
+        /// 单机按引信计时引爆；联机挂起等待服务器 ItemDemolishResult 统一引爆
         /// </summary>
         public override void OnPlaced()
         {
+            if (BNetMode && Placed != null)
+            {
+                _pendingByAnchor[Placed.AnchorCell] = this;
+                return;
+            }
             StartCoroutine(DetonateRoutine());
+        }
+
+        /// <summary>取走指定锚点上等待仲裁的本地炸弹（PropPlacementDirector 收到拆除结果时调用）</summary>
+        public static bool TryTakePending(Vector2Int anchor, out DemolitionItemBase bomb)
+        {
+            if (_pendingByAnchor.TryGetValue(anchor, out bomb) && bomb != null)
+            {
+                _pendingByAnchor.Remove(anchor);
+                return true;
+            }
+            _pendingByAnchor.Remove(anchor);
+            bomb = null;
+            return false;
+        }
+
+        /// <summary>
+        /// 联机同步引爆：按服务器裁定的被拆锚点集合移除道具，播放特效后销毁自身。
+        /// 投放者端与远端各端执行完全相同的移除集合，占据表不分叉。
+        /// </summary>
+        /// <param name="removedAnchors">服务器 ItemDemolishResult.removed_items 的锚点集合</param>
+        public void DetonateSynced(IReadOnlyCollection<Vector2Int> removedAnchors)
+        {
+            GridManager grid = GridManager.Instance;
+            if (grid == null || Placed == null)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            if (removedAnchors != null)
+            {
+                foreach (Vector2Int anchor in removedAnchors)
+                {
+                    // RemoveAt 会释放目标的全部占位格子并销毁物体（含 OnRemoved 钩子）
+                    grid.RemoveAt(anchor);
+                }
+            }
+
+            SpawnExplosionEffect();
+            DestroySelf(grid);
         }
 
         /// <summary>
@@ -102,7 +158,7 @@ namespace SuperQQ.Item
         private HashSet<PlacedItem> CollectTargetsInArea(GridManager grid)
         {
             var targets = new HashSet<PlacedItem>();
-            foreach (Vector2Int cell in grid.GetFootprintCells(Placed.AnchorCell, ResolveOwnFootprint(), Placed.Rotated))
+            foreach (Vector2Int cell in grid.GetFootprintCells(Placed.AnchorCell, ResolveOwnFootprint(), Placed.Rotation))
             {
                 PlacedItem item = grid.GetItemAt(cell);
                 if (item != null && item != Placed)

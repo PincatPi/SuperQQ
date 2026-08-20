@@ -100,7 +100,15 @@ namespace SuperQQ.Grid
         /// <param name="rotated">是否旋转90度</param>
         public void Init(Vector2Int footprint, bool rotated)
         {
-            Vector2Int size = rotated ? new Vector2Int(footprint.y, footprint.x) : footprint;
+            Init(footprint, rotated ? 1 : 0);
+        }
+
+        /// <summary>
+        /// 按占位尺寸生成/更新虚线框（四档旋转：0=0° 1=顺时针90° 2=180° 3=270°；90/270 宽高互换）
+        /// </summary>
+        public void Init(Vector2Int footprint, int rotationSteps)
+        {
+            Vector2Int size = GridManager.GetRotatedSize(footprint, rotationSteps);
             Build(size, ResolveCellSize());
         }
 

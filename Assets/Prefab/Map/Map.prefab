@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2762917248568804975}
   - component: {fileID: 6289983880000679882}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: colidder (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -348,7 +348,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4130042143235980134}
   - component: {fileID: 4049387418206894197}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: colidder (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -639,7 +639,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7817593814648994490}
   - component: {fileID: 2755805642286425753}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: w (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -716,7 +716,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3675329051743820010}
   - component: {fileID: 8127179891647585890}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: colidder (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1194,7 +1194,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5812474038916664433}
   - component: {fileID: 2737875095120430226}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: colidder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1401,7 +1401,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7760364645058386372}
   - component: {fileID: 3403482365641398623}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: colidder (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2013,7 +2013,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5938943284685424535}
   - component: {fileID: 5223838664824325081}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: w (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2121,7 +2121,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7280451064507653126}
   - component: {fileID: 3669280470378121123}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: colidder (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2278,7 +2278,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6282121615468008070}
   - component: {fileID: 4409200722462767927}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: colidder (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2630,7 +2630,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5113182079015590645}
   - component: {fileID: 2393935770174800965}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: w
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2707,7 +2707,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7989126443154390684}
   - component: {fileID: 1106851247166283788}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: colidder (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2784,7 +2784,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1450930084925725194}
   - component: {fileID: 8785792914888024599}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: w (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -61,8 +61,11 @@ namespace SuperQQ.Placement.Core
         /// <summary>摆放中道具的 PlacementController；未摆放时为 null</summary>
         public PlacementController CurrentPlacementController => currentPc;
 
-        /// <summary>摆放中道具是否旋转 90°；未摆放时为 false</summary>
+        /// <summary>摆放中道具是否旋转（非 0° 档）；未摆放时为 false</summary>
         public bool CurrentRotated => BIsPlacing && currentPc.IsRotated;
+
+        /// <summary>摆放中道具的旋转档（0=0° 1=顺时针90° 2=180° 3=270°）；未摆放时为 0</summary>
+        public int CurrentRotation => BIsPlacing ? currentPc.RotationSteps : 0;
 
         /// <summary>摆放中道具根节点的世界坐标；未摆放时为 null</summary>
         public Vector2? CurrentPosition => BIsPlacing ? (Vector2?)current.transform.position : null;
@@ -82,8 +85,7 @@ namespace SuperQQ.Placement.Core
             Vector2Int anchor = currentPc.GetAnchorCellAt(current.transform.position);
             FootprintBoxView box = current.GetComponent<FootprintBoxView>();
             Vector2Int footprint = box != null ? box.Footprint : Vector2Int.one;
-            bool rotated = currentPc.IsRotated;
-            Vector2Int size = rotated ? new Vector2Int(footprint.y, footprint.x) : footprint;
+            Vector2Int size = GridManager.GetRotatedSize(footprint, currentPc.RotationSteps);
 
             var cells = new List<Vector2Int>(size.x * size.y);
             for (int dx = 0; dx < size.x; dx++)
@@ -150,7 +152,7 @@ namespace SuperQQ.Placement.Core
             RefreshValidityHint();
         }
 
-        /// <summary>旋转当前摆放中的道具 90°（不可旋转的道具为空操作）</summary>
+        /// <summary>顺时针旋转当前摆放中的道具一档（0°→90°→180°→270°→0°；不可旋转的道具为空操作）</summary>
         public void Rotate()
         {
             if (!BIsPlacing || !currentPc.ToggleRotate())
@@ -187,14 +189,14 @@ namespace SuperQQ.Placement.Core
             PlacedItem placed = current.GetComponent<PlacedItem>();
             // 写入放置者归属：陷阱击杀计分（RecordTrapKill）按此归属计分
             placed?.SetOwnerKey(playerKey);
-            bool bRotated = currentPc.IsRotated;
+            int rotation = currentPc.RotationSteps;
             UnityEngine.Object.Destroy(currentPc);
 
             OnPlacementConfirmed?.Invoke(new PlacementResult(
                 playerKey,
                 currentItemId,
                 placed != null ? placed.AnchorCell : Vector2Int.zero,
-                bRotated));
+                rotation));
 
             // 衔接摆放：实现 IChainedPlacement 的道具（如传送门出口）直接接管，摆放流程不中断
             GameObject chained = current.TryGetComponent(out IChainedPlacement chainProvider)
@@ -264,7 +266,7 @@ namespace SuperQQ.Placement.Core
             currentBox = instance.GetComponent<FootprintBoxView>();
             if (currentBox != null)
             {
-                currentBox.Init(currentBox.Footprint, currentPc.IsRotated);
+                currentBox.Init(currentBox.Footprint, currentPc.RotationSteps);
                 currentBox.Show();
             }
         }

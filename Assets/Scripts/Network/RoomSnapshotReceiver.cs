@@ -94,6 +94,13 @@ namespace SuperQQ.Network
 
             // 恢复已摆放道具：断连/迟到时 ItemPlaceResult 已错过，靠快照里的 placed_items 补齐
             RestorePlacedItems(snapshot, net.LocalPlayerId);
+
+            // 随机事件触发翻牌：快照全量重复下发，Announcer 内部按轮去重；
+            // 触发时刻以服务器时钟为锚点，两端对齐引爆，迟到/断线重连立即补爆
+            if (snapshot.EventTriggered)
+            {
+                SuperQQ.Event.LevelEventAnnouncer.Instance?.OnServerEventTriggered(snapshot.EventTriggeredAtMs);
+            }
         }
 
         // 已恢复的远端道具：anchorCell key -> 实例，避免每次快照重复生成
@@ -138,15 +145,15 @@ namespace SuperQQ.Network
                 FootprintBoxView prefabBox = prefab.GetComponent<FootprintBoxView>();
                 Vector2Int footprint = prefabBox != null ? prefabBox.Footprint : Vector2Int.one;
 
-                Vector2 worldPos = grid.GetPlacementWorldPos(anchor, footprint, placed.Rotated);
+                Vector2 worldPos = grid.GetPlacementWorldPos(anchor, footprint, placed.Rotation);
                 GameObject item = Instantiate(prefab.gameObject, worldPos,
-                    placed.Rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity);
+                    GridManager.GetRotationQuaternion(placed.Rotation));
                 item.name = $"Restored_{placed.PlayerId}_{prefab.name}";
 
                 var placedItem = item.AddComponent<PlacedItem>();
-                placedItem.Init(null, anchor, placed.Rotated, -1);
+                placedItem.Init(null, anchor, placed.Rotation, -1);
                 placedItem.SetOwnerKey(placed.PlayerId); // 陷阱击杀计分归属
-                grid.Occupy(anchor, footprint, placedItem, placed.Rotated);
+                grid.Occupy(anchor, footprint, placedItem, placed.Rotation);
 
                 PlacementController pc = item.GetComponent<PlacementController>();
                 if (pc != null)
@@ -157,7 +164,7 @@ namespace SuperQQ.Network
                 ItemBase itemBase = item.GetComponent<ItemBase>();
                 if (itemBase != null)
                 {
-                    itemBase.InitPlaced(placedItem, placed.Rotated ? 1 : 0);
+                    itemBase.InitPlaced(placedItem, placed.Rotation);
                     itemBase.OnPlaced();
                 }
 
