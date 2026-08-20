@@ -291,6 +291,13 @@ namespace SuperQQ.Network
             CurrentPhaseEndTimeMs = sync.PhaseEndTimeMs;
             CurrentServerRound = sync.Round;
 
+            // 本轮随机事件：进入道具选择阶段时服务器重新随机下发（事件身份 + 种子），
+            // 交给 LevelEventAnnouncer 按服务器剧本选取；触发时机由快照 event_triggered 翻牌驱动
+            if (sync.Phase == GamePhaseKind.PropSelection)
+            {
+                SuperQQ.Event.LevelEventAnnouncer.Instance?.ApplyServerEvent(sync.EventId, sync.RandomSeed, sync.Round);
+            }
+
             // 选择阶段外由门控负责缓存发牌消息（选择阶段内 Director 会覆盖注册并消费缓存），
             // 防止 ItemOfferList 早于 GamePhaseSync 处理完成而丢失
             NetworkManager.Instance?.Register<ItemOfferList>(OnServerOffers);

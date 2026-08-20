@@ -103,7 +103,9 @@ namespace SuperQQ.Event
                 return;
             }
 
-            _random = _fixedSeed != 0 ? new System.Random(_fixedSeed) : new System.Random();
+            // 随机源优先级：上下文下发的服务器种子（联机各端一致）> 资产固定种子 > 时间种子
+            int seed = context.RandomSeed != 0 ? context.RandomSeed : _fixedSeed;
+            _random = seed != 0 ? new System.Random(seed) : new System.Random();
 
             // 生成的陨石统一挂到 SceneRoot 下的专用子节点，便于 Deactivate 时统一清理
             GameObject spawnRootObj = new GameObject("CakeMeteorSpawnRoot");
@@ -113,7 +115,38 @@ namespace SuperQQ.Event
             }
             _spawnRoot = spawnRootObj.transform;
 
-            _spawnCoroutine = context.CoroutineRunner.StartCoroutine(SpawnMeteorRoutine());
+            // 联机模式（WaitForTrigger）：只做准备，等服务器触发信号（OnServerTrigger）再开始落石；
+            // 单机/自治模式：立即启动生成协程
+            if (!context.WaitForTrigger)
+            {
+                StartSpawnRoutine(context, skipFirstDelay: false);
+            }
+        }
+
+        /// <summary>
+        /// 服务器触发回调：联机模式下服务器掷签的事件触发时刻到达后由 LevelEventAnnouncer 调用。
+        /// 触发信号本身即"事件开始"，跳过资产配置的首次延迟，立即开始落石。
+        /// </summary>
+        public override void OnServerTrigger(LevelEventContext context)
+        {
+            if (_spawnRoot == null || context == null || context.CoroutineRunner == null)
+            {
+                return;
+            }
+
+            Debug.Log("[CakeMeteorModifier] 服务器触发时刻到达，开始落石。");
+            StartSpawnRoutine(context, skipFirstDelay: true);
+        }
+
+        /// <summary>启动陨石生成协程（幂等）</summary>
+        private void StartSpawnRoutine(LevelEventContext context, bool skipFirstDelay)
+        {
+            if (_spawnCoroutine != null)
+            {
+                return;
+            }
+
+            _spawnCoroutine = context.CoroutineRunner.StartCoroutine(SpawnMeteorRoutine(skipFirstDelay));
         }
 
         /// <summary>
@@ -142,9 +175,13 @@ namespace SuperQQ.Event
         /// <summary>
         /// 陨石生成主循环：等待首次延迟后，按随机间隔持续生成陨石
         /// </summary>
-        private IEnumerator SpawnMeteorRoutine()
+        /// <param name="skipFirstDelay">跳过首次延迟（服务器触发模式：触发信号到达即事件开始）</param>
+        private IEnumerator SpawnMeteorRoutine(bool skipFirstDelay = false)
         {
-            yield return new WaitForSeconds(_firstDelay);
+            if (!skipFirstDelay)
+            {
+                yield return new WaitForSeconds(_firstDelay);
+            }
 
             while (true)
             {

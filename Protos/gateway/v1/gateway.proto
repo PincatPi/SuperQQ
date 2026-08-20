@@ -53,8 +53,12 @@ message ClientEnvelope {
     minigame.room.v1.PlayerEvent player_event = 29;
     minigame.room.v1.PickupClaim pickup_claim = 30;
     minigame.room.v1.ItemStateEvent item_state_event = 31;
-    minigame.room.v1.TrapKillEvent trap_kill_event = 32;
-    minigame.room.v1.GmCommandRequest gm_command = 33;
+    // GM 调试指令：强制切阶段（0~5 对应 GamePhaseKind）。无同步应答，生效后全房间收到 GamePhaseSync。
+    minigame.room.v1.GmSetPhase gm_set_phase = 32;
+    // 陷阱击杀上报：纯透传，无同步应答，广播 TrapKillBroadcast 给其他端。
+    minigame.room.v1.TrapKillEvent trap_kill_event = 33;
+    // 拆除类道具确认：服务器按爆破范围结算被拆道具，广播 ItemDemolishResult，无同步应答。
+    minigame.room.v1.ItemDemolishConfirm item_demolish_confirm = 34;
   }
 }
 
@@ -92,8 +96,7 @@ message ServerEnvelope {
     minigame.room.v1.PickupClaimBroadcast pickup_claim_broadcast = 35;
     minigame.room.v1.ItemStateEventBroadcast item_state_event_broadcast = 36;
     minigame.room.v1.TrapKillBroadcast trap_kill_broadcast = 37;
-    minigame.room.v1.GmCommandResponse gm_command_result = 38;
-    minigame.room.v1.GmCommandPush gm_command_push = 39;
+    minigame.room.v1.ItemDemolishResult item_demolish_result = 38;
     ErrorResponse error = 90;
   }
 }

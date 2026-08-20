@@ -23,5 +23,15 @@ namespace SuperQQ.Event
         /// </summary>
         /// <param name="context">运行时上下文</param>
         public abstract void Deactivate(LevelEventContext context);
+
+        /// <summary>
+        /// 服务器触发回调：联机模式且上下文 WaitForTrigger 为 true 时，
+        /// Activate 只做准备，事件逻辑在服务器触发时刻（经客户端按服务器时钟锚点定时）到达后由此启动。
+        /// 默认空实现（该事件不支持服务器触发，保持本地自治）。
+        /// </summary>
+        /// <param name="context">运行时上下文</param>
+        public virtual void OnServerTrigger(LevelEventContext context)
+        {
+        }
     }
 }
