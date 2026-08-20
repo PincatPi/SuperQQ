@@ -34,6 +34,9 @@ namespace SuperQQ.Network
         [Header("登录按钮（留空则运行时自动创建一个）")]
         [SerializeField] private Button loginButton;
 
+        [Header("登录弹窗 Prefab（留空则运行时代码构建一个简易版）")]
+        [SerializeField] private LoginPopup loginPopupPrefab;
+
         private NetworkManager _net;
         private LoginPopup _activePopup;
         private Text _loginButtonLabel;
@@ -130,7 +133,9 @@ namespace SuperQQ.Network
             }
 
             if (loginButton != null) loginButton.interactable = false;
-            _activePopup = LoginPopup.Show(canvas.transform, OnLoginConfirm, OnLoginCancel);
+            _activePopup = loginPopupPrefab != null
+                ? LoginPopup.Show(loginPopupPrefab, canvas.transform, OnLoginConfirm, OnLoginCancel)
+                : LoginPopup.Show(canvas.transform, OnLoginConfirm, OnLoginCancel);
         }
 
         private void OnLoginCancel()
