@@ -2,6 +2,7 @@ using SuperQQ.Placement.Runtime;
 using SuperQQ.Player;
 using SuperQQ.Score;
 using SuperQQ.Selection.Runtime;
+using SuperQQ.Settlement.Runtime;
 using UnityEngine;
 
 namespace SuperQQ.GameFlow
@@ -41,6 +42,11 @@ namespace SuperQQ.GameFlow
         /// 当前场景的道具选择阶段门面。选择阶段不在场时为 null。
         /// </summary>
         public PropSelectionDirector SelectionDirector => PropSelectionDirector.Instance;
+
+        /// <summary>
+        /// 当前场景的单轮结算面板门面。结算阶段不在场时为 null。
+        /// </summary>
+        public RoundResultsDirector RoundResultsDirector => RoundResultsDirector.Instance;
 
         /// <summary>
         /// 构造阶段上下文。

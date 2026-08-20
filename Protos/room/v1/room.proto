@@ -473,3 +473,32 @@ service RoomService {
   rpc SendClaimIntent(ItemClaimIntent) returns (minigame.common.v1.ResponseStatus);
   rpc ConfirmClaim(ItemClaimConfirm) returns (ItemClaimResult);
 }
+
+// ==================== GM 调试指令 ====================
+
+// 客户端 → 服务器：GM 指令请求。
+// 服务器鉴权（GM 白名单）后按指令类型处理：
+//   影响房间状态（set_phase / force_settle 等）→ 服务器走正常业务逻辑并广播现有消息；
+//   纯客户端表现（kill_me / freeze_me 等）→ 透传为 GmCommandPush。
+message GmCommandRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;
+  string command = 4;
+  repeated string args = 5;
+}
+
+// 服务器 → 请求端：执行结果回执，用于 GM 控制台回显。
+message GmCommandResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  string message = 2;
+}
+
+// 服务器 → 房间内客户端：透传纯客户端指令。
+message GmCommandPush {
+  string room_id = 1;
+  string command = 2;
+  repeated string args = 3;
+  string target_player_id = 4; // 空 = 全员生效
+  int64 server_time_ms = 5;
+}

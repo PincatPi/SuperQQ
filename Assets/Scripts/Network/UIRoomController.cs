@@ -204,7 +204,21 @@ namespace SuperQQ.Network
             if (resp.Status == null || resp.Status.Code != ResultCode.Ok)
             {
                 Debug.LogWarning($"[NetWork] 设置准备状态失败: {resp.Status?.Message}");
+                // 失败时立即拉取服务端权威状态，避免 UI 与实际不一致
+                _net.Send(new GetRoomRequest { RoomId = _net.RoomId });
+                return;
             }
+
+            // 成功：回包携带服务端确认的最终准备状态，直接本地应用并刷新。
+            // 不依赖 RoomUpdated 推送（后端可能只在 ready=true 时推送），
+            // 否则取消准备会等不到任何回包，进度条永不倒退。
+            RoomPlayerState self = FindSelf();
+            if (self != null && self.Ready != resp.Ready)
+            {
+                self.Ready = resp.Ready;
+                _net.JoinedRoom = _room;
+            }
+            Refresh();
         }
 
         /// <summary>房主点击开始游戏：发起 StartGameRequest，等待服务端广播 game_started 后全员切场景</summary>

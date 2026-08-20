@@ -12,19 +12,36 @@ namespace SuperQQ.GameFlow
     {
         private bool _bSettlementFinished;
         private bool _bAdvancedToNextRound;
+        private bool _bResultsPanelOpened;
 
         public override void OnEnter(GamePhaseContext context)
         {
             base.OnEnter(context);
             _bSettlementFinished = false;
             _bAdvancedToNextRound = false;
+
+            // 结算为场景内覆盖层（不切场景），RoundResultsDirector 已在场，直接弹出结算面板
+            _bResultsPanelOpened = false;
+            TryOpenResultsPanel(context);
+        }
+
+        public override void RefreshSceneRuntimeBindings(GamePhaseContext context)
+        {
+            base.RefreshSceneRuntimeBindings(context);
+
+            // 场景异步加载完成后 Director 才存在，此处补开启（由 _bResultsPanelOpened 保证不重复）
+            TryOpenResultsPanel(context);
         }
 
         public override void OnExit(GamePhaseContext context)
         {
             base.OnExit(context);
+
+            context.RoundResultsDirector?.EndPhase();
+
             _bSettlementFinished = false;
             _bAdvancedToNextRound = false;
+            _bResultsPanelOpened = false;
         }
 
         public override bool TryGetNextPhase(GamePhaseContext context, out GamePhaseBase nextPhase, out string reason)
@@ -54,6 +71,26 @@ namespace SuperQQ.GameFlow
         {
             base.NotifyPhaseEvent();
             _bSettlementFinished = true;
+        }
+
+        /// <summary>
+        /// 尝试弹出单轮结算面板（幂等）。Director 不在场时仅告警，不阻断结算流程（柱体动画仍照常推进）。
+        /// </summary>
+        private void TryOpenResultsPanel(GamePhaseContext context)
+        {
+            if (_bResultsPanelOpened)
+            {
+                return;
+            }
+
+            if (context.RoundResultsDirector == null)
+            {
+                Debug.LogWarning($"[{LogName}] 场景中缺少 RoundResultsDirector，结算面板不会弹出（结算流程仍照常推进）。");
+                return;
+            }
+
+            context.RoundResultsDirector.BeginPhase();
+            _bResultsPanelOpened = true;
         }
 
         /// <summary>

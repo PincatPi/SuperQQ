@@ -33,6 +33,11 @@ namespace SuperQQ.UI.RoundResults
         private Action _onContinue;
         private Vector3 _boardRestScale = Vector3.one;
 
+        // 动态记分行（由外部配置的 prefab + container 实例化生成，与 _rows 的内建行相互独立）
+        private RoundResultRowView _dynamicRowPrefab;
+        private RectTransform _dynamicRowsContainer;
+        private readonly List<RoundResultRowView> _dynamicRows = new();
+
         public int VictoryScore
         {
             get => _victoryScore;
@@ -108,7 +113,70 @@ public void Show(
             {
                 StopCoroutine(_animation);
             }
-            _animation = StartCoroutine(PlayRevealAnimation(usedRows));
+            _animation = StartCoroutine(PlayRevealAnimation(CollectUsedRows(usedRows)));
+        }
+
+        /// <summary>
+        /// 收集内建行中实际使用的前 usedRows 行，供揭示动画驱动。
+        /// </summary>
+        private List<RoundResultRowView> CollectUsedRows(int usedRows)
+        {
+            var used = new List<RoundResultRowView>(usedRows);
+            for (int i = 0; i < usedRows; i++)
+            {
+                used.Add(_rows[i]);
+            }
+            return used;
+        }
+
+        /// <summary>
+        /// 一体展示：面板框架（标题/目标线/继续按钮）+ 动态记分行。
+        /// 记分行统一由传入的 prefab + container 实例化生成（玩家名、icon、当前总分），
+        /// 不走内建行路径，避免两套行同时出现。
+        /// </summary>
+        public bool ShowCurrentRoundPlayerRows(RoundResultRowView rowPrefab, RectTransform rowsContainer, Action onContinue = null)
+        {
+            List<RoundResultPlayerData> entries = RoundResultsDataAdapter.BuildCurrentRound(out int roundIndex);
+            if (entries.Count == 0)
+            {
+                Debug.LogWarning("[RoundResultsPanel] 当前轮没有可显示的结算数据。");
+                return false;
+            }
+
+            ConfigureRowFactory(rowPrefab, rowsContainer);
+            ClearPlayerRows();
+
+            // 复用框架展示流程（标题/目标线/按钮），传空数据跳过内建行生成
+            PrepareView(System.Array.Empty<RoundResultPlayerData>(), roundIndex, _victoryScore, onContinue);
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                RoundResultPlayerData entry = entries[i];
+                RoundResultRowView row = AddPlayerRow(entry.PlayerName, entry.PlayerIcon, entry.CumulativeTotal);
+                if (row != null)
+                {
+                    row.CaptureLayoutPosition();
+                    row.SetReveal(0f);
+                }
+            }
+
+            Canvas.ForceUpdateCanvases();
+            if (rowsContainer != null)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(rowsContainer);
+            }
+            for (int i = 0; i < _dynamicRows.Count; i++)
+            {
+                _dynamicRows[i].CaptureLayoutPosition();
+                _dynamicRows[i].SetReveal(0f);
+            }
+
+            if (_animation != null)
+            {
+                StopCoroutine(_animation);
+            }
+            _animation = StartCoroutine(PlayRevealAnimation(_dynamicRows));
+            return true;
         }
 
 public void ShowImmediate(
@@ -171,7 +239,10 @@ private int PrepareView(
             }
 
             Canvas.ForceUpdateCanvases();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_rowsRoot);
+            if (_rowsRoot != null)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(_rowsRoot);
+            }
 
             for (int i = 0; i < entries.Count; i++)
             {
@@ -192,6 +263,7 @@ private int PrepareView(
                 _animation = null;
             }
 
+            ClearPlayerRows();
             _onContinue = null;
             if (_canvasGroup != null)
             {
@@ -208,8 +280,78 @@ private int PrepareView(
             _notifyGameFlowOnContinue = enabled;
         }
 
+        // ==================== 玩家记分行（动态实例化） ====================
+
+        /// <summary>
+        /// 配置记分行的 prefab 与挂载容器（VerticalLayoutGroup），供 <see cref="AddPlayerRow"/> 使用。
+        /// 若 prefab 引用的是场景内实例（摆在 container 下作模板），将其隐藏，只作为实例化模板使用。
+        /// </summary>
+        public void ConfigureRowFactory(RoundResultRowView rowPrefab, RectTransform rowsContainer)
+        {
+            _dynamicRowPrefab = rowPrefab;
+            _dynamicRowsContainer = rowsContainer;
+
+            if (_dynamicRowPrefab != null && _dynamicRowPrefab.gameObject.scene.IsValid())
+            {
+                _dynamicRowPrefab.gameObject.SetActive(false);
+            }
+        }
+
+        /// <summary>
+        /// 实例化一行玩家记分 prefab 并挂载到 container 下，填充玩家名、icon 与当前总分数。
+        /// 返回生成的行视图；未配置工厂时返回 null。
+        /// </summary>
+        public RoundResultRowView AddPlayerRow(string playerName, Sprite playerIcon, int totalScore)
+        {
+            if (_dynamicRowPrefab == null || _dynamicRowsContainer == null)
+            {
+                Debug.LogError("[RoundResultsPanel] 记分行 prefab 或 container 未配置，请先调用 ConfigureRowFactory。", this);
+                return null;
+            }
+
+            RoundResultRowView row = Instantiate(_dynamicRowPrefab, _dynamicRowsContainer);
+            row.name = $"PlayerScoreRow_{_dynamicRows.Count + 1:00}";
+            row.gameObject.SetActive(true);
+            row.PopulateSummary(playerName, playerIcon, totalScore, _dynamicRows.Count + 1);
+            _dynamicRows.Add(row);
+            return row;
+        }
+
+        /// <summary>
+        /// 销毁全部动态生成的记分行。
+        /// </summary>
+        public void ClearPlayerRows()
+        {
+            for (int i = 0; i < _dynamicRows.Count; i++)
+            {
+                if (_dynamicRows[i] != null)
+                {
+                    Destroy(_dynamicRows[i].gameObject);
+                }
+            }
+            _dynamicRows.Clear();
+        }
+
         private void EnsureRowCount(int count)
         {
+            // 不使用内建行（动态记分行模式传 0）：隐藏已收集的行与模板后直接返回，
+            // 此时允许内建 prefab/容器未配置
+            if (count <= 0)
+            {
+                for (int i = 0; i < _rows.Count; i++)
+                {
+                    if (_rows[i] != null)
+                    {
+                        _rows[i].gameObject.SetActive(false);
+                    }
+                }
+                if (_rowPrefab != null)
+                {
+                    _rowPrefab.gameObject.SetActive(false);
+                }
+                return;
+            }
+
             if (_rowPrefab == null || _rowsRoot == null)
             {
                 throw new InvalidOperationException("[RoundResultsPanel] Row Prefab 或 Rows Root 未配置。");
@@ -238,7 +380,7 @@ private int PrepareView(
             _rowPrefab.gameObject.SetActive(false);
         }
 
-        private IEnumerator PlayRevealAnimation(int usedRows)
+        private IEnumerator PlayRevealAnimation(IReadOnlyList<RoundResultRowView> rows)
         {
             _canvasGroup.alpha = 0f;
             _canvasGroup.blocksRaycasts = true;
@@ -259,9 +401,9 @@ private int PrepareView(
             _canvasGroup.alpha = 1f;
             _board.localScale = _boardRestScale;
 
-            for (int i = 0; i < usedRows; i++)
+            for (int i = 0; i < rows.Count; i++)
             {
-                RoundResultRowView row = _rows[i];
+                RoundResultRowView row = rows[i];
                 float rowElapsed = 0f;
                 while (rowElapsed < _rowRevealDuration)
                 {

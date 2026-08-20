@@ -8,11 +8,6 @@ namespace SuperQQ.Event
     public enum LevelEventType
     {
         /// <summary>
-        /// 老板巡视：声音大的玩家会被攻击，安静玩家获得加分
-        /// </summary>
-        BossPatrol,
-
-        /// <summary>
         /// 小蛋糕陨石：周期性从关卡顶部落下陨石，命中玩家即死并击飞
         /// </summary>
         CakeMeteor = 1,
