@@ -1,17 +1,15 @@
 %YAML 1.1
-%TAG !u! tag:yousandi.cn,2023:
+%TAG !u! tag:unity3d.com,2011:
 --- !u!29 &1
 OcclusionCullingSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 3
-  m_OcclusionCullingData: {fileID: 0}
+  serializedVersion: 2
+  m_OcclusionBakeSettings:
+    smallestOccluder: 5
+    smallestHole: 0.25
+    backfaceThreshold: 100
   m_SceneGUID: 00000000000000000000000000000000
-  m_OcclusionEnabled: 0
-  m_DisplayOccluded: 0
-  m_SceneDepthBufferWidth: 512
-  m_SceneDepthBufferHeight: 512
-  m_ShadowDepthBufferWidth: 512
-  m_ShadowDepthBufferHeight: 512
+  m_OcclusionCullingData: {fileID: 0}
 --- !u!104 &2
 RenderSettings:
   m_ObjectHideFlags: 0
@@ -130,13 +128,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 226325727}
   - component: {fileID: 226325729}
   - component: {fileID: 226325728}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: Champion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -206,13 +203,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 262350763}
   - component: {fileID: 262350765}
   - component: {fileID: 262350764}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -235,8 +231,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 2.3900146, y: 0.39001465}
+  m_SizeDelta: {x: 23.89, y: 21.5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &262350764
 MonoBehaviour:
@@ -258,7 +254,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 9d6e604effab38f42a5284306df3c3eb, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 29c1e7fe05c5f774ba58dc73e9f67190, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -525,13 +521,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 378886231}
   - component: {fileID: 378886233}
   - component: {fileID: 378886232}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: RankingTitle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -578,7 +573,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "\u6700\u7EC8\u6392\u540D"
-  m_enableAdvanceTextProcess: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
   m_sharedMaterial: {fileID: -2478998846668437499, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
@@ -802,13 +796,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 489919136}
   - component: {fileID: 489919138}
   - component: {fileID: 489919137}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: MVPName
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -855,7 +848,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "\u5976\u8336\u4F01\u9E45"
-  m_enableAdvanceTextProcess: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
   m_sharedMaterial: {fileID: -2478998846668437499, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
@@ -938,13 +930,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 508679201}
   - component: {fileID: 508679203}
   - component: {fileID: 508679202}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: FinalScore
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -991,7 +982,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "<size=42><b>115</b></size> <size=18>\u6700\u7EC8\u5206</size>"
-  m_enableAdvanceTextProcess: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
   m_sharedMaterial: {fileID: -2478998846668437499, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
@@ -1074,13 +1064,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 582127913}
   - component: {fileID: 582127915}
   - component: {fileID: 582127914}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: MVP
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1150,13 +1139,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 604571058}
   - component: {fileID: 604571060}
   - component: {fileID: 604571059}
   m_Layer: 0
-  m_HasEditorInfo: 1
   m_Name: CrownIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1203,7 +1191,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "\u265B"
-  m_enableAdvanceTextProcess: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
   m_sharedMaterial: {fileID: -2478998846668437499, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
@@ -1286,13 +1273,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 635296665}
   - component: {fileID: 635296667}
   - component: {fileID: 635296666}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: MVP (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1362,14 +1348,13 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 647637452}
   - component: {fileID: 647637451}
   - component: {fileID: 647637450}
   - component: {fileID: 647637449}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: MainCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1474,13 +1459,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 759300777}
   - component: {fileID: 759300779}
   - component: {fileID: 759300778}
   m_Layer: 0
-  m_HasEditorInfo: 1
   m_Name: MVPText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1527,7 +1511,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: MVP
-  m_enableAdvanceTextProcess: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
   m_sharedMaterial: {fileID: -2478998846668437499, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
@@ -1712,14 +1695,13 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 844276107}
   - component: {fileID: 844276109}
   - component: {fileID: 844276108}
   - component: {fileID: 844276110}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: MVPShowBg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1810,13 +1792,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 863271478}
   - component: {fileID: 863271480}
   - component: {fileID: 863271479}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: DescriptionText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1863,7 +1844,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "\u606D\u559C\u83B7\u5F97\u672C\u573A\u80DC\u5229\uFF01"
-  m_enableAdvanceTextProcess: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
   m_sharedMaterial: {fileID: -2478998846668437499, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
@@ -1946,13 +1926,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 887381691}
   - component: {fileID: 887381690}
   - component: {fileID: 887381689}
   m_Layer: 0
-  m_HasEditorInfo: 1
   m_Name: EventSystem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2169,13 +2148,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 997236617}
   - component: {fileID: 997236619}
   - component: {fileID: 997236618}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: Title
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2245,12 +2223,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 1016037312}
   - component: {fileID: 1016037313}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: MVPTagContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2453,14 +2430,13 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 1160289684}
   - component: {fileID: 1160289683}
   - component: {fileID: 1160289682}
   - component: {fileID: 1160289685}
   m_Layer: 0
-  m_HasEditorInfo: 1
   m_Name: Main Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -2521,8 +2497,6 @@ Camera:
   m_TargetEye: 3
   m_HDR: 1
   m_AllowMSAA: 1
-  m_enableGDRP: 1
-  m_backfaceCulling: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
@@ -2568,9 +2542,6 @@ MonoBehaviour:
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 0
   m_Antialiasing: 0
-  m_FXAAQualityMode: 0
-  m_FXAAContrastThreshold: 0.125
-  m_FXAAMinContrastThreshold: 0.012
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0
@@ -2580,11 +2551,6 @@ MonoBehaviour:
   m_UseScreenCoordOverride: 0
   m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
   m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
-  allowDeepLearningSuperSampling: 0
-  deepLearningSuperSamplingUseCustomQualitySettings: 0
-  deepLearningSuperSamplingQuality: 0
-  deepLearningSuperSamplingUseCustomAttributes: 0
-  deepLearningSuperSamplingUseOptimalSettings: 1
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_Version: 2
@@ -2601,13 +2567,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 1181106984}
   - component: {fileID: 1181106986}
   - component: {fileID: 1181106985}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: DivisionLine
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2779,13 +2744,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 1549162646}
   - component: {fileID: 1549162648}
   - component: {fileID: 1549162647}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: RankingTitleEnlish
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2832,7 +2796,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: FINAL RANKING
-  m_enableAdvanceTextProcess: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
   m_sharedMaterial: {fileID: -2478998846668437499, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
@@ -2915,12 +2878,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 1670575089}
   - component: {fileID: 1670575090}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: RankingListContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3116,13 +3078,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 1766518715}
   - component: {fileID: 1766518717}
   - component: {fileID: 1766518716}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: MVPTitle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3193,14 +3154,13 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 1878300924}
   - component: {fileID: 1878300926}
   - component: {fileID: 1878300925}
   - component: {fileID: 1878300927}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: RankingBg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
