@@ -87,6 +87,7 @@ namespace SuperQQ.Network
             _net.Register<SetReadyResponse>(OnSetReady);
             _net.Register<StartGameResponse>(OnStartGame);
             _net.Register<GetRoomResponse>(OnGetRoom);
+            _net.Register<LeaveRoomResponse>(OnLeaveRoom);
             _net.Register<ErrorResponse>(OnError);
 
             Refresh();
@@ -128,6 +129,7 @@ namespace SuperQQ.Network
             _net.Unregister<SetReadyResponse>();
             _net.Unregister<StartGameResponse>();
             _net.Unregister<GetRoomResponse>();
+            _net.Unregister<LeaveRoomResponse>();
             _net.Unregister<ErrorResponse>();
         }
 
@@ -309,14 +311,20 @@ namespace SuperQQ.Network
             Refresh();
         }
 
-        /// <summary>退出当前房间：清理本地房间状态并返回大厅（服务端 LeaveRoom 接口就绪后在此处补发请求）</summary>
+        /// <summary>退出当前房间：通知服务端离房（fire-and-forget），清理本地房间状态并返回大厅</summary>
         private void OnBackClicked()
         {
             Debug.Log("[NetWork] 退出房间，返回大厅");
 
-            // TODO: 服务端退出房间接口（LeaveRoomRequest）就绪后，先发送请求再切场景
             if (_net != null)
             {
+                // 在房间中才需要通知服务端；player_id 由服务端以 session 绑定为准，无需填写。
+                // 不等回包：即使请求失败也不阻塞返回大厅。
+                if (!string.IsNullOrEmpty(_net.RoomId))
+                {
+                    _net.Send(new LeaveRoomRequest { RoomId = _net.RoomId });
+                }
+
                 _net.RoomId = "";
                 _net.JoinedRoom = null;
             }
@@ -328,6 +336,17 @@ namespace SuperQQ.Network
             }
 
             SceneManager.LoadScene(lobbySceneName);
+        }
+
+        /// <summary>离房应答：仅记录结果，无需 UI 反馈</summary>
+        private void OnLeaveRoom(LeaveRoomResponse resp)
+        {
+            if (resp.Status == null || resp.Status.Code != ResultCode.Ok)
+            {
+                Debug.LogWarning($"[NetWork] 服务端离房失败: {resp.Status?.Message}");
+                return;
+            }
+            Debug.Log("[NetWork] 服务端离房成功");
         }
 
         private void OnError(ErrorResponse err)

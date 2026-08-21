@@ -15,6 +15,11 @@ namespace SuperQQ.Event
         /// <summary>
         /// 液氮泄露：随机触发一次，预警后冻结所有存活玩家，摇晃手机累积进度解冻
         /// </summary>
-        LiquidNitrogenLeak = 2
+        LiquidNitrogenLeak = 2,
+
+        /// <summary>
+        /// 言出法随：场景中创建固定位置的法阵，存活玩家走入范围后头顶弹出吟唱提示
+        /// </summary>
+        MagicCircle = 3
     }
 }
