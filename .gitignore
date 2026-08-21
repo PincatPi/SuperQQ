@@ -116,6 +116,3 @@ InitTestScene*.unity*
 .codebuddy/
 # VSCode
 .vscode/
-
-# Proto 生成工具（protoc 各平台二进制及脚本，本地下载，不入库）
-/[Tt]ools/
