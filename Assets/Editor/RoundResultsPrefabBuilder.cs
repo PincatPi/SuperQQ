@@ -15,11 +15,13 @@ namespace SuperQQ.EditorTools
         private const string PanelPrefabPath = OutputFolder + "/RoundResultsPanel.prefab";
         private const string RoundedSpritePath = ArtFolder + "/ui_rounded_rect.png";
         private const string CircleSpritePath = ArtFolder + "/ui_circle.png";
+        private const string HatchSpritePath = ArtFolder + "/ui_hand_drawn_hatch.png";
         private const string FontPath = "Assets/GUIPackCartoon/Demo/Fonts/LilitaOne - Regular SDF.asset";
 
         private static TMP_FontAsset _font;
         private static Sprite _roundedSprite;
         private static Sprite _circleSprite;
+        private static Sprite _hatchSprite;
 
         [MenuItem("Tools/SuperQQ/UI/Build Round Results Prefabs")]
         public static void Build()
@@ -31,6 +33,7 @@ namespace SuperQQ.EditorTools
             CreateShapeAssets();
             _roundedSprite = AssetDatabase.LoadAssetAtPath<Sprite>(RoundedSpritePath);
             _circleSprite = AssetDatabase.LoadAssetAtPath<Sprite>(CircleSpritePath);
+            _hatchSprite = AssetDatabase.LoadAssetAtPath<Sprite>(HatchSpritePath);
 
             RoundResultRowView rowPrefab = BuildRowPrefab();
             BuildPanelPrefab(rowPrefab);
@@ -89,19 +92,51 @@ namespace SuperQQ.EditorTools
             Stretch(winnerText.rectTransform, 4f, 2f, 4f, 2f);
             winnerText.color = new Color32(57, 47, 68, 255);
 
-            Image track = AddImage(root.transform, "ScoreTrack", _roundedSprite, new Color32(221, 215, 191, 255), Image.Type.Sliced);
-            Place(track.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(588f, 0f), new Vector2(510f, 34f));
+            Image track = AddImage(
+                root.transform,
+                "ScoreTrack",
+                _roundedSprite,
+                new Color32(232, 226, 202, 255),
+                Image.Type.Sliced);
+            Place(
+                track.rectTransform,
+                new Vector2(0f, 0.5f),
+                new Vector2(0f, 0.5f),
+                new Vector2(588f, 0f),
+                new Vector2(510f, 64f));
+
             Outline trackOutline = track.gameObject.AddComponent<Outline>();
-            trackOutline.effectColor = new Color32(67, 73, 119, 180);
+            trackOutline.effectColor = new Color32(67, 73, 119, 205);
             trackOutline.effectDistance = new Vector2(2f, -2f);
 
             GameObject fillContentObject = NewUIObject("FillContent", track.transform);
             RectTransform fillContent = fillContentObject.GetComponent<RectTransform>();
-            Stretch(fillContent, 3f, 3f, 3f, 3f);
-            fillContent.pivot = new Vector2(0f, 0.5f);
+            Stretch(fillContent, 8f, 8f, 8f, 8f);
 
-            Image previousFill = AddImage(fillContent, "PreviousScore", _roundedSprite, new Color32(56, 70, 133, 255), Image.Type.Sliced);
+            Image previousFill = AddImage(
+                fillContent,
+                "PreviousScore",
+                _roundedSprite,
+                new Color32(226, 226, 207, 255),
+                Image.Type.Sliced);
+            previousFill.pixelsPerUnitMultiplier = 2f;
             SetHorizontalAnchors(previousFill.rectTransform, 0f, 0.5f);
+
+            Outline previousOutline = previousFill.gameObject.AddComponent<Outline>();
+            previousOutline.effectColor = new Color32(56, 70, 133, 245);
+            previousOutline.effectDistance = new Vector2(1.5f, -1.5f);
+            previousOutline.useGraphicAlpha = true;
+
+            Mask previousMask = previousFill.gameObject.AddComponent<Mask>();
+            previousMask.showMaskGraphic = true;
+
+            Image previousHatch = AddImage(
+                previousFill.transform,
+                "HandDrawnHatch",
+                _hatchSprite,
+                new Color32(56, 70, 133, 228),
+                Image.Type.Tiled);
+            Stretch(previousHatch.rectTransform, 0f, 0f, 0f, 0f);
 
             GameObject segmentRootObject = NewUIObject("RoundSegments", fillContent);
             RectTransform segmentRoot = segmentRootObject.GetComponent<RectTransform>();
@@ -127,6 +162,7 @@ namespace SuperQQ.EditorTools
                 deltaText,
                 fillContent,
                 previousFill,
+                previousHatch,
                 segmentRoot,
                 winnerBadge,
                 winnerText);
@@ -357,8 +393,14 @@ namespace SuperQQ.EditorTools
                 WriteCircle(CircleSpritePath, 64);
             }
 
+            if (!File.Exists(ToAbsolutePath(HatchSpritePath)))
+            {
+                WriteDiagonalHatch(HatchSpritePath, 48);
+            }
+
             ConfigureSpriteImporter(RoundedSpritePath, new Vector4(16f, 16f, 16f, 16f));
             ConfigureSpriteImporter(CircleSpritePath, Vector4.zero);
+            ConfigureSpriteImporter(HatchSpritePath, Vector4.zero);
         }
 
         private static void WriteRoundedRect(string assetPath, int size, float radius)
@@ -433,6 +475,35 @@ namespace SuperQQ.EditorTools
         {
             string projectRoot = Directory.GetParent(Application.dataPath).FullName;
             return Path.Combine(projectRoot, assetPath.Replace('/', Path.DirectorySeparatorChar));
+        }
+        private static void WriteDiagonalHatch(string assetPath, int size)
+        {
+            Texture2D texture = new(size, size, TextureFormat.RGBA32, false);
+            Color32[] pixels = new Color32[size * size];
+            const float spacing = 12f;
+
+            for (int y = 0; y < size; y++)
+            {
+                float normalizedY = y / (float)size;
+                float wobble =
+                    Mathf.Sin(normalizedY * Mathf.PI * 2f) * 0.85f
+                    + Mathf.Sin(normalizedY * Mathf.PI * 4f + 1.1f) * 0.4f;
+
+                for (int x = 0; x < size; x++)
+                {
+                    float wrapped = Mathf.Repeat(x - y + wobble, spacing);
+                    float distance = Mathf.Min(wrapped, spacing - wrapped);
+                    float coverage = Mathf.Clamp01(1.55f - distance);
+                    byte alpha = (byte)Mathf.RoundToInt(coverage * 235f);
+                    pixels[y * size + x] = new Color32(255, 255, 255, alpha);
+                }
+            }
+
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            File.WriteAllBytes(ToAbsolutePath(assetPath), texture.EncodeToPNG());
+            Object.DestroyImmediate(texture);
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
         }
     }
 }

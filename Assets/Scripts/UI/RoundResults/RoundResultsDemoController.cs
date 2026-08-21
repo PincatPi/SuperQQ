@@ -44,28 +44,50 @@ namespace SuperQQ.UI.RoundResults
             _panel.Show(BuildSampleResults(), _roundIndex, _victoryScore, HandleContinue);
         }
 
-        public List<RoundResultPlayerData> BuildSampleResults()
+public List<RoundResultPlayerData> BuildSampleResults()
         {
             List<RoundResultPlayerData> results = new List<RoundResultPlayerData>();
 
-            RoundResultPlayerData fox = CreatePlayer("PAPER FOX", new Color32(244, 107, 78, 255), 55, 32, true);
+            RoundResultPlayerData fox = CreatePlayer(
+                "PAPER FOX",
+                new Color32(244, 107, 78, 255),
+                55,
+                32,
+                false);
             AddSegment(fox, ScoreType.Completion, 10);
             AddSegment(fox, ScoreType.FirstPlace, 12);
             AddSegment(fox, ScoreType.TrapKill, 10);
             results.Add(fox);
 
-            RoundResultPlayerData turtle = CreatePlayer("TURBO TURTLE", new Color32(65, 184, 198, 255), 48, 21, false);
+            // Starts second at 48 points, then reaches 93 and overtakes PAPER FOX at 87.
+            RoundResultPlayerData turtle = CreatePlayer(
+                "TURBO TURTLE",
+                new Color32(65, 184, 198, 255),
+                48,
+                45,
+                true);
             AddSegment(turtle, ScoreType.Completion, 10);
-            AddSegment(turtle, ScoreType.SpecialEffect, 6);
-            AddSegment(turtle, ScoreType.ScoreItem, 5);
+            AddSegment(turtle, ScoreType.FirstPlace, 12);
+            AddSegment(turtle, ScoreType.SpecialEffect, 10);
+            AddSegment(turtle, ScoreType.ScoreItem, 13);
             results.Add(turtle);
 
-            RoundResultPlayerData sheep = CreatePlayer("WOOLLY", new Color32(155, 112, 211, 255), 43, 16, false);
+            RoundResultPlayerData sheep = CreatePlayer(
+                "WOOLLY",
+                new Color32(155, 112, 211, 255),
+                43,
+                16,
+                false);
             AddSegment(sheep, ScoreType.Completion, 10);
             AddSegment(sheep, ScoreType.TrapKill, 6);
             results.Add(sheep);
 
-            RoundResultPlayerData raccoon = CreatePlayer("RASCAL", new Color32(245, 183, 62, 255), 31, 8, false);
+            RoundResultPlayerData raccoon = CreatePlayer(
+                "RASCAL",
+                new Color32(245, 183, 62, 255),
+                31,
+                8,
+                false);
             AddSegment(raccoon, ScoreType.ScoreItem, 8);
             results.Add(raccoon);
 

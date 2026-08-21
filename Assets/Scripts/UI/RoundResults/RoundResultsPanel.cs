@@ -26,9 +26,13 @@ namespace SuperQQ.UI.RoundResults
         [SerializeField] private bool _notifyGameFlowOnContinue;
         [SerializeField, Min(0.05f)] private float _panelRevealDuration = 0.28f;
         [SerializeField, Min(0.05f)] private float _rowRevealDuration = 0.42f;
+        [SerializeField, Min(0.05f)] private float _scoreStageDuration = 0.18f;
         [SerializeField, Min(0f)] private float _rowStagger = 0.08f;
+        [SerializeField, Min(0.05f)] private float _rankSwapDuration = 0.28f;
 
         private readonly List<RoundResultRowView> _rows = new();
+        private readonly List<RoundResultRowView> _rankingRows = new();
+        private readonly List<Vector2> _rankSlots = new();
         private Coroutine _animation;
         private Action _onContinue;
         private Vector3 _boardRestScale = Vector3.one;
@@ -96,7 +100,7 @@ namespace SuperQQ.UI.RoundResults
             return true;
         }
 
-public void Show(
+        public void Show(
             IReadOnlyList<RoundResultPlayerData> entries,
             int roundIndex,
             int victoryScore = 100,
@@ -111,7 +115,7 @@ public void Show(
             _animation = StartCoroutine(PlayRevealAnimation(usedRows));
         }
 
-public void ShowImmediate(
+        public void ShowImmediate(
             IReadOnlyList<RoundResultPlayerData> entries,
             int roundIndex,
             int victoryScore = 100,
@@ -135,10 +139,11 @@ public void ShowImmediate(
                 _rows[i].SetImmediateVisible();
             }
 
+            ApplyFinalRankingImmediate();
             _continueButton.interactable = true;
         }
 
-private int PrepareView(
+        private int PrepareView(
             IReadOnlyList<RoundResultPlayerData> entries,
             int roundIndex,
             int victoryScore,
@@ -148,6 +153,8 @@ private int PrepareView(
             {
                 throw new ArgumentNullException(nameof(entries));
             }
+
+            List<RoundResultPlayerData> orderedEntries = BuildInitialOrder(entries);
 
             _victoryScore = Mathf.Max(1, victoryScore);
             _onContinue = onContinue;
@@ -159,31 +166,35 @@ private int PrepareView(
             _continueButtonText.text = "CONTINUE";
             _continueButton.interactable = false;
 
-            EnsureRowCount(entries.Count);
+            EnsureRowCount(orderedEntries.Count);
             for (int i = 0; i < _rows.Count; i++)
             {
-                bool used = i < entries.Count;
+                bool used = i < orderedEntries.Count;
                 _rows[i].gameObject.SetActive(used);
                 if (used)
                 {
-                    _rows[i].Populate(entries[i], i + 1, _victoryScore);
+                    _rows[i].Populate(orderedEntries[i], i + 1, _victoryScore);
+                    _rows[i].transform.SetAsLastSibling();
                 }
             }
 
             Canvas.ForceUpdateCanvases();
             LayoutRebuilder.ForceRebuildLayoutImmediate(_rowsRoot);
 
-            for (int i = 0; i < entries.Count; i++)
+            _rankingRows.Clear();
+            _rankSlots.Clear();
+            for (int i = 0; i < orderedEntries.Count; i++)
             {
-                _rows[i].CaptureLayoutPosition();
-                _rows[i].SetReveal(0f);
+                RoundResultRowView row = _rows[i];
+                row.CaptureLayoutPosition();
+                row.SetRank(i + 1);
+                row.SetReveal(0f);
+                _rankingRows.Add(row);
+                _rankSlots.Add(row.LayoutPosition);
             }
 
-            return entries.Count;
+            return orderedEntries.Count;
         }
-
-
-
         public void HideImmediate()
         {
             if (_animation != null)
@@ -238,6 +249,103 @@ private int PrepareView(
             _rowPrefab.gameObject.SetActive(false);
         }
 
+        private static List<RoundResultPlayerData> BuildInitialOrder(
+            IReadOnlyList<RoundResultPlayerData> entries)
+        {
+            List<RoundResultPlayerData> ordered = new(entries.Count);
+            for (int i = 0; i < entries.Count; i++)
+            {
+                if (entries[i] != null)
+                {
+                    ordered.Add(entries[i]);
+                }
+            }
+
+            ordered.Sort((a, b) =>
+            {
+                int previous = b.PreviousTotal.CompareTo(a.PreviousTotal);
+                if (previous != 0)
+                {
+                    return previous;
+                }
+
+                int cumulative = b.CumulativeTotal.CompareTo(a.CumulativeTotal);
+                if (cumulative != 0)
+                {
+                    return cumulative;
+                }
+
+                return string.CompareOrdinal(a.PlayerName, b.PlayerName);
+            });
+
+            return ordered;
+        }
+
+        private bool UpdateRankingFor(RoundResultRowView promotedRow)
+        {
+            int currentIndex = _rankingRows.IndexOf(promotedRow);
+            bool changed = false;
+
+            while (currentIndex > 0)
+            {
+                RoundResultRowView rowAbove = _rankingRows[currentIndex - 1];
+                if (promotedRow.RevealedScore <= rowAbove.RevealedScore + 0.001f)
+                {
+                    break;
+                }
+
+                _rankingRows[currentIndex - 1] = promotedRow;
+                _rankingRows[currentIndex] = rowAbove;
+
+                promotedRow.MoveToRankSlot(
+                    _rankSlots[currentIndex - 1],
+                    _rankSwapDuration,
+                    true);
+                rowAbove.MoveToRankSlot(
+                    _rankSlots[currentIndex],
+                    _rankSwapDuration,
+                    false);
+
+                promotedRow.SetRank(currentIndex);
+                rowAbove.SetRank(currentIndex + 1);
+
+                currentIndex--;
+                changed = true;
+            }
+
+            return changed;
+        }
+
+        private void ApplyFinalRankingImmediate()
+        {
+            _rankingRows.Sort((a, b) =>
+                b.RevealedScore.CompareTo(a.RevealedScore));
+
+            for (int i = 0; i < _rankingRows.Count; i++)
+            {
+                _rankingRows[i].SetRank(i + 1);
+                _rankingRows[i].SnapToRankSlot(_rankSlots[i]);
+            }
+
+            CommitRankingOrder();
+        }
+
+        private void CommitRankingOrder()
+        {
+            for (int i = 0; i < _rankingRows.Count; i++)
+            {
+                _rankingRows[i].transform.SetAsLastSibling();
+            }
+
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_rowsRoot);
+
+            for (int i = 0; i < _rankingRows.Count; i++)
+            {
+                _rankingRows[i].SetRank(i + 1);
+                _rankingRows[i].CaptureLayoutPosition();
+            }
+        }
         private IEnumerator PlayRevealAnimation(int usedRows)
         {
             _canvasGroup.alpha = 0f;
@@ -252,31 +360,49 @@ private int PrepareView(
                 float t = Mathf.Clamp01(elapsed / _panelRevealDuration);
                 float eased = 1f - Mathf.Pow(1f - t, 3f);
                 _canvasGroup.alpha = eased;
-                _board.localScale = Vector3.LerpUnclamped(_boardRestScale * 0.88f, _boardRestScale, eased);
+                _board.localScale = Vector3.LerpUnclamped(
+                    _boardRestScale * 0.88f,
+                    _boardRestScale,
+                    eased);
                 yield return null;
             }
 
             _canvasGroup.alpha = 1f;
             _board.localScale = _boardRestScale;
 
+            List<RoundResultRowView> revealRows = new(_rankingRows);
+            bool rankChanged = false;
+
             for (int i = 0; i < usedRows; i++)
             {
-                RoundResultRowView row = _rows[i];
+                RoundResultRowView row = revealRows[i];
+                float rowDuration = Mathf.Max(
+                    _rowRevealDuration,
+                    _scoreStageDuration * row.RevealStageCount);
                 float rowElapsed = 0f;
-                while (rowElapsed < _rowRevealDuration)
+
+                while (rowElapsed < rowDuration)
                 {
                     rowElapsed += Time.unscaledDeltaTime;
-                    row.SetReveal(rowElapsed / _rowRevealDuration);
+                    row.SetReveal(rowElapsed / rowDuration);
+                    rankChanged |= UpdateRankingFor(row);
                     yield return null;
                 }
 
                 row.SetImmediateVisible();
+                rankChanged |= UpdateRankingFor(row);
                 if (_rowStagger > 0f)
                 {
                     yield return new WaitForSecondsRealtime(_rowStagger);
                 }
             }
 
+            if (rankChanged)
+            {
+                yield return new WaitForSecondsRealtime(_rankSwapDuration);
+            }
+
+            CommitRankingOrder();
             _continueButton.interactable = true;
             _animation = null;
         }
