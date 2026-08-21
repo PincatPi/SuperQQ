@@ -1,0 +1,1311 @@
+fileFormatVersion: 2
+guid: 90796fdb64a1cb2c57c511a473f23d7c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 21300428
+    second: WreckingBall-Wheel.013
+  - first:
+      213: 21300410
+    second: WreckingBall-Wheel.004
+  - first:
+      213: 21300448
+    second: WreckingBall-Wheel.023
+  - first:
+      213: 21300438
+    second: WreckingBall-Wheel.018
+  - first:
+      213: 21300468
+    second: WreckingBall-Wheel.033
+  - first:
+      213: 21300456
+    second: WreckingBall-Wheel.027
+  - first:
+      213: 21300432
+    second: WreckingBall-Wheel.015
+  - first:
+      213: 21300422
+    second: WreckingBall-Wheel.010
+  - first:
+      213: 21300442
+    second: WreckingBall-Wheel.020
+  - first:
+      213: 21300470
+    second: WreckingBall-Wheel.034
+  - first:
+      213: 21300424
+    second: WreckingBall-Wheel.011
+  - first:
+      213: 21300406
+    second: WreckingBall-Wheel.002
+  - first:
+      213: 21300446
+    second: WreckingBall-Wheel.022
+  - first:
+      213: 21300430
+    second: WreckingBall-Wheel.014
+  - first:
+      213: 21300440
+    second: WreckingBall-Wheel.019
+  - first:
+      213: 21300330
+    second: WreckingBall-ChainandBall.003
+  - first:
+      213: 21300418
+    second: WreckingBall-Wheel.008
+  - first:
+      213: 21300462
+    second: WreckingBall-Wheel.030
+  - first:
+      213: 21300444
+    second: WreckingBall-Wheel.021
+  - first:
+      213: 21300402
+    second: WreckingBall-Wheel.000
+  - first:
+      213: 21300408
+    second: WreckingBall-Wheel.003
+  - first:
+      213: 21300478
+    second: WreckingBall-Wheel.038
+  - first:
+      213: 21300458
+    second: WreckingBall-Wheel.028
+  - first:
+      213: 21300436
+    second: WreckingBall-Wheel.017
+  - first:
+      213: 21300464
+    second: WreckingBall-Wheel.031
+  - first:
+      213: 21300416
+    second: WreckingBall-Wheel.007
+  - first:
+      213: 21300434
+    second: WreckingBall-Wheel.016
+  - first:
+      213: 21300452
+    second: WreckingBall-Wheel.025
+  - first:
+      213: 21300460
+    second: WreckingBall-Wheel.029
+  - first:
+      213: 21300420
+    second: WreckingBall-Wheel.009
+  - first:
+      213: 21300474
+    second: WreckingBall-Wheel.036
+  - first:
+      213: 21300472
+    second: WreckingBall-Wheel.035
+  - first:
+      213: 21300286
+    second: WreckingBall-Body.020
+  - first:
+      213: 21300414
+    second: WreckingBall-Wheel.006
+  - first:
+      213: 21300270
+    second: WreckingBall-Body.012
+  - first:
+      213: 21300412
+    second: WreckingBall-Wheel.005
+  - first:
+      213: 21300454
+    second: WreckingBall-Wheel.026
+  - first:
+      213: 21300252
+    second: WreckingBall-Body.003
+  - first:
+      213: 21300476
+    second: WreckingBall-Wheel.037
+  - first:
+      213: 21300450
+    second: WreckingBall-Wheel.024
+  - first:
+      213: 21300282
+    second: WreckingBall-Body.018
+  - first:
+      213: 21300370
+    second: WreckingBall-ChainandBall.023
+  - first:
+      213: 21300394
+    second: WreckingBall-ChainandBall.035
+  - first:
+      213: 21300332
+    second: WreckingBall-ChainandBall.004
+  - first:
+      213: 21300354
+    second: WreckingBall-ChainandBall.015
+  - first:
+      213: 21300392
+    second: WreckingBall-ChainandBall.034
+  - first:
+      213: 21300372
+    second: WreckingBall-ChainandBall.024
+  - first:
+      213: 21300334
+    second: WreckingBall-ChainandBall.005
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 12
+  maxTextureSize: 8192
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 64
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 0
+  flipbookColumns: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.013
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 6957
+        width: 1164
+        height: 1219
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 116e819d1849430ea3796e149a9bf131
+      internalID: 21300428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.004
+      rect:
+        serializedVersion: 2
+        x: 1196
+        y: 6959
+        width: 1194
+        height: 1217
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4ce04c219ba4a5a9d5bde4019b564d8
+      internalID: 21300410
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.023
+      rect:
+        serializedVersion: 2
+        x: 2406
+        y: 6962
+        width: 1157
+        height: 1214
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59ded1c1573947be84c84e0dc086db97
+      internalID: 21300448
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.018
+      rect:
+        serializedVersion: 2
+        x: 3579
+        y: 6963
+        width: 1150
+        height: 1213
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b279d61fb6048c4b722ccc3316c846b
+      internalID: 21300438
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.033
+      rect:
+        serializedVersion: 2
+        x: 4745
+        y: 6969
+        width: 1160
+        height: 1207
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: abce93e033a64c98be7c4a043c7d3e8e
+      internalID: 21300468
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.027
+      rect:
+        serializedVersion: 2
+        x: 5921
+        y: 6975
+        width: 1160
+        height: 1201
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 660166c8c8014ae5bf4587ba8f3969d2
+      internalID: 21300456
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.015
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 5740
+        width: 1159
+        height: 1201
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e1973c9bbf84c11b0d30a7f8bae0ab4
+      internalID: 21300432
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.010
+      rect:
+        serializedVersion: 2
+        x: 1191
+        y: 5744
+        width: 1165
+        height: 1197
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 695841be80ac4af295ec3ce94d071446
+      internalID: 21300422
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.020
+      rect:
+        serializedVersion: 2
+        x: 2372
+        y: 5747
+        width: 1161
+        height: 1194
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 116f5bdc133f4159bd2ccab0965989d2
+      internalID: 21300442
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.034
+      rect:
+        serializedVersion: 2
+        x: 3549
+        y: 5748
+        width: 1143
+        height: 1193
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a42a207f99264283be0b9f916d21b778
+      internalID: 21300470
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.011
+      rect:
+        serializedVersion: 2
+        x: 4708
+        y: 5750
+        width: 1166
+        height: 1191
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b945393216b2458bad51ef0583405728
+      internalID: 21300424
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.002
+      rect:
+        serializedVersion: 2
+        x: 5890
+        y: 5751
+        width: 1097
+        height: 1190
+      alignment: 9
+      pivot: {x: 0.50043905, y: -2.1602893}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8724ea6ce7df4b00856f3c7bb741e388
+      internalID: 21300406
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.022
+      rect:
+        serializedVersion: 2
+        x: 7003
+        y: 5752
+        width: 1136
+        height: 1189
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54963ebc7b2246fa9e9df3fc11c07948
+      internalID: 21300446
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.014
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 4537
+        width: 1151
+        height: 1187
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7095599469b946d2858218915f628425
+      internalID: 21300430
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.019
+      rect:
+        serializedVersion: 2
+        x: 1183
+        y: 4537
+        width: 1128
+        height: 1187
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa290abc5aa2494eb84104ab90292b84
+      internalID: 21300440
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.003
+      rect:
+        serializedVersion: 2
+        x: 2327
+        y: 4537
+        width: 1097
+        height: 1187
+      alignment: 9
+      pivot: {x: 0.9243864, y: 0.41214323}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8942097fe93c41ff84aacd324f9619ab
+      internalID: 21300330
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.008
+      rect:
+        serializedVersion: 2
+        x: 3440
+        y: 4540
+        width: 1166
+        height: 1184
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f784007695147d897de32bcbd9e56c3
+      internalID: 21300418
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.030
+      rect:
+        serializedVersion: 2
+        x: 4622
+        y: 4541
+        width: 1117
+        height: 1183
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd685b30568b4308877a6ac4450d6af6
+      internalID: 21300462
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.021
+      rect:
+        serializedVersion: 2
+        x: 5755
+        y: 4542
+        width: 1160
+        height: 1182
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c649858bf8c412eaddf2eb8a47a0fed
+      internalID: 21300444
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.000
+      rect:
+        serializedVersion: 2
+        x: 6931
+        y: 4542
+        width: 1147
+        height: 1182
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 508b9a62a8cb4778aeaccc97271036eb
+      internalID: 21300402
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.003
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 3339
+        width: 1140
+        height: 1182
+      alignment: 9
+      pivot: {x: 0.4998091, y: -2.1915472}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a784f3513df64325ba87194c2f39ba27
+      internalID: 21300408
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.038
+      rect:
+        serializedVersion: 2
+        x: 1172
+        y: 3344
+        width: 1147
+        height: 1177
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2bfc458ca61f44719d52369a1ee2649b
+      internalID: 21300478
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.028
+      rect:
+        serializedVersion: 2
+        x: 2335
+        y: 3344
+        width: 1130
+        height: 1177
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e7e8d9d5e0684e69851a2f5815b36622
+      internalID: 21300458
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.017
+      rect:
+        serializedVersion: 2
+        x: 3481
+        y: 3346
+        width: 1136
+        height: 1175
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b768367105740e49aa9500c7e9d46f1
+      internalID: 21300436
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.031
+      rect:
+        serializedVersion: 2
+        x: 4633
+        y: 3346
+        width: 1121
+        height: 1175
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24ae2a1f782549f2a1a4d4ba8f197576
+      internalID: 21300464
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.007
+      rect:
+        serializedVersion: 2
+        x: 5770
+        y: 3348
+        width: 1150
+        height: 1173
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67a656e51dc848558762628bb3a3f41c
+      internalID: 21300416
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.016
+      rect:
+        serializedVersion: 2
+        x: 6936
+        y: 3348
+        width: 1146
+        height: 1173
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f1d034d2439247bd85fc5a7330cd9cea
+      internalID: 21300434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.025
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 2150
+        width: 1146
+        height: 1173
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2817123909b94a44bbb640fccf1440a6
+      internalID: 21300452
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.029
+      rect:
+        serializedVersion: 2
+        x: 1178
+        y: 2150
+        width: 1128
+        height: 1173
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15c05335eb8a42579b6afdee27e213fb
+      internalID: 21300460
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.009
+      rect:
+        serializedVersion: 2
+        x: 2322
+        y: 2151
+        width: 1157
+        height: 1172
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b738ea7fe1624b9c843570e9e2b61f28
+      internalID: 21300420
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.036
+      rect:
+        serializedVersion: 2
+        x: 3495
+        y: 2152
+        width: 1123
+        height: 1171
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e410962d03da40709d5faba290aa62ed
+      internalID: 21300474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.035
+      rect:
+        serializedVersion: 2
+        x: 4634
+        y: 2153
+        width: 1115
+        height: 1170
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ca0ad89ec5f49969af0a73ca33eab3f
+      internalID: 21300472
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Body.020
+      rect:
+        serializedVersion: 2
+        x: 5765
+        y: 2154
+        width: 1150
+        height: 1169
+      alignment: 9
+      pivot: {x: 0.51428574, y: -2.3656716}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21f25c2f63ea48148d2d28b44bea70b1
+      internalID: 21300286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.006
+      rect:
+        serializedVersion: 2
+        x: 6931
+        y: 2154
+        width: 1103
+        height: 1169
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2658980c4fed4d328995d15ad7361d44
+      internalID: 21300414
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Body.012
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 972
+        width: 1164
+        height: 1162
+      alignment: 9
+      pivot: {x: 0.51428574, y: -2.3656716}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee06a1cc0531486f9a33bde2a9d4605a
+      internalID: 21300270
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.005
+      rect:
+        serializedVersion: 2
+        x: 1196
+        y: 974
+        width: 1142
+        height: 1160
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea1e6fa694014266890488e20c311445
+      internalID: 21300412
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.026
+      rect:
+        serializedVersion: 2
+        x: 2354
+        y: 974
+        width: 1131
+        height: 1160
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15399421227c4743a0b21bf24f584234
+      internalID: 21300454
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Body.003
+      rect:
+        serializedVersion: 2
+        x: 3501
+        y: 975
+        width: 1183
+        height: 1159
+      alignment: 9
+      pivot: {x: 0.51428574, y: -2.3656716}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97b2cb24cb9841db8cd633598fd98ddb
+      internalID: 21300252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.037
+      rect:
+        serializedVersion: 2
+        x: 4700
+        y: 977
+        width: 1140
+        height: 1157
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1001ae60e65e47f891ef54646f2b2402
+      internalID: 21300476
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Wheel.024
+      rect:
+        serializedVersion: 2
+        x: 5856
+        y: 978
+        width: 1122
+        height: 1156
+      alignment: 9
+      pivot: {x: 0.5, y: -2.4015152}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d05ce2cd0a6143eea0824572cf2faeb5
+      internalID: 21300450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-Body.018
+      rect:
+        serializedVersion: 2
+        x: 6994
+        y: 981
+        width: 1114
+        height: 1153
+      alignment: 9
+      pivot: {x: 0.51428574, y: -2.3656716}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91ba0eb518ce4d81bbb4448bd0d1bed2
+      internalID: 21300282
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.023
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 36
+        width: 1089
+        height: 920
+      alignment: 9
+      pivot: {x: 0.07297824, y: 0.3254182}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff5497c1b20f48098a664854f64f820a
+      internalID: 21300370
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.035
+      rect:
+        serializedVersion: 2
+        x: 1121
+        y: 51
+        width: 1107
+        height: 905
+      alignment: 9
+      pivot: {x: 0.07883889, y: 0.30205607}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a4cab281c5c4144aaa00d36cfec5745
+      internalID: 21300394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.004
+      rect:
+        serializedVersion: 2
+        x: 2244
+        y: 98
+        width: 1101
+        height: 858
+      alignment: 9
+      pivot: {x: 0.9578616, y: 0.2925363}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33322d53e8a14f5d839ae8348911f6c6
+      internalID: 21300332
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.015
+      rect:
+        serializedVersion: 2
+        x: 3361
+        y: 207
+        width: 1116
+        height: 749
+      alignment: 9
+      pivot: {x: 0.96258235, y: 0.20546009}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04f8195ba2ba4f41ac2155e3478d6a50
+      internalID: 21300354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.034
+      rect:
+        serializedVersion: 2
+        x: 4493
+        y: 259
+        width: 1138
+        height: 697
+      alignment: 9
+      pivot: {x: 0.06183006, y: 0.18085042}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf7d7f5172604266835a0f0cc2ff8cdc
+      internalID: 21300392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.024
+      rect:
+        serializedVersion: 2
+        x: 5647
+        y: 287
+        width: 1083
+        height: 669
+      alignment: 9
+      pivot: {x: 0.062339704, y: 0.17246342}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 018642a6b7b447b3b16fe5f3304b8d59
+      internalID: 21300372
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.005
+      rect:
+        serializedVersion: 2
+        x: 6746
+        y: 351
+        width: 1073
+        height: 605
+      alignment: 9
+      pivot: {x: 0.959521, y: 0.11367212}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 10f8340899924d6a9baf91dc44f08422
+      internalID: 21300334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      WreckingBall-Body.003: 21300252
+      WreckingBall-Body.012: 21300270
+      WreckingBall-Body.018: 21300282
+      WreckingBall-Body.020: 21300286
+      WreckingBall-ChainandBall.003: 21300330
+      WreckingBall-ChainandBall.004: 21300332
+      WreckingBall-ChainandBall.005: 21300334
+      WreckingBall-ChainandBall.015: 21300354
+      WreckingBall-ChainandBall.023: 21300370
+      WreckingBall-ChainandBall.024: 21300372
+      WreckingBall-ChainandBall.034: 21300392
+      WreckingBall-ChainandBall.035: 21300394
+      WreckingBall-Wheel.000: 21300402
+      WreckingBall-Wheel.002: 21300406
+      WreckingBall-Wheel.003: 21300408
+      WreckingBall-Wheel.004: 21300410
+      WreckingBall-Wheel.005: 21300412
+      WreckingBall-Wheel.006: 21300414
+      WreckingBall-Wheel.007: 21300416
+      WreckingBall-Wheel.008: 21300418
+      WreckingBall-Wheel.009: 21300420
+      WreckingBall-Wheel.010: 21300422
+      WreckingBall-Wheel.011: 21300424
+      WreckingBall-Wheel.013: 21300428
+      WreckingBall-Wheel.014: 21300430
+      WreckingBall-Wheel.015: 21300432
+      WreckingBall-Wheel.016: 21300434
+      WreckingBall-Wheel.017: 21300436
+      WreckingBall-Wheel.018: 21300438
+      WreckingBall-Wheel.019: 21300440
+      WreckingBall-Wheel.020: 21300442
+      WreckingBall-Wheel.021: 21300444
+      WreckingBall-Wheel.022: 21300446
+      WreckingBall-Wheel.023: 21300448
+      WreckingBall-Wheel.024: 21300450
+      WreckingBall-Wheel.025: 21300452
+      WreckingBall-Wheel.026: 21300454
+      WreckingBall-Wheel.027: 21300456
+      WreckingBall-Wheel.028: 21300458
+      WreckingBall-Wheel.029: 21300460
+      WreckingBall-Wheel.030: 21300462
+      WreckingBall-Wheel.031: 21300464
+      WreckingBall-Wheel.033: 21300468
+      WreckingBall-Wheel.034: 21300470
+      WreckingBall-Wheel.035: 21300472
+      WreckingBall-Wheel.036: 21300474
+      WreckingBall-Wheel.037: 21300476
+      WreckingBall-Wheel.038: 21300478
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

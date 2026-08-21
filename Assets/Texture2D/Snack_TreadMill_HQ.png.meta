@@ -1,0 +1,736 @@
+fileFormatVersion: 2
+guid: d800fbdcda5090ee42cd3cb26fc288f4
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 21300438
+    second: Indicators-Treadmill_Indicator.000
+  - first:
+      213: 21300192
+    second: TreadMill.011
+  - first:
+      213: 21301084
+    second: BW-TreadMillGrayScale.011
+  - first:
+      213: 21300190
+    second: TreadMill.010
+  - first:
+      213: 21301082
+    second: BW-TreadMillGrayScale.010
+  - first:
+      213: 21300186
+    second: TreadMill.008
+  - first:
+      213: 21301078
+    second: BW-TreadMillGrayScale.008
+  - first:
+      213: 21300188
+    second: TreadMill.009
+  - first:
+      213: 21301080
+    second: BW-TreadMillGrayScale.009
+  - first:
+      213: 21300170
+    second: TreadMill.000
+  - first:
+      213: 21301062
+    second: BW-TreadMillGrayScale.000
+  - first:
+      213: 21300176
+    second: TreadMill.003
+  - first:
+      213: 21301068
+    second: BW-TreadMillGrayScale.003
+  - first:
+      213: 21300180
+    second: TreadMill.005
+  - first:
+      213: 21301072
+    second: BW-TreadMillGrayScale.005
+  - first:
+      213: 21300184
+    second: TreadMill.007
+  - first:
+      213: 21301076
+    second: BW-TreadMillGrayScale.007
+  - first:
+      213: 21300174
+    second: TreadMill.002
+  - first:
+      213: 21301066
+    second: BW-TreadMillGrayScale.002
+  - first:
+      213: 21300182
+    second: TreadMill.006
+  - first:
+      213: 21301074
+    second: BW-TreadMillGrayScale.006
+  - first:
+      213: 21300178
+    second: TreadMill.004
+  - first:
+      213: 21301070
+    second: BW-TreadMillGrayScale.004
+  - first:
+      213: 21300172
+    second: TreadMill.001
+  - first:
+      213: 21301064
+    second: BW-TreadMillGrayScale.001
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 12
+  maxTextureSize: 8192
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 16
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 64
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 0
+  flipbookColumns: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Indicators-Treadmill_Indicator.000
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 3095
+        width: 1509
+        height: 985
+      alignment: 9
+      pivot: {x: 0.5249185, y: 0.6668545}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6b6e2fb496641199021cfca17b588a9
+      internalID: 21300438
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreadMill.011
+      rect:
+        serializedVersion: 2
+        x: 1541
+        y: 3154
+        width: 1676
+        height: 926
+      alignment: 9
+      pivot: {x: 0.52584565, y: 0.5005219}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5df9bf7d74147c9baf82188ca34463b
+      internalID: 21300192
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BW-TreadMillGrayScale.011
+      rect:
+        serializedVersion: 2
+        x: 3233
+        y: 3154
+        width: 1676
+        height: 926
+      alignment: 9
+      pivot: {x: 0.535701, y: 0.50700396}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 92d97027b44647cb99bdca40bc0df7d0
+      internalID: 21301084
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreadMill.010
+      rect:
+        serializedVersion: 2
+        x: 4925
+        y: 3193
+        width: 1677
+        height: 887
+      alignment: 9
+      pivot: {x: 0.52054435, y: 0.5208333}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0e5a3c2390549c1a6df70436875a143
+      internalID: 21300190
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BW-TreadMillGrayScale.010
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 2192
+        width: 1677
+        height: 887
+      alignment: 9
+      pivot: {x: 0.5260417, y: 0.5070422}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a74cc6c09654b348a2d07acb08f0ad2
+      internalID: 21301082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreadMill.008
+      rect:
+        serializedVersion: 2
+        x: 1709
+        y: 2202
+        width: 1597
+        height: 877
+      alignment: 9
+      pivot: {x: 0.5231115, y: 0.5067568}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c80b66712e8947e889ccb5c2dfbebe39
+      internalID: 21300186
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BW-TreadMillGrayScale.008
+      rect:
+        serializedVersion: 2
+        x: 3322
+        y: 2202
+        width: 1597
+        height: 877
+      alignment: 9
+      pivot: {x: 0.53294337, y: 0.5064892}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59fccd07998a43198c29437e0be3b87b
+      internalID: 21301078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreadMill.009
+      rect:
+        serializedVersion: 2
+        x: 4935
+        y: 2237
+        width: 1699
+        height: 842
+      alignment: 9
+      pivot: {x: 0.5204424, y: 0.49966064}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 882edabbc6d64acdb1edcd470e2c88b4
+      internalID: 21300188
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BW-TreadMillGrayScale.009
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 1334
+        width: 1699
+        height: 842
+      alignment: 9
+      pivot: {x: 0.5284974, y: 0.49275362}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f954e1cd18014152854df1ff37a88759
+      internalID: 21301080
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreadMill.000
+      rect:
+        serializedVersion: 2
+        x: 1731
+        y: 1430
+        width: 2003
+        height: 746
+      alignment: 9
+      pivot: {x: 0.52314866, y: 0.49966064}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b6ed51fd657467a88cd01bdec52022a
+      internalID: 21300170
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BW-TreadMillGrayScale.000
+      rect:
+        serializedVersion: 2
+        x: 3750
+        y: 1430
+        width: 2003
+        height: 746
+      alignment: 9
+      pivot: {x: 0.53125, y: 0.49275362}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 626aaaf2c22e4e998a7cf407060cf3aa
+      internalID: 21301062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreadMill.003
+      rect:
+        serializedVersion: 2
+        x: 5769
+        y: 1720
+        width: 1137
+        height: 456
+      alignment: 9
+      pivot: {x: 0.52314866, y: 0.49966064}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d4c04c0da14415aa0b8836d34893a8b
+      internalID: 21300176
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BW-TreadMillGrayScale.003
+      rect:
+        serializedVersion: 2
+        x: 6922
+        y: 1720
+        width: 1137
+        height: 456
+      alignment: 9
+      pivot: {x: 0.5305023, y: 0.49280167}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cec7fccc09354d828c1b8b013a3a6e8d
+      internalID: 21301068
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreadMill.005
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 872
+        width: 1175
+        height: 446
+      alignment: 9
+      pivot: {x: 0.5, y: 0.50727856}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15fd4b066d5e4d678962d2c0cda3a5eb
+      internalID: 21300180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BW-TreadMillGrayScale.005
+      rect:
+        serializedVersion: 2
+        x: 1207
+        y: 872
+        width: 1175
+        height: 446
+      alignment: 9
+      pivot: {x: 0.5096219, y: 0.50700396}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f399cb1e35764defbee52bb67cc1d718
+      internalID: 21301072
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreadMill.007
+      rect:
+        serializedVersion: 2
+        x: 2398
+        y: 872
+        width: 1155
+        height: 446
+      alignment: 9
+      pivot: {x: 0.52071595, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56bfc9db980745f484c2ca51d89bbb0d
+      internalID: 21300184
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BW-TreadMillGrayScale.007
+      rect:
+        serializedVersion: 2
+        x: 3569
+        y: 872
+        width: 1155
+        height: 446
+      alignment: 9
+      pivot: {x: 0.5282382, y: 0.4933307}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1aed1ae368b14980b49972d2a3cccf7c
+      internalID: 21301076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreadMill.002
+      rect:
+        serializedVersion: 2
+        x: 4740
+        y: 875
+        width: 1123
+        height: 443
+      alignment: 9
+      pivot: {x: 0.52870595, y: 0.50727856}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e488f2e0d57445a96030d84ad5b8024
+      internalID: 21300174
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BW-TreadMillGrayScale.002
+      rect:
+        serializedVersion: 2
+        x: 5879
+        y: 875
+        width: 1123
+        height: 443
+      alignment: 9
+      pivot: {x: 0.53858596, y: 0.5135893}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 849271f02eb84a57a0ff6eaff0e94cd7
+      internalID: 21301066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreadMill.006
+      rect:
+        serializedVersion: 2
+        x: 7018
+        y: 888
+        width: 1143
+        height: 430
+      alignment: 9
+      pivot: {x: 0.52307695, y: 0.49966064}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6435e382be6141d1a588248bf5579c8c
+      internalID: 21300182
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BW-TreadMillGrayScale.006
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 426
+        width: 1143
+        height: 430
+      alignment: 9
+      pivot: {x: 0.52577317, y: 0.49275362}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c814422ec27b42c6865179325c7fe390
+      internalID: 21301074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreadMill.004
+      rect:
+        serializedVersion: 2
+        x: 1175
+        y: 431
+        width: 1141
+        height: 425
+      alignment: 9
+      pivot: {x: 0.5048844, y: 0.51369864}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7cb62037cd3d4793ac3de7e672c65a3f
+      internalID: 21300178
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BW-TreadMillGrayScale.004
+      rect:
+        serializedVersion: 2
+        x: 2332
+        y: 431
+        width: 1141
+        height: 425
+      alignment: 9
+      pivot: {x: 0.505, y: 0.5070422}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e95ae369e49f4234bc8c9c71bc182cf3
+      internalID: 21301070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TreadMill.001
+      rect:
+        serializedVersion: 2
+        x: 3489
+        y: 435
+        width: 1122
+        height: 421
+      alignment: 9
+      pivot: {x: 0.5257072, y: 0.51369864}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75b474be8ff84e07825bb8276ff504f6
+      internalID: 21300172
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BW-TreadMillGrayScale.001
+      rect:
+        serializedVersion: 2
+        x: 4627
+        y: 435
+        width: 1122
+        height: 421
+      alignment: 9
+      pivot: {x: 0.5308626, y: 0.51951164}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d291e21fb9d148bd996ce283162f8675
+      internalID: 21301064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      BW-TreadMillGrayScale.000: 21301062
+      BW-TreadMillGrayScale.001: 21301064
+      BW-TreadMillGrayScale.002: 21301066
+      BW-TreadMillGrayScale.003: 21301068
+      BW-TreadMillGrayScale.004: 21301070
+      BW-TreadMillGrayScale.005: 21301072
+      BW-TreadMillGrayScale.006: 21301074
+      BW-TreadMillGrayScale.007: 21301076
+      BW-TreadMillGrayScale.008: 21301078
+      BW-TreadMillGrayScale.009: 21301080
+      BW-TreadMillGrayScale.010: 21301082
+      BW-TreadMillGrayScale.011: 21301084
+      Indicators-Treadmill_Indicator.000: 21300438
+      TreadMill.000: 21300170
+      TreadMill.001: 21300172
+      TreadMill.002: 21300174
+      TreadMill.003: 21300176
+      TreadMill.004: 21300178
+      TreadMill.005: 21300180
+      TreadMill.006: 21300182
+      TreadMill.007: 21300184
+      TreadMill.008: 21300186
+      TreadMill.009: 21300188
+      TreadMill.010: 21300190
+      TreadMill.011: 21300192
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

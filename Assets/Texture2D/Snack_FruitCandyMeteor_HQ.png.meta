@@ -1,0 +1,261 @@
+fileFormatVersion: 2
+guid: 5d9b8373b937718e7dbbc69cc8fadf0d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 21300022
+    second: tm-TennisMeteor.001
+  - first:
+      213: 21300024
+    second: tm-TennisMeteor.002
+  - first:
+      213: 21300020
+    second: tm-TennisMeteor.000
+  - first:
+      213: 21300014
+    second: tm-TennisFlames.000
+  - first:
+      213: 21300016
+    second: tm-TennisFlames.001
+  - first:
+      213: 21300018
+    second: tm-TennisFlames.002
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 12
+  maxTextureSize: 8192
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 64
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 0
+  flipbookColumns: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: tm-TennisMeteor.001
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 754
+        width: 1278
+        height: 1278
+      alignment: 9
+      pivot: {x: 0.9150157, y: 0.91337276}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db0d05871d62421c833b9dd81c6db44e
+      internalID: 21300022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tm-TennisMeteor.002
+      rect:
+        serializedVersion: 2
+        x: 1310
+        y: 754
+        width: 1278
+        height: 1278
+      alignment: 9
+      pivot: {x: 0.91498417, y: 0.90814495}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94c3de6ab12b42f4b8234c6de55e754b
+      internalID: 21300024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tm-TennisMeteor.000
+      rect:
+        serializedVersion: 2
+        x: 2604
+        y: 777
+        width: 1236
+        height: 1255
+      alignment: 9
+      pivot: {x: 0.91859156, y: 0.90836835}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 27034844749c4b508e9dee022573b35a
+      internalID: 21300020
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tm-TennisFlames.000
+      rect:
+        serializedVersion: 2
+        x: 3856
+        y: 829
+        width: 1135
+        height: 1203
+      alignment: 9
+      pivot: {x: 0.50886816, y: 0.4969144}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6534f455bb34604967a5938ff8b0989
+      internalID: 21300014
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tm-TennisFlames.001
+      rect:
+        serializedVersion: 2
+        x: 5007
+        y: 836
+        width: 1188
+        height: 1196
+      alignment: 9
+      pivot: {x: 0.5304335, y: 0.5015775}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 80361b8923664ffab84d452f24580c47
+      internalID: 21300016
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tm-TennisFlames.002
+      rect:
+        serializedVersion: 2
+        x: 6211
+        y: 910
+        width: 1085
+        height: 1122
+      alignment: 9
+      pivot: {x: 0.52558655, y: 0.5036896}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 181344876d04405da50c332d10ce9b5c
+      internalID: 21300018
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      tm-TennisFlames.000: 21300014
+      tm-TennisFlames.001: 21300016
+      tm-TennisFlames.002: 21300018
+      tm-TennisMeteor.000: 21300020
+      tm-TennisMeteor.001: 21300022
+      tm-TennisMeteor.002: 21300024
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
