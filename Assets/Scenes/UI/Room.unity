@@ -2035,17 +2035,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 259932497}
   m_CullTransparentMesh: 1
---- !u!114 &322697416 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5585583631189188578, guid: b903b3ecbb35146abba0b32b29ce299e, type: 3}
-  m_PrefabInstance: {fileID: 5956811}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &325491653
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7027,7 +7016,7 @@ MonoBehaviour:
   progressText: {fileID: 674333801}
   barFill: {fileID: 1204360047}
   progressFormat: "{0} / {1} \u5DF2\u51C6\u5907"
-  backButton: {fileID: 322697416}
+  backButton: {fileID: 1254371194}
   readyButton: {fileID: 2117875506}
   readyButtonLabel: {fileID: 2117875505}
   notReadyText: "\u70B9\u51FB\u51C6\u5907"

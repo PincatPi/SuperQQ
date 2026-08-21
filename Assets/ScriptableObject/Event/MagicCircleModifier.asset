@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4830634eb7eb4c7fbccd43aa99986bee, type: 3}
   m_Name: MagicCircleModifier
   m_EditorClassIdentifier: 
-  _circlePrefab: {fileID: 0}
-  _circlePosition: {x: 0, y: 0}
-  _chantPromptPrefab: {fileID: 0}
+  _circlePrefab: {fileID: 834475662113966909, guid: d6ef7596d4c874484a037464da232faa, type: 3}
+  _circlePosition: {x: 5, y: 5}
+  _chantPromptPrefab: {fileID: 6375212440707137339, guid: 98e42441c5d744a8fa1b280441ea630a, type: 3}
   _promptText: "\u8BF7\u541F\u5531"
   _promptOffset: {x: 0, y: 1.2}

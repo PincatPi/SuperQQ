@@ -3320,8 +3320,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   roomSceneAsset: {fileID: 102900000, guid: 5e2641bcf6375ee4b9dc6b158977f5d1, type: 3}
   roomSceneName: Room
+  homeSceneAsset: {fileID: 102900000, guid: 687911cc5a228e142b86a495b9c34640, type: 3}
+  homeSceneName: Home
   createButton: {fileID: 86615628}
   joinButton: {fileID: 38518025}
+  backButton: {fileID: 875033884}
   statusText: {fileID: 0}
   statusLabel: {fileID: 0}
 --- !u!4 &1049348326
