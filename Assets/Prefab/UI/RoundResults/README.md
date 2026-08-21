@@ -34,6 +34,58 @@ public sealed class RoundEndExample : MonoBehaviour
 
 Prefab 根节点默认关闭，`Show`/`ShowCurrentRound` 会自动启用并播放动画。
 
+## 积分条揭示动画
+
+积分条按固定顺序从左到右增长：先显示 `PreviousTotal` 历史累计分，再依照
+`Segments` 列表顺序逐段显示本轮新增积分。每一段完成增长后才会开始下一段，
+不会同时弹出。
+
+- 单段时长：`RoundResultsPanel._scoreStageDuration`，默认 `0.18` 秒。
+- 单行最短时长：`RoundResultsPanel._rowRevealDuration`，默认 `0.42` 秒。
+- 实际单行时长：两者取较大值，即 `max(单行最短时长, 单段时长 × 阶段数)`。
+- 阶段数：历史累计分 1 段，加上有效的 `Segments` 数量。
+- 演示场景中按 `R` 可重新播放完整顺序。
+
+程序只需按期望的视觉顺序排列 `RoundResultPlayerData.Segments`；不要直接操作
+积分块的 `RectTransform` 或 `localScale`。
+
+## 动态名次变化
+
+结算开始时按 `PreviousTotal`（本轮开始前累计分）从高到低排列。每个积分段增长时，
+`RoundResultRowView.RevealedScore` 会同步增加；当玩家的可见积分**严格超过**上一名时，
+`RoundResultsPanel` 会立即交换两行的目标槽位、更新名次数字，并播放平滑上移与轻微
+缩放强调。相同积分不会反复换位。
+
+- 换位时长：`RoundResultsPanel._rankSwapDuration`，默认 `0.28` 秒。
+- `Show(...)`：播放积分增长和动态超越动画。
+- `ShowImmediate(...)`：不播放过程，直接按最终累计分排列。
+- 超过多名时会逐级向上交换，最终行层级会提交为当前排名，避免后续 Layout 重建复位。
+- 排名比较使用正在显示的累计分；动画结束时数字会精确落到 `CumulativeTotal`。
+
+演示场景中 `PAPER FOX` 以 `55` 分开始第一，`TURBO TURTLE` 以 `48` 分开始第二；
+后者本轮获得 `45` 分并以 `93` 分超过前者的 `87` 分。Play Mode 中按 `R` 可重播。
+
+## 手绘积分条样式
+
+积分轨道尺寸保持 `510 x 64`，`FillContent` 四边内缩 `8px`，避免积分块紧贴
+外框。历史分与新增分统一使用以下层级：
+
+`FillContent` 必须保留居中 Pivot `(0.5, 0.5)`；不要在调用四边 Stretch/Inset
+之后把它改成左侧 Pivot，否则左边距会变成 `0px`、右边距会变成 `16px`。
+逐段增长使用的是内部积分块自己的左侧 Pivot，不依赖 `FillContent` 的 Pivot。
+
+内部积分块的 `pixelsPerUnitMultiplier` 为 `2`，使内层圆角半径小于外框；这是
+保持四边视觉间距一致所必需的，不要只把内外层设置成相同圆角半径。
+
+1. 浅纸色圆角底。
+2. 与积分类型同色的手绘斜线纹理。
+3. 同色系细描边。
+4. `Mask` 裁切，保证纹理不会溢出圆角。
+
+运行时新增分段由 `RoundResultRowView.CreateHatchedSegment` 自动构建，程序员无需
+手工添加纹理层。斜线源资产为
+`Assets/Art/UI/RoundResults/ui_hand_drawn_hatch.png`，由 Prefab 构建器生成。
+
 ## Host 调用
 
 把 `RoundResultsPanelHost` 加到流程管理对象，配置 Canvas 和 Panel Prefab，程序只需调用：
@@ -126,8 +178,13 @@ public sealed class RoundResultsPresenter : MonoBehaviour
 | `Segments[].Points` | 本轮新增的彩色积分段长度 |
 | `Segments[].ScoreType` | 新增积分段的类型、颜色和图例 |
 | `RoundTotal` | 玩家行右侧的 `+N` 文本 |
-| `CumulativeTotal` | `当前分 / 胜利分` 文本与最终填充位置 |
-| `victoryScore` | 积分条最大值，默认 100 |
+| `CumulativeTotal` | `当前分 / 胜利分` 文本、最终填充位置以及 WINNER 判定 |
+| `victoryScore` | 积分条最大值与 WINNER 门槛，默认 100 |
+| `IsRoundWinner` | 保留的本轮最高分数据标记；不控制 WINNER 徽章 |
+
+`WINNER` 徽章只由当前显示的累计积分判断：当积分增长到
+`RevealedScore >= victoryScore` 时才出现。默认目标为 `100`，因此 `93 / 100`
+不会显示；`ShowImmediate(...)` 则会直接按最终 `CumulativeTotal` 判断。
 
 自动读取路径：
 
@@ -156,7 +213,7 @@ RoundResultPlayerData player = new RoundResultPlayerData
     PreviousTotal = 40,
     RoundTotal = 15,
     CumulativeTotal = 55,
-    IsRoundWinner = true,
+    IsRoundWinner = true, // 本轮最高分标记，不会绕过 victoryScore 显示 WINNER。
     Segments = new List<RoundResultScoreSegment>
     {
         new RoundResultScoreSegment
@@ -206,6 +263,8 @@ CumulativeTotal = PreviousTotal + RoundTotal
 - `RoundResultsPanel.prefab`：完整覆盖层。
 - `RoundResultRow.prefab`：独立玩家行。
 - `Assets/Art/UI/RoundResults/round_results_preview.png`：1280×720 离屏验证图。
+- `Assets/Art/UI/RoundResults/round_results_sequential_growth.png`：加高轨道与逐段增长的运行态验证图。
+- `Assets/Art/UI/RoundResults/round_results_rank_overtake.png`：第二名积分超过第一名后的运行态验证图。
 
 重新生成 Prefab：`Tools > SuperQQ > UI > Build Round Results Prefabs`。
 

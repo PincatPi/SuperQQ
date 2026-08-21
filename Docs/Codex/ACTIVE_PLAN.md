@@ -20,6 +20,14 @@
 - [x] Create `RoundResultsDemo.unity` with Camera, Light, Canvas, EventSystem and live demo controller.
 - [x] Save the scene, render the Game View and leave the demo scene active.
 - [x] Reproduce the Play Mode row overlap, force layout before animation caching, and verify four distinct row positions.
+- [x] Enlarge score tracks to `510 x 64` and rebuild both Round Results Prefabs.
+- [x] Reveal historical score and current-round score types sequentially from left to right.
+- [x] Remove stale serialized demo rows, validate runtime segment scales, capture Game View, and check Console.
+- [x] Add `8px` track inset and paper-and-ink hand-drawn hatching to historical and current-round score segments.
+- [x] Rebuild Prefabs, inspect Mask/Outline/Tiled structure, render preview, and verify Console.
+- [x] Start rows from historical-score order and update the displayed numeric score during segment reveal.
+- [x] Animate a row upward when its revealed score strictly exceeds the row above, then commit the final hierarchy order.
+- [x] Add a deterministic demo overtake, validate initial/final ranks and row slots, capture Game View, and check Console.
 
 ## Stop condition
 
