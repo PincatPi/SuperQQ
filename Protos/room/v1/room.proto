@@ -43,6 +43,17 @@ message GetRoomResponse {
   Room room = 2;
 }
 
+// 退出房间：离开当前所在房间。
+message LeaveRoomRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;    // 可空，缺省用当前所在房间
+  string player_id = 3;  // 不用传，服务端以 session 绑定为准
+}
+
+message LeaveRoomResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+}
+
 // 2D 坐标向量，当前同步层先围绕位置、朝向和速度来设计。
 message Vector2 {
   float x = 1;
