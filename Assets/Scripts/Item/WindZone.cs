@@ -32,9 +32,9 @@ namespace SuperQQ.Item
         private void OnTriggerEnter2D(Collider2D other)
         {
             PlayerController player = other.GetComponentInParent<PlayerController>();
-            if (player == null)
+            if (player == null || !player.BAffectedByItems)
             {
-                return;
+                return;   // 死亡过渡/幽灵不受风力影响
             }
             _players.TryGetValue(player, out int count);
             player.AddWindForce(transform.right * windForce);
