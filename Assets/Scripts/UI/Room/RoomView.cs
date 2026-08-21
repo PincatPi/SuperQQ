@@ -56,6 +56,15 @@ namespace SuperQQ.UI
                 readyButton.onClick.AddListener(OnReadyButtonClicked);
             }
 
+            // 运行时兜底：BarFill 必须是 Filled/Horizontal，fillAmount 才生效。
+            // 场景里若被配成 Simple（或被编辑器保存覆盖），这里强制纠正。
+            if (barFill != null && barFill.type != Image.Type.Filled)
+            {
+                barFill.type = Image.Type.Filled;
+                barFill.fillMethod = Image.FillMethod.Horizontal;
+                barFill.fillOrigin = (int)Image.OriginHorizontal.Left;
+            }
+
             // 槽位默认全部隐藏，等待房间数据驱动
             SetPlayerCount(0);
         }

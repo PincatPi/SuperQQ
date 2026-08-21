@@ -117,6 +117,7 @@ namespace SuperQQ.Selection.Runtime
         private readonly List<PropSelectionSlotView> slotViews = new List<PropSelectionSlotView>();
         private readonly List<FakePicker> fakePickers = new List<FakePicker>();
         private readonly Dictionary<string, PropSelectionPlayerIcon> playerIcons = new Dictionary<string, PropSelectionPlayerIcon>();
+        private readonly Dictionary<PlayerController, PropSelectionPlayerIcon> playerIconsByController = new Dictionary<PlayerController, PropSelectionPlayerIcon>(); // 按化身实例去重，防止身份主键变更导致重复生成
         private readonly Dictionary<string, int> pendingClaims = new Dictionary<string, int>();   // 飞行中的待生效认领：playerKey -> 槽位下标
         private readonly PlayerAvatarGate avatarGate = new PlayerAvatarGate();
         private RectTransform iconLayer;                    // 玩家图标层（BeginPhase 创建，EndPhase 销毁；自动生成的出现位也挂在其下）
@@ -219,8 +220,24 @@ namespace SuperQQ.Selection.Runtime
             for (int i = 0; i < players.Count; i++)
             {
                 PlayerController player = players[i];
-                if (player == null || playerIcons.ContainsKey(player.IdentityKey))
+                if (player == null)
                 {
+                    continue;
+                }
+
+                // 同一化身只允许一个图标：已生成过但身份主键已变更（如联机 playerId 晚写入）时，
+                // 迁移字典键而不是再生成一个，避免出现脱离管理的重复图标
+                if (playerIconsByController.TryGetValue(player, out PropSelectionPlayerIcon existing) && existing != null)
+                {
+                    if (!playerIcons.TryGetValue(player.IdentityKey, out PropSelectionPlayerIcon current) || current != existing)
+                    {
+                        string staleKey = FindPlayerKeyByIcon(existing);
+                        if (!string.IsNullOrEmpty(staleKey) && staleKey != player.IdentityKey)
+                        {
+                            playerIcons.Remove(staleKey);
+                        }
+                        playerIcons[player.IdentityKey] = existing;
+                    }
                     continue;
                 }
 
@@ -229,6 +246,7 @@ namespace SuperQQ.Selection.Runtime
                 if (icon != null)
                 {
                     playerIcons[player.IdentityKey] = icon;
+                    playerIconsByController[player] = icon;
                     Debug.Log($"{LOG_TAG} 补生成玩家图标: {player.IdentityKey} 座位={seat}");
                 }
             }
@@ -272,6 +290,15 @@ namespace SuperQQ.Selection.Runtime
 
             // 对局开始（大厅流程）：确保远程玩家档案已注册并生成化身，再生成图标
             NetGameFlowGate.EnsureRemotePlayersReady();
+
+            // 联机：服务器阶段消息可能先于 LocalPlayerNetSetup 的 Update 到达，
+            // 本地玩家 playerId 未写入时 IdentityKey 会回退为玩家名，
+            // 导致图标按错误主键生成、身份写入后又被补生成一个（出现位置 index0 的重复图标）。
+            // 进入阶段前立即写入本地网络身份，保证主键稳定。
+            if (netMode)
+            {
+                LocalPlayerNetSetup.EnsureLocalIdentityNow();
+            }
 
             localPlayerKey = ResolveLocalPlayerKey();
             localSelectedItem = null;
@@ -464,6 +491,7 @@ namespace SuperQQ.Selection.Runtime
         private void SpawnPlayerIcons()
         {
             playerIcons.Clear();
+            playerIconsByController.Clear();
 
             Transform panelRoot = ResolvePanelRoot();
             if (panelRoot == null)
@@ -508,6 +536,7 @@ namespace SuperQQ.Selection.Runtime
                 if (icon != null)
                 {
                     playerIcons[player.IdentityKey] = icon;
+                    playerIconsByController[player] = icon;
                 }
             }
         }
@@ -588,6 +617,7 @@ namespace SuperQQ.Selection.Runtime
         private void ClearPlayerIcons()
         {
             playerIcons.Clear();
+            playerIconsByController.Clear();
             pendingClaims.Clear();
             if (iconLayer != null)
             {
