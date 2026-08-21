@@ -7,7 +7,7 @@ namespace SuperQQ.Microphone
     /// 麦克风音量管理器（单例，跨场景常驻）
     /// 开启麦克风后实时检测玩家输入音量，对外提供分贝值与归一化音量
     ///
-    /// 生命周期：进入房间时开麦（RoomController 调用 StartMic），回到大厅时关麦（HallController 调用 StopMic）
+    /// 生命周期：进入房间时开麦（UIRoomController 调用 StartMic），退出房间时关麦（UIRoomController 调用 StopMic）
     ///
     /// 使用方式：
     ///   float db = MicVolumeManager.Instance.Decibels;  // 当前分贝（静音约 -90dB）

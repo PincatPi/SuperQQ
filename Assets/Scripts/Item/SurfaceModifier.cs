@@ -28,7 +28,7 @@ namespace SuperQQ.Item
         private void OnTriggerEnter2D(Collider2D other)
         {
             PlayerController player = other.GetComponentInParent<PlayerController>();
-            if (player != null)
+            if (player != null && player.BAffectedByItems)   // 死亡过渡/幽灵不受减速影响
             {
                 player.SetSpeedMultiplier(speedMultiplier);
             }

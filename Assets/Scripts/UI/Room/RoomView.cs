@@ -31,6 +31,9 @@ namespace SuperQQ.UI
         [SerializeField] private Image barFill;
         [SerializeField] private string progressFormat = "{0} / {1} 已准备";
 
+        [Header("返回按钮（退出房间）")]
+        [SerializeField] private Button backButton;
+
         [Header("准备/开始按钮（同一按钮，按身份切换模式）")]
         [SerializeField] private Button readyButton;
         [SerializeField] private TMP_Text readyButtonLabel;
@@ -42,6 +45,8 @@ namespace SuperQQ.UI
         public event Action ReadyClicked;
         /// <summary>开始游戏模式下按钮被点击（由控制器订阅，处理网络逻辑）</summary>
         public event Action StartClicked;
+        /// <summary>返回按钮被点击（由控制器订阅，处理退出房间逻辑）</summary>
+        public event Action BackClicked;
 
         // 当前按钮模式：false=准备切换（普通玩家），true=开始游戏（房主）
         private bool _isStartMode;
@@ -55,6 +60,19 @@ namespace SuperQQ.UI
             {
                 readyButton.onClick.AddListener(OnReadyButtonClicked);
             }
+            if (backButton != null)
+            {
+                backButton.onClick.AddListener(OnBackButtonClicked);
+            }
+
+            // 运行时兜底：BarFill 必须是 Filled/Horizontal，fillAmount 才生效。
+            // 场景里若被配成 Simple（或被编辑器保存覆盖），这里强制纠正。
+            if (barFill != null && barFill.type != Image.Type.Filled)
+            {
+                barFill.type = Image.Type.Filled;
+                barFill.fillMethod = Image.FillMethod.Horizontal;
+                barFill.fillOrigin = (int)Image.OriginHorizontal.Left;
+            }
 
             // 槽位默认全部隐藏，等待房间数据驱动
             SetPlayerCount(0);
@@ -65,6 +83,10 @@ namespace SuperQQ.UI
             if (readyButton != null)
             {
                 readyButton.onClick.RemoveListener(OnReadyButtonClicked);
+            }
+            if (backButton != null)
+            {
+                backButton.onClick.RemoveListener(OnBackButtonClicked);
             }
         }
 
@@ -161,6 +183,11 @@ namespace SuperQQ.UI
             {
                 ReadyClicked?.Invoke();
             }
+        }
+
+        private void OnBackButtonClicked()
+        {
+            BackClicked?.Invoke();
         }
     }
 }

@@ -76,11 +76,12 @@ namespace SuperQQ.Item
 
             Rect range = ResolveRangeRect();
 
-            // 收集本帧在范围内的本地模拟玩家（远端化身 simulated=false 跳过，见联机说明）
+            // 收集本帧在范围内的本地模拟玩家（远端化身 simulated=false 跳过，见联机说明；
+            // 死亡过渡/幽灵不受影响——不入前摇，已在前摇/已触发的随 frameInside 剔除自动取消）
             frameInside.Clear();
             foreach (PlayerController player in EnumeratePlayers())
             {
-                if (player == null)
+                if (player == null || !player.BAffectedByItems)
                 {
                     continue;
                 }

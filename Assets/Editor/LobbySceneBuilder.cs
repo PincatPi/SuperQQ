@@ -77,9 +77,9 @@ namespace SuperQQ.EditorTools
             var netGo = new GameObject("NetworkManager");
             netGo.AddComponent<NetworkManager>();
 
-            // LobbyController
-            var lobbyGo = new GameObject("LobbyController");
-            var lobby = lobbyGo.AddComponent<LobbyController>();
+            // LoginController（原 LobbyController，登录场景控制器）
+            var lobbyGo = new GameObject("LoginController");
+            var lobby = lobbyGo.AddComponent<SuperQQ.Network.LoginController>();
             var so = new SerializedObject(lobby);
             so.FindProperty("roomNameInput").objectReferenceValue = input;
             so.FindProperty("joinButton").objectReferenceValue = btn;
