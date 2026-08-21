@@ -1,0 +1,386 @@
+fileFormatVersion: 2
+guid: 8368a2a58d6c0afe6f743cc7ab0f5a4d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 21300126
+    second: FlameThrower-Flame.000
+  - first:
+      213: 21300128
+    second: FlameThrower-Flame.001
+  - first:
+      213: 21300130
+    second: FlameThrower-Flame.002
+  - first:
+      213: 21300132
+    second: FlameThrower-FlameOff.000
+  - first:
+      213: 21300134
+    second: FlameThrower-FlameOff.001
+  - first:
+      213: 21300136
+    second: FlameThrower-FlameOff.002
+  - first:
+      213: 21300138
+    second: FlameThrower-FlameOff.003
+  - first:
+      213: 21300140
+    second: FlameThrower-FlameOn.000
+  - first:
+      213: 21300142
+    second: FlameThrower-FlameOn.001
+  - first:
+      213: 21300144
+    second: FlameThrower-FlameThrowerDial.000
+  - first:
+      213: 21300146
+    second: FlameThrower-NewFlameThrowerBody.000
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 12
+  maxTextureSize: 4096
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 384
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 0
+  flipbookColumns: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 4096
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: FlameThrower-Flame.000
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 3212
+        width: 1086
+        height: 852
+      alignment: 9
+      pivot: {x: 0.883977897, y: 0.732256992}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 756714df130b436e941e9bd6e8782521
+      internalID: 21300126
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FlameThrower-Flame.001
+      rect:
+        serializedVersion: 2
+        x: 1150
+        y: 3212
+        width: 870
+        height: 852
+      alignment: 9
+      pivot: {x: 1.16614011, y: 0.718165037}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ca7c1b365094330968002ca5bb5d1c1
+      internalID: 21300128
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FlameThrower-Flame.002
+      rect:
+        serializedVersion: 2
+        x: 2936
+        y: 3242
+        width: 840
+        height: 822
+      alignment: 9
+      pivot: {x: 1.19320521, y: 0.730192836}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bdb5943197cb44419bf3ec342885e566
+      internalID: 21300130
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FlameThrower-FlameOff.000
+      rect:
+        serializedVersion: 2
+        x: 2936
+        y: 3242
+        width: 840
+        height: 822
+      alignment: 9
+      pivot: {x: 1.19320521, y: 0.730192836}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 443ecb81ef664d49be2407805a53cc92
+      internalID: 21300132
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FlameThrower-FlameOff.001
+      rect:
+        serializedVersion: 2
+        x: 2052
+        y: 3212
+        width: 852
+        height: 852
+      alignment: 9
+      pivot: {x: 1.24663278, y: 0.648082921}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9720d2ac350749d8bacee4c50643857b
+      internalID: 21300134
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FlameThrower-FlameOff.002
+      rect:
+        serializedVersion: 2
+        x: 700
+        y: 2484
+        width: 768
+        height: 696
+      alignment: 9
+      pivot: {x: 1.41490591, y: 0.551771421}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d50401760cac4c70a37230e10c7a7787
+      internalID: 21300136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FlameThrower-FlameOff.003
+      rect:
+        serializedVersion: 2
+        x: 2168
+        y: 2520
+        width: 828
+        height: 660
+      alignment: 9
+      pivot: {x: 1.42054726, y: 0.399856115}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6701d9b2621548b39baebf0e7747fb7a
+      internalID: 21300138
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FlameThrower-FlameOn.000
+      rect:
+        serializedVersion: 2
+        x: 1500
+        y: 2484
+        width: 636
+        height: 696
+      alignment: 9
+      pivot: {x: 0.877293906, y: 0.887967694}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3df15d6cefd84feabf5a019a0e6b3af6
+      internalID: 21300140
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FlameThrower-FlameOn.001
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 2424
+        width: 636
+        height: 756
+      alignment: 9
+      pivot: {x: 1.25493981, y: 0.801583187}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ffa65492f244e779228fbe677e7d644
+      internalID: 21300142
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FlameThrower-FlameThrowerDial.000
+      rect:
+        serializedVersion: 2
+        x: 3552
+        y: 3048
+        width: 90
+        height: 132
+      alignment: 9
+      pivot: {x: -0.4, y: 5.54545455}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad463b1d9ad5479abfce813fe92a9e6b
+      internalID: 21300144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FlameThrower-NewFlameThrowerBody.000
+      rect:
+        serializedVersion: 2
+        x: 3028
+        y: 2598
+        width: 492
+        height: 582
+      alignment: 9
+      pivot: {x: 0.536667837, y: 1.79502826}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 162aace77eda40dbacbb8d72e8748287
+      internalID: 21300146
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      FlameThrower-Flame.000: 21300126
+      FlameThrower-Flame.001: 21300128
+      FlameThrower-Flame.002: 21300130
+      FlameThrower-FlameOff.000: 21300132
+      FlameThrower-FlameOff.001: 21300134
+      FlameThrower-FlameOff.002: 21300136
+      FlameThrower-FlameOff.003: 21300138
+      FlameThrower-FlameOn.000: 21300140
+      FlameThrower-FlameOn.001: 21300142
+      FlameThrower-FlameThrowerDial.000: 21300144
+      FlameThrower-NewFlameThrowerBody.000: 21300146
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

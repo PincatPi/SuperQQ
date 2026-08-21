@@ -1,0 +1,561 @@
+fileFormatVersion: 2
+guid: 6ee044a675238d2f6e56db9e10731718
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 21300058
+    second: Cannon-CannonWheel.000
+  - first:
+      213: 21300036
+    second: Cannon-CannonBarrel.006
+  - first:
+      213: 21300038
+    second: Cannon-CannonSmoke.000
+  - first:
+      213: 21300024
+    second: Cannon-CannonBarrel.000
+  - first:
+      213: 21300054
+    second: Cannon-CannonSmoke.008
+  - first:
+      213: 21300030
+    second: Cannon-CannonBarrel.003
+  - first:
+      213: 21300028
+    second: Cannon-CannonBarrel.002
+  - first:
+      213: 21300026
+    second: Cannon-CannonBarrel.001
+  - first:
+      213: 21300040
+    second: Cannon-CannonSmoke.001
+  - first:
+      213: 21300032
+    second: Cannon-CannonBarrel.004
+  - first:
+      213: 21300034
+    second: Cannon-CannonBarrel.005
+  - first:
+      213: 21300042
+    second: Cannon-CannonSmoke.002
+  - first:
+      213: 21300044
+    second: Cannon-CannonSmoke.003
+  - first:
+      213: 21300046
+    second: Cannon-CannonSmoke.004
+  - first:
+      213: 21300050
+    second: Cannon-CannonSmoke.006
+  - first:
+      213: 21300052
+    second: Cannon-CannonSmoke.007
+  - first:
+      213: 21300060
+    second: Cannon-ShootBlur.000
+  - first:
+      213: 21300048
+    second: Cannon-CannonSmoke.005
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 12
+  maxTextureSize: 8192
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 64
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 0
+  flipbookColumns: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Cannon-CannonWheel.000
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 2956
+        width: 1036
+        height: 1124
+      alignment: 9
+      pivot: {x: 1.3058823, y: 1.9137931}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d9d6b90dce14824a7256159f6b91954
+      internalID: 21300058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonBarrel.006
+      rect:
+        serializedVersion: 2
+        x: 1068
+        y: 2964
+        width: 1047
+        height: 1116
+      alignment: 9
+      pivot: {x: 0.66227376, y: 1.0479962}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9371224b44db49b6a8b4bebccbdc86ae
+      internalID: 21300036
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonSmoke.000
+      rect:
+        serializedVersion: 2
+        x: 2131
+        y: 2964
+        width: 1040
+        height: 1116
+      alignment: 9
+      pivot: {x: -0.13206173, y: 0.5192388}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a21e8f2bdcf140acbed9da8e292839ba
+      internalID: 21300038
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonBarrel.000
+      rect:
+        serializedVersion: 2
+        x: 3187
+        y: 2967
+        width: 1069
+        height: 1113
+      alignment: 9
+      pivot: {x: 0.66227376, y: 1.0479962}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea7eef7a096c4ae881ad7fa2eac1ca9e
+      internalID: 21300024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonSmoke.008
+      rect:
+        serializedVersion: 2
+        x: 4272
+        y: 2971
+        width: 1022
+        height: 1109
+      alignment: 9
+      pivot: {x: -0.20141298, y: 0.29835248}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1dad0aac6f3449c790baec2e99e9f3af
+      internalID: 21300054
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonBarrel.003
+      rect:
+        serializedVersion: 2
+        x: 5310
+        y: 2978
+        width: 1073
+        height: 1102
+      alignment: 9
+      pivot: {x: 0.7564995, y: 1.1354111}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf5a41b691c248d198d75dffa5da4dc4
+      internalID: 21300030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonBarrel.002
+      rect:
+        serializedVersion: 2
+        x: 6399
+        y: 2988
+        width: 1071
+        height: 1092
+      alignment: 9
+      pivot: {x: 0.69583744, y: 1.0577736}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3ee691dcfa642bc9058fa08077fdb7e
+      internalID: 21300028
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonBarrel.001
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 1849
+        width: 1105
+        height: 1091
+      alignment: 9
+      pivot: {x: 0.6668206, y: 1.0405457}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6cd3cf269d384918a97af50cade1fef1
+      internalID: 21300026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonSmoke.001
+      rect:
+        serializedVersion: 2
+        x: 1137
+        y: 1874
+        width: 1061
+        height: 1066
+      alignment: 9
+      pivot: {x: 0.016979331, y: 0.50013965}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 335b3258e188430ab87c996da1605188
+      internalID: 21300040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonBarrel.004
+      rect:
+        serializedVersion: 2
+        x: 2214
+        y: 1890
+        width: 1095
+        height: 1050
+      alignment: 9
+      pivot: {x: 0.58053035, y: 0.93826437}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 80d47d782e47417597e918bbe517580d
+      internalID: 21300032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonBarrel.005
+      rect:
+        serializedVersion: 2
+        x: 3325
+        y: 1899
+        width: 1066
+        height: 1041
+      alignment: 9
+      pivot: {x: 0.5933007, y: 0.9851528}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46e64d2509f849c287085e62bb04719f
+      internalID: 21300034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonSmoke.002
+      rect:
+        serializedVersion: 2
+        x: 4407
+        y: 1919
+        width: 1168
+        height: 1021
+      alignment: 9
+      pivot: {x: 0.009757371, y: 0.44930878}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 483a8a41e21a43828718cdae64823e9c
+      internalID: 21300042
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonSmoke.003
+      rect:
+        serializedVersion: 2
+        x: 5591
+        y: 1955
+        width: 1057
+        height: 985
+      alignment: 9
+      pivot: {x: 0.014778325, y: 0.4158213}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d5a3c6ebfe24542947bb603e3c919f3
+      internalID: 21300044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonSmoke.004
+      rect:
+        serializedVersion: 2
+        x: 6664
+        y: 1960
+        width: 1193
+        height: 980
+      alignment: 9
+      pivot: {x: -0.05670103, y: 0.3981623}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e12b8b0d0b1f4852a40b75e6ddb00c79
+      internalID: 21300046
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonSmoke.006
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 934
+        width: 1056
+        height: 899
+      alignment: 9
+      pivot: {x: -0.13917525, y: 0.32371795}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb6d82e7d36d43d5aa9f4e1883d8fe2f
+      internalID: 21300050
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonSmoke.007
+      rect:
+        serializedVersion: 2
+        x: 1088
+        y: 942
+        width: 1104
+        height: 891
+      alignment: 9
+      pivot: {x: -0.15077236, y: 0.31877232}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7764c41f20bf4722ad6b3852617771c8
+      internalID: 21300052
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-ShootBlur.000
+      rect:
+        serializedVersion: 2
+        x: 2208
+        y: 960
+        width: 1073
+        height: 873
+      alignment: 9
+      pivot: {x: 0.5105516, y: 0.56933}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 776fda9a9d954e33828cd891bd8b82e8
+      internalID: 21300060
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cannon-CannonSmoke.005
+      rect:
+        serializedVersion: 2
+        x: 3297
+        y: 1048
+        width: 1049
+        height: 785
+      alignment: 9
+      pivot: {x: -0.0970885, y: 0.34662578}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a074b2a3305498ab3e7ff728a2bd067
+      internalID: 21300048
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      Cannon-CannonBarrel.000: 21300024
+      Cannon-CannonBarrel.001: 21300026
+      Cannon-CannonBarrel.002: 21300028
+      Cannon-CannonBarrel.003: 21300030
+      Cannon-CannonBarrel.004: 21300032
+      Cannon-CannonBarrel.005: 21300034
+      Cannon-CannonBarrel.006: 21300036
+      Cannon-CannonSmoke.000: 21300038
+      Cannon-CannonSmoke.001: 21300040
+      Cannon-CannonSmoke.002: 21300042
+      Cannon-CannonSmoke.003: 21300044
+      Cannon-CannonSmoke.004: 21300046
+      Cannon-CannonSmoke.005: 21300048
+      Cannon-CannonSmoke.006: 21300050
+      Cannon-CannonSmoke.007: 21300052
+      Cannon-CannonSmoke.008: 21300054
+      Cannon-CannonWheel.000: 21300058
+      Cannon-ShootBlur.000: 21300060
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

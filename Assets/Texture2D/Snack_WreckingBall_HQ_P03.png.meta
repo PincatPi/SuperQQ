@@ -1,0 +1,511 @@
+fileFormatVersion: 2
+guid: 1b1750b5ca1fee95d3fe4df122b98ec9
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 21300374
+    second: WreckingBall-ChainandBall.025
+  - first:
+      213: 21300336
+    second: WreckingBall-ChainandBall.006
+  - first:
+      213: 21300350
+    second: WreckingBall-ChainandBall.013
+  - first:
+      213: 21300376
+    second: WreckingBall-ChainandBall.026
+  - first:
+      213: 21300388
+    second: WreckingBall-ChainandBall.032
+  - first:
+      213: 21300338
+    second: WreckingBall-ChainandBall.007
+  - first:
+      213: 21300384
+    second: WreckingBall-ChainandBall.030
+  - first:
+      213: 21300378
+    second: WreckingBall-ChainandBall.027
+  - first:
+      213: 21300386
+    second: WreckingBall-ChainandBall.031
+  - first:
+      213: 21300380
+    second: WreckingBall-ChainandBall.028
+  - first:
+      213: 21300344
+    second: WreckingBall-ChainandBall.010
+  - first:
+      213: 21300346
+    second: WreckingBall-ChainandBall.011
+  - first:
+      213: 21300340
+    second: WreckingBall-ChainandBall.008
+  - first:
+      213: 21300348
+    second: WreckingBall-ChainandBall.012
+  - first:
+      213: 21300382
+    second: WreckingBall-ChainandBall.029
+  - first:
+      213: 21300342
+    second: WreckingBall-ChainandBall.009
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 12
+  maxTextureSize: 8192
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 64
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 0
+  flipbookColumns: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.025
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 1477
+        width: 1122
+        height: 555
+      alignment: 9
+      pivot: {x: 0.045052767, y: -0.026569324}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 527fa6d3b58a40098fd998faaa9201de
+      internalID: 21300374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.006
+      rect:
+        serializedVersion: 2
+        x: 1154
+        y: 1523
+        width: 1112
+        height: 509
+      alignment: 9
+      pivot: {x: 0.97284585, y: -0.082932204}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef7929a87b1c4b00a27b92f2c12d9d27
+      internalID: 21300336
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.013
+      rect:
+        serializedVersion: 2
+        x: 2282
+        y: 1586
+        width: 1123
+        height: 446
+      alignment: 9
+      pivot: {x: 0.9799965, y: -0.21937257}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 155f6dc628514a4f9f636b0983b74df2
+      internalID: 21300350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.026
+      rect:
+        serializedVersion: 2
+        x: 3421
+        y: 1597
+        width: 1156
+        height: 435
+      alignment: 9
+      pivot: {x: 0.039231572, y: -0.29888108}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87724b30a46c472c86db9a1c892b67e4
+      internalID: 21300376
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.032
+      rect:
+        serializedVersion: 2
+        x: 4593
+        y: 1599
+        width: 1133
+        height: 433
+      alignment: 9
+      pivot: {x: 0.028539011, y: -0.2757154}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f1d837383a5463ba0c15d4b47b99ebf
+      internalID: 21300388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.007
+      rect:
+        serializedVersion: 2
+        x: 5742
+        y: 1608
+        width: 1195
+        height: 424
+      alignment: 9
+      pivot: {x: 0.96336097, y: -0.37585512}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 664b665ec98940beacf8b9e6cf43fbcd
+      internalID: 21300338
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.030
+      rect:
+        serializedVersion: 2
+        x: 6953
+        y: 1673
+        width: 1159
+        height: 359
+      alignment: 9
+      pivot: {x: 0.025809914, y: -0.8162567}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e2dc63cb213463dba73a5491a72ab48
+      internalID: 21300384
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.027
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 1110
+        width: 1153
+        height: 351
+      alignment: 9
+      pivot: {x: 0.028113617, y: -0.60049707}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 11b92b9f2f75460a9837f070d1627a20
+      internalID: 21300378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.031
+      rect:
+        serializedVersion: 2
+        x: 1185
+        y: 1110
+        width: 1122
+        height: 351
+      alignment: 9
+      pivot: {x: 0.019362265, y: -0.6271975}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0451b508678e4021bd6800389c466fda
+      internalID: 21300386
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.028
+      rect:
+        serializedVersion: 2
+        x: 2323
+        y: 1114
+        width: 1143
+        height: 347
+      alignment: 9
+      pivot: {x: 0.02586567, y: -0.8007431}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c4533f69b62430e9e2b37e15a538780
+      internalID: 21300380
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.010
+      rect:
+        serializedVersion: 2
+        x: 3482
+        y: 1115
+        width: 1173
+        height: 346
+      alignment: 9
+      pivot: {x: 0.96824014, y: -0.8348391}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a8f16605d9c40f79a030e8c3984aa04
+      internalID: 21300344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.011
+      rect:
+        serializedVersion: 2
+        x: 4671
+        y: 1115
+        width: 1153
+        height: 346
+      alignment: 9
+      pivot: {x: 0.96171224, y: -0.7310183}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39bd8d2a34bf40689d67833cabaaaa07
+      internalID: 21300346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.008
+      rect:
+        serializedVersion: 2
+        x: 5840
+        y: 1123
+        width: 1119
+        height: 338
+      alignment: 9
+      pivot: {x: 0.97213876, y: -0.65368736}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a1db2eb12484a9c88f73369a239ea03
+      internalID: 21300340
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.012
+      rect:
+        serializedVersion: 2
+        x: 6975
+        y: 1126
+        width: 1126
+        height: 335
+      alignment: 9
+      pivot: {x: 0.9594744, y: -0.56461805}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 734a13d736394a839f9f17b68cda9750
+      internalID: 21300348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.029
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 762
+        width: 1116
+        height: 332
+      alignment: 9
+      pivot: {x: 0.019434586, y: -0.82742333}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21acc98b69084acc800295744aab1488
+      internalID: 21300382
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: WreckingBall-ChainandBall.009
+      rect:
+        serializedVersion: 2
+        x: 1148
+        y: 765
+        width: 1100
+        height: 329
+      alignment: 9
+      pivot: {x: 0.98692673, y: -0.7962493}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82d68d5b3cf04b41af4eb9f6539fd744
+      internalID: 21300342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      WreckingBall-ChainandBall.006: 21300336
+      WreckingBall-ChainandBall.007: 21300338
+      WreckingBall-ChainandBall.008: 21300340
+      WreckingBall-ChainandBall.009: 21300342
+      WreckingBall-ChainandBall.010: 21300344
+      WreckingBall-ChainandBall.011: 21300346
+      WreckingBall-ChainandBall.012: 21300348
+      WreckingBall-ChainandBall.013: 21300350
+      WreckingBall-ChainandBall.025: 21300374
+      WreckingBall-ChainandBall.026: 21300376
+      WreckingBall-ChainandBall.027: 21300378
+      WreckingBall-ChainandBall.028: 21300380
+      WreckingBall-ChainandBall.029: 21300382
+      WreckingBall-ChainandBall.030: 21300384
+      WreckingBall-ChainandBall.031: 21300386
+      WreckingBall-ChainandBall.032: 21300388
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

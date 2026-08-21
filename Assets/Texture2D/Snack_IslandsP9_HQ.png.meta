@@ -1,0 +1,1336 @@
+fileFormatVersion: 2
+guid: 48a2cf6061aebd6160e8b2a288efa8d7
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 21300032
+    second: Island1.000
+  - first:
+      213: 21300094
+    second: Island2.000
+  - first:
+      213: 21300022
+    second: Plants2.000
+  - first:
+      213: 21300068
+    second: Splash_Front.002
+  - first:
+      213: 21300064
+    second: Splash_Front.001
+  - first:
+      213: 21300010
+    second: Splash_Front.000
+  - first:
+      213: 21300040
+    second: Splash_Start.006
+  - first:
+      213: 21300026
+    second: Plants01_1.000
+  - first:
+      213: 21300020
+    second: Splash_Start.003
+  - first:
+      213: 21300000
+    second: Splash_Start.007
+  - first:
+      213: 21300090
+    second: Splash_Start.005
+  - first:
+      213: 21300006
+    second: Splash_Start.004
+  - first:
+      213: 21300024
+    second: Splash_Start.002
+  - first:
+      213: 21300074
+    second: Roap_Bell.000
+  - first:
+      213: 21300018
+    second: Splash_Front.003
+  - first:
+      213: 21300030
+    second: Splash_Front.004
+  - first:
+      213: 21300054
+    second: Splash_Back.007
+  - first:
+      213: 21300036
+    second: Splash_Front.005
+  - first:
+      213: 21300070
+    second: Splash_Back.006
+  - first:
+      213: 21300060
+    second: Splash_Start.001
+  - first:
+      213: 21300004
+    second: Splash_Front.006
+  - first:
+      213: 21300084
+    second: Splash_Back.000
+  - first:
+      213: 21300092
+    second: Splash_Back.001
+  - first:
+      213: 21300088
+    second: Splash_Front.007
+  - first:
+      213: 21300096
+    second: Splash_Back.008
+  - first:
+      213: 21300050
+    second: Splash_Back.009
+  - first:
+      213: 21300048
+    second: Splash_Back.005
+  - first:
+      213: 21300044
+    second: Splash_Start.000
+  - first:
+      213: 21300062
+    second: Splash_Back.010
+  - first:
+      213: 21300052
+    second: Bell.000
+  - first:
+      213: 21300034
+    second: Splash_Back.002
+  - first:
+      213: 21300076
+    second: Splash_Front.008
+  - first:
+      213: 21300046
+    second: Splash_Back.004
+  - first:
+      213: 21300066
+    second: Splash_Back.011
+  - first:
+      213: 21300042
+    second: Plants01_2.000
+  - first:
+      213: 21300016
+    second: Splash_Back.012
+  - first:
+      213: 21300080
+    second: Splash_Back.003
+  - first:
+      213: 21300078
+    second: Splash_Front.009
+  - first:
+      213: 21300038
+    second: Splash_Front.010
+  - first:
+      213: 21300086
+    second: Splash_Back.013
+  - first:
+      213: 21300058
+    second: Splash_Front.011
+  - first:
+      213: 21300002
+    second: Sign.000
+  - first:
+      213: 21300028
+    second: Splash_Front.012
+  - first:
+      213: 21300082
+    second: Splash_Back.014
+  - first:
+      213: 21300012
+    second: Splash_Front.013
+  - first:
+      213: 21300072
+    second: Boat1.000
+  - first:
+      213: 21300014
+    second: Splash_Front.014
+  - first:
+      213: 21300008
+    second: Splash_Back.015
+  - first:
+      213: 21300056
+    second: Splash_Front.015
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 12
+  maxTextureSize: 8192
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 64
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 0
+  flipbookColumns: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Island1.000
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 2828
+        width: 1355
+        height: 1252
+      alignment: 9
+      pivot: {x: 2.144144, y: -0.1495935}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07d0b36f55a24d57945964126da3680d
+      internalID: 21300032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Island2.000
+      rect:
+        serializedVersion: 2
+        x: 1387
+        y: 2913
+        width: 1133
+        height: 1167
+      alignment: 9
+      pivot: {x: -1.6063063, y: -0.23972003}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c98584295ca44e41b5755053812b401d
+      internalID: 21300094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Plants2.000
+      rect:
+        serializedVersion: 2
+        x: 2536
+        y: 3028
+        width: 663
+        height: 1052
+      alignment: 9
+      pivot: {x: -3.9377942, y: -1.1253644}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 34d6afe4120540d5acec61dc76bac6c1
+      internalID: 21300022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.002
+      rect:
+        serializedVersion: 2
+        x: 3215
+        y: 3063
+        width: 429
+        height: 1017
+      alignment: 9
+      pivot: {x: 0.89162564, y: 1.1822759}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b94ff8817778460197355ba274c28604
+      internalID: 21300068
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.001
+      rect:
+        serializedVersion: 2
+        x: 3660
+        y: 3115
+        width: 346
+        height: 965
+      alignment: 9
+      pivot: {x: 0.9409938, y: 1.2348565}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 876e595c3035456c99215307ee25080e
+      internalID: 21300064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.000
+      rect:
+        serializedVersion: 2
+        x: 4022
+        y: 3120
+        width: 283
+        height: 960
+      alignment: 9
+      pivot: {x: 1.061776, y: 1.2553419}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 037ce0394421443b81a24a15e6f5b8a3
+      internalID: 21300010
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Start.006
+      rect:
+        serializedVersion: 2
+        x: 4321
+        y: 3183
+        width: 198
+        height: 897
+      alignment: 9
+      pivot: {x: 1.5170455, y: 1.3302857}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 227f581409164bc9a0744712e45ce5df
+      internalID: 21300040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Plants01_1.000
+      rect:
+        serializedVersion: 2
+        x: 4535
+        y: 3199
+        width: 604
+        height: 881
+      alignment: 9
+      pivot: {x: 5.0621953, y: -1.4731935}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c917cd43d306463e81802a92d3b14b5c
+      internalID: 21300026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Start.003
+      rect:
+        serializedVersion: 2
+        x: 5155
+        y: 3199
+        width: 200
+        height: 881
+      alignment: 9
+      pivot: {x: 1.5170455, y: 1.3368298}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1b16dc897be4f3c8bbccb3d7400a6e6
+      internalID: 21300020
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Start.007
+      rect:
+        serializedVersion: 2
+        x: 5371
+        y: 3205
+        width: 243
+        height: 875
+      alignment: 9
+      pivot: {x: 1.2136364, y: 1.3697183}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b75a3039bbd444b69cbfeabcfd655077
+      internalID: 21300000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Start.005
+      rect:
+        serializedVersion: 2
+        x: 5630
+        y: 3210
+        width: 182
+        height: 870
+      alignment: 9
+      pivot: {x: 1.590341, y: 1.370283}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 998fd2eb80ff43e5b418dfc98d85a12c
+      internalID: 21300090
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Start.004
+      rect:
+        serializedVersion: 2
+        x: 5828
+        y: 3221
+        width: 242
+        height: 859
+      alignment: 9
+      pivot: {x: 1.2140565, y: 1.3767942}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f820cfd27fdd4b159b4caf0c16dee03f
+      internalID: 21300006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Start.002
+      rect:
+        serializedVersion: 2
+        x: 6086
+        y: 3231
+        width: 196
+        height: 849
+      alignment: 9
+      pivot: {x: 1.545977, y: 1.3792619}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c9dcc883a094cf3b0d9cf0777979d25
+      internalID: 21300024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Roap_Bell.000
+      rect:
+        serializedVersion: 2
+        x: 6298
+        y: 3232
+        width: 59
+        height: 848
+      alignment: 9
+      pivot: {x: 0.5135135, y: -2.2581818}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef04758c9a604f4784f1694fc6855b1f
+      internalID: 21300074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.003
+      rect:
+        serializedVersion: 2
+        x: 6373
+        y: 3481
+        width: 561
+        height: 599
+      alignment: 9
+      pivot: {x: 0.7620818, y: 2.0520833}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfed6f8101324bb18b575fbf512b7be8
+      internalID: 21300018
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.004
+      rect:
+        serializedVersion: 2
+        x: 6950
+        y: 3554
+        width: 619
+        height: 526
+      alignment: 9
+      pivot: {x: 0.77983195, y: 2.2908366}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7e3d36ae3d541bc889a73e30ec43b5a
+      internalID: 21300030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.007
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 2300
+        width: 787
+        height: 512
+      alignment: 9
+      pivot: {x: 0.526178, y: 2.1086066}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba601e2a79fa4b1ea5ad8b2caced7630
+      internalID: 21300054
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.005
+      rect:
+        serializedVersion: 2
+        x: 819
+        y: 2321
+        width: 737
+        height: 491
+      alignment: 9
+      pivot: {x: 0.76297337, y: 2.4700854}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 28e48284cfcd48529e80f550fc340d42
+      internalID: 21300036
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.006
+      rect:
+        serializedVersion: 2
+        x: 1572
+        y: 2323
+        width: 600
+        height: 489
+      alignment: 9
+      pivot: {x: 0.6128472, y: 2.191398}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b87d0212dba4894862e7662ed37e573
+      internalID: 21300070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Start.001
+      rect:
+        serializedVersion: 2
+        x: 2188
+        y: 2323
+        width: 152
+        height: 489
+      alignment: 9
+      pivot: {x: 1.9147286, y: 2.4089935}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2a0ed7c28ee438f90b00373ede3f6cd
+      internalID: 21300060
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.006
+      rect:
+        serializedVersion: 2
+        x: 2356
+        y: 2332
+        width: 841
+        height: 480
+      alignment: 9
+      pivot: {x: 0.76988983, y: 2.5109649}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1e545c2ae564029ba5d14074e859e34
+      internalID: 21300004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.000
+      rect:
+        serializedVersion: 2
+        x: 3213
+        y: 2342
+        width: 399
+        height: 470
+      alignment: 9
+      pivot: {x: 0.8005319, y: 2.0425875}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 11c395e951494c6082e81ec14e8ba388
+      internalID: 21300084
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.001
+      rect:
+        serializedVersion: 2
+        x: 3628
+        y: 2351
+        width: 422
+        height: 461
+      alignment: 9
+      pivot: {x: 0.8650579, y: 1.9406393}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 900b54a6eb054f1ba3978eb4f1c6d070
+      internalID: 21300092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.007
+      rect:
+        serializedVersion: 2
+        x: 4066
+        y: 2364
+        width: 1014
+        height: 448
+      alignment: 9
+      pivot: {x: 0.7416751, y: 2.633803}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a8137c5b3ac843459090a4da2d3246e1
+      internalID: 21300088
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.008
+      rect:
+        serializedVersion: 2
+        x: 5096
+        y: 2364
+        width: 874
+        height: 448
+      alignment: 9
+      pivot: {x: 0.5652174, y: 2.509434}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd68028ed7944004b5d3a91c69b7b8fe
+      internalID: 21300096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.009
+      rect:
+        serializedVersion: 2
+        x: 5986
+        y: 2369
+        width: 957
+        height: 443
+      alignment: 9
+      pivot: {x: 0.52299464, y: 2.6062052}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 053beff9a4f74cd39fc5907f3500251d
+      internalID: 21300050
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.005
+      rect:
+        serializedVersion: 2
+        x: 6959
+        y: 2434
+        width: 512
+        height: 378
+      alignment: 9
+      pivot: {x: 0.6897959, y: 2.6011236}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23489c5c77f44b9cb41360816c2ba704
+      internalID: 21300048
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Start.000
+      rect:
+        serializedVersion: 2
+        x: 7487
+        y: 2443
+        width: 94
+        height: 369
+      alignment: 9
+      pivot: {x: 3.1549296, y: 3.2507205}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5a57204ea3142f6b19bbb11b490327d
+      internalID: 21300044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.010
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 1924
+        width: 1062
+        height: 360
+      alignment: 9
+      pivot: {x: 0.5259615, y: 3.1994047}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77864d87019647ab9b62a68db99c9fe8
+      internalID: 21300062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Bell.000
+      rect:
+        serializedVersion: 2
+        x: 1094
+        y: 1935
+        width: 329
+        height: 349
+      alignment: 9
+      pivot: {x: 0.5, y: -4.7944784}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a0600afe5831488f851602a6c5684f90
+      internalID: 21300052
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.002
+      rect:
+        serializedVersion: 2
+        x: 1439
+        y: 1940
+        width: 563
+        height: 344
+      alignment: 9
+      pivot: {x: 0.80185187, y: 2.495327}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cfe9395fa807486bb18cda67ccca52b3
+      internalID: 21300034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.008
+      rect:
+        serializedVersion: 2
+        x: 2018
+        y: 1942
+        width: 1076
+        height: 342
+      alignment: 9
+      pivot: {x: 0.7473884, y: 3.523511}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ddba54926f545e5afd03fa69d34ef02
+      internalID: 21300076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.004
+      rect:
+        serializedVersion: 2
+        x: 3110
+        y: 1943
+        width: 479
+        height: 341
+      alignment: 9
+      pivot: {x: 0.74561405, y: 2.696875}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c92ec856b0b4bd59871123faed0b8d8
+      internalID: 21300046
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.011
+      rect:
+        serializedVersion: 2
+        x: 3605
+        y: 1963
+        width: 1114
+        height: 321
+      alignment: 9
+      pivot: {x: 0.529304, y: 3.6531987}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5fbc107b1c24adb8a51b72b7d25610c
+      internalID: 21300066
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Plants01_2.000
+      rect:
+        serializedVersion: 2
+        x: 4735
+        y: 1973
+        width: 797
+        height: 311
+      alignment: 9
+      pivot: {x: 3.1135483, y: -2.134948}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e6690cc4397418e891d9d2737ea02fc
+      internalID: 21300042
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.012
+      rect:
+        serializedVersion: 2
+        x: 5548
+        y: 1996
+        width: 1192
+        height: 288
+      alignment: 9
+      pivot: {x: 0.54234385, y: 4.090566}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d9cb9bc6ef1e445b910673b9b9cda2cb
+      internalID: 21300016
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.003
+      rect:
+        serializedVersion: 2
+        x: 6756
+        y: 2025
+        width: 572
+        height: 259
+      alignment: 9
+      pivot: {x: 0.8781818, y: 3.3670886}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db72ac05cee549fab852e2dbed15f0d5
+      internalID: 21300080
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.009
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 1653
+        width: 1223
+        height: 255
+      alignment: 9
+      pivot: {x: 0.69916666, y: 4.849138}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7178382406714f778a73e93541cb5db4
+      internalID: 21300078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.010
+      rect:
+        serializedVersion: 2
+        x: 1255
+        y: 1698
+        width: 1271
+        height: 210
+      alignment: 9
+      pivot: {x: 0.67894316, y: 5.9304814}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b704aed316540ff9167e0df7c097a0c
+      internalID: 21300038
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.013
+      rect:
+        serializedVersion: 2
+        x: 2542
+        y: 1699
+        width: 1232
+        height: 209
+      alignment: 9
+      pivot: {x: 0.54425144, y: 5.7526884}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bfcf0b8792ce498a85c94945b21c0634
+      internalID: 21300086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.011
+      rect:
+        serializedVersion: 2
+        x: 3790
+        y: 1708
+        width: 1322
+        height: 200
+      alignment: 9
+      pivot: {x: 0.67744416, y: 6.293785}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b045169a443945c59c5ae98dd0eff3ed
+      internalID: 21300058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Sign.000
+      rect:
+        serializedVersion: 2
+        x: 5128
+        y: 1710
+        width: 180
+        height: 198
+      alignment: 9
+      pivot: {x: 12.2293, y: -7.9885716}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac7dbeecede74166b123b7e35834c66b
+      internalID: 21300002
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.012
+      rect:
+        serializedVersion: 2
+        x: 5324
+        y: 1723
+        width: 1347
+        height: 185
+      alignment: 9
+      pivot: {x: 0.6664151, y: 6.8580246}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f14c5202c05c43b4ba519a8640e9214a
+      internalID: 21300028
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.014
+      rect:
+        serializedVersion: 2
+        x: 6687
+        y: 1747
+        width: 1267
+        height: 161
+      alignment: 9
+      pivot: {x: 0.53778136, y: 7.9130435}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7826f0147b934b68b15cc8d66897b411
+      internalID: 21300082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.013
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 1478
+        width: 1062
+        height: 159
+      alignment: 9
+      pivot: {x: 0.786333, y: 8.213235}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ef4ef33bff54ef7879dba0f7190c65d
+      internalID: 21300012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Boat1.000
+      rect:
+        serializedVersion: 2
+        x: 1094
+        y: 1506
+        width: 584
+        height: 131
+      alignment: 9
+      pivot: {x: 1.6209965, y: -2.5963302}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50f92c3e6505402db6413ec9bb866aeb
+      internalID: 21300072
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.014
+      rect:
+        serializedVersion: 2
+        x: 1694
+        y: 1563
+        width: 60
+        height: 74
+      alignment: 9
+      pivot: {x: 5.7211876, y: 20.008432}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98a7b3a5b1aa4b7cb0d0b60589bdf805
+      internalID: 21300014
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Back.015
+      rect:
+        serializedVersion: 2
+        x: 1770
+        y: 1565
+        width: 1175
+        height: 72
+      alignment: 9
+      pivot: {x: 0.5941023, y: 22.145834}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a319e4b214f0458bb251ece28e589507
+      internalID: 21300008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Splash_Front.015
+      rect:
+        serializedVersion: 2
+        x: 2961
+        y: 1569
+        width: 57
+        height: 68
+      alignment: 9
+      pivot: {x: 6.3142858, y: 23.653711}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 266c39f8d92940a98fe4667dcaab26d5
+      internalID: 21300056
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      Bell.000: 21300052
+      Boat1.000: 21300072
+      Island1.000: 21300032
+      Island2.000: 21300094
+      Plants01_1.000: 21300026
+      Plants01_2.000: 21300042
+      Plants2.000: 21300022
+      Roap_Bell.000: 21300074
+      Sign.000: 21300002
+      Splash_Back.000: 21300084
+      Splash_Back.001: 21300092
+      Splash_Back.002: 21300034
+      Splash_Back.003: 21300080
+      Splash_Back.004: 21300046
+      Splash_Back.005: 21300048
+      Splash_Back.006: 21300070
+      Splash_Back.007: 21300054
+      Splash_Back.008: 21300096
+      Splash_Back.009: 21300050
+      Splash_Back.010: 21300062
+      Splash_Back.011: 21300066
+      Splash_Back.012: 21300016
+      Splash_Back.013: 21300086
+      Splash_Back.014: 21300082
+      Splash_Back.015: 21300008
+      Splash_Front.000: 21300010
+      Splash_Front.001: 21300064
+      Splash_Front.002: 21300068
+      Splash_Front.003: 21300018
+      Splash_Front.004: 21300030
+      Splash_Front.005: 21300036
+      Splash_Front.006: 21300004
+      Splash_Front.007: 21300088
+      Splash_Front.008: 21300076
+      Splash_Front.009: 21300078
+      Splash_Front.010: 21300038
+      Splash_Front.011: 21300058
+      Splash_Front.012: 21300028
+      Splash_Front.013: 21300012
+      Splash_Front.014: 21300014
+      Splash_Front.015: 21300056
+      Splash_Start.000: 21300044
+      Splash_Start.001: 21300060
+      Splash_Start.002: 21300024
+      Splash_Start.003: 21300020
+      Splash_Start.004: 21300006
+      Splash_Start.005: 21300090
+      Splash_Start.006: 21300040
+      Splash_Start.007: 21300000
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

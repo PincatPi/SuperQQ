@@ -1,0 +1,1211 @@
+fileFormatVersion: 2
+guid: 25db3244a2c2581b68e0d1a5dcfe6802
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 21300212
+    second: bomb.009
+  - first:
+      213: 21301020
+    second: NewBombs-miniBomb.010
+  - first:
+      213: 21301024
+    second: NewBombs-miniBomb.012
+  - first:
+      213: 21300208
+    second: bomb.007
+  - first:
+      213: 21301018
+    second: NewBombs-miniBomb.009
+  - first:
+      213: 21301008
+    second: NewBombs-miniBomb.004
+  - first:
+      213: 21301014
+    second: NewBombs-miniBomb.007
+  - first:
+      213: 21301006
+    second: NewBombs-miniBomb.003
+  - first:
+      213: 21301004
+    second: NewBombs-miniBomb.002
+  - first:
+      213: 21300992
+    second: NewBombs-megaBomb.011
+  - first:
+      213: 21301002
+    second: NewBombs-miniBomb.001
+  - first:
+      213: 21300222
+    second: bomb.014
+  - first:
+      213: 21300994
+    second: NewBombs-megaBomb.012
+  - first:
+      213: 21300990
+    second: NewBombs-megaBomb.010
+  - first:
+      213: 21300206
+    second: bomb.006
+  - first:
+      213: 21300224
+    second: bomb.015
+  - first:
+      213: 21301022
+    second: NewBombs-miniBomb.011
+  - first:
+      213: 21300204
+    second: bomb.005
+  - first:
+      213: 21300198
+    second: bomb.002
+  - first:
+      213: 21301010
+    second: NewBombs-miniBomb.005
+  - first:
+      213: 21300988
+    second: NewBombs-megaBomb.009
+  - first:
+      213: 21300996
+    second: NewBombs-megaBomb.013
+  - first:
+      213: 21300200
+    second: bomb.003
+  - first:
+      213: 21301026
+    second: NewBombs-miniBomb.013
+  - first:
+      213: 21300984
+    second: NewBombs-megaBomb.007
+  - first:
+      213: 21300202
+    second: bomb.004
+  - first:
+      213: 21300986
+    second: NewBombs-megaBomb.008
+  - first:
+      213: 21300220
+    second: bomb.013
+  - first:
+      213: 21300210
+    second: bomb.008
+  - first:
+      213: 21301000
+    second: NewBombs-miniBomb.000
+  - first:
+      213: 21300216
+    second: bomb.011
+  - first:
+      213: 21301012
+    second: NewBombs-miniBomb.006
+  - first:
+      213: 21300214
+    second: bomb.010
+  - first:
+      213: 21300194
+    second: bomb.000
+  - first:
+      213: 21300218
+    second: bomb.012
+  - first:
+      213: 21301016
+    second: NewBombs-miniBomb.008
+  - first:
+      213: 21300980
+    second: NewBombs-megaBomb.005
+  - first:
+      213: 21300196
+    second: bomb.001
+  - first:
+      213: 21300982
+    second: NewBombs-megaBomb.006
+  - first:
+      213: 21300976
+    second: NewBombs-megaBomb.003
+  - first:
+      213: 21300978
+    second: NewBombs-megaBomb.004
+  - first:
+      213: 21300972
+    second: NewBombs-megaBomb.001
+  - first:
+      213: 21300974
+    second: NewBombs-megaBomb.002
+  - first:
+      213: 21300970
+    second: NewBombs-megaBomb.000
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 12
+  maxTextureSize: 8192
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 16
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 64
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 0
+  flipbookColumns: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: bomb.009
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 6985
+        width: 1087
+        height: 1191
+      alignment: 9
+      pivot: {x: 0.51056194, y: 0.5127306}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe9486789fcb407b877645a6b9cd47f4
+      internalID: 21300212
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.010
+      rect:
+        serializedVersion: 2
+        x: 1119
+        y: 6992
+        width: 1020
+        height: 1184
+      alignment: 9
+      pivot: {x: 0.62498796, y: 0.38295865}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3219ef9f634c48cfbe33a66a21fefc6c
+      internalID: 21301020
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.012
+      rect:
+        serializedVersion: 2
+        x: 2155
+        y: 7021
+        width: 1110
+        height: 1155
+      alignment: 9
+      pivot: {x: 0.64593095, y: 0.38263395}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 71ae7fd3279b4abcbf2df205c2b37014
+      internalID: 21301024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.007
+      rect:
+        serializedVersion: 2
+        x: 3281
+        y: 7021
+        width: 967
+        height: 1155
+      alignment: 9
+      pivot: {x: 0.67893416, y: 0.426584}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f28f67106a74c3caffed447c730f7ac
+      internalID: 21300208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.009
+      rect:
+        serializedVersion: 2
+        x: 4264
+        y: 7023
+        width: 564
+        height: 1153
+      alignment: 9
+      pivot: {x: 0.67616457, y: 0.45011395}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d19de81423ed4cb8858daee6698d01e1
+      internalID: 21301018
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.004
+      rect:
+        serializedVersion: 2
+        x: 4844
+        y: 7024
+        width: 606
+        height: 1152
+      alignment: 9
+      pivot: {x: 0.7399234, y: 0.2695413}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb85b1fabe9643f394a664f9cd207e1d
+      internalID: 21301008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.007
+      rect:
+        serializedVersion: 2
+        x: 5466
+        y: 7024
+        width: 605
+        height: 1152
+      alignment: 9
+      pivot: {x: 0.7341243, y: 0.28560743}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02c8a475d9e24bc3a43cd72d4d0887eb
+      internalID: 21301014
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.003
+      rect:
+        serializedVersion: 2
+        x: 6087
+        y: 7024
+        width: 522
+        height: 1152
+      alignment: 9
+      pivot: {x: 0.74587804, y: 0.23729962}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c87c99d56d734d59aa36751e9812e82f
+      internalID: 21301006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.002
+      rect:
+        serializedVersion: 2
+        x: 6625
+        y: 7029
+        width: 498
+        height: 1147
+      alignment: 9
+      pivot: {x: 0.7217141, y: 0.23729962}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f477274c1974e37901f12325d087e82
+      internalID: 21301004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.011
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 5825
+        width: 1101
+        height: 1144
+      alignment: 9
+      pivot: {x: 0.4854046, y: 0.47021943}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c2950325fbed4ae2b18199e251c927dc
+      internalID: 21300992
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.001
+      rect:
+        serializedVersion: 2
+        x: 1133
+        y: 5825
+        width: 472
+        height: 1144
+      alignment: 9
+      pivot: {x: 0.693322, y: 0.23932844}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed26fd8d33df47f2be6074403733d250
+      internalID: 21301002
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.014
+      rect:
+        serializedVersion: 2
+        x: 1621
+        y: 5830
+        width: 1149
+        height: 1139
+      alignment: 9
+      pivot: {x: 0.44032508, y: 0.4670687}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60627970ee8e47d0a2a8b3710ff3b115
+      internalID: 21300222
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.012
+      rect:
+        serializedVersion: 2
+        x: 2786
+        y: 5834
+        width: 1116
+        height: 1135
+      alignment: 9
+      pivot: {x: 0.47402596, y: 0.4600639}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb5e03259f56403fadaedca8326e6566
+      internalID: 21300994
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.010
+      rect:
+        serializedVersion: 2
+        x: 3918
+        y: 5834
+        width: 1083
+        height: 1135
+      alignment: 9
+      pivot: {x: 0.49369687, y: 0.4820083}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3afe7b8a21bc44eda7c687861bfa01d0
+      internalID: 21300990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.006
+      rect:
+        serializedVersion: 2
+        x: 5017
+        y: 5835
+        width: 902
+        height: 1134
+      alignment: 9
+      pivot: {x: 0.6750027, y: 0.36390465}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ca5718bf3ea477ab0681a50a3060eaa
+      internalID: 21300206
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.015
+      rect:
+        serializedVersion: 2
+        x: 5935
+        y: 5838
+        width: 1161
+        height: 1131
+      alignment: 9
+      pivot: {x: 0.44491878, y: 0.4380719}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9e67bc0286b944038bb0ac0451c4ec98
+      internalID: 21300224
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.011
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 4679
+        width: 1149
+        height: 1130
+      alignment: 9
+      pivot: {x: 0.6347356, y: 0.43696362}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7102cc72d3e44a5ea4c01736b80a520f
+      internalID: 21301022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.005
+      rect:
+        serializedVersion: 2
+        x: 1181
+        y: 4679
+        width: 814
+        height: 1130
+      alignment: 9
+      pivot: {x: 0.6585543, y: 0.31878436}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1eaca29873f64737a7d2d392f483964b
+      internalID: 21300204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.002
+      rect:
+        serializedVersion: 2
+        x: 2011
+        y: 4687
+        width: 1078
+        height: 1122
+      alignment: 9
+      pivot: {x: 0.49055198, y: 0.2961851}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b67a8ed75d204b3a9793817a49ff9d5f
+      internalID: 21300198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.005
+      rect:
+        serializedVersion: 2
+        x: 3105
+        y: 4687
+        width: 644
+        height: 1122
+      alignment: 9
+      pivot: {x: 0.75589734, y: 0.29231188}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd0c89940def41138e8b9e17f26b3690
+      internalID: 21301010
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.009
+      rect:
+        serializedVersion: 2
+        x: 3765
+        y: 4688
+        width: 1114
+        height: 1121
+      alignment: 9
+      pivot: {x: 0.4885007, y: 0.49276733}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c1427d409c34b2890bb146e676fb385
+      internalID: 21300988
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.013
+      rect:
+        serializedVersion: 2
+        x: 4895
+        y: 4689
+        width: 1091
+        height: 1120
+      alignment: 9
+      pivot: {x: 0.47142294, y: 0.45923302}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4bc5f3b68fd4b1c980670b30ebb21cc
+      internalID: 21300996
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.003
+      rect:
+        serializedVersion: 2
+        x: 6002
+        y: 4691
+        width: 839
+        height: 1118
+      alignment: 9
+      pivot: {x: 0.5592362, y: 0.27193525}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b73796d01bbd4ea3b43e66c3e5f855b4
+      internalID: 21300200
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.013
+      rect:
+        serializedVersion: 2
+        x: 6857
+        y: 4693
+        width: 1111
+        height: 1116
+      alignment: 9
+      pivot: {x: 0.5868671, y: 0.3644225}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 48d85823d9ca40b3ac3acdc1757cf85c
+      internalID: 21301026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.007
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 3548
+        width: 1025
+        height: 1115
+      alignment: 9
+      pivot: {x: 0.52240986, y: 0.4483542}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24afab376aba4b2aa2fe4182173969a7
+      internalID: 21300984
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.004
+      rect:
+        serializedVersion: 2
+        x: 1057
+        y: 3548
+        width: 805
+        height: 1115
+      alignment: 9
+      pivot: {x: 0.6502853, y: 0.29358408}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7aea27acddf24c2daef450583fd522ef
+      internalID: 21300202
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.008
+      rect:
+        serializedVersion: 2
+        x: 1878
+        y: 3551
+        width: 1063
+        height: 1112
+      alignment: 9
+      pivot: {x: 0.49456522, y: 0.48301452}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 089a30bac57b4a0b9d1cad5203882d79
+      internalID: 21300986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.013
+      rect:
+        serializedVersion: 2
+        x: 2957
+        y: 3559
+        width: 1130
+        height: 1104
+      alignment: 9
+      pivot: {x: 0.4259463, y: 0.44788226}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f3b64046f24454dbd00eb4320f2694c
+      internalID: 21300220
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.008
+      rect:
+        serializedVersion: 2
+        x: 4103
+        y: 3564
+        width: 1032
+        height: 1099
+      alignment: 9
+      pivot: {x: 0.5378923, y: 0.41288412}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c07c367b21d4483a8e4d3a5ad43a40df
+      internalID: 21300210
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.000
+      rect:
+        serializedVersion: 2
+        x: 5151
+        y: 3569
+        width: 485
+        height: 1094
+      alignment: 9
+      pivot: {x: 0.693322, y: 0.25501347}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91ccbd0640f4469fabcef40fed6f8ada
+      internalID: 21301000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.011
+      rect:
+        serializedVersion: 2
+        x: 5652
+        y: 3572
+        width: 1105
+        height: 1091
+      alignment: 9
+      pivot: {x: 0.4707244, y: 0.48584905}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f2ef53121bd4a2aafe034ba44120348
+      internalID: 21300216
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.006
+      rect:
+        serializedVersion: 2
+        x: 6773
+        y: 3607
+        width: 548
+        height: 1056
+      alignment: 9
+      pivot: {x: 0.7341243, y: 0.26854196}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75bbfcb92aae453aa8e3f0945990719b
+      internalID: 21301012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.010
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 2481
+        width: 1065
+        height: 1051
+      alignment: 9
+      pivot: {x: 0.5, y: 0.48728815}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d63fdc3dba6d4fd5b2ee7112b7e2fe2b
+      internalID: 21300214
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.000
+      rect:
+        serializedVersion: 2
+        x: 1097
+        y: 2497
+        width: 1079
+        height: 1035
+      alignment: 9
+      pivot: {x: 0.46810323, y: 0.31562543}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 879ff9f6df0f42daa84488013b3aabf2
+      internalID: 21300194
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.012
+      rect:
+        serializedVersion: 2
+        x: 2192
+        y: 2498
+        width: 1104
+        height: 1034
+      alignment: 9
+      pivot: {x: 0.46960777, y: 0.4647577}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e21fab05fee4e42bc9367ad2565acb7
+      internalID: 21300218
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-miniBomb.008
+      rect:
+        serializedVersion: 2
+        x: 3312
+        y: 2510
+        width: 539
+        height: 1022
+      alignment: 9
+      pivot: {x: 0.6855839, y: 0.28878823}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a5946821a1547ad8d90fb7276745768
+      internalID: 21301016
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.005
+      rect:
+        serializedVersion: 2
+        x: 3867
+        y: 2533
+        width: 1106
+        height: 999
+      alignment: 9
+      pivot: {x: 0.5097272, y: 0.4304032}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2029e81fa5434144af67d9c4561227ce
+      internalID: 21300980
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: bomb.001
+      rect:
+        serializedVersion: 2
+        x: 4989
+        y: 2557
+        width: 1113
+        height: 975
+      alignment: 9
+      pivot: {x: 0.39659554, y: 0.30427408}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ac281f79ddc498085a92d1c989cb6d8
+      internalID: 21300196
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.006
+      rect:
+        serializedVersion: 2
+        x: 6118
+        y: 2574
+        width: 1104
+        height: 958
+      alignment: 9
+      pivot: {x: 0.52872777, y: 0.45067757}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d8127564de7456f8a708cb221834310
+      internalID: 21300982
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.003
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 1552
+        width: 1121
+        height: 913
+      alignment: 9
+      pivot: {x: 0.49552393, y: 0.45350412}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2c1f854949f463e97f98756bfebe009
+      internalID: 21300976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.004
+      rect:
+        serializedVersion: 2
+        x: 1153
+        y: 1552
+        width: 1096
+        height: 913
+      alignment: 9
+      pivot: {x: 0.4955242, y: 0.4300806}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7cdce350422a439984b2b99b33b60c65
+      internalID: 21300978
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.001
+      rect:
+        serializedVersion: 2
+        x: 2265
+        y: 1599
+        width: 1106
+        height: 866
+      alignment: 9
+      pivot: {x: 0.49355787, y: 0.44780374}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a17d2e139f9a48d0a28af74e60d3d15d
+      internalID: 21300972
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.002
+      rect:
+        serializedVersion: 2
+        x: 3387
+        y: 1612
+        width: 1119
+        height: 853
+      alignment: 9
+      pivot: {x: 0.49552393, y: 0.44834837}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 955ef1e645f849e688d4a7ac1930fd87
+      internalID: 21300974
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewBombs-megaBomb.000
+      rect:
+        serializedVersion: 2
+        x: 4522
+        y: 1661
+        width: 1104
+        height: 804
+      alignment: 9
+      pivot: {x: 0.49355787, y: 0.44780374}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb7a617ff8ac4fd1b7b9deecf1b14e23
+      internalID: 21300970
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      NewBombs-megaBomb.000: 21300970
+      NewBombs-megaBomb.001: 21300972
+      NewBombs-megaBomb.002: 21300974
+      NewBombs-megaBomb.003: 21300976
+      NewBombs-megaBomb.004: 21300978
+      NewBombs-megaBomb.005: 21300980
+      NewBombs-megaBomb.006: 21300982
+      NewBombs-megaBomb.007: 21300984
+      NewBombs-megaBomb.008: 21300986
+      NewBombs-megaBomb.009: 21300988
+      NewBombs-megaBomb.010: 21300990
+      NewBombs-megaBomb.011: 21300992
+      NewBombs-megaBomb.012: 21300994
+      NewBombs-megaBomb.013: 21300996
+      NewBombs-miniBomb.000: 21301000
+      NewBombs-miniBomb.001: 21301002
+      NewBombs-miniBomb.002: 21301004
+      NewBombs-miniBomb.003: 21301006
+      NewBombs-miniBomb.004: 21301008
+      NewBombs-miniBomb.005: 21301010
+      NewBombs-miniBomb.006: 21301012
+      NewBombs-miniBomb.007: 21301014
+      NewBombs-miniBomb.008: 21301016
+      NewBombs-miniBomb.009: 21301018
+      NewBombs-miniBomb.010: 21301020
+      NewBombs-miniBomb.011: 21301022
+      NewBombs-miniBomb.012: 21301024
+      NewBombs-miniBomb.013: 21301026
+      bomb.000: 21300194
+      bomb.001: 21300196
+      bomb.002: 21300198
+      bomb.003: 21300200
+      bomb.004: 21300202
+      bomb.005: 21300204
+      bomb.006: 21300206
+      bomb.007: 21300208
+      bomb.008: 21300210
+      bomb.009: 21300212
+      bomb.010: 21300214
+      bomb.011: 21300216
+      bomb.012: 21300218
+      bomb.013: 21300220
+      bomb.014: 21300222
+      bomb.015: 21300224
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
