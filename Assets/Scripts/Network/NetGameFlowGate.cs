@@ -49,8 +49,41 @@ namespace SuperQQ.Network
 
         private void Update()
         {
-            if (_initialized) return;
-            TryInit();
+            if (!_initialized)
+            {
+                TryInit();
+            }
+            // 屏蔽本地阶段转移与消息注册解耦，持续重试直到 GamePhaseManager 就绪。
+            // 否则在 Room 场景初始化时 Level1 未加载、GamePhaseManager 为 null，
+            // 屏蔽被跳过一次后再不重试，整个对局本地倒计时/条件转移照常触发（阶段被"跳过"）。
+            TrySuppressLocalTransitions();
+        }
+
+        private bool _bLocalTransitionsSuppressed;
+
+        private void TrySuppressLocalTransitions()
+        {
+            if (_bLocalTransitionsSuppressed)
+            {
+                return;
+            }
+
+            NetworkManager net = NetworkManager.Instance;
+            if (net == null || !net.IsConnected || string.IsNullOrEmpty(net.RoomId))
+            {
+                return; // 离线/未进房不接管
+            }
+
+            GamePhaseManager flow = GamePhaseManager.Instance;
+            if (flow == null)
+            {
+                return; // Level1 未加载，下一帧重试
+            }
+
+            flow.SetStartFlowOnStart(false);
+            flow.SuppressLocalTransitions = true;
+            _bLocalTransitionsSuppressed = true;
+            Debug.Log("[NetWork] 已屏蔽本地阶段切换：阶段只响应服务器 GamePhaseSync");
         }
 
         private void TryInit()
@@ -72,12 +105,6 @@ namespace SuperQQ.Network
             net.Register<PlayerOutBroadcast>(OnPlayerOut);
             net.Register<global::Minigame.Room.V1.Settlement>(OnSettlement);
 
-            GamePhaseManager flow = GamePhaseManager.Instance;
-            if (flow != null)
-            {
-                flow.SetStartFlowOnStart(false);
-                flow.SuppressLocalTransitions = true;
-            }
             Debug.Log("[NetWork] 联机模式：游戏流程与阶段切换由服务器驱动（ItemOfferList / GamePhaseSync）");
         }
 
@@ -150,6 +177,10 @@ namespace SuperQQ.Network
             {
                 return;
             }
+
+            // 选择阶段可能早于 LocalPlayerNetSetup.Update 启动；生成图标前必须先写入本地 playerId，
+            // 否则 PlayerController.IdentityKey 会从场景名后变成服务器 ID，被补生成逻辑误判为新玩家。
+            LocalPlayerNetSetup.EnsureLocalIdentityNow();
 
             // 数据源：最新快照优先（含 RoomUpdated 后加入的玩家），JoinedRoom 兜底
             Minigame.Room.V1.RoomSnapshot snapshot = null;
@@ -308,6 +339,19 @@ namespace SuperQQ.Network
 
         private void OnServerOffers(ItemOfferList list)
         {
+            // 选择阶段已激活时，Director 的注册可能被本 Gate 重新注册覆盖（本地流程先于服务器
+            // 消息启动的竞争场景：BeginPhase 注册 → OnGamePhaseSync 重新注册 → 发牌到达）。
+            // 此时缓存将无人消费，直接把发牌转发给激活中的 Director 并清缓存。
+            SuperQQ.Selection.Runtime.PropSelectionDirector director =
+                UnityEngine.Object.FindFirstObjectByType<SuperQQ.Selection.Runtime.PropSelectionDirector>();
+            if (director != null && director.BIsActive)
+            {
+                _pendingOffers = null;
+                director.ReceiveOffers(list);
+                Debug.Log($"[NetWork] Gate 转发发牌给激活中的选择阶段: round={list.Round} 道具数={list.Offers.Count}");
+                return;
+            }
+
             // 始终缓存最新发牌，供 PropSelectionDirector 进入阶段时消费
             _pendingOffers = list;
             CurrentServerRound = list.Round;
