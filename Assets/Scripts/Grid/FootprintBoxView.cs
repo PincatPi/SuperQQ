@@ -94,6 +94,18 @@ namespace SuperQQ.Grid
         // ==================== 公开接口 ====================
 
         /// <summary>
+        /// 运行时修改占位尺寸（如旋转吐司每轮随机大小），并重建虚线框
+        /// </summary>
+        public void SetFootprint(Vector2Int newFootprint, bool rotated = false)
+        {
+            footprint = new Vector2Int(Mathf.Max(1, newFootprint.x), Mathf.Max(1, newFootprint.y));
+            if (boxRenderer != null)
+            {
+                Init(footprint, rotated);
+            }
+        }
+
+        /// <summary>
         /// 按占位尺寸生成/更新虚线框（自动处理旋转的宽高互换）
         /// </summary>
         /// <param name="footprint">未旋转的占位（宽x高格子数）</param>

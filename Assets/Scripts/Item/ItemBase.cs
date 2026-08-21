@@ -96,6 +96,19 @@ namespace SuperQQ.Item
                 SuperQQ.Network.PickupRegistry.Register(coin);
             }
             SuperQQ.Network.ItemLifecycleSync.Register(this);
+
+            // 注册昼夜色调：道具是运行时动态生成的，不在 MapDayNightController 的 Awake 缓存里，
+            // 需主动注册才能在夜晚随地图一起变蓝（无昼夜控制器的场景为空操作）
+            SuperQQ.Map.MapDayNightController.Instance?.RegisterExternalRenderers(gameObject);
+        }
+
+        /// <summary>销毁时反注册昼夜色调（移除/拆毁/场景切换均走 OnDestroy，无需各路径单独处理）</summary>
+        protected virtual void OnDestroy()
+        {
+            if (SuperQQ.Map.MapDayNightController.Instance != null)
+            {
+                SuperQQ.Map.MapDayNightController.Instance.UnregisterExternalRenderers(gameObject);
+            }
         }
 
         /// <summary>

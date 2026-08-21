@@ -121,3 +121,17 @@ MonoBehaviour:
       y: 0
       width: 64
       height: 6
+  - zoneType: 4
+    cells:
+      x: 2
+      y: 5
+      width: 7
+      height: 3
+    riseWithWater: 1
+  - zoneType: 4
+    cells:
+      x: 15
+      y: 5
+      width: 7
+      height: 3
+    riseWithWater: 1

@@ -481,9 +481,10 @@ namespace SuperQQ.Grid
             }
             foreach (LevelZoneConfig.ZoneEntry zone in zoneConfig.Zones)
             {
-                // Water 条目：查询点按水位偏移下移后判定，等效水域整体上移
+                // 随水位移动的条目：查询点按水位偏移下移后判定，等效区域整体上移。
+                // Water 条目始终随水位移动；riseWithWater 标记的条目（如 Boat 的占用区）同样随水位移动。
                 Vector2Int queryCell = cell;
-                if (waterYOffsetCells != 0 && (zone.zoneType & GridZoneType.Water) != 0)
+                if (waterYOffsetCells != 0 && ZoneMovesWithWater(zone))
                 {
                     queryCell.y -= waterYOffsetCells;
                 }
@@ -520,9 +521,9 @@ namespace SuperQQ.Grid
             }
             foreach (LevelZoneConfig.ZoneEntry zone in zoneConfig.Zones)
             {
-                // Water 条目：查询矩形按水位偏移下移后判定，与 GetZonesAt(cell) 口径一致
+                // 随水位移动的条目：查询矩形按水位偏移下移后判定，与 GetZonesAt(cell) 口径一致
                 RectInt queryRect = cellRect;
-                if (waterYOffsetCells != 0 && (zone.zoneType & GridZoneType.Water) != 0)
+                if (waterYOffsetCells != 0 && ZoneMovesWithWater(zone))
                 {
                     queryRect.y -= waterYOffsetCells;
                 }
@@ -548,6 +549,12 @@ namespace SuperQQ.Grid
                 maxCell.x - minCell.x + 1,
                 maxCell.y - minCell.y + 1);
             return GetZonesInRect(cellRect);
+        }
+
+        /// <summary>该条目是否随夜晚水位移动：Water 类型始终移动；riseWithWater 标记的条目（如 Boat 占用区）同样移动</summary>
+        private static bool ZoneMovesWithWater(LevelZoneConfig.ZoneEntry zone)
+        {
+            return (zone.zoneType & GridZoneType.Water) != 0 || zone.riseWithWater;
         }
 
         /// <summary>两个格子矩形是否相交</summary>

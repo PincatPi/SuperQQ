@@ -89,9 +89,10 @@ namespace SuperQQ.Item
 
             Collect(player, registry);
 
-            // 联机：上报拾取请求，服务器裁决后广播（其他端据此移除这枚金币）
+            // 联机：上报拾取请求（带分值，服务器累计为本轮 ScoreItem 分，通关时计入），
+            // 服务器裁决后广播（其他端据此移除这枚金币）
             SuperQQ.Network.NetEventSync.ReportPickup(
-                SuperQQ.Network.PickupRegistry.MakeCoinId(Placed.AnchorCell));
+                SuperQQ.Network.PickupRegistry.MakeCoinId(Placed.AnchorCell), bonusScore);
             SuperQQ.Network.NetEventSync.ReportEvent(
                 Minigame.Room.V1.PlayerEventType.Pickup, transform.position);
         }
@@ -255,8 +256,10 @@ namespace SuperQQ.Item
             Destroy(gameObject);
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy(); // 昼夜色调反注册
+
             // 兜底：被炸毁/清空等外部销毁路径也要离队并解除订阅
             if (followGroup != null)
             {

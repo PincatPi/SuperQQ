@@ -36,7 +36,6 @@ namespace SuperQQ.UI.RoundResults
             ScoreType.FirstPlace,
             ScoreType.SoloClear,
             ScoreType.TrapKill,
-            ScoreType.SpecialEffect,
             ScoreType.ScoreItem
         };
 
@@ -73,6 +72,14 @@ namespace SuperQQ.UI.RoundResults
                     RoundTotal = round.RoundTotal,
                     CumulativeTotal = round.CumulativeTotal
                 };
+
+                // 联机模式：总分以服务器结算为准（服务器统一算分），本地算分仅作分段明细展示
+                if (TryGetServerScore(playerName, out Network.NetGameFlowGate.ServerPlayerScore serverScore))
+                {
+                    player.RoundTotal = serverScore.RoundScore;
+                    player.CumulativeTotal = serverScore.TotalScore;
+                    player.PreviousTotal = Mathf.Max(0, serverScore.TotalScore - serverScore.RoundScore);
+                }
 
                 AddSegments(player, round);
                 bestRoundScore = Mathf.Max(bestRoundScore, round.RoundTotal);
@@ -151,6 +158,19 @@ namespace SuperQQ.UI.RoundResults
                     Color = GetSegmentColor(scoreType)
                 });
             }
+        }
+
+        /// <summary>取服务器下发的该玩家分数（玩家名 → playerId 映射后查询）；无则返回 false</summary>
+        private static bool TryGetServerScore(string playerName, out Network.NetGameFlowGate.ServerPlayerScore score)
+        {
+            score = default;
+            if (!Network.NetGameFlowGate.BHasServerScores || PlayerSessionManager.Instance == null)
+            {
+                return false;
+            }
+
+            PlayerProfile profile = PlayerSessionManager.Instance.GetProfile(playerName);
+            return profile != null && Network.NetGameFlowGate.TryGetServerScore(profile.PlayerId, out score);
         }
 
         private static List<string> GetOrderedNames(PlayerScoreManager scoreManager)

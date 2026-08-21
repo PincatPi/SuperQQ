@@ -1,4 +1,5 @@
 using UnityEngine;
+using SuperQQ.Grid;
 using SuperQQ.Map;
 
 namespace SuperQQ.Player
@@ -91,6 +92,30 @@ namespace SuperQQ.Player
             ApplyVariableJumpHeight();
             ApplyBetterFallGravity();
             ClampToLevelBounds();
+            CheckWaterDeath();
+        }
+
+        // ==================== 水域淹没判定 ====================
+
+        /// <summary>
+        /// 淹没判定：玩家所在格子命中 Water 区域即死亡。
+        /// 判定走 GridManager.GetZonesAt，已内置夜晚水位偏移（WaterYOffsetCells），
+        /// 因此黑夜水面上升后站在新水格子里同样会判死，昼夜切换无需额外处理。
+        /// 未配置区域（GridManager/ZoneConfig 缺失）时静默跳过。
+        /// </summary>
+        private void CheckWaterDeath()
+        {
+            GridManager grid = GridManager.Instance;
+            if (grid == null)
+            {
+                return;
+            }
+
+            Vector2Int cell = grid.WorldToCell(_ctx.Rb.position);
+            if ((grid.GetZonesAt(cell) & GridZoneType.Water) != 0)
+            {
+                _ctx.PlayerDie();
+            }
         }
 
         // ==================== 地图边界 ====================

@@ -808,6 +808,14 @@ namespace SuperQQ.Placement.Runtime
 
                 awaitingPlaceResult = true;
                 net.Send(demolishConfirm);
+
+                // 本地同步完成放置：DemolitionItemBase.OnPlaced 联机分支把炸弹按锚点挂起，
+                // 等待 ItemDemolishResult 到达后统一引爆；同时结束摆放会话（停止拖拽广播）。
+                // 此前漏掉这一步会导致会话一直卡在摆放中（ItemPlaceState 持续广播、确认可重复点击）。
+                if (!localSession.Confirm())
+                {
+                    awaitingPlaceResult = false; // 落点非法未 finalize，允许重新确认
+                }
                 return;
             }
 
@@ -884,11 +892,25 @@ namespace SuperQQ.Placement.Runtime
 
             Vector2Int anchor = new Vector2Int(result.AnchorCell.X, result.AnchorCell.Y);
 
-            // 汇总被拆道具锚点（去重）
-            var removedAnchors = new HashSet<Vector2Int>();
-            foreach (PlacedItemState removed in result.RemovedItems)
+            // 汇总被拆道具锚点（去重）。removed_items 非空时严格按服务器裁定（各端一致）；
+            // 为空时本地按炸弹爆破范围与占据表交集计算兜底——服务器 placedItems 未维护
+            // /跨轮清空的场景下仲裁结果恒空，会导致炸弹炸了个寂寞
+            HashSet<Vector2Int> removedAnchors;
+            if (result.RemovedItems.Count > 0)
             {
-                removedAnchors.Add(new Vector2Int(removed.AnchorCell.X, removed.AnchorCell.Y));
+                removedAnchors = new HashSet<Vector2Int>();
+                foreach (PlacedItemState removed in result.RemovedItems)
+                {
+                    removedAnchors.Add(new Vector2Int(removed.AnchorCell.X, removed.AnchorCell.Y));
+                }
+            }
+            else
+            {
+                removedAnchors = CollectDemolishTargetsLocally(result);
+                if (removedAnchors.Count > 0)
+                {
+                    Debug.LogWarning($"{LOG_TAG} 服务器 removed_items 为空，本地按爆破范围兜底拆除 {removedAnchors.Count} 个道具（各端计算口径一致时结果相同）");
+                }
             }
 
             if (isMine)
@@ -948,6 +970,50 @@ namespace SuperQQ.Placement.Runtime
                 ExecuteRemoteDemolishRemoval(removedAnchors);
                 Destroy(item);
             }
+        }
+
+        /// <summary>
+        /// 本地计算拆除目标：按炸弹锚点+footprint 得出爆破范围格子，
+        /// 取与占据表的交集（排除炸弹自身锚点），返回目标道具锚点集合。
+        /// 与 DemolitionItemBase.CollectTargetsInArea 口径一致。
+        /// </summary>
+        private static HashSet<Vector2Int> CollectDemolishTargetsLocally(ItemDemolishResult result)
+        {
+            var anchors = new HashSet<Vector2Int>();
+            GridManager grid = GridManager.Instance;
+            if (grid == null)
+            {
+                return anchors;
+            }
+
+            Vector2Int anchor = new Vector2Int(result.AnchorCell.X, result.AnchorCell.Y);
+            ItemBase prefab = FindPoolItemStatic(result.ItemId);
+            FootprintBoxView prefabBox = prefab != null ? prefab.GetComponent<FootprintBoxView>() : null;
+            Vector2Int size = prefabBox != null ? prefabBox.Footprint : Vector2Int.one;
+
+            for (int dx = 0; dx < size.x; dx++)
+            {
+                for (int dy = 0; dy < size.y; dy++)
+                {
+                    Vector2Int cell = new Vector2Int(anchor.x + dx, anchor.y + dy);
+                    if (cell == anchor)
+                    {
+                        continue; // 排除炸弹自身
+                    }
+                    PlacedItem target = grid.GetItemAt(cell);
+                    if (target != null)
+                    {
+                        anchors.Add(target.AnchorCell);
+                    }
+                }
+            }
+            return anchors;
+        }
+
+        /// <summary>FindPoolItem 的静态版本（供静态兜底计算使用）</summary>
+        private static ItemBase FindPoolItemStatic(string itemId)
+        {
+            return Instance != null ? Instance.FindPoolItem(itemId) : null;
         }
 
         /// <summary>兜底：炸弹 prefab 缺失或组件缺失时，仅按服务器裁定执行移除</summary>

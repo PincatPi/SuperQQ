@@ -187,6 +187,8 @@ message SettlementPlayerResult {
   int32 rank = 3;
   int32 mmr_delta = 4;
   int32 coin_delta = 5;
+  int32 round_score = 6;    // 本轮得分（服务器权威计算：通关20/第一名10/独行15/陷阱5*min(次数,2)/安静10/道具分，无人通关全员0）
+  int32 total_score = 7;    // 截至本轮累计总分
 }
 
 message Settlement {
@@ -194,6 +196,9 @@ message Settlement {
   string winner_player_id = 2;
   repeated SettlementPlayerResult results = 3;
   int64 settled_at_ms = 4;
+  // 结算所属轮次。服务器在每轮 ROUND_SETTLEMENT 阶段开始时下发（winner 为空表示单轮结算，
+  // 有玩家 total_score 达到胜利线时 winner_player_id 非空表示最终结算）。
+  int32 round = 5;
 }
 
 // ==================== 道具选择阶段同步 ====================
@@ -439,6 +444,9 @@ message PickupClaim {
   string room_id = 2;
   string player_id = 3;
   string pickup_id = 4;
+  // 拾取物分值（金币等得分道具，无分值收集物为 0）。
+  // 服务器算分用：裁决成功后为拾取者累计本轮 ScoreItem 分，该玩家通关（Finished）时计入得分，死亡清空。
+  int32 score_value = 5;
 }
 
 // 服务器 → 全房间：拾取裁决广播（同一 pickup_id 只认第一次）。

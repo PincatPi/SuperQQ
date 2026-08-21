@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Minigame.Room.V1;
 using SuperQQ.GameFlow;
 using UnityEngine;
@@ -121,13 +122,50 @@ namespace SuperQQ.Network
             }
         }
 
-        /// <summary>服务器结算结果：权威排名/胜负（本地展示数据与服务器核对用）</summary>
+        // ==================== 服务器权威分数 ====================
+
+        /// <summary>服务器下发的玩家分数（本轮/累计）</summary>
+        public struct ServerPlayerScore
+        {
+            public int RoundScore;
+            public int TotalScore;
+        }
+
+        // 服务器结算下发的分数表（键为 playerId），结算面板优先于本地算分使用
+        private static readonly Dictionary<string, ServerPlayerScore> _serverScores = new();
+
+        /// <summary>是否存在服务器下发的分数（联机收到 Settlement 后为 true）</summary>
+        public static bool BHasServerScores => _serverScores.Count > 0;
+
+        /// <summary>按 playerId 取服务器分数；无记录返回 false</summary>
+        public static bool TryGetServerScore(string playerId, out ServerPlayerScore score)
+        {
+            if (playerId != null)
+            {
+                return _serverScores.TryGetValue(playerId, out score);
+            }
+            score = default;
+            return false;
+        }
+
+        /// <summary>服务器结算结果：权威排名/胜负/分数（本地展示数据以服务器为准）</summary>
         private void OnSettlement(global::Minigame.Room.V1.Settlement settlement)
         {
-            Debug.Log($"[NetWork] 收到服务器结算: 胜者={settlement.WinnerPlayerId} 玩家数={settlement.Results.Count}");
+            _serverScores.Clear();
             foreach (SettlementPlayerResult r in settlement.Results)
             {
-                Debug.Log($"[NetWork]   第{r.Rank}名 {r.PlayerId} mmrΔ={r.MmrDelta} coinΔ={r.CoinDelta}");
+                _serverScores[r.PlayerId] = new ServerPlayerScore
+                {
+                    RoundScore = r.RoundScore,
+                    TotalScore = r.TotalScore
+                };
+            }
+
+            bool bFinal = !string.IsNullOrEmpty(settlement.WinnerPlayerId);
+            Debug.Log($"[NetWork] 收到服务器结算: round={settlement.Round} {(bFinal ? $"最终 胜者={settlement.WinnerPlayerId}" : "单轮")} 玩家数={settlement.Results.Count}");
+            foreach (SettlementPlayerResult r in settlement.Results)
+            {
+                Debug.Log($"[NetWork]   第{r.Rank}名 {r.PlayerId} 本轮={r.RoundScore} 累计={r.TotalScore} mmrΔ={r.MmrDelta} coinΔ={r.CoinDelta}");
             }
         }
 
@@ -315,6 +353,11 @@ namespace SuperQQ.Network
             switch (sync.Phase)
             {
                 case GamePhaseKind.PropSelection:
+                    // 新一轮开始即复活本地玩家并回出生点（而非等到 PLAYING）：
+                    // 上一轮死亡的玩家在选择/摆放阶段（约 70s）一直是幽灵，会持续上报
+                    // player_state=1（幽灵），若服务器参考该字段判定出局会误判秒切结算。
+                    // 首轮玩家本就存活，Revive 为空操作，可安全调用。
+                    SuperQQ.Player.LevelPlayerRegistry.Instance?.ReviveLocalPlayersForNewRound();
                     // 选择阶段：道具列表由 ItemOfferList 下发，此处只负责切阶段
                     flow.EnterPhaseByType<PropSelectionPhase>(reason);
                     break;

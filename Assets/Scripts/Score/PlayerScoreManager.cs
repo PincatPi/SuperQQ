@@ -41,9 +41,6 @@ namespace SuperQQ.Score
         // 本轮中间数据：额外加分（金币等得分道具在玩家通关时提交）
         private readonly Dictionary<string, int> _roundBonusScores = new();
 
-        // 本轮中间数据：老板巡视安静达标的玩家名称
-        private readonly List<string> _roundQuietPlayerNames = new();
-
         // 当前轮次索引（从1开始，0表示尚未开始）
         private int _currentRoundIndex;
 
@@ -316,12 +313,6 @@ namespace SuperQQ.Score
                 input.BonusScores[pair.Key] = pair.Value;
             }
 
-            // 安静达标玩家
-            for (int i = 0; i < _roundQuietPlayerNames.Count; i++)
-            {
-                input.QuietPlayerNames.Add(_roundQuietPlayerNames[i]);
-            }
-
             return input;
         }
 
@@ -473,24 +464,6 @@ namespace SuperQQ.Score
             _roundBonusScores[playerName] += points;
         }
 
-        /// <summary>
-        /// 记录老板巡视安静达标
-        /// 由老板事件系统在巡视结束时调用
-        /// </summary>
-        /// <param name="playerName">安静达标玩家名称</param>
-        public void RecordBossQuiet(string playerName)
-        {
-            if (string.IsNullOrEmpty(playerName))
-            {
-                return;
-            }
-
-            if (!_roundQuietPlayerNames.Contains(playerName))
-            {
-                _roundQuietPlayerNames.Add(playerName);
-            }
-        }
-
         // ==================== 轮次管理 ====================
 
         /// <summary>
@@ -502,7 +475,6 @@ namespace SuperQQ.Score
             _currentRoundIndex++;
             _bIsRoundScored = false;
             _roundTrapKillCounts.Clear();
-            _roundQuietPlayerNames.Clear();
             _roundBonusScores.Clear();
         }
 

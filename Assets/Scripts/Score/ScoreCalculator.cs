@@ -38,11 +38,6 @@ namespace SuperQQ.Score
         private const int MAX_TRAP_KILL_COUNT = 2;
 
         /// <summary>
-        /// 特殊效果加分：老板巡视安静达标+10
-        /// </summary>
-        private const int SPECIAL_EFFECT_SCORE = 10;
-
-        /// <summary>
         /// 胜利线分数：100分
         /// </summary>
         public const int VICTORY_LINE = 100;
@@ -108,11 +103,7 @@ namespace SuperQQ.Score
                 data.ScoreBreakdown[ScoreType.TrapKill] =
                     bHasAnyFinish ? cappedKills * TRAP_KILL_SCORE_PER : 0;
 
-                // 5. 特殊效果加分：老板巡视安静达标+10；无人通关时为0
-                data.ScoreBreakdown[ScoreType.SpecialEffect] =
-                    (bHasAnyFinish && IsQuietPlayer(input, playerName)) ? SPECIAL_EFFECT_SCORE : 0;
-
-                // 6. 得分道具得分：金币等得分道具的额外加分，单独成项；
+                // 5. 得分道具得分：金币等得分道具的额外加分，单独成项；
                 //    金币仅在跟随角色通关时提交，天然满足"通关才加分"；无人通关时为0
                 data.ScoreBreakdown[ScoreType.ScoreItem] =
                     bHasAnyFinish ? GetBonusScore(input, playerName) : 0;
@@ -161,26 +152,6 @@ namespace SuperQQ.Score
                 return count;
             }
             return 0;
-        }
-
-        /// <summary>
-        /// 判断玩家是否在本轮老板巡视安静达标
-        /// </summary>
-        private static bool IsQuietPlayer(RoundScoreInput input, string playerName)
-        {
-            if (input.QuietPlayerNames == null)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < input.QuietPlayerNames.Count; i++)
-            {
-                if (input.QuietPlayerNames[i] == playerName)
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         /// <summary>

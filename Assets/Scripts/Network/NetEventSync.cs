@@ -79,8 +79,8 @@ namespace SuperQQ.Network
             });
         }
 
-        /// <summary>上报拾取请求（服务器先到先得裁决后广播）</summary>
-        public static void ReportPickup(string pickupId)
+        /// <summary>上报拾取请求（服务器先到先得裁决后广播）；scoreValue 为拾取物分值（金币等，无分值传 0），服务器算分用</summary>
+        public static void ReportPickup(string pickupId, int scoreValue = 0)
         {
             if (!BReady) return;
             NetworkManager net = NetworkManager.Instance;
@@ -88,7 +88,8 @@ namespace SuperQQ.Network
             {
                 RoomId = net.RoomId,
                 PlayerId = net.LocalPlayerId,
-                PickupId = pickupId
+                PickupId = pickupId,
+                ScoreValue = scoreValue
             });
         }
 

@@ -21,6 +21,8 @@ namespace SuperQQ.Grid
             public GridZoneType zoneType;
             [Tooltip("区域覆盖的格子范围（格子坐标）")]
             public RectInt cells;
+            [Tooltip("夜晚水面上升时该区域是否随之上移（夜晚水位= riseCells 格）。用于标记随水面移动的物体（如 Boat）的占用区域；Water 条目本身始终随水位移动，无需勾选")]
+            public bool riseWithWater;
         }
 
         [SerializeField] private List<ZoneEntry> zones = new List<ZoneEntry>();

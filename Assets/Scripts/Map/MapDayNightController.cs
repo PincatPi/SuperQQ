@@ -41,10 +41,69 @@ namespace SuperQQ.Map
         private SpriteRenderer[] _renderers;
         private Color[] _dayColors;
 
+        // 外部注册的渲染器（运行时动态生成的道具等）：渲染器 -> 原始颜色。
+        // 与 _renderers/_dayColors 同等参与夜晚色调乘算，注册时立即应用当前色调。
+        private readonly Dictionary<SpriteRenderer, Color> _externalRenderers = new();
+
+        /// <summary>当前场景实例（Map 预制体根节点上唯一）</summary>
+        public static MapDayNightController Instance { get; private set; }
+
         private void Awake()
         {
+            Instance = this;
             CacheDayState();
             Debug.Log($"[MapDayNight] Awake：缓存白天状态完成（抬升目标 {CountValidTargets()} 个，渲染器 {_renderers.Length} 个）", this);
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
+
+        /// <summary>
+        /// 注册一个物体的所有子渲染器参与昼夜色调（道具放置时调用）。
+        /// 以当前色调立即应用一次，避免等到下一帧才变色。
+        /// </summary>
+        public void RegisterExternalRenderers(GameObject root)
+        {
+            if (root == null)
+            {
+                return;
+            }
+
+            SpriteRenderer[] renderers = root.GetComponentsInChildren<SpriteRenderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                SpriteRenderer r = renderers[i];
+                if (r == null || _externalRenderers.ContainsKey(r))
+                {
+                    continue;
+                }
+
+                _externalRenderers.Add(r, r.color);
+                ApplyTintTo(r, _externalRenderers[r], _blend);
+            }
+        }
+
+        /// <summary>反注册一个物体的所有子渲染器（道具销毁/移除时调用）</summary>
+        public void UnregisterExternalRenderers(GameObject root)
+        {
+            if (root == null)
+            {
+                return;
+            }
+
+            SpriteRenderer[] renderers = root.GetComponentsInChildren<SpriteRenderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i] != null)
+                {
+                    _externalRenderers.Remove(renderers[i]);
+                }
+            }
         }
 
         private int CountValidTargets()
@@ -161,9 +220,37 @@ namespace SuperQQ.Map
                 {
                     continue;
                 }
-                Color c = _dayColors[i];
-                _renderers[i].color = new Color(c.r * tint.r, c.g * tint.g, c.b * tint.b, c.a);
+                ApplyTintTo(_renderers[i], _dayColors[i], blend);
             }
+
+            // 外部注册渲染器（运行时生成的道具）：同样按白天原始色乘算色调
+            if (_externalRenderers.Count > 0)
+            {
+                _staleExternal.Clear();
+                foreach (KeyValuePair<SpriteRenderer, Color> pair in _externalRenderers)
+                {
+                    if (pair.Key == null)
+                    {
+                        _staleExternal.Add(pair.Key); // 已销毁未反注册，清理
+                        continue;
+                    }
+                    ApplyTintTo(pair.Key, pair.Value, blend);
+                }
+                for (int i = 0; i < _staleExternal.Count; i++)
+                {
+                    _externalRenderers.Remove(_staleExternal[i]);
+                }
+            }
+        }
+
+        // 应用色调时发现的已销毁外部渲染器（复用避免每帧分配）
+        private readonly List<SpriteRenderer> _staleExternal = new();
+
+        /// <summary>按昼夜进度把原始颜色乘上夜色（保留 alpha），写入渲染器</summary>
+        private void ApplyTintTo(SpriteRenderer r, Color dayColor, float blend)
+        {
+            Color tint = Color.Lerp(Color.white, nightTint, blend);
+            r.color = new Color(dayColor.r * tint.r, dayColor.g * tint.g, dayColor.b * tint.b, r.color.a);
         }
 
         /// <summary>缓存白天的位置与颜色（切换循环的还原基准）</summary>

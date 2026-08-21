@@ -71,6 +71,9 @@ namespace SuperQQ.Network
             { typeof(PlayerEvent),              (e, m) => e.PlayerEvent = (PlayerEvent)m },
             { typeof(PickupClaim),              (e, m) => e.PickupClaim = (PickupClaim)m },
             { typeof(ItemStateEvent),           (e, m) => e.ItemStateEvent = (ItemStateEvent)m },
+            { typeof(GmSetPhase),               (e, m) => e.GmSetPhase = (GmSetPhase)m },
+            { typeof(TrapKillEvent),            (e, m) => e.TrapKillEvent = (TrapKillEvent)m },
+            { typeof(ItemDemolishConfirm),      (e, m) => e.ItemDemolishConfirm = (ItemDemolishConfirm)m },
         };
 
         // 接收侧：消息类型 -> 从 ServerEnvelope 取出的方式
@@ -103,6 +106,8 @@ namespace SuperQQ.Network
             { typeof(PlayerEventBroadcast),      e => e.PlayerEventBroadcast },
             { typeof(PickupClaimBroadcast),      e => e.PickupClaimBroadcast },
             { typeof(ItemStateEventBroadcast),   e => e.ItemStateEventBroadcast },
+            { typeof(TrapKillBroadcast),         e => e.TrapKillBroadcast },
+            { typeof(ItemDemolishResult),        e => e.ItemDemolishResult },
             { typeof(ErrorResponse),             e => e.Error },
         };
 
