@@ -51,6 +51,7 @@ namespace SuperQQ.Network
         {
             { typeof(HeartbeatRequest),         (e, m) => e.Heartbeat = (HeartbeatRequest)m },
             { typeof(LoginRequest),             (e, m) => e.Login = (LoginRequest)m },
+            { typeof(LogoutRequest),            (e, m) => e.Logout = (LogoutRequest)m },
             { typeof(GetPlayerRequest),         (e, m) => e.GetPlayer = (GetPlayerRequest)m },
             { typeof(StartMatchRequest),        (e, m) => e.StartMatch = (StartMatchRequest)m },
             { typeof(CancelMatchRequest),       (e, m) => e.CancelMatch = (CancelMatchRequest)m },
@@ -78,6 +79,7 @@ namespace SuperQQ.Network
         {
             { typeof(HeartbeatResponse),         e => e.Heartbeat },
             { typeof(LoginResponse),             e => e.Login },
+            { typeof(LogoutResponse),            e => e.Logout },
             { typeof(GetPlayerResponse),         e => e.GetPlayer },
             { typeof(StartMatchResponse),        e => e.StartMatch },
             { typeof(CancelMatchResponse),       e => e.CancelMatch },

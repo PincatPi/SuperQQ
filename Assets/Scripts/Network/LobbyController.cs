@@ -1,3 +1,4 @@
+using Minigame.Account.V1;
 using Minigame.Common.V1;
 using Minigame.Gateway.V1;
 using Minigame.Room.V1;
@@ -76,6 +77,7 @@ namespace SuperQQ.Network
 
             _net.Register<JoinRoomResponse>(OnJoinRoom);
             _net.Register<CreateRoomResponse>(OnCreateRoom);
+            _net.Register<LogoutResponse>(OnLogout);
             _net.Register<ErrorResponse>(OnError);
 
             RefreshState();
@@ -86,6 +88,7 @@ namespace SuperQQ.Network
             if (_net == null) return;
             _net.Unregister<JoinRoomResponse>();
             _net.Unregister<CreateRoomResponse>();
+            _net.Unregister<LogoutResponse>();
             _net.Unregister<ErrorResponse>();
         }
 
@@ -219,19 +222,36 @@ namespace SuperQQ.Network
             SceneManager.LoadScene(roomSceneName);
         }
 
-        /// <summary>返回主界面：客户端退出登录（清空登录态），服务端注销接口就绪后在此处补发请求</summary>
+        /// <summary>返回主界面：通知服务端注销 token（fire-and-forget），同时清空本地登录态并切场景</summary>
         private void OnBackClicked()
         {
             Debug.Log("[NetWork] 退出登录，返回主界面");
 
-            // TODO: 服务端退出登录接口（LogoutRequest）就绪后，先发送请求再切场景
             if (_net != null)
             {
+                // 已登录才需要通知服务端注销；token 字段由服务端以连接绑定为准，无需填写。
+                // 不等回包：登出是幂等的，即使请求失败也不阻塞返回主界面。
+                if (!string.IsNullOrEmpty(_net.LocalPlayerId))
+                {
+                    _net.Send(new LogoutRequest());
+                }
+
                 _net.LocalPlayerId = "";
                 _net.Token = "";
             }
 
             SceneManager.LoadScene(homeSceneName);
+        }
+
+        /// <summary>登出应答：服务端幂等处理，仅记录结果，无需 UI 反馈</summary>
+        private void OnLogout(LogoutResponse resp)
+        {
+            if (resp.Status == null || resp.Status.Code != ResultCode.Ok)
+            {
+                Debug.LogWarning($"[NetWork] 服务端登出失败: {resp.Status?.Message}");
+                return;
+            }
+            Debug.Log("[NetWork] 服务端登出成功，token 已失效");
         }
 
         // ==================== 错误处理 ====================

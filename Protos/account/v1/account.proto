@@ -47,6 +47,16 @@ message ValidateTokenResponse {
   minigame.common.v1.PlayerProfile player = 3;
 }
 
+// 退出登录：使当前 token 立即失效；幂等（token 已失效也返回成功）
+message LogoutRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string token = 2;   // 客户端不用填，服务端以连接绑定为准（填了也会被覆盖）
+}
+
+message LogoutResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+}
+
 service AccountService {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc GetPlayer(GetPlayerRequest) returns (GetPlayerResponse);

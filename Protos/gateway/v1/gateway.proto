@@ -57,6 +57,8 @@ message ClientEnvelope {
     minigame.room.v1.GmSetPhase gm_set_phase = 32;
     // 陷阱击杀上报：纯透传，无同步应答，广播 TrapKillBroadcast 给其他端。
     minigame.room.v1.TrapKillEvent trap_kill_event = 33;
+    // 退出登录：使当前 token 立即失效；幂等。
+    minigame.account.v1.LogoutRequest logout = 36;
   }
 }
 
@@ -94,6 +96,8 @@ message ServerEnvelope {
     minigame.room.v1.PickupClaimBroadcast pickup_claim_broadcast = 35;
     minigame.room.v1.ItemStateEventBroadcast item_state_event_broadcast = 36;
     minigame.room.v1.TrapKillBroadcast trap_kill_broadcast = 37;
+    // 退出登录同步应答。
+    minigame.account.v1.LogoutResponse logout = 40;
     ErrorResponse error = 90;
   }
 }
