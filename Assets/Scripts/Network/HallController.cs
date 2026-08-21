@@ -2,6 +2,7 @@ using Minigame.Common.V1;
 using Minigame.Gateway.V1;
 using Minigame.Room.V1;
 using SuperQQ.UI;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -10,19 +11,39 @@ using Vector2 = UnityEngine.Vector2;
 namespace SuperQQ.Network
 {
     /// <summary>
-    /// 大厅控制器（Hall 场景）：登录成功后的落地页。
+    /// 大厅控制器（Hall / UI Lobby 场景通用）：登录成功后的落地页。
     /// 提供两个接口：
     ///   1. 创建房间：生成房间码 → CreateRoom → JoinRoom → 进入房间等待场景（Room）
     ///   2. 加入房间：弹窗输入房间码 → JoinRoom → 进入房间等待场景（Room）
-    /// UI 全部由代码动态构建，场景里只需挂本脚本（需有 Canvas / EventSystem）。
+    ///
+    /// UI 两种接入方式：
+    ///   A. Inspector 拖入场景中现成的按钮（如 UI/Lobby 场景的 BtnCreateRoom / BtnScanJoin）；
+    ///   B. 字段全部留空 → 运行时动态构建测试 UI（旧 Hall 测试场景用法，需有 Canvas / EventSystem）。
     /// </summary>
     public class HallController : MonoBehaviour
     {
-        [Header("房间等待场景名（需已加入 Build Settings）")]
-        [SerializeField] private string roomSceneName = "Room";
+        [Header("房间等待场景（拖入场景资源，需已加入 Build Settings）")]
+#if UNITY_EDITOR
+        [SerializeField] private UnityEditor.SceneAsset roomSceneAsset;
+#endif
+        [SerializeField, HideInInspector] private string roomSceneName = "Room";
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (roomSceneAsset != null) roomSceneName = roomSceneAsset.name;
+        }
+#endif
+
+        [Header("UI 引用（可选：拖入场景现成按钮，全部留空则动态构建测试 UI）")]
+        [SerializeField] private Button createButton;
+        [SerializeField] private Button joinButton;
+        [SerializeField] private Text statusText;
+        [SerializeField] private TMP_Text statusLabel;
 
         private NetworkManager _net;
         private Text _statusText;
+        private TMP_Text _statusLabel;
         private Text _playerInfoText;
         private Button _createButton;
         private Button _joinButton;
@@ -43,7 +64,7 @@ namespace SuperQQ.Network
                 _net = netObj.AddComponent<NetworkManager>();
             }
 
-            BuildUI();
+            SetupUI();
 
             _net.Register<JoinRoomResponse>(OnJoinRoom);
             _net.Register<CreateRoomResponse>(OnCreateRoom);
@@ -213,6 +234,29 @@ namespace SuperQQ.Network
             }
         }
 
+        // ==================== UI 初始化 ====================
+
+        /// <summary>
+        /// UI 初始化：已配置场景按钮（UI/Lobby 美术场景）则直接绑定；
+        /// 否则动态构建整套测试 UI（旧 Hall 测试场景）。
+        /// </summary>
+        private void SetupUI()
+        {
+            _statusText = statusText;
+            _statusLabel = statusLabel;
+
+            if (createButton != null || joinButton != null)
+            {
+                _createButton = createButton;
+                _joinButton = joinButton;
+                if (_createButton != null) _createButton.onClick.AddListener(OnCreateRoomClicked);
+                if (_joinButton != null) _joinButton.onClick.AddListener(OnJoinRoomClicked);
+                return;
+            }
+
+            BuildUI();
+        }
+
         // ==================== 动态构建 UI ====================
 
         private void BuildUI()
@@ -258,6 +302,7 @@ namespace SuperQQ.Network
         private void SetStatus(string msg)
         {
             if (_statusText != null) _statusText.text = msg;
+            if (_statusLabel != null) _statusLabel.text = msg;
         }
 
         private void SetButtonsInteractable(bool interactable)

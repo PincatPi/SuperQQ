@@ -135,6 +135,60 @@ namespace SuperQQ.UI.RoundResults
             SetReveal(0f);
         }
 
+        /// <summary>
+        /// 轻量填充：只展示玩家名、玩家 icon 与当前总分数（供记分行列表使用）。
+        /// icon 为空时回退为玩家名首字母；排名角标、本轮增减与 Winner 徽标不展示。
+        /// </summary>
+        public void PopulateSummary(string playerName, Sprite playerIcon, int totalScore, int rank = 0)
+        {
+            if (_rankText != null)
+            {
+                _rankText.text = rank > 0 ? rank.ToString() : string.Empty;
+            }
+            if (_playerNameText != null)
+            {
+                _playerNameText.text = string.IsNullOrWhiteSpace(playerName) ? "Player" : playerName;
+            }
+            ApplyAvatar(playerIcon, playerName);
+            if (_scoreText != null)
+            {
+                _scoreText.text = Mathf.Max(0, totalScore).ToString();
+            }
+            if (_deltaText != null)
+            {
+                _deltaText.gameObject.SetActive(false);
+            }
+            if (_winnerBadge != null)
+            {
+                _winnerBadge.SetActive(false);
+            }
+
+            CaptureLayoutPosition();
+            SetImmediateVisible();
+        }
+
+        /// <summary>
+        /// 应用头像：有 icon 时显示 icon sprite（隐藏首字母），否则回退为首字母 + 背景色块。
+        /// </summary>
+        private void ApplyAvatar(Sprite playerIcon, string playerName)
+        {
+            if (_avatarBackground != null && playerIcon != null)
+            {
+                _avatarBackground.sprite = playerIcon;
+                _avatarBackground.color = Color.white;
+                _avatarBackground.preserveAspect = true;
+            }
+            if (_avatarInitial != null)
+            {
+                bool showInitial = playerIcon == null;
+                _avatarInitial.gameObject.SetActive(showInitial);
+                if (showInitial)
+                {
+                    _avatarInitial.text = GetInitial(playerName);
+                }
+            }
+        }
+
         public void SetReveal(float t)
         {
             float clamped = Mathf.Clamp01(t);

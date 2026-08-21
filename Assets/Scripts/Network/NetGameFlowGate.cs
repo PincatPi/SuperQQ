@@ -49,19 +49,9 @@ namespace SuperQQ.Network
 
         private void Update()
         {
-            if (!_initialized)
-            {
-                TryInit();
-            }
-            // SuppressLocalTransitions 必须在 GamePhaseManager 就绪后设置（它在 Level1 场景，
-            // 可能晚于本 Gate 初始化）。消息注册后持续重试，直到设置成功，否则本地条件会切阶段。
-            else if (!_flowSuppressed)
-            {
-                TrySuppressFlow();
-            }
+            if (_initialized) return;
+            TryInit();
         }
-
-        private bool _flowSuppressed;
 
         private void TryInit()
         {
@@ -74,30 +64,21 @@ namespace SuperQQ.Network
             }
 
             // 关键：消息注册不依赖 GamePhaseManager 就绪——发牌/阶段消息可能在 Level1
-            // 加载（GamePhaseManager 创建）之前到达，必须先注册才能缓存。
+            // 加载（GamePhaseManager 创建）之前到达，必须先注册才能缓存。阶段切换 handler
+            // 内部自行判空 GamePhaseManager，未就绪时消息已缓存、后续补消费。
             _initialized = true;
             net.Register<ItemOfferList>(OnServerOffers);
             net.Register<GamePhaseSync>(OnGamePhaseSync);
             net.Register<PlayerOutBroadcast>(OnPlayerOut);
             net.Register<global::Minigame.Room.V1.Settlement>(OnSettlement);
-            Debug.Log("[NetWork] 联机模式：游戏流程与阶段切换由服务器驱动（ItemOfferList / GamePhaseSync）");
 
-            TrySuppressFlow();
-        }
-
-        /// <summary>GamePhaseManager 就绪后设置本地转移屏蔽（持续重试直到成功）</summary>
-        private void TrySuppressFlow()
-        {
             GamePhaseManager flow = GamePhaseManager.Instance;
-            if (flow == null)
+            if (flow != null)
             {
-                return;
+                flow.SetStartFlowOnStart(false);
+                flow.SuppressLocalTransitions = true;
             }
-
-            _flowSuppressed = true;
-            flow.SetStartFlowOnStart(false);
-            flow.SuppressLocalTransitions = true;
-            Debug.Log("[NetWork] 已屏蔽本地阶段切换（阶段切换由服务器 GamePhaseSync 统一驱动）");
+            Debug.Log("[NetWork] 联机模式：游戏流程与阶段切换由服务器驱动（ItemOfferList / GamePhaseSync）");
         }
 
         /// <summary>服务器出局裁决：记录名次并广播日志（结算展示数据以服务器为准）</summary>
@@ -169,10 +150,6 @@ namespace SuperQQ.Network
             {
                 return;
             }
-
-            // 选择阶段可能早于 LocalPlayerNetSetup.Update 启动；生成图标前必须先写入本地 playerId，
-            // 否则 PlayerController.IdentityKey 会从场景名后变成服务器 ID，被补生成逻辑误判为新玩家。
-            LocalPlayerNetSetup.TrySetupLocalPlayer();
 
             // 数据源：最新快照优先（含 RoomUpdated 后加入的玩家），JoinedRoom 兜底
             Minigame.Room.V1.RoomSnapshot snapshot = null;
@@ -275,6 +252,12 @@ namespace SuperQQ.Network
         /// <summary>当前阶段的结束时刻（服务器毫秒）；0 表示无倒计时。供各阶段倒计时 UI 读取</summary>
         public static long CurrentPhaseEndTimeMs { get; private set; }
 
+        /// <summary>
+        /// 服务器下发的当前轮次（随 GamePhaseSync / ItemOfferList 更新）；0 表示联机对局未开始。
+        /// 供昼夜切换等纯表现组件读取——联机下本地 PlayerScoreManager.CurrentRoundIndex 不会被推进。
+        /// </summary>
+        public static int CurrentServerRound { get; private set; }
+
         private void OnGamePhaseSync(GamePhaseSync sync)
         {
             GamePhaseManager flow = GamePhaseManager.Instance;
@@ -283,6 +266,7 @@ namespace SuperQQ.Network
             // 服务器时间对时 + 记录本阶段结束时刻（倒计时锚点，两端一致）
             NetworkManager.SyncServerTime(sync.ServerTimeMs);
             CurrentPhaseEndTimeMs = sync.PhaseEndTimeMs;
+            CurrentServerRound = sync.Round;
 
             // 选择阶段外由门控负责缓存发牌消息（选择阶段内 Director 会覆盖注册并消费缓存），
             // 防止 ItemOfferList 早于 GamePhaseSync 处理完成而丢失
@@ -326,6 +310,7 @@ namespace SuperQQ.Network
         {
             // 始终缓存最新发牌，供 PropSelectionDirector 进入阶段时消费
             _pendingOffers = list;
+            CurrentServerRound = list.Round;
             Debug.Log($"[NetWork] Gate 缓存发牌: round={list.Round} 道具数={list.Offers.Count} flowStarted={GamePhaseManager.Instance?.BFlowStarted}");
 
             // 发牌到达即对局开始：确保远程玩家已注册（图标/化身依赖档案）
@@ -348,6 +333,8 @@ namespace SuperQQ.Network
                 NetworkManager.Instance.Unregister<PlayerOutBroadcast>();
                 NetworkManager.Instance.Unregister<global::Minigame.Room.V1.Settlement>();
             }
+            CurrentPhaseEndTimeMs = 0;
+            CurrentServerRound = 0;
         }
     }
 }

@@ -105,7 +105,15 @@ namespace SuperQQ.Grid
         /// </summary>
         public List<Vector2Int> GetFootprintCells(Vector2Int anchorCell, Vector2Int footprint, bool rotated)
         {
-            Vector2Int size = rotated ? new Vector2Int(footprint.y, footprint.x) : footprint;
+            return GetFootprintCells(anchorCell, footprint, rotated ? 1 : 0);
+        }
+
+        /// <summary>
+        /// 计算 footprint 覆盖的所有格子（锚点为左下角，按四档旋转：0=0° 1=顺时针90° 2=180° 3=270°）
+        /// </summary>
+        public List<Vector2Int> GetFootprintCells(Vector2Int anchorCell, Vector2Int footprint, int rotationSteps)
+        {
+            Vector2Int size = GetRotatedSize(footprint, rotationSteps);
             var cells = new List<Vector2Int>(size.x * size.y);
             for (int dx = 0; dx < size.x; dx++)
             {
@@ -122,8 +130,23 @@ namespace SuperQQ.Grid
         /// </summary>
         public Vector2 GetPlacementWorldPos(Vector2Int anchorCell, Vector2Int footprint, bool rotated)
         {
-            Vector2Int size = rotated ? new Vector2Int(footprint.y, footprint.x) : footprint;
+            return GetPlacementWorldPos(anchorCell, footprint, rotated ? 1 : 0);
+        }
+
+        /// <summary>
+        /// 锚点格子 + footprint + 四档旋转 -> 物体中心的世界坐标
+        /// </summary>
+        public Vector2 GetPlacementWorldPos(Vector2Int anchorCell, Vector2Int footprint, int rotationSteps)
+        {
+            Vector2Int size = GetRotatedSize(footprint, rotationSteps);
             return Origin + new Vector2(anchorCell.x + size.x * 0.5f, anchorCell.y + size.y * 0.5f) * CellSize;
+        }
+
+        /// <summary>四档旋转对应的 transform 旋转（Unity Z 轴正角为逆时针，顺时针取负）</summary>
+        public static Quaternion GetRotationQuaternion(int rotationSteps)
+        {
+            rotationSteps = ((rotationSteps % 4) + 4) % 4;
+            return rotationSteps == 0 ? Quaternion.identity : Quaternion.Euler(0f, 0f, -90f * rotationSteps);
         }
 
         /// <summary>
@@ -177,8 +200,15 @@ namespace SuperQQ.Grid
         /// </summary>
         public Vector2 GetPlacementWorldPos(Vector2Int anchorCell, Vector2Int footprint, bool rotated, Vector2Int pivot)
         {
-            Vector2Int size = rotated ? new Vector2Int(footprint.y, footprint.x) : footprint;
-            return Origin + new Vector2(anchorCell.x + size.x * 0.5f, anchorCell.y + size.y * 0.5f) * CellSize;
+            return GetPlacementWorldPos(anchorCell, footprint, rotated ? 1 : 0);
+        }
+
+        /// <summary>
+        /// 锚点格子（左下角）+ footprint + 四档旋转 -> 根节点（框中心）的世界坐标
+        /// </summary>
+        public Vector2 GetPlacementWorldPos(Vector2Int anchorCell, Vector2Int footprint, int rotationSteps, Vector2Int pivot)
+        {
+            return GetPlacementWorldPos(anchorCell, footprint, rotationSteps);
         }
 
         // ==================== 查询 ====================
@@ -222,7 +252,13 @@ namespace SuperQQ.Grid
         /// </summary>
         public bool CanPlace(PlacableItemDef def, Vector2Int anchorCell, bool rotated, bool allowOccupiedCells = false)
         {
-            List<Vector2Int> cells = GetFootprintCells(anchorCell, ResolveFootprint(def), rotated);
+            return CanPlace(def, anchorCell, rotated ? 1 : 0, allowOccupiedCells);
+        }
+
+        /// <summary>四档旋转版本的 CanPlace</summary>
+        public bool CanPlace(PlacableItemDef def, Vector2Int anchorCell, int rotationSteps, bool allowOccupiedCells = false)
+        {
+            List<Vector2Int> cells = GetFootprintCells(anchorCell, ResolveFootprint(def), rotationSteps);
             foreach (Vector2Int cell in cells)
             {
                 if (!placeableBounds.Contains(cell) || (!allowOccupiedCells && occupiedCells.ContainsKey(cell)))
@@ -247,6 +283,12 @@ namespace SuperQQ.Grid
         /// <returns>放置成功的物体；不合法返回 null</returns>
         public PlacedItem Place(PlacableItemDef def, Vector2Int anchorCell, bool rotated, int ownerPlayerId)
         {
+            return Place(def, anchorCell, rotated ? 1 : 0, ownerPlayerId);
+        }
+
+        /// <summary>四档旋转版本的 Place（rotationSteps：0=0° 1=顺时针90° 2=180° 3=270°）</summary>
+        public PlacedItem Place(PlacableItemDef def, Vector2Int anchorCell, int rotationSteps, int ownerPlayerId)
+        {
             if (def == null || def.Prefab == null)
             {
                 return null;
@@ -254,36 +296,35 @@ namespace SuperQQ.Grid
 
             // 占位策略由道具自身声明（ItemBase）：拆除类允许叠放到目标上方
             SuperQQ.Item.ItemBase itemPolicy = def.Prefab.GetComponent<SuperQQ.Item.ItemBase>();
-            if (!CanPlace(def, anchorCell, rotated, itemPolicy != null && itemPolicy.AllowsOccupiedOverlap))
+            if (!CanPlace(def, anchorCell, rotationSteps, itemPolicy != null && itemPolicy.AllowsOccupiedOverlap))
             {
                 return null;
             }
 
             Vector2Int footprint = ResolveFootprint(def);
             Vector2Int pivot = ResolvePivot(def, footprint);
-            Vector2 pos = GetPlacementWorldPos(anchorCell, footprint, rotated, pivot);
-            Quaternion rot = rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
-            GameObject go = Instantiate(def.Prefab, pos, rot, transform);
+            Vector2 pos = GetPlacementWorldPos(anchorCell, footprint, rotationSteps, pivot);
+            GameObject go = Instantiate(def.Prefab, pos, GetRotationQuaternion(rotationSteps), transform);
 
             PlacedItem item = go.GetComponent<PlacedItem>();
             if (item == null)
             {
                 item = go.AddComponent<PlacedItem>();
             }
-            item.Init(def, anchorCell, rotated, ownerPlayerId);
+            item.Init(def, anchorCell, rotationSteps, ownerPlayerId);
 
             // 接入道具基类：注入放置信息并触发 OnPlaced 钩子
             SuperQQ.Item.ItemBase itemBase = go.GetComponent<SuperQQ.Item.ItemBase>();
             if (itemBase != null)
             {
-                itemBase.InitPlaced(item, rotated ? 1 : 0);
+                itemBase.InitPlaced(item, ((rotationSteps % 4) + 4) % 4);
                 itemBase.OnPlaced();
             }
 
             // 登记占据：即放即消的道具（RegistersOccupancy = false，如拆除类）不持久占位
             if (itemBase == null || itemBase.RegistersOccupancy)
             {
-                foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, rotated))
+                foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, rotationSteps))
                 {
                     occupiedCells[cell] = item;
                 }
@@ -296,7 +337,13 @@ namespace SuperQQ.Grid
         /// </summary>
         public bool CanOccupy(Vector2Int anchorCell, Vector2Int footprint, bool rotated = false, bool allowOccupiedCells = false)
         {
-            List<Vector2Int> cells = GetFootprintCells(anchorCell, footprint, rotated);
+            return CanOccupy(anchorCell, footprint, rotated ? 1 : 0, allowOccupiedCells);
+        }
+
+        /// <summary>四档旋转版本的 CanOccupy</summary>
+        public bool CanOccupy(Vector2Int anchorCell, Vector2Int footprint, int rotationSteps, bool allowOccupiedCells = false)
+        {
+            List<Vector2Int> cells = GetFootprintCells(anchorCell, footprint, rotationSteps);
             foreach (Vector2Int cell in cells)
             {
                 if (!placeableBounds.Contains(cell))
@@ -324,7 +371,13 @@ namespace SuperQQ.Grid
         /// </summary>
         public void Occupy(Vector2Int anchorCell, Vector2Int footprint, PlacedItem owner, bool rotated = false, bool skipOccupiedCells = false)
         {
-            foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, rotated))
+            Occupy(anchorCell, footprint, owner, rotated ? 1 : 0, skipOccupiedCells);
+        }
+
+        /// <summary>四档旋转版本的 Occupy</summary>
+        public void Occupy(Vector2Int anchorCell, Vector2Int footprint, PlacedItem owner, int rotationSteps, bool skipOccupiedCells = false)
+        {
+            foreach (Vector2Int cell in GetFootprintCells(anchorCell, footprint, rotationSteps))
             {
                 if (skipOccupiedCells && occupiedCells.ContainsKey(cell))
                 {
@@ -379,7 +432,7 @@ namespace SuperQQ.Grid
             // 无组件时回退 Def 配置
             FootprintBoxView box = item.GetComponent<FootprintBoxView>();
             Vector2Int footprint = box != null ? box.Footprint : ResolveFootprint(item.Def);
-            foreach (Vector2Int c in GetFootprintCells(item.AnchorCell, footprint, item.Rotated))
+            foreach (Vector2Int c in GetFootprintCells(item.AnchorCell, footprint, item.Rotation))
             {
                 occupiedCells.Remove(c);
             }
@@ -391,6 +444,22 @@ namespace SuperQQ.Grid
 
         /// <summary>当前加载的区域配置（可能为 null）</summary>
         public LevelZoneConfig ZoneConfig => zoneConfig;
+
+        // 水面垂直偏移（格数）：夜晚水位上升时由外部（MapDayNightController）设置，
+        // 查询 Water 区域时把查询点向下偏移该格数，等效于水域整体上移
+        private int waterYOffsetCells;
+
+        /// <summary>
+        /// 设置水面垂直偏移（格数，正值=水位上升）。
+        /// 影响所有区域查询：Water 条目的判定范围随之上移。
+        /// </summary>
+        public void SetWaterYOffset(int cells)
+        {
+            waterYOffsetCells = cells;
+        }
+
+        /// <summary>当前水面垂直偏移（格数）</summary>
+        public int WaterYOffsetCells => waterYOffsetCells;
 
         /// <summary>
         /// 加载区域配置资产（关卡初始化时可由外部注入，覆盖 Inspector 配置）
@@ -412,7 +481,13 @@ namespace SuperQQ.Grid
             }
             foreach (LevelZoneConfig.ZoneEntry zone in zoneConfig.Zones)
             {
-                if (zone.cells.Contains(cell))
+                // Water 条目：查询点按水位偏移下移后判定，等效水域整体上移
+                Vector2Int queryCell = cell;
+                if (waterYOffsetCells != 0 && (zone.zoneType & GridZoneType.Water) != 0)
+                {
+                    queryCell.y -= waterYOffsetCells;
+                }
+                if (zone.cells.Contains(queryCell))
                 {
                     result |= zone.zoneType;
                 }
@@ -445,7 +520,13 @@ namespace SuperQQ.Grid
             }
             foreach (LevelZoneConfig.ZoneEntry zone in zoneConfig.Zones)
             {
-                if (RectOverlaps(zone.cells, cellRect))
+                // Water 条目：查询矩形按水位偏移下移后判定，与 GetZonesAt(cell) 口径一致
+                RectInt queryRect = cellRect;
+                if (waterYOffsetCells != 0 && (zone.zoneType & GridZoneType.Water) != 0)
+                {
+                    queryRect.y -= waterYOffsetCells;
+                }
+                if (RectOverlaps(zone.cells, queryRect))
                 {
                     result |= zone.zoneType;
                 }

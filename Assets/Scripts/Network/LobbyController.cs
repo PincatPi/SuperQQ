@@ -15,14 +15,27 @@ namespace SuperQQ.Network
     /// </summary>
     public class LobbyController : MonoBehaviour
     {
-        [Header("登录成功后进入的大厅场景名（需已加入 Build Settings）")]
-        [SerializeField] private string hallSceneName = "Hall";
+        [Header("登录成功后进入的大厅场景（拖入场景资源，需已加入 Build Settings）")]
+#if UNITY_EDITOR
+        [SerializeField] private UnityEditor.SceneAsset hallSceneAsset;
+#endif
+        [SerializeField, HideInInspector] private string hallSceneName = "Hall";
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (hallSceneAsset != null) hallSceneName = hallSceneAsset.name;
+        }
+#endif
 
         [Header("UI 引用")]
         [SerializeField] private Text statusText;
 
         [Header("登录按钮（留空则运行时自动创建一个）")]
         [SerializeField] private Button loginButton;
+
+        [Header("登录弹窗 Prefab（留空则运行时代码构建一个简易版）")]
+        [SerializeField] private LoginPopup loginPopupPrefab;
 
         private NetworkManager _net;
         private LoginPopup _activePopup;
@@ -120,7 +133,9 @@ namespace SuperQQ.Network
             }
 
             if (loginButton != null) loginButton.interactable = false;
-            _activePopup = LoginPopup.Show(canvas.transform, OnLoginConfirm, OnLoginCancel);
+            _activePopup = loginPopupPrefab != null
+                ? LoginPopup.Show(loginPopupPrefab, canvas.transform, OnLoginConfirm, OnLoginCancel)
+                : LoginPopup.Show(canvas.transform, OnLoginConfirm, OnLoginCancel);
         }
 
         private void OnLoginCancel()

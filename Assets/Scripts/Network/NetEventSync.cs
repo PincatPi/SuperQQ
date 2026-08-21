@@ -45,6 +45,7 @@ namespace SuperQQ.Network
             net.Register<PlayerEventBroadcast>(OnPlayerEvent);
             net.Register<PickupClaimBroadcast>(OnPickupClaim);
             net.Register<ItemStateEventBroadcast>(OnItemStateEvent);
+            net.Register<TrapKillBroadcast>(OnTrapKill);
         }
 
         private void OnDestroy()
@@ -54,6 +55,7 @@ namespace SuperQQ.Network
             NetworkManager.Instance.Unregister<PlayerEventBroadcast>();
             NetworkManager.Instance.Unregister<PickupClaimBroadcast>();
             NetworkManager.Instance.Unregister<ItemStateEventBroadcast>();
+            NetworkManager.Instance.Unregister<TrapKillBroadcast>();
         }
 
         private static bool BReady =>
@@ -104,6 +106,19 @@ namespace SuperQQ.Network
             });
         }
 
+        /// <summary>上报陷阱击杀（受害者本地端调用；ownerPlayerId 为陷阱放置者），离线为空操作</summary>
+        public static void ReportTrapKill(string ownerPlayerId)
+        {
+            if (!BReady || string.IsNullOrEmpty(ownerPlayerId)) return;
+            NetworkManager net = NetworkManager.Instance;
+            net.Send(new TrapKillEvent
+            {
+                RoomId = net.RoomId,
+                PlayerId = net.LocalPlayerId,
+                OwnerPlayerId = ownerPlayerId
+            });
+        }
+
         // ==================== 接收侧（远端表现） ====================
 
         private void OnPlayerEvent(PlayerEventBroadcast msg)
@@ -142,6 +157,16 @@ namespace SuperQQ.Network
             if (net == null || msg.PlayerId == net.LocalPlayerId) return; // 所有者端本地已表现
 
             ItemLifecycleSync.ApplyRemote(msg.ItemInstanceId, msg.StateType);
+        }
+
+        private void OnTrapKill(TrapKillBroadcast msg)
+        {
+            NetworkManager net = NetworkManager.Instance;
+            if (net == null || msg.PlayerId == net.LocalPlayerId) return; // 受害者端本地已记账
+
+            // 其他端（含陷阱主所在端）为放置者记一次陷阱有效击杀，
+            // 陷阱主端据此把 TrapKill 分计入自己的 RoundScoreReport
+            TrapKillReporter.RecordLocal(msg.OwnerPlayerId);
         }
 
         private static PlayerController FindRemotePlayer(string playerId)

@@ -95,6 +95,7 @@ namespace SuperQQ.Placement.Runtime
         private float placeStateTimer;                                  // 拖拽上报节流
         private bool awaitingPlaceResult;                               // 已发确认、等待服务器仲裁
         private Button confirmPlaceButton;                              // 屏幕上方打勾确认按钮（运行时搭建）
+        private Button rotateButton;                                    // 屏幕上方旋转按钮（运行时搭建）
         private readonly Dictionary<string, GameObject> remoteGhosts = new(); // playerId -> 远端玩家摆放中的虚化道具
         private readonly Dictionary<string, string> remoteGhostItemIds = new();
         private readonly Dictionary<string, SpriteRenderer> remoteCursors = new(); // playerId -> 远端玩家的光标标记
@@ -433,6 +434,7 @@ namespace SuperQQ.Placement.Runtime
             if (net == null) return;
             net.Register<ItemPlaceStateBroadcast>(HandleRemotePlaceState);
             net.Register<ItemPlaceResult>(HandlePlaceResult);
+            net.Register<ItemDemolishResult>(HandleDemolishResult);
         }
 
         private void UnregisterNetHandlers()
@@ -441,6 +443,7 @@ namespace SuperQQ.Placement.Runtime
             if (net == null) return;
             net.Unregister<ItemPlaceStateBroadcast>();
             net.Unregister<ItemPlaceResult>();
+            net.Unregister<ItemDemolishResult>();
         }
 
         /// <summary>节流上报本地摆放中道具的位置/朝向（远端据此显示虚化道具跟随）</summary>
@@ -471,7 +474,7 @@ namespace SuperQQ.Placement.Runtime
                 PlayerId = net.LocalPlayerId,
                 ItemId = localSession.CurrentItemId,
                 Position = new Minigame.Room.V1.Vector2 { X = pos.Value.x, Y = pos.Value.y },
-                Rotated = localSession.CurrentRotated
+                Rotation = localSession.CurrentRotation
             });
         }
 
@@ -491,7 +494,7 @@ namespace SuperQQ.Placement.Runtime
             }
 
             ghost.transform.position = new Vector3(msg.Position.X, msg.Position.Y, 0f);
-            ghost.transform.rotation = msg.Rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
+            ghost.transform.rotation = GridManager.GetRotationQuaternion(msg.Rotation);
 
             // 远端玩家的光标标记：跟随其道具位置（与本地 Cursor 一致的偏移与配色）
             ShowRemoteCursor(msg.PlayerId, new Vector2(msg.Position.X, msg.Position.Y));
@@ -619,12 +622,16 @@ namespace SuperQQ.Placement.Runtime
 
         // ---------- 打勾确认按钮 ----------
 
-        /// <summary>在屏幕上方搭建打勾确认按钮（联机模式；点击后向服务器请求占用仲裁）</summary>
+        /// <summary>在屏幕上方搭建打勾确认按钮与旋转按钮（联机模式；确认点击后向服务器请求占用仲裁）</summary>
         private void ShowConfirmPlaceButton()
         {
             if (confirmPlaceButton != null)
             {
                 confirmPlaceButton.gameObject.SetActive(true);
+                if (rotateButton != null)
+                {
+                    rotateButton.gameObject.SetActive(true);
+                }
                 return;
             }
 
@@ -641,20 +648,29 @@ namespace SuperQQ.Placement.Runtime
             }
             EnsureEventSystem();
 
-            var btnGo = new GameObject("ConfirmPlaceButton", typeof(RectTransform), typeof(Image), typeof(Button));
-            btnGo.transform.SetParent(canvas.transform, false);
+            confirmPlaceButton = CreateActionButton(canvas.transform, "ConfirmPlaceButton", "✔",
+                new Vector2(90f, -30f), new Color(0.2f, 0.7f, 0.3f, 0.95f));
+            confirmPlaceButton.onClick.AddListener(OnConfirmPlaceClicked);
+
+            rotateButton = CreateActionButton(canvas.transform, "RotatePlaceButton", "⟳",
+                new Vector2(-90f, -30f), new Color(0.25f, 0.45f, 0.85f, 0.95f));
+            rotateButton.onClick.AddListener(OnRotateClicked);
+        }
+
+        /// <summary>在屏幕上方创建一个操作按钮（锚定顶部居中，offsetX 相对中心偏移）</summary>
+        private static Button CreateActionButton(Transform parent, string name, string label, Vector2 anchoredPos, Color color)
+        {
+            var btnGo = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
+            btnGo.transform.SetParent(parent, false);
             var rect = (RectTransform)btnGo.transform;
             rect.anchorMin = new Vector2(0.5f, 1f);
             rect.anchorMax = new Vector2(0.5f, 1f);
             rect.pivot = new Vector2(0.5f, 1f);
-            rect.anchoredPosition = new Vector2(0f, -30f);
+            rect.anchoredPosition = anchoredPos;
             rect.sizeDelta = new Vector2(120f, 80f);
-            btnGo.GetComponent<Image>().color = new Color(0.2f, 0.7f, 0.3f, 0.95f);
+            btnGo.GetComponent<Image>().color = color;
 
-            confirmPlaceButton = btnGo.GetComponent<Button>();
-            confirmPlaceButton.onClick.AddListener(OnConfirmPlaceClicked);
-
-            var labelGo = new GameObject("Check", typeof(RectTransform), typeof(TextMeshProUGUI));
+            var labelGo = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
             labelGo.transform.SetParent(btnGo.transform, false);
             var labelRect = (RectTransform)labelGo.transform;
             labelRect.anchorMin = Vector2.zero;
@@ -662,11 +678,13 @@ namespace SuperQQ.Placement.Runtime
             labelRect.offsetMin = Vector2.zero;
             labelRect.offsetMax = Vector2.zero;
             var tmp = labelGo.GetComponent<TextMeshProUGUI>();
-            tmp.text = "✔";
+            tmp.text = label;
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.fontSize = 48f;
             tmp.color = Color.white;
             tmp.raycastTarget = false;
+
+            return btnGo.GetComponent<Button>();
         }
 
         private void HideConfirmPlaceButton()
@@ -675,6 +693,23 @@ namespace SuperQQ.Placement.Runtime
             {
                 confirmPlaceButton.gameObject.SetActive(false);
             }
+            if (rotateButton != null)
+            {
+                rotateButton.gameObject.SetActive(false);
+            }
+        }
+
+        /// <summary>旋转按钮回调：旋转本地摆放中的道具；朝向随下一次 ItemPlaceState 广播同步到远端，
+        /// 此处把节流计时器拉满让下一帧立即上报，远端虚化道具即时跟随</summary>
+        private void OnRotateClicked()
+        {
+            if (awaitingPlaceResult || localSession == null || !localSession.BIsPlacing)
+            {
+                return;
+            }
+
+            localSession.Rotate();
+            placeStateTimer = 1f / placeStateReportRate;
         }
 
         /// <summary>打勾按钮回调：落点本地合法才发确认请求，占据格子列表交服务器仲裁</summary>
@@ -702,13 +737,43 @@ namespace SuperQQ.Placement.Runtime
             }
 
             NetworkManager net = NetworkManager.Instance;
+
+            // 拆除类道具（爆破范围允许覆盖已占格子）走专用拆除仲裁通道，不走格子冲突仲裁
+            bool bDemolition = false;
+            ItemBase prefab = FindPoolItem(localSession.CurrentItemId);
+            if (prefab != null)
+            {
+                bDemolition = prefab is SuperQQ.Item.DemolitionItemBase;
+            }
+
+            if (bDemolition)
+            {
+                var demolishConfirm = new ItemDemolishConfirm
+                {
+                    RoomId = net.RoomId,
+                    PlayerId = net.LocalPlayerId,
+                    ItemId = localSession.CurrentItemId,
+                    AnchorCell = new GridCell { X = anchor.Value.x, Y = anchor.Value.y },
+                    Rotation = localSession.CurrentRotation,
+                    ClientTimeMs = NetworkManager.NowMs()
+                };
+                foreach (Vector2Int cell in cells)
+                {
+                    demolishConfirm.Cells.Add(new GridCell { X = cell.x, Y = cell.y });
+                }
+
+                awaitingPlaceResult = true;
+                net.Send(demolishConfirm);
+                return;
+            }
+
             var confirm = new ItemPlaceConfirm
             {
                 RoomId = net.RoomId,
                 PlayerId = net.LocalPlayerId,
                 ItemId = localSession.CurrentItemId,
                 AnchorCell = new GridCell { X = anchor.Value.x, Y = anchor.Value.y },
-                Rotated = localSession.CurrentRotated,
+                Rotation = localSession.CurrentRotation,
                 ClientTimeMs = NetworkManager.NowMs()
             };
             foreach (Vector2Int cell in cells)
@@ -757,6 +822,104 @@ namespace SuperQQ.Placement.Runtime
             }
         }
 
+        /// <summary>
+        /// 服务器拆除仲裁结果：各端统一执行爆破——
+        /// 投放者端取出挂起的本地炸弹引爆；远端生成炸弹实体后引爆；
+        /// 移除集合以服务器 removed_items 为准，各端占据表保持一致
+        /// </summary>
+        private void HandleDemolishResult(ItemDemolishResult result)
+        {
+            NetworkManager net = NetworkManager.Instance;
+            bool isMine = net != null && result.PlayerId == net.LocalPlayerId;
+            Debug.Log($"{LOG_TAG} 收到拆除结果: playerId={result.PlayerId} itemId={result.ItemId} removed={result.RemovedItems.Count} isMine={isMine}");
+
+            if (!BIsActive)
+            {
+                return;
+            }
+
+            Vector2Int anchor = new Vector2Int(result.AnchorCell.X, result.AnchorCell.Y);
+
+            // 汇总被拆道具锚点（去重）
+            var removedAnchors = new HashSet<Vector2Int>();
+            foreach (PlacedItemState removed in result.RemovedItems)
+            {
+                removedAnchors.Add(new Vector2Int(removed.AnchorCell.X, removed.AnchorCell.Y));
+            }
+
+            if (isMine)
+            {
+                awaitingPlaceResult = false;
+                // 本地炸弹在确认摆放时已生成并挂起（DemolitionItemBase.OnPlaced 联机分支）
+                if (SuperQQ.Item.DemolitionItemBase.TryTakePending(anchor, out SuperQQ.Item.DemolitionItemBase localBomb))
+                {
+                    localBomb.DetonateSynced(removedAnchors);
+                }
+                else
+                {
+                    // 挂起实例缺失（异常时序）也要保证移除执行到位
+                    ExecuteRemoteDemolishRemoval(removedAnchors);
+                }
+                return;
+            }
+
+            // 远端投放：生成炸弹实体（表现用），随即按服务器裁定引爆
+            DestroyRemoteGhost(result.PlayerId);
+            SpawnRemoteBomb(result, removedAnchors);
+        }
+
+        /// <summary>生成远端炸弹实体并立即引爆（移除集合以服务器裁定为准）</summary>
+        private void SpawnRemoteBomb(ItemDemolishResult result, HashSet<Vector2Int> removedAnchors)
+        {
+            ItemBase prefab = FindPoolItem(result.ItemId);
+            GridManager grid = GridManager.Instance;
+            if (prefab == null || grid == null)
+            {
+                // 炸弹本体只是表现，缺失时也要保证移除执行到位
+                ExecuteRemoteDemolishRemoval(removedAnchors);
+                return;
+            }
+
+            Vector2Int anchor = new Vector2Int(result.AnchorCell.X, result.AnchorCell.Y);
+            FootprintBoxView prefabBox = prefab.GetComponent<FootprintBoxView>();
+            Vector2Int footprint = prefabBox != null ? prefabBox.Footprint : Vector2Int.one;
+            Vector2 worldPos = grid.GetPlacementWorldPos(anchor, footprint, result.Rotation);
+            GameObject item = Instantiate(prefab.gameObject, worldPos,
+                GridManager.GetRotationQuaternion(result.Rotation));
+            item.name = $"RemoteDemolish_{result.PlayerId}_{result.ItemId}";
+
+            var placed = item.AddComponent<PlacedItem>();
+            placed.Init(null, anchor, result.Rotation, -1);
+            placed.SetOwnerKey(result.PlayerId);
+
+            // 不登记占据、不触发 OnPlaced（避免远端炸弹自行挂起等待），直接同步引爆
+            SuperQQ.Item.DemolitionItemBase bomb = item.GetComponent<SuperQQ.Item.DemolitionItemBase>();
+            if (bomb != null)
+            {
+                bomb.InitPlaced(placed, result.Rotation);
+                bomb.DetonateSynced(removedAnchors);
+            }
+            else
+            {
+                ExecuteRemoteDemolishRemoval(removedAnchors);
+                Destroy(item);
+            }
+        }
+
+        /// <summary>兜底：炸弹 prefab 缺失或组件缺失时，仅按服务器裁定执行移除</summary>
+        private void ExecuteRemoteDemolishRemoval(HashSet<Vector2Int> removedAnchors)
+        {
+            GridManager grid = GridManager.Instance;
+            if (grid == null || removedAnchors == null)
+            {
+                return;
+            }
+            foreach (Vector2Int anchor in removedAnchors)
+            {
+                grid.RemoveAt(anchor);
+            }
+        }
+
         /// <summary>远端玩家确认摆放后，在本地生成实体道具并登记网格占用</summary>
         private void PlaceRemoteItem(ItemPlaceResult result)
         {
@@ -783,15 +946,16 @@ namespace SuperQQ.Placement.Runtime
             FootprintBoxView prefabBox = prefab.GetComponent<FootprintBoxView>();
             Vector2Int footprint = prefabBox != null ? prefabBox.Footprint : Vector2Int.one;
 
-            Vector2 worldPos = grid.GetPlacementWorldPos(anchor, footprint, result.Rotated);
+            Vector2 worldPos = grid.GetPlacementWorldPos(anchor, footprint, result.Rotation);
             GameObject item = Instantiate(prefab.gameObject, worldPos,
-                result.Rotated ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity);
+                GridManager.GetRotationQuaternion(result.Rotation));
             item.name = $"RemotePlaced_{result.PlayerId}_{result.ItemId}";
 
             // 登记占用：占据格子对所有人生效，本地落点合法性检查自动包含这些格子
             var placed = item.AddComponent<PlacedItem>();
-            placed.Init(null, anchor, result.Rotated, -1);
-            grid.Occupy(anchor, footprint, placed, result.Rotated);
+            placed.Init(null, anchor, result.Rotation, -1);
+            placed.SetOwnerKey(result.PlayerId); // 陷阱击杀计分归属
+            grid.Occupy(anchor, footprint, placed, result.Rotation);
 
             // 锁定：摆放组件与碰撞体不再需要参与交互
             PlacementController pc = item.GetComponent<PlacementController>();
@@ -803,7 +967,7 @@ namespace SuperQQ.Placement.Runtime
             ItemBase itemBase = item.GetComponent<ItemBase>();
             if (itemBase != null)
             {
-                itemBase.InitPlaced(placed, result.Rotated ? 1 : 0);
+                itemBase.InitPlaced(placed, result.Rotation);
                 itemBase.OnPlaced();
             }
             Debug.Log($"{LOG_TAG} 远端道具生成完成: {item.name} 位置=({worldPos.x},{worldPos.y})");

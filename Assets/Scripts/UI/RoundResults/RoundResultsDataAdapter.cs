@@ -20,6 +20,7 @@ namespace SuperQQ.UI.RoundResults
     {
         public string PlayerName;
         public Color PlayerColor = Color.white;
+        public Sprite PlayerIcon;
         public int PreviousTotal;
         public int RoundTotal;
         public int CumulativeTotal;
@@ -67,6 +68,7 @@ namespace SuperQQ.UI.RoundResults
                 {
                     PlayerName = playerName,
                     PlayerColor = GetPlayerColor(playerName),
+                    PlayerIcon = GetPlayerIcon(playerName),
                     PreviousTotal = Mathf.Max(0, round.CumulativeTotal - round.RoundTotal),
                     RoundTotal = round.RoundTotal,
                     CumulativeTotal = round.CumulativeTotal
@@ -163,6 +165,26 @@ namespace SuperQQ.UI.RoundResults
             }
 
             return scoreManager.GetRankedPlayerNames();
+        }
+
+        /// <summary>
+        /// 从当前关卡玩家注册表解析玩家图标（选择阶段配置的标识图）；化身不在场时返回 null。
+        /// </summary>
+        private static Sprite GetPlayerIcon(string playerName)
+        {
+            if (LevelPlayerRegistry.Instance != null)
+            {
+                IReadOnlyList<PlayerController> players = LevelPlayerRegistry.Instance.Players;
+                for (int i = 0; i < players.Count; i++)
+                {
+                    if (players[i] != null && players[i].PlayerName == playerName)
+                    {
+                        return players[i].SelectionIconSprite;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private static Color GetPlayerColor(string playerName)

@@ -98,6 +98,16 @@ namespace SuperQQ.Item
             SuperQQ.Network.ItemLifecycleSync.Register(this);
         }
 
+        /// <summary>
+        /// 联机模式下道具自毁前调用：经 ItemStateEvent{DESTROYED} 上报服务器并广播，
+        /// 其他端收到后按锚点 RemoveAt 同步移除（含占据释放）。
+        /// 内部已判联机就绪，单机/未进房时为空操作；上报后本地仍按自身流程销毁。
+        /// </summary>
+        protected void ReportNetDestroyed()
+        {
+            SuperQQ.Network.ItemLifecycleSync.ReportDestroyed(this);
+        }
+
         /// <summary>被移除（拾回/拆除）前调用，用于清理运行状态</summary>
         public virtual void OnRemoved()
         {

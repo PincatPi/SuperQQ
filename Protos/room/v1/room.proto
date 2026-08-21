@@ -175,6 +175,10 @@ message RoomSnapshot {
   // 房间内已确认摆放的道具列表（断连重连/迟到加入时客户端据此恢复现场）。
   // 服务器在 ItemPlaceConfirm 仲裁成功后记录，ItemStateEvent(DESTROYED) 后移除。
   repeated PlacedItemState placed_items = 7;
+  // 本阶段随机事件是否已触发（阶段开始为 false，PLAYING 阶段 20s 内随机时刻变 true）。
+  bool event_triggered = 8;
+  // 事件触发时刻（服务器毫秒时间戳，未触发为 0）。客户端以服务器时钟为锚点定时引爆。
+  int64 event_triggered_at_ms = 9;
 }
 
 message SettlementPlayerResult {
@@ -269,6 +273,10 @@ message GamePhaseSync {
   // 本阶段结束的服务器时刻（毫秒）。客户端以此作为倒计时锚点，两端显示一致；
   // 为 0 表示该阶段无倒计时（如游玩阶段）。
   int64 phase_end_time_ms = 5;
+  // 本轮随机事件 ID（1~7），每次进入 PROP_SELECTION 阶段时重新随机生成并下发。
+  int32 event_id = 6;
+  // 本轮随机种子（0~5），同一轮内不变；各端用同一种子推演事件内部随机过程（如陨石落点序列）。
+  int32 random_seed = 7;
 }
 
 // ==================== 道具摆放阶段同步 ====================
@@ -284,7 +292,7 @@ message PlacedItemState {
   string player_id = 1;         // 摆放者
   string item_id = 2;           // 数字代号（与 ItemCatalog 一致）
   GridCell anchor_cell = 3;     // 锚点格子（footprint 左下角）
-  bool rotated = 4;             // 是否旋转 90°
+  int32 rotation = 4;           // 旋转档：0=0° 1=顺时针90° 2=180° 3=270°
 }
 
 // 客户端 → 服务器：摆放中道具的拖拽状态（约 10Hz 节流上报，仅表现用）。
@@ -294,7 +302,7 @@ message ItemPlaceState {
   string player_id = 3;
   string item_id = 4;             // 道具ID（= prefab 名称）
   Vector2 position = 5;           // 道具根节点世界坐标
-  bool rotated = 6;               // 是否旋转 90°
+  int32 rotation = 6;             // 旋转档：0=0° 1=顺时针90° 2=180° 3=270°
 }
 
 // 服务器 → 全房间：透传拖拽状态，各端生成远端玩家的虚化道具跟随显示。
@@ -303,7 +311,7 @@ message ItemPlaceStateBroadcast {
   string player_id = 2;
   string item_id = 3;
   Vector2 position = 4;
-  bool rotated = 5;
+  int32 rotation = 5;             // 旋转档：0=0° 1=顺时针90° 2=180° 3=270°
 }
 
 // 客户端 → 服务器：确认摆放请求（占用仲裁点）。
@@ -314,7 +322,7 @@ message ItemPlaceConfirm {
   string player_id = 3;
   string item_id = 4;
   GridCell anchor_cell = 5;       // footprint 左下角锚点格子
-  bool rotated = 6;
+  int32 rotation = 6;             // 旋转档：0=0° 1=顺时针90° 2=180° 3=270°
   repeated GridCell cells = 7;    // 本道具占据的全部格子
   int64 client_time_ms = 8;
 }
@@ -328,9 +336,34 @@ message ItemPlaceResult {
   minigame.common.v1.ResultCode code = 4; // OK=成功 / CONFLICT=格子已被占用
   string item_id = 5;
   GridCell anchor_cell = 6;
-  bool rotated = 7;
+  int32 rotation = 7;             // 旋转档：0=0° 1=顺时针90° 2=180° 3=270°
   repeated GridCell cells = 8;
   int64 server_time_ms = 9;
+}
+
+// 客户端 → 服务器：拆除类道具确认（爆破范围允许与已占格子重叠，不走格子冲突仲裁）。
+// cells 为炸弹 footprint 的占据格子（即爆破范围），服务器据此计算被拆除的道具。
+message ItemDemolishConfirm {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;
+  string item_id = 4;             // 炸弹道具 id
+  GridCell anchor_cell = 5;       // 炸弹 footprint 左下角锚点
+  int32 rotation = 6;             // 旋转档：0=0° 1=顺时针90° 2=180° 3=270°
+  repeated GridCell cells = 7;    // 爆破范围（炸弹占据的全部格子）
+  int64 client_time_ms = 8;
+}
+
+// 服务器 → 全房间：拆除仲裁结果。服务器按爆破范围与已确认道具占据格子的交集
+// 计算被拆除的道具，从 placedItems 快照表删除后广播；各端据此统一执行爆破移除。
+message ItemDemolishResult {
+  string room_id = 1;
+  string player_id = 2;           // 投放者
+  string item_id = 3;             // 炸弹道具 id
+  GridCell anchor_cell = 4;
+  int32 rotation = 5;
+  repeated PlacedItemState removed_items = 6; // 被拆除的道具（含摆放者/锚点/朝向，各端按锚点 RemoveAt）
+  int64 server_time_ms = 7;
 }
 
 // ==================== 通关/出局裁决与结算同步 ====================
@@ -443,6 +476,33 @@ message ItemStateEventBroadcast {
   int64 server_time_ms = 5;
 }
 
+// 客户端 → 服务器：本地玩家被其他玩家摆放的陷阱击杀时上报，服务器原样广播。
+// 计分归属用：各端收到后为 owner_player_id 记一次陷阱有效击杀（ScoreCalculator 每次+5、单轮上限2次）。
+// 自杀（owner == 受害者）与关卡原生陷阱（无归属）不上报。
+message TrapKillEvent {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;             // 受害者（上报端本地玩家）
+  string owner_player_id = 4;       // 陷阱放置者
+}
+
+// 服务器 → 全房间：透传陷阱击杀事件。
+message TrapKillBroadcast {
+  string room_id = 1;
+  string player_id = 2;             // 受害者
+  string owner_player_id = 3;       // 陷阱放置者
+  int64 server_time_ms = 4;
+}
+
+// GM 调试指令：强制切阶段（0~5 对应 GamePhaseKind）。
+// 无同步应答，生效后全房间收到 GamePhaseSync。仅调试用，客户端正常流程不使用。
+message GmSetPhase {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;             // 发起者（后端可用于权限校验）
+  GamePhaseKind phase = 4;          // 目标阶段
+}
+
 service RoomService {
   rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
   rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
@@ -454,4 +514,33 @@ service RoomService {
   rpc SubscribeRoom(SubscribeRoomRequest) returns (stream RoomSnapshot);
   rpc SendClaimIntent(ItemClaimIntent) returns (minigame.common.v1.ResponseStatus);
   rpc ConfirmClaim(ItemClaimConfirm) returns (ItemClaimResult);
+}
+
+// ==================== GM 调试指令 ====================
+
+// 客户端 → 服务器：GM 指令请求。
+// 服务器鉴权（GM 白名单）后按指令类型处理：
+//   影响房间状态（set_phase / force_settle 等）→ 服务器走正常业务逻辑并广播现有消息；
+//   纯客户端表现（kill_me / freeze_me 等）→ 透传为 GmCommandPush。
+message GmCommandRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;
+  string command = 4;
+  repeated string args = 5;
+}
+
+// 服务器 → 请求端：执行结果回执，用于 GM 控制台回显。
+message GmCommandResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  string message = 2;
+}
+
+// 服务器 → 房间内客户端：透传纯客户端指令。
+message GmCommandPush {
+  string room_id = 1;
+  string command = 2;
+  repeated string args = 3;
+  string target_player_id = 4; // 空 = 全员生效
+  int64 server_time_ms = 5;
 }

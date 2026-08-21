@@ -16,6 +16,11 @@ namespace SuperQQ.GameFlow
         {
             base.OnEnter(context);
             _bRoundSettled = false;
+
+            // 新一轮开始：复活本地玩家并回出生点。
+            // 联机模式同场景跨轮复用玩家实例，上一轮死亡/通关的玩家必须显式复活回 Alive；
+            // 远端玩家由各端自己复活后经状态上报同步；单机新场景新实例为空操作。
+            SuperQQ.Player.LevelPlayerRegistry.Instance?.ReviveLocalPlayersForNewRound();
         }
 
         public override void OnExit(GamePhaseContext context)

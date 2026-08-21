@@ -31,7 +31,7 @@ namespace Minigame.Gateway.V1 {
             "ASgDIkMKEUhlYXJ0YmVhdFJlc3BvbnNlEhYKDnNlcnZlcl90aW1lX21zGAEg",
             "ASgDEhYKDmNsaWVudF90aW1lX21zGAIgASgDIlIKDUVycm9yUmVzcG9uc2US",
             "MgoGc3RhdHVzGAEgASgLMiIubWluaWdhbWUuY29tbW9uLnYxLlJlc3BvbnNl",
-            "U3RhdHVzEg0KBXJvdXRlGAIgASgJIpsLCg5DbGllbnRFbnZlbG9wZRIvCgV0",
+            "U3RhdHVzEg0KBXJvdXRlGAIgASgJItUMCg5DbGllbnRFbnZlbG9wZRIvCgV0",
             "cmFjZRgBIAEoCzIgLm1pbmlnYW1lLmNvbW1vbi52MS5UcmFjZUNvbnRleHQS",
             "CwoDc2VxGAIgASgEEjoKCWhlYXJ0YmVhdBgKIAEoCzIlLm1pbmlnYW1lLmdh",
             "dGV3YXkudjEuSGVhcnRiZWF0UmVxdWVzdEgAEjIKBWxvZ2luGAsgASgLMiEu",
@@ -63,58 +63,65 @@ namespace Minigame.Gateway.V1 {
             "Z2FtZS5yb29tLnYxLlBsYXllckV2ZW50SAASNQoMcGlja3VwX2NsYWltGB4g",
             "ASgLMh0ubWluaWdhbWUucm9vbS52MS5QaWNrdXBDbGFpbUgAEjwKEGl0ZW1f",
             "c3RhdGVfZXZlbnQYHyABKAsyIC5taW5pZ2FtZS5yb29tLnYxLkl0ZW1TdGF0",
-            "ZUV2ZW50SABCCQoHcGF5bG9hZCLYDgoOU2VydmVyRW52ZWxvcGUSLwoFdHJh",
-            "Y2UYASABKAsyIC5taW5pZ2FtZS5jb21tb24udjEuVHJhY2VDb250ZXh0EgsK",
-            "A3NlcRgCIAEoBBI7CgloZWFydGJlYXQYCiABKAsyJi5taW5pZ2FtZS5nYXRl",
-            "d2F5LnYxLkhlYXJ0YmVhdFJlc3BvbnNlSAASMwoFbG9naW4YCyABKAsyIi5t",
-            "aW5pZ2FtZS5hY2NvdW50LnYxLkxvZ2luUmVzcG9uc2VIABI8CgpnZXRfcGxh",
-            "eWVyGAwgASgLMiYubWluaWdhbWUuYWNjb3VudC52MS5HZXRQbGF5ZXJSZXNw",
-            "b25zZUgAEjwKC3N0YXJ0X21hdGNoGA0gASgLMiUubWluaWdhbWUubWF0Y2gu",
-            "djEuU3RhcnRNYXRjaFJlc3BvbnNlSAASPgoMY2FuY2VsX21hdGNoGA4gASgL",
-            "MiYubWluaWdhbWUubWF0Y2gudjEuQ2FuY2VsTWF0Y2hSZXNwb25zZUgAEjoK",
-            "CmdldF90aWNrZXQYDyABKAsyJC5taW5pZ2FtZS5tYXRjaC52MS5HZXRUaWNr",
-            "ZXRSZXNwb25zZUgAEj4KEG1hdGNoX2Fzc2lnbm1lbnQYECABKAsyIi5taW5p",
-            "Z2FtZS5tYXRjaC52MS5NYXRjaEFzc2lnbm1lbnRIABI3Cglqb2luX3Jvb20Y",
-            "ESABKAsyIi5taW5pZ2FtZS5yb29tLnYxLkpvaW5Sb29tUmVzcG9uc2VIABI3",
-            "Cg1yb29tX3NuYXBzaG90GBIgASgLMh4ubWluaWdhbWUucm9vbS52MS5Sb29t",
-            "U25hcHNob3RIABIyCgpzZXR0bGVtZW50GBMgASgLMhwubWluaWdhbWUucm9v",
-            "bS52MS5TZXR0bGVtZW50SAASSgoTc3VibWl0X3BsYXllcl9pbnB1dBgUIAEo",
-            "CzIrLm1pbmlnYW1lLnJvb20udjEuU3VibWl0UGxheWVySW5wdXRSZXNwb25z",
-            "ZUgAEjsKC2NyZWF0ZV9yb29tGBUgASgLMiQubWluaWdhbWUucm9vbS52MS5D",
-            "cmVhdGVSb29tUmVzcG9uc2VIABJGChFzeW5jX3BsYXllcl9zdGF0ZRgWIAEo",
-            "CzIpLm1pbmlnYW1lLnJvb20udjEuU3luY1BsYXllclN0YXRlUmVzcG9uc2VI",
-            "ABI3CglzZXRfcmVhZHkYFyABKAsyIi5taW5pZ2FtZS5yb29tLnYxLlNldFJl",
-            "YWR5UmVzcG9uc2VIABI5CgpzdGFydF9nYW1lGBggASgLMiMubWluaWdhbWUu",
-            "cm9vbS52MS5TdGFydEdhbWVSZXNwb25zZUgAEjUKDHJvb21fdXBkYXRlZBgZ",
-            "IAEoCzIdLm1pbmlnYW1lLnJvb20udjEuUm9vbVVwZGF0ZWRIABI1CghnZXRf",
-            "cm9vbRgaIAEoCzIhLm1pbmlnYW1lLnJvb20udjEuR2V0Um9vbVJlc3BvbnNl",
-            "SAASOgoPaXRlbV9vZmZlcl9saXN0GBsgASgLMh8ubWluaWdhbWUucm9vbS52",
-            "MS5JdGVtT2ZmZXJMaXN0SAASUQobaXRlbV9jbGFpbV9pbnRlbnRfYnJvYWRj",
-            "YXN0GBwgASgLMioubWluaWdhbWUucm9vbS52MS5JdGVtQ2xhaW1JbnRlbnRC",
-            "cm9hZGNhc3RIABI+ChFpdGVtX2NsYWltX3Jlc3VsdBgdIAEoCzIhLm1pbmln",
-            "YW1lLnJvb20udjEuSXRlbUNsYWltUmVzdWx0SAASOgoPZ2FtZV9waGFzZV9z",
-            "eW5jGB4gASgLMh8ubWluaWdhbWUucm9vbS52MS5HYW1lUGhhc2VTeW5jSAAS",
-            "TwoaaXRlbV9wbGFjZV9zdGF0ZV9icm9hZGNhc3QYHyABKAsyKS5taW5pZ2Ft",
-            "ZS5yb29tLnYxLkl0ZW1QbGFjZVN0YXRlQnJvYWRjYXN0SAASPgoRaXRlbV9w",
-            "bGFjZV9yZXN1bHQYICABKAsyIS5taW5pZ2FtZS5yb29tLnYxLkl0ZW1QbGFj",
-            "ZVJlc3VsdEgAEkQKFHBsYXllcl9vdXRfYnJvYWRjYXN0GCEgASgLMiQubWlu",
-            "aWdhbWUucm9vbS52MS5QbGF5ZXJPdXRCcm9hZGNhc3RIABJIChZwbGF5ZXJf",
-            "ZXZlbnRfYnJvYWRjYXN0GCIgASgLMiYubWluaWdhbWUucm9vbS52MS5QbGF5",
-            "ZXJFdmVudEJyb2FkY2FzdEgAEkgKFnBpY2t1cF9jbGFpbV9icm9hZGNhc3QY",
-            "IyABKAsyJi5taW5pZ2FtZS5yb29tLnYxLlBpY2t1cENsYWltQnJvYWRjYXN0",
-            "SAASTwoaaXRlbV9zdGF0ZV9ldmVudF9icm9hZGNhc3QYJCABKAsyKS5taW5p",
-            "Z2FtZS5yb29tLnYxLkl0ZW1TdGF0ZUV2ZW50QnJvYWRjYXN0SAASMwoFZXJy",
-            "b3IYWiABKAsyIi5taW5pZ2FtZS5nYXRld2F5LnYxLkVycm9yUmVzcG9uc2VI",
-            "AEIJCgdwYXlsb2FkQiZaJG1pbmlnYW1lL2dlbi9nby9nYXRld2F5L3YxO2dh",
-            "dGV3YXl2MWIGcHJvdG8z"));
+            "ZUV2ZW50SAASNAoMZ21fc2V0X3BoYXNlGCAgASgLMhwubWluaWdhbWUucm9v",
+            "bS52MS5HbVNldFBoYXNlSAASOgoPdHJhcF9raWxsX2V2ZW50GCEgASgLMh8u",
+            "bWluaWdhbWUucm9vbS52MS5UcmFwS2lsbEV2ZW50SAASRgoVaXRlbV9kZW1v",
+            "bGlzaF9jb25maXJtGCIgASgLMiUubWluaWdhbWUucm9vbS52MS5JdGVtRGVt",
+            "b2xpc2hDb25maXJtSABCCQoHcGF5bG9hZCLiDwoOU2VydmVyRW52ZWxvcGUS",
+            "LwoFdHJhY2UYASABKAsyIC5taW5pZ2FtZS5jb21tb24udjEuVHJhY2VDb250",
+            "ZXh0EgsKA3NlcRgCIAEoBBI7CgloZWFydGJlYXQYCiABKAsyJi5taW5pZ2Ft",
+            "ZS5nYXRld2F5LnYxLkhlYXJ0YmVhdFJlc3BvbnNlSAASMwoFbG9naW4YCyAB",
+            "KAsyIi5taW5pZ2FtZS5hY2NvdW50LnYxLkxvZ2luUmVzcG9uc2VIABI8Cgpn",
+            "ZXRfcGxheWVyGAwgASgLMiYubWluaWdhbWUuYWNjb3VudC52MS5HZXRQbGF5",
+            "ZXJSZXNwb25zZUgAEjwKC3N0YXJ0X21hdGNoGA0gASgLMiUubWluaWdhbWUu",
+            "bWF0Y2gudjEuU3RhcnRNYXRjaFJlc3BvbnNlSAASPgoMY2FuY2VsX21hdGNo",
+            "GA4gASgLMiYubWluaWdhbWUubWF0Y2gudjEuQ2FuY2VsTWF0Y2hSZXNwb25z",
+            "ZUgAEjoKCmdldF90aWNrZXQYDyABKAsyJC5taW5pZ2FtZS5tYXRjaC52MS5H",
+            "ZXRUaWNrZXRSZXNwb25zZUgAEj4KEG1hdGNoX2Fzc2lnbm1lbnQYECABKAsy",
+            "Ii5taW5pZ2FtZS5tYXRjaC52MS5NYXRjaEFzc2lnbm1lbnRIABI3Cglqb2lu",
+            "X3Jvb20YESABKAsyIi5taW5pZ2FtZS5yb29tLnYxLkpvaW5Sb29tUmVzcG9u",
+            "c2VIABI3Cg1yb29tX3NuYXBzaG90GBIgASgLMh4ubWluaWdhbWUucm9vbS52",
+            "MS5Sb29tU25hcHNob3RIABIyCgpzZXR0bGVtZW50GBMgASgLMhwubWluaWdh",
+            "bWUucm9vbS52MS5TZXR0bGVtZW50SAASSgoTc3VibWl0X3BsYXllcl9pbnB1",
+            "dBgUIAEoCzIrLm1pbmlnYW1lLnJvb20udjEuU3VibWl0UGxheWVySW5wdXRS",
+            "ZXNwb25zZUgAEjsKC2NyZWF0ZV9yb29tGBUgASgLMiQubWluaWdhbWUucm9v",
+            "bS52MS5DcmVhdGVSb29tUmVzcG9uc2VIABJGChFzeW5jX3BsYXllcl9zdGF0",
+            "ZRgWIAEoCzIpLm1pbmlnYW1lLnJvb20udjEuU3luY1BsYXllclN0YXRlUmVz",
+            "cG9uc2VIABI3CglzZXRfcmVhZHkYFyABKAsyIi5taW5pZ2FtZS5yb29tLnYx",
+            "LlNldFJlYWR5UmVzcG9uc2VIABI5CgpzdGFydF9nYW1lGBggASgLMiMubWlu",
+            "aWdhbWUucm9vbS52MS5TdGFydEdhbWVSZXNwb25zZUgAEjUKDHJvb21fdXBk",
+            "YXRlZBgZIAEoCzIdLm1pbmlnYW1lLnJvb20udjEuUm9vbVVwZGF0ZWRIABI1",
+            "CghnZXRfcm9vbRgaIAEoCzIhLm1pbmlnYW1lLnJvb20udjEuR2V0Um9vbVJl",
+            "c3BvbnNlSAASOgoPaXRlbV9vZmZlcl9saXN0GBsgASgLMh8ubWluaWdhbWUu",
+            "cm9vbS52MS5JdGVtT2ZmZXJMaXN0SAASUQobaXRlbV9jbGFpbV9pbnRlbnRf",
+            "YnJvYWRjYXN0GBwgASgLMioubWluaWdhbWUucm9vbS52MS5JdGVtQ2xhaW1J",
+            "bnRlbnRCcm9hZGNhc3RIABI+ChFpdGVtX2NsYWltX3Jlc3VsdBgdIAEoCzIh",
+            "Lm1pbmlnYW1lLnJvb20udjEuSXRlbUNsYWltUmVzdWx0SAASOgoPZ2FtZV9w",
+            "aGFzZV9zeW5jGB4gASgLMh8ubWluaWdhbWUucm9vbS52MS5HYW1lUGhhc2VT",
+            "eW5jSAASTwoaaXRlbV9wbGFjZV9zdGF0ZV9icm9hZGNhc3QYHyABKAsyKS5t",
+            "aW5pZ2FtZS5yb29tLnYxLkl0ZW1QbGFjZVN0YXRlQnJvYWRjYXN0SAASPgoR",
+            "aXRlbV9wbGFjZV9yZXN1bHQYICABKAsyIS5taW5pZ2FtZS5yb29tLnYxLkl0",
+            "ZW1QbGFjZVJlc3VsdEgAEkQKFHBsYXllcl9vdXRfYnJvYWRjYXN0GCEgASgL",
+            "MiQubWluaWdhbWUucm9vbS52MS5QbGF5ZXJPdXRCcm9hZGNhc3RIABJIChZw",
+            "bGF5ZXJfZXZlbnRfYnJvYWRjYXN0GCIgASgLMiYubWluaWdhbWUucm9vbS52",
+            "MS5QbGF5ZXJFdmVudEJyb2FkY2FzdEgAEkgKFnBpY2t1cF9jbGFpbV9icm9h",
+            "ZGNhc3QYIyABKAsyJi5taW5pZ2FtZS5yb29tLnYxLlBpY2t1cENsYWltQnJv",
+            "YWRjYXN0SAASTwoaaXRlbV9zdGF0ZV9ldmVudF9icm9hZGNhc3QYJCABKAsy",
+            "KS5taW5pZ2FtZS5yb29tLnYxLkl0ZW1TdGF0ZUV2ZW50QnJvYWRjYXN0SAAS",
+            "QgoTdHJhcF9raWxsX2Jyb2FkY2FzdBglIAEoCzIjLm1pbmlnYW1lLnJvb20u",
+            "djEuVHJhcEtpbGxCcm9hZGNhc3RIABJEChRpdGVtX2RlbW9saXNoX3Jlc3Vs",
+            "dBgmIAEoCzIkLm1pbmlnYW1lLnJvb20udjEuSXRlbURlbW9saXNoUmVzdWx0",
+            "SAASMwoFZXJyb3IYWiABKAsyIi5taW5pZ2FtZS5nYXRld2F5LnYxLkVycm9y",
+            "UmVzcG9uc2VIAEIJCgdwYXlsb2FkQiZaJG1pbmlnYW1lL2dlbi9nby9nYXRl",
+            "d2F5L3YxO2dhdGV3YXl2MWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Minigame.Account.V1.AccountReflection.Descriptor, global::Minigame.Common.V1.CommonReflection.Descriptor, global::Minigame.Match.V1.MatchReflection.Descriptor, global::Minigame.Room.V1.RoomReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.HeartbeatRequest), global::Minigame.Gateway.V1.HeartbeatRequest.Parser, new[]{ "ClientTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.HeartbeatResponse), global::Minigame.Gateway.V1.HeartbeatResponse.Parser, new[]{ "ServerTimeMs", "ClientTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ErrorResponse), global::Minigame.Gateway.V1.ErrorResponse.Parser, new[]{ "Status", "Route" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ClientEnvelope), global::Minigame.Gateway.V1.ClientEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "JoinRoom", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "GetRoom", "ItemClaimIntent", "ItemClaimConfirm", "ItemPlaceState", "ItemPlaceConfirm", "PlayerOutReport", "RoundScoreReport", "PlayerEvent", "PickupClaim", "ItemStateEvent" }, new[]{ "Payload" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ServerEnvelope), global::Minigame.Gateway.V1.ServerEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "MatchAssignment", "JoinRoom", "RoomSnapshot", "Settlement", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "RoomUpdated", "GetRoom", "ItemOfferList", "ItemClaimIntentBroadcast", "ItemClaimResult", "GamePhaseSync", "ItemPlaceStateBroadcast", "ItemPlaceResult", "PlayerOutBroadcast", "PlayerEventBroadcast", "PickupClaimBroadcast", "ItemStateEventBroadcast", "Error" }, new[]{ "Payload" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ClientEnvelope), global::Minigame.Gateway.V1.ClientEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "JoinRoom", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "GetRoom", "ItemClaimIntent", "ItemClaimConfirm", "ItemPlaceState", "ItemPlaceConfirm", "PlayerOutReport", "RoundScoreReport", "PlayerEvent", "PickupClaim", "ItemStateEvent", "GmSetPhase", "TrapKillEvent", "ItemDemolishConfirm" }, new[]{ "Payload" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ServerEnvelope), global::Minigame.Gateway.V1.ServerEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "MatchAssignment", "JoinRoom", "RoomSnapshot", "Settlement", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "RoomUpdated", "GetRoom", "ItemOfferList", "ItemClaimIntentBroadcast", "ItemClaimResult", "GamePhaseSync", "ItemPlaceStateBroadcast", "ItemPlaceResult", "PlayerOutBroadcast", "PlayerEventBroadcast", "PickupClaimBroadcast", "ItemStateEventBroadcast", "TrapKillBroadcast", "ItemDemolishResult", "Error" }, new[]{ "Payload" }, null, null, null)
           }));
     }
     #endregion
@@ -911,6 +918,15 @@ namespace Minigame.Gateway.V1 {
         case PayloadOneofCase.ItemStateEvent:
           ItemStateEvent = other.ItemStateEvent.Clone();
           break;
+        case PayloadOneofCase.GmSetPhase:
+          GmSetPhase = other.GmSetPhase.Clone();
+          break;
+        case PayloadOneofCase.TrapKillEvent:
+          TrapKillEvent = other.TrapKillEvent.Clone();
+          break;
+        case PayloadOneofCase.ItemDemolishConfirm:
+          ItemDemolishConfirm = other.ItemDemolishConfirm.Clone();
+          break;
       }
 
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -1210,6 +1226,51 @@ namespace Minigame.Gateway.V1 {
       }
     }
 
+    /// <summary>Field number for the "gm_set_phase" field.</summary>
+    public const int GmSetPhaseFieldNumber = 32;
+    /// <summary>
+    /// GM 调试指令：强制切阶段（0~5 对应 GamePhaseKind）。无同步应答，生效后全房间收到 GamePhaseSync。
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.GmSetPhase GmSetPhase {
+      get { return payloadCase_ == PayloadOneofCase.GmSetPhase ? (global::Minigame.Room.V1.GmSetPhase) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.GmSetPhase;
+      }
+    }
+
+    /// <summary>Field number for the "trap_kill_event" field.</summary>
+    public const int TrapKillEventFieldNumber = 33;
+    /// <summary>
+    /// 陷阱击杀上报：纯透传，无同步应答，广播 TrapKillBroadcast 给其他端。
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.TrapKillEvent TrapKillEvent {
+      get { return payloadCase_ == PayloadOneofCase.TrapKillEvent ? (global::Minigame.Room.V1.TrapKillEvent) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.TrapKillEvent;
+      }
+    }
+
+    /// <summary>Field number for the "item_demolish_confirm" field.</summary>
+    public const int ItemDemolishConfirmFieldNumber = 34;
+    /// <summary>
+    /// 拆除类道具确认：服务器按爆破范围结算被拆道具，广播 ItemDemolishResult，无同步应答。
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.ItemDemolishConfirm ItemDemolishConfirm {
+      get { return payloadCase_ == PayloadOneofCase.ItemDemolishConfirm ? (global::Minigame.Room.V1.ItemDemolishConfirm) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.ItemDemolishConfirm;
+      }
+    }
+
     private object payload_;
     /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
@@ -1236,6 +1297,9 @@ namespace Minigame.Gateway.V1 {
       PlayerEvent = 29,
       PickupClaim = 30,
       ItemStateEvent = 31,
+      GmSetPhase = 32,
+      TrapKillEvent = 33,
+      ItemDemolishConfirm = 34,
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1290,6 +1354,9 @@ namespace Minigame.Gateway.V1 {
       if (!object.Equals(PlayerEvent, other.PlayerEvent)) return false;
       if (!object.Equals(PickupClaim, other.PickupClaim)) return false;
       if (!object.Equals(ItemStateEvent, other.ItemStateEvent)) return false;
+      if (!object.Equals(GmSetPhase, other.GmSetPhase)) return false;
+      if (!object.Equals(TrapKillEvent, other.TrapKillEvent)) return false;
+      if (!object.Equals(ItemDemolishConfirm, other.ItemDemolishConfirm)) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -1322,6 +1389,9 @@ namespace Minigame.Gateway.V1 {
       if (payloadCase_ == PayloadOneofCase.PlayerEvent) hash ^= PlayerEvent.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.PickupClaim) hash ^= PickupClaim.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.ItemStateEvent) hash ^= ItemStateEvent.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.GmSetPhase) hash ^= GmSetPhase.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.TrapKillEvent) hash ^= TrapKillEvent.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.ItemDemolishConfirm) hash ^= ItemDemolishConfirm.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -1437,6 +1507,18 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(250, 1);
         output.WriteMessage(ItemStateEvent);
       }
+      if (payloadCase_ == PayloadOneofCase.GmSetPhase) {
+        output.WriteRawTag(130, 2);
+        output.WriteMessage(GmSetPhase);
+      }
+      if (payloadCase_ == PayloadOneofCase.TrapKillEvent) {
+        output.WriteRawTag(138, 2);
+        output.WriteMessage(TrapKillEvent);
+      }
+      if (payloadCase_ == PayloadOneofCase.ItemDemolishConfirm) {
+        output.WriteRawTag(146, 2);
+        output.WriteMessage(ItemDemolishConfirm);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1543,6 +1625,18 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(250, 1);
         output.WriteMessage(ItemStateEvent);
       }
+      if (payloadCase_ == PayloadOneofCase.GmSetPhase) {
+        output.WriteRawTag(130, 2);
+        output.WriteMessage(GmSetPhase);
+      }
+      if (payloadCase_ == PayloadOneofCase.TrapKillEvent) {
+        output.WriteRawTag(138, 2);
+        output.WriteMessage(TrapKillEvent);
+      }
+      if (payloadCase_ == PayloadOneofCase.ItemDemolishConfirm) {
+        output.WriteRawTag(146, 2);
+        output.WriteMessage(ItemDemolishConfirm);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1624,6 +1718,15 @@ namespace Minigame.Gateway.V1 {
       }
       if (payloadCase_ == PayloadOneofCase.ItemStateEvent) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(ItemStateEvent);
+      }
+      if (payloadCase_ == PayloadOneofCase.GmSetPhase) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(GmSetPhase);
+      }
+      if (payloadCase_ == PayloadOneofCase.TrapKillEvent) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(TrapKillEvent);
+      }
+      if (payloadCase_ == PayloadOneofCase.ItemDemolishConfirm) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(ItemDemolishConfirm);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1778,6 +1881,24 @@ namespace Minigame.Gateway.V1 {
             ItemStateEvent = new global::Minigame.Room.V1.ItemStateEvent();
           }
           ItemStateEvent.MergeFrom(other.ItemStateEvent);
+          break;
+        case PayloadOneofCase.GmSetPhase:
+          if (GmSetPhase == null) {
+            GmSetPhase = new global::Minigame.Room.V1.GmSetPhase();
+          }
+          GmSetPhase.MergeFrom(other.GmSetPhase);
+          break;
+        case PayloadOneofCase.TrapKillEvent:
+          if (TrapKillEvent == null) {
+            TrapKillEvent = new global::Minigame.Room.V1.TrapKillEvent();
+          }
+          TrapKillEvent.MergeFrom(other.TrapKillEvent);
+          break;
+        case PayloadOneofCase.ItemDemolishConfirm:
+          if (ItemDemolishConfirm == null) {
+            ItemDemolishConfirm = new global::Minigame.Room.V1.ItemDemolishConfirm();
+          }
+          ItemDemolishConfirm.MergeFrom(other.ItemDemolishConfirm);
           break;
       }
 
@@ -2009,6 +2130,33 @@ namespace Minigame.Gateway.V1 {
             ItemStateEvent = subBuilder;
             break;
           }
+          case 258: {
+            global::Minigame.Room.V1.GmSetPhase subBuilder = new global::Minigame.Room.V1.GmSetPhase();
+            if (payloadCase_ == PayloadOneofCase.GmSetPhase) {
+              subBuilder.MergeFrom(GmSetPhase);
+            }
+            input.ReadMessage(subBuilder);
+            GmSetPhase = subBuilder;
+            break;
+          }
+          case 266: {
+            global::Minigame.Room.V1.TrapKillEvent subBuilder = new global::Minigame.Room.V1.TrapKillEvent();
+            if (payloadCase_ == PayloadOneofCase.TrapKillEvent) {
+              subBuilder.MergeFrom(TrapKillEvent);
+            }
+            input.ReadMessage(subBuilder);
+            TrapKillEvent = subBuilder;
+            break;
+          }
+          case 274: {
+            global::Minigame.Room.V1.ItemDemolishConfirm subBuilder = new global::Minigame.Room.V1.ItemDemolishConfirm();
+            if (payloadCase_ == PayloadOneofCase.ItemDemolishConfirm) {
+              subBuilder.MergeFrom(ItemDemolishConfirm);
+            }
+            input.ReadMessage(subBuilder);
+            ItemDemolishConfirm = subBuilder;
+            break;
+          }
         }
       }
     #endif
@@ -2237,6 +2385,33 @@ namespace Minigame.Gateway.V1 {
             ItemStateEvent = subBuilder;
             break;
           }
+          case 258: {
+            global::Minigame.Room.V1.GmSetPhase subBuilder = new global::Minigame.Room.V1.GmSetPhase();
+            if (payloadCase_ == PayloadOneofCase.GmSetPhase) {
+              subBuilder.MergeFrom(GmSetPhase);
+            }
+            input.ReadMessage(subBuilder);
+            GmSetPhase = subBuilder;
+            break;
+          }
+          case 266: {
+            global::Minigame.Room.V1.TrapKillEvent subBuilder = new global::Minigame.Room.V1.TrapKillEvent();
+            if (payloadCase_ == PayloadOneofCase.TrapKillEvent) {
+              subBuilder.MergeFrom(TrapKillEvent);
+            }
+            input.ReadMessage(subBuilder);
+            TrapKillEvent = subBuilder;
+            break;
+          }
+          case 274: {
+            global::Minigame.Room.V1.ItemDemolishConfirm subBuilder = new global::Minigame.Room.V1.ItemDemolishConfirm();
+            if (payloadCase_ == PayloadOneofCase.ItemDemolishConfirm) {
+              subBuilder.MergeFrom(ItemDemolishConfirm);
+            }
+            input.ReadMessage(subBuilder);
+            ItemDemolishConfirm = subBuilder;
+            break;
+          }
         }
       }
     }
@@ -2365,6 +2540,12 @@ namespace Minigame.Gateway.V1 {
           break;
         case PayloadOneofCase.ItemStateEventBroadcast:
           ItemStateEventBroadcast = other.ItemStateEventBroadcast.Clone();
+          break;
+        case PayloadOneofCase.TrapKillBroadcast:
+          TrapKillBroadcast = other.TrapKillBroadcast.Clone();
+          break;
+        case PayloadOneofCase.ItemDemolishResult:
+          ItemDemolishResult = other.ItemDemolishResult.Clone();
           break;
         case PayloadOneofCase.Error:
           Error = other.Error.Clone();
@@ -2728,6 +2909,30 @@ namespace Minigame.Gateway.V1 {
       }
     }
 
+    /// <summary>Field number for the "trap_kill_broadcast" field.</summary>
+    public const int TrapKillBroadcastFieldNumber = 37;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.TrapKillBroadcast TrapKillBroadcast {
+      get { return payloadCase_ == PayloadOneofCase.TrapKillBroadcast ? (global::Minigame.Room.V1.TrapKillBroadcast) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.TrapKillBroadcast;
+      }
+    }
+
+    /// <summary>Field number for the "item_demolish_result" field.</summary>
+    public const int ItemDemolishResultFieldNumber = 38;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.ItemDemolishResult ItemDemolishResult {
+      get { return payloadCase_ == PayloadOneofCase.ItemDemolishResult ? (global::Minigame.Room.V1.ItemDemolishResult) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.ItemDemolishResult;
+      }
+    }
+
     /// <summary>Field number for the "error" field.</summary>
     public const int ErrorFieldNumber = 90;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2771,6 +2976,8 @@ namespace Minigame.Gateway.V1 {
       PlayerEventBroadcast = 34,
       PickupClaimBroadcast = 35,
       ItemStateEventBroadcast = 36,
+      TrapKillBroadcast = 37,
+      ItemDemolishResult = 38,
       Error = 90,
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
@@ -2831,6 +3038,8 @@ namespace Minigame.Gateway.V1 {
       if (!object.Equals(PlayerEventBroadcast, other.PlayerEventBroadcast)) return false;
       if (!object.Equals(PickupClaimBroadcast, other.PickupClaimBroadcast)) return false;
       if (!object.Equals(ItemStateEventBroadcast, other.ItemStateEventBroadcast)) return false;
+      if (!object.Equals(TrapKillBroadcast, other.TrapKillBroadcast)) return false;
+      if (!object.Equals(ItemDemolishResult, other.ItemDemolishResult)) return false;
       if (!object.Equals(Error, other.Error)) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -2869,6 +3078,8 @@ namespace Minigame.Gateway.V1 {
       if (payloadCase_ == PayloadOneofCase.PlayerEventBroadcast) hash ^= PlayerEventBroadcast.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.PickupClaimBroadcast) hash ^= PickupClaimBroadcast.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.ItemStateEventBroadcast) hash ^= ItemStateEventBroadcast.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.TrapKillBroadcast) hash ^= TrapKillBroadcast.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.ItemDemolishResult) hash ^= ItemDemolishResult.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.Error) hash ^= Error.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
@@ -3005,6 +3216,14 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(162, 2);
         output.WriteMessage(ItemStateEventBroadcast);
       }
+      if (payloadCase_ == PayloadOneofCase.TrapKillBroadcast) {
+        output.WriteRawTag(170, 2);
+        output.WriteMessage(TrapKillBroadcast);
+      }
+      if (payloadCase_ == PayloadOneofCase.ItemDemolishResult) {
+        output.WriteRawTag(178, 2);
+        output.WriteMessage(ItemDemolishResult);
+      }
       if (payloadCase_ == PayloadOneofCase.Error) {
         output.WriteRawTag(210, 5);
         output.WriteMessage(Error);
@@ -3135,6 +3354,14 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(162, 2);
         output.WriteMessage(ItemStateEventBroadcast);
       }
+      if (payloadCase_ == PayloadOneofCase.TrapKillBroadcast) {
+        output.WriteRawTag(170, 2);
+        output.WriteMessage(TrapKillBroadcast);
+      }
+      if (payloadCase_ == PayloadOneofCase.ItemDemolishResult) {
+        output.WriteRawTag(178, 2);
+        output.WriteMessage(ItemDemolishResult);
+      }
       if (payloadCase_ == PayloadOneofCase.Error) {
         output.WriteRawTag(210, 5);
         output.WriteMessage(Error);
@@ -3235,6 +3462,12 @@ namespace Minigame.Gateway.V1 {
       }
       if (payloadCase_ == PayloadOneofCase.ItemStateEventBroadcast) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(ItemStateEventBroadcast);
+      }
+      if (payloadCase_ == PayloadOneofCase.TrapKillBroadcast) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(TrapKillBroadcast);
+      }
+      if (payloadCase_ == PayloadOneofCase.ItemDemolishResult) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(ItemDemolishResult);
       }
       if (payloadCase_ == PayloadOneofCase.Error) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(Error);
@@ -3422,6 +3655,18 @@ namespace Minigame.Gateway.V1 {
             ItemStateEventBroadcast = new global::Minigame.Room.V1.ItemStateEventBroadcast();
           }
           ItemStateEventBroadcast.MergeFrom(other.ItemStateEventBroadcast);
+          break;
+        case PayloadOneofCase.TrapKillBroadcast:
+          if (TrapKillBroadcast == null) {
+            TrapKillBroadcast = new global::Minigame.Room.V1.TrapKillBroadcast();
+          }
+          TrapKillBroadcast.MergeFrom(other.TrapKillBroadcast);
+          break;
+        case PayloadOneofCase.ItemDemolishResult:
+          if (ItemDemolishResult == null) {
+            ItemDemolishResult = new global::Minigame.Room.V1.ItemDemolishResult();
+          }
+          ItemDemolishResult.MergeFrom(other.ItemDemolishResult);
           break;
         case PayloadOneofCase.Error:
           if (Error == null) {
@@ -3704,6 +3949,24 @@ namespace Minigame.Gateway.V1 {
             ItemStateEventBroadcast = subBuilder;
             break;
           }
+          case 298: {
+            global::Minigame.Room.V1.TrapKillBroadcast subBuilder = new global::Minigame.Room.V1.TrapKillBroadcast();
+            if (payloadCase_ == PayloadOneofCase.TrapKillBroadcast) {
+              subBuilder.MergeFrom(TrapKillBroadcast);
+            }
+            input.ReadMessage(subBuilder);
+            TrapKillBroadcast = subBuilder;
+            break;
+          }
+          case 306: {
+            global::Minigame.Room.V1.ItemDemolishResult subBuilder = new global::Minigame.Room.V1.ItemDemolishResult();
+            if (payloadCase_ == PayloadOneofCase.ItemDemolishResult) {
+              subBuilder.MergeFrom(ItemDemolishResult);
+            }
+            input.ReadMessage(subBuilder);
+            ItemDemolishResult = subBuilder;
+            break;
+          }
           case 722: {
             global::Minigame.Gateway.V1.ErrorResponse subBuilder = new global::Minigame.Gateway.V1.ErrorResponse();
             if (payloadCase_ == PayloadOneofCase.Error) {
@@ -3984,6 +4247,24 @@ namespace Minigame.Gateway.V1 {
             }
             input.ReadMessage(subBuilder);
             ItemStateEventBroadcast = subBuilder;
+            break;
+          }
+          case 298: {
+            global::Minigame.Room.V1.TrapKillBroadcast subBuilder = new global::Minigame.Room.V1.TrapKillBroadcast();
+            if (payloadCase_ == PayloadOneofCase.TrapKillBroadcast) {
+              subBuilder.MergeFrom(TrapKillBroadcast);
+            }
+            input.ReadMessage(subBuilder);
+            TrapKillBroadcast = subBuilder;
+            break;
+          }
+          case 306: {
+            global::Minigame.Room.V1.ItemDemolishResult subBuilder = new global::Minigame.Room.V1.ItemDemolishResult();
+            if (payloadCase_ == PayloadOneofCase.ItemDemolishResult) {
+              subBuilder.MergeFrom(ItemDemolishResult);
+            }
+            input.ReadMessage(subBuilder);
+            ItemDemolishResult = subBuilder;
             break;
           }
           case 722: {

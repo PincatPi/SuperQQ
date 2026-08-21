@@ -13,19 +13,41 @@ namespace SuperQQ.Grid
         public PlacableItemDef Def { get; private set; }
         /// <summary>锚点格子（footprint 左下角）</summary>
         public Vector2Int AnchorCell { get; private set; }
-        /// <summary>是否旋转了90度</summary>
-        public bool Rotated { get; private set; }
+        /// <summary>旋转档：0=0° 1=顺时针90° 2=180° 3=270°</summary>
+        public int Rotation { get; private set; }
+        /// <summary>是否处于旋转状态（占位宽高互换，即 90°/270° 档）；兼容旧读法</summary>
+        public bool Rotated => Rotation % 2 == 1;
         /// <summary>放置者玩家ID（计分/撤回权限用；关卡初始物体为 -1）</summary>
         public int OwnerPlayerId { get; private set; }
+
+        /// <summary>
+        /// 放置者身份标识（联机为 playerId，单机为 PlayerController.IdentityKey；关卡初始物体为空串）。
+        /// 陷阱击杀计分归属以此为准，由摆放确认路径写入
+        /// </summary>
+        public string OwnerKey { get; private set; } = string.Empty;
+
+        /// <summary>写入放置者身份标识（仅摆放确认/远端生成/快照恢复路径调用）</summary>
+        public void SetOwnerKey(string ownerKey)
+        {
+            OwnerKey = ownerKey ?? string.Empty;
+        }
 
         /// <summary>
         /// 初始化放置数据（仅由 GridManager 调用）
         /// </summary>
         public void Init(PlacableItemDef def, Vector2Int anchorCell, bool rotated, int ownerPlayerId)
         {
+            Init(def, anchorCell, rotated ? 1 : 0, ownerPlayerId);
+        }
+
+        /// <summary>
+        /// 初始化放置数据（四档旋转：0=0° 1=顺时针90° 2=180° 3=270°）
+        /// </summary>
+        public void Init(PlacableItemDef def, Vector2Int anchorCell, int rotationSteps, int ownerPlayerId)
+        {
             Def = def;
             AnchorCell = anchorCell;
-            Rotated = rotated;
+            Rotation = ((rotationSteps % 4) + 4) % 4;
             OwnerPlayerId = ownerPlayerId;
         }
     }

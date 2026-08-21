@@ -17,20 +17,28 @@ namespace SuperQQ.Placement.Core
         /// <summary>占位矩形左下角锚点格子</summary>
         public readonly Vector2Int AnchorCell;
 
-        /// <summary>是否处于旋转 90° 状态</summary>
-        public readonly bool BRotated;
+        /// <summary>旋转档：0=0° 1=顺时针90° 2=180° 3=270°</summary>
+        public readonly int Rotation;
+
+        /// <summary>是否处于旋转状态（非 0° 档）；兼容旧读法</summary>
+        public bool BRotated => Rotation != 0;
 
         public PlacementResult(string playerKey, string itemId, Vector2Int anchorCell, bool bRotated)
+            : this(playerKey, itemId, anchorCell, bRotated ? 1 : 0)
+        {
+        }
+
+        public PlacementResult(string playerKey, string itemId, Vector2Int anchorCell, int rotation)
         {
             PlayerKey = playerKey;
             ItemId = itemId;
             AnchorCell = anchorCell;
-            BRotated = bRotated;
+            Rotation = ((rotation % 4) + 4) % 4;
         }
 
         public override string ToString()
         {
-            return $"{PlayerKey} 放置 {ItemId} @ {AnchorCell}{(BRotated ? "（旋转）" : string.Empty)}";
+            return $"{PlayerKey} 放置 {ItemId} @ {AnchorCell}{(Rotation != 0 ? $"（旋转{Rotation * 90}°）" : string.Empty)}";
         }
     }
 }
