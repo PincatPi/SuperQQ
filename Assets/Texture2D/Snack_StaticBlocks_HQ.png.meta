@@ -1,0 +1,261 @@
+fileFormatVersion: 2
+guid: 9c9e5552272defaa7cddc3d827991218
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 21300390
+    second: _static-StaticBlocks.000
+  - first:
+      213: 21300392
+    second: _static-StaticBlocks.001
+  - first:
+      213: 21300394
+    second: _static-StaticBlocks.002
+  - first:
+      213: 21300396
+    second: _static-StaticBlocks.003
+  - first:
+      213: 21300398
+    second: _static-StaticBlocks.004
+  - first:
+      213: 21300400
+    second: _static-StaticBlocks.005
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 12
+  maxTextureSize: 8192
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 16
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 64
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 0
+  flipbookColumns: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: _static-StaticBlocks.000
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 922
+        width: 1076
+        height: 1110
+      alignment: 9
+      pivot: {x: 0.6111111, y: 0.38356164}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a798703a74f74f4b9f7bef7eaea040ff
+      internalID: 21300390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: _static-StaticBlocks.001
+      rect:
+        serializedVersion: 2
+        x: 1108
+        y: 1583
+        width: 1130
+        height: 449
+      alignment: 9
+      pivot: {x: 0.56390977, y: 0.36764705}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35b57e45c80a4b1dacc15f428edb5581
+      internalID: 21300392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: _static-StaticBlocks.002
+      rect:
+        serializedVersion: 2
+        x: 2254
+        y: 1608
+        width: 1079
+        height: 424
+      alignment: 9
+      pivot: {x: 0.5388349, y: 0.33333334}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 37a8af4ea415442d9a58b455e6ab4eb5
+      internalID: 21300394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: _static-StaticBlocks.003
+      rect:
+        serializedVersion: 2
+        x: 3349
+        y: 1735
+        width: 1122
+        height: 297
+      alignment: 9
+      pivot: {x: 0.56206894, y: 0.4}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68423445ae494a31b496fde599545493
+      internalID: 21300396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: _static-StaticBlocks.004
+      rect:
+        serializedVersion: 2
+        x: 4487
+        y: 1780
+        width: 1158
+        height: 252
+      alignment: 9
+      pivot: {x: 0.5258359, y: 0.42105263}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c90d6d511a87463d840ce3f6898b0113
+      internalID: 21300398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: _static-StaticBlocks.005
+      rect:
+        serializedVersion: 2
+        x: 5661
+        y: 1806
+        width: 1119
+        height: 226
+      alignment: 9
+      pivot: {x: 0.5050505, y: 0.43023255}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43f6136c9aee4d838774cb7a23e894bf
+      internalID: 21300400
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      _static-StaticBlocks.000: 21300390
+      _static-StaticBlocks.001: 21300392
+      _static-StaticBlocks.002: 21300394
+      _static-StaticBlocks.003: 21300396
+      _static-StaticBlocks.004: 21300398
+      _static-StaticBlocks.005: 21300400
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

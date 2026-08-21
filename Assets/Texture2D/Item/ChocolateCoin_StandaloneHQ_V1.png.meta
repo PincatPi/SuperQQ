@@ -1,0 +1,861 @@
+fileFormatVersion: 2
+guid: fff3f37164d1f1bf600d5024179ab5b8
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 21300104
+    second: GoldCoin.001
+  - first:
+      213: 21300106
+    second: GoldCoin.002
+  - first:
+      213: 21300108
+    second: GoldCoin.003
+  - first:
+      213: 21300110
+    second: GoldCoin.004
+  - first:
+      213: 21300112
+    second: GoldCoin.005
+  - first:
+      213: 21300114
+    second: GoldCoin.006
+  - first:
+      213: 21300116
+    second: GoldCoin.007
+  - first:
+      213: 21300118
+    second: GoldCoin.008
+  - first:
+      213: 21300120
+    second: GoldCoin.009
+  - first:
+      213: 21300122
+    second: GoldCoin.010
+  - first:
+      213: 21300124
+    second: GoldCoin.011
+  - first:
+      213: 21300126
+    second: GoldCoin.012
+  - first:
+      213: 21300128
+    second: GoldCoin.013
+  - first:
+      213: 21300130
+    second: GoldCoin.014
+  - first:
+      213: 21300132
+    second: GoldCoin.015
+  - first:
+      213: 21300822
+    second: coineffect-CoinEffect.000
+  - first:
+      213: 21300824
+    second: coineffect-CoinEffect.001
+  - first:
+      213: 21300826
+    second: coineffect-CoinEffect.002
+  - first:
+      213: 21300828
+    second: coineffect-CoinEffect.003
+  - first:
+      213: 21300830
+    second: coineffect-CoinEffect.004
+  - first:
+      213: 21300832
+    second: coineffect-CoinEffect.005
+  - first:
+      213: 21300834
+    second: coineffect-CoinEffect.006
+  - first:
+      213: 21300836
+    second: coineffect-CoinEffect.007
+  - first:
+      213: 21300838
+    second: coineffect-CoinEffect.008
+  - first:
+      213: 21300840
+    second: coineffect-CoinEffect.009
+  - first:
+      213: 21300842
+    second: coineffect-CoinEffect.010
+  - first:
+      213: 21300844
+    second: coineffect-CoinEffect.011
+  - first:
+      213: 21300846
+    second: coineffect-CoinEffect.012
+  - first:
+      213: 21300848
+    second: coineffect-CoinEffect.013
+  - first:
+      213: 21300850
+    second: coineffect-CoinEffect.014
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 12
+  maxTextureSize: 8192
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 16
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 64
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 0
+  flipbookColumns: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: GoldCoin.001
+      rect:
+        serializedVersion: 2
+        x: 6844
+        y: 7054
+        width: 546
+        height: 1122
+      alignment: 9
+      pivot: {x: 0.4878049, y: 0.5140845}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4e26b9359a6249839538548d7c1d7c8e
+      internalID: 21300104
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.002
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 5868
+        width: 868
+        height: 1104
+      alignment: 9
+      pivot: {x: 0.453125, y: 0.5063804}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c015a2dbded7459f9633dc605bbcb225
+      internalID: 21300106
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.003
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 6988
+        width: 1252
+        height: 1188
+      alignment: 9
+      pivot: {x: 0.5147059, y: 0.51369864}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f5cbdbc1548452983ef9190d06afef2
+      internalID: 21300108
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.004
+      rect:
+        serializedVersion: 2
+        x: 6589
+        y: 5894
+        width: 717
+        height: 1078
+      alignment: 9
+      pivot: {x: 0.5322581, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36d06b70e64544e9be30f10151473ad2
+      internalID: 21300110
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.005
+      rect:
+        serializedVersion: 2
+        x: 6294
+        y: 7039
+        width: 534
+        height: 1137
+      alignment: 9
+      pivot: {x: 0.59183675, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3ddac736edb94f76a1978c3ee1cb5384
+      internalID: 21300112
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.006
+      rect:
+        serializedVersion: 2
+        x: 900
+        y: 5873
+        width: 448
+        height: 1099
+      alignment: 9
+      pivot: {x: 0.71428573, y: 0.5140845}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b11e4488622e45c8bc69a84e6866b918
+      internalID: 21300114
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.007
+      rect:
+        serializedVersion: 2
+        x: 4499
+        y: 7015
+        width: 513
+        height: 1161
+      alignment: 9
+      pivot: {x: 0.625, y: 0.5214286}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a6cf6df75304040bba143e15e5dc47d
+      internalID: 21300116
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.008
+      rect:
+        serializedVersion: 2
+        x: 1284
+        y: 7001
+        width: 502
+        height: 1175
+      alignment: 9
+      pivot: {x: 0.42857143, y: 0.49264705}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d60bc0ad7222428fb84cf8227b376b83
+      internalID: 21300118
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.009
+      rect:
+        serializedVersion: 2
+        x: 5271
+        y: 7035
+        width: 607
+        height: 1141
+      alignment: 9
+      pivot: {x: 0.475, y: 0.50714284}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 524b0704e10c4053841442f23b78ff73
+      internalID: 21300120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.010
+      rect:
+        serializedVersion: 2
+        x: 2461
+        y: 7011
+        width: 1248
+        height: 1165
+      alignment: 9
+      pivot: {x: 0.46551725, y: 0.49971378}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02f8e30ce3c94c15a60988952e83f744
+      internalID: 21300122
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.011
+      rect:
+        serializedVersion: 2
+        x: 4634
+        y: 5882
+        width: 1000
+        height: 1090
+      alignment: 9
+      pivot: {x: 0.5147059, y: 0.51369864}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a93e277c4ab4cfbab729ee0d0c358ad
+      internalID: 21300124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.012
+      rect:
+        serializedVersion: 2
+        x: 3725
+        y: 7014
+        width: 758
+        height: 1162
+      alignment: 9
+      pivot: {x: 0.5086548, y: 0.49324325}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a0dcc322843406fbf9a8f341ee8c5b3
+      internalID: 21300126
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.013
+      rect:
+        serializedVersion: 2
+        x: 1802
+        y: 7010
+        width: 643
+        height: 1166
+      alignment: 9
+      pivot: {x: 0.5833333, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4c2c9c31113848cda1a0181db6611f51
+      internalID: 21300128
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.014
+      rect:
+        serializedVersion: 2
+        x: 5894
+        y: 7035
+        width: 384
+        height: 1141
+      alignment: 9
+      pivot: {x: 0.5833333, y: 0.5208333}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5626b6fa46ec446a9207bc298ccdf9ec
+      internalID: 21300130
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GoldCoin.015
+      rect:
+        serializedVersion: 2
+        x: 5028
+        y: 7028
+        width: 227
+        height: 1148
+      alignment: 9
+      pivot: {x: 0.5625, y: 0.50735295}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0fbf1871ed464b2cac53a64347bbd889
+      internalID: 21300132
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.000
+      rect:
+        serializedVersion: 2
+        x: 5650
+        y: 5884
+        width: 923
+        height: 1088
+      alignment: 9
+      pivot: {x: 0.61904764, y: 2.2222223}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b31b5ba50aa44a2ba61e28b83d62e587
+      internalID: 21300822
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.001
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 4775
+        width: 1050
+        height: 1077
+      alignment: 9
+      pivot: {x: 0.5547256, y: 1.9538044}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c66a46f7451448989b6a41060725c75
+      internalID: 21300824
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.002
+      rect:
+        serializedVersion: 2
+        x: 1364
+        y: 5878
+        width: 1116
+        height: 1094
+      alignment: 9
+      pivot: {x: 0.5372726, y: 1.7386733}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e39d8a1e88894ad7844ea2c2d0b8496a
+      internalID: 21300826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.003
+      rect:
+        serializedVersion: 2
+        x: 3579
+        y: 5882
+        width: 1039
+        height: 1090
+      alignment: 9
+      pivot: {x: 0.5747298, y: 1.4186463}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fec6d7c3c8274fde877321653a76fb23
+      internalID: 21300828
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.004
+      rect:
+        serializedVersion: 2
+        x: 2203
+        y: 4828
+        width: 1063
+        height: 1024
+      alignment: 9
+      pivot: {x: 0.5002092, y: 1.1512172}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7c9255150ad41498881d0fe85e1b80d
+      internalID: 21300830
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.005
+      rect:
+        serializedVersion: 2
+        x: 2496
+        y: 5882
+        width: 1067
+        height: 1090
+      alignment: 9
+      pivot: {x: 0.49193034, y: 0.7657831}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f6441ababb14807baf0461f1c2d445d
+      internalID: 21300832
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.006
+      rect:
+        serializedVersion: 2
+        x: 1082
+        y: 4820
+        width: 1105
+        height: 1032
+      alignment: 9
+      pivot: {x: 0.5268914, y: 0.67022693}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2701080cb0d145d4900dee601e487a2d
+      internalID: 21300834
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.007
+      rect:
+        serializedVersion: 2
+        x: 4407
+        y: 4918
+        width: 1104
+        height: 934
+      alignment: 9
+      pivot: {x: 0.535212, y: 0.61969936}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d0aafa6f6a841b4bec198fb193fc5dc
+      internalID: 21300836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.008
+      rect:
+        serializedVersion: 2
+        x: 5527
+        y: 4927
+        width: 1108
+        height: 925
+      alignment: 9
+      pivot: {x: 0.52530354, y: 0.6165853}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c232c7f05dc4f15b8146e5d0d4c546c
+      internalID: 21300838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.009
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 3846
+        width: 1113
+        height: 913
+      alignment: 9
+      pivot: {x: 0.53571427, y: 0.6340099}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 484739a0cf44479eb18090bf0d0ee2fe
+      internalID: 21300840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.010
+      rect:
+        serializedVersion: 2
+        x: 3282
+        y: 4853
+        width: 1109
+        height: 999
+      alignment: 9
+      pivot: {x: 0.52328557, y: 0.6512131}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba50d11b3a1043e7ba7bd255995222a7
+      internalID: 21300842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.011
+      rect:
+        serializedVersion: 2
+        x: 2268
+        y: 3913
+        width: 1113
+        height: 846
+      alignment: 9
+      pivot: {x: 0.51997167, y: 0.6895927}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf1bb1fa1c96424998a11a90c67c60c8
+      internalID: 21300844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.012
+      rect:
+        serializedVersion: 2
+        x: 6651
+        y: 4933
+        width: 1104
+        height: 919
+      alignment: 9
+      pivot: {x: 0.534172, y: 0.7892449}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2d7ac083e7749379870cedd3003d2cb
+      internalID: 21300846
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.013
+      rect:
+        serializedVersion: 2
+        x: 3397
+        y: 4128
+        width: 1109
+        height: 631
+      alignment: 9
+      pivot: {x: 0.5098634, y: 0.9549126}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3f683cefde04a758cfe345bf3c96938
+      internalID: 21300848
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coineffect-CoinEffect.014
+      rect:
+        serializedVersion: 2
+        x: 1145
+        y: 3898
+        width: 1107
+        height: 861
+      alignment: 9
+      pivot: {x: 0.52331585, y: 1.0917759}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b8963f8213d46049631bafee5e8741d
+      internalID: 21300850
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      GoldCoin.001: 21300104
+      GoldCoin.002: 21300106
+      GoldCoin.003: 21300108
+      GoldCoin.004: 21300110
+      GoldCoin.005: 21300112
+      GoldCoin.006: 21300114
+      GoldCoin.007: 21300116
+      GoldCoin.008: 21300118
+      GoldCoin.009: 21300120
+      GoldCoin.010: 21300122
+      GoldCoin.011: 21300124
+      GoldCoin.012: 21300126
+      GoldCoin.013: 21300128
+      GoldCoin.014: 21300130
+      GoldCoin.015: 21300132
+      coineffect-CoinEffect.000: 21300822
+      coineffect-CoinEffect.001: 21300824
+      coineffect-CoinEffect.002: 21300826
+      coineffect-CoinEffect.003: 21300828
+      coineffect-CoinEffect.004: 21300830
+      coineffect-CoinEffect.005: 21300832
+      coineffect-CoinEffect.006: 21300834
+      coineffect-CoinEffect.007: 21300836
+      coineffect-CoinEffect.008: 21300838
+      coineffect-CoinEffect.009: 21300840
+      coineffect-CoinEffect.010: 21300842
+      coineffect-CoinEffect.011: 21300844
+      coineffect-CoinEffect.012: 21300846
+      coineffect-CoinEffect.013: 21300848
+      coineffect-CoinEffect.014: 21300850
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,0 +1,236 @@
+fileFormatVersion: 2
+guid: 9caa91bef7350bb192ca6078f4a9f9a8
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 21300404
+    second: _static-TennisBallShooter.001
+  - first:
+      213: 21300410
+    second: _static-TennisBallShooter.004
+  - first:
+      213: 21300408
+    second: _static-TennisBallShooter.003
+  - first:
+      213: 21300406
+    second: _static-TennisBallShooter.002
+  - first:
+      213: 21300402
+    second: _static-TennisBallShooter.000
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 12
+  maxTextureSize: 8192
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 16
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 64
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 0
+  flipbookColumns: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: _static-TennisBallShooter.001
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 870
+        width: 369
+        height: 1162
+      alignment: 9
+      pivot: {x: 0.95, y: 1.1864407}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ceb8645c8e194cb6b9b3a6cc53803c8f
+      internalID: 21300404
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: _static-TennisBallShooter.004
+      rect:
+        serializedVersion: 2
+        x: 401
+        y: 905
+        width: 351
+        height: 1127
+      alignment: 9
+      pivot: {x: 0.8695652, y: 1.2096775}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8e2ac90f562d4016935d610738d29c93
+      internalID: 21300410
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: _static-TennisBallShooter.003
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 971
+        width: 422
+        height: 1061
+      alignment: 9
+      pivot: {x: 0.84615386, y: 1.2241379}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6303998da65d49febfdd4aee140df4ec
+      internalID: 21300408
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: _static-TennisBallShooter.002
+      rect:
+        serializedVersion: 2
+        x: 1206
+        y: 981
+        width: 997
+        height: 1051
+      alignment: 9
+      pivot: {x: 0.8518519, y: 1.1964285}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d9980363b415432d964a38f69b84f9c1
+      internalID: 21300406
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: _static-TennisBallShooter.000
+      rect:
+        serializedVersion: 2
+        x: 2219
+        y: 1918
+        width: 116
+        height: 114
+      alignment: 9
+      pivot: {x: 0.54780734, y: 0.6703297}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 060815901b6b4db5bb89cee3addac105
+      internalID: 21300402
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      _static-TennisBallShooter.000: 21300402
+      _static-TennisBallShooter.001: 21300404
+      _static-TennisBallShooter.002: 21300406
+      _static-TennisBallShooter.003: 21300408
+      _static-TennisBallShooter.004: 21300410
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

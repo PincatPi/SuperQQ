@@ -25,3 +25,9 @@ MonoBehaviour:
     BIsFixed: 0
     Weight: 0
     Modifier: {fileID: 11400000, guid: 5d96c51a890d41bd989c085e173349ca, type: 2}
+  - EventType: 3
+    DisplayName: "言出法随"
+    PopupPrefab: {fileID: 0}
+    BIsFixed: 0
+    Weight: 1
+    Modifier: {fileID: 11400000, guid: 7a07a6e1b83d4ac195a6a59bf47ae0d8, type: 2}

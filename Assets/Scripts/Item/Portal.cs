@@ -123,7 +123,7 @@ namespace SuperQQ.Item
                 return;
             }
             PlayerController player = other.GetComponentInParent<PlayerController>();
-            if (player != null)
+            if (player != null && player.BAffectedByItems)   // 死亡过渡/幽灵不被传送
             {
                 Teleport(player);
             }

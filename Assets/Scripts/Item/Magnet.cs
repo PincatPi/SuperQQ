@@ -70,9 +70,9 @@ namespace SuperQQ.Item
         /// <summary>对单个玩家施加指向中心的恒定拉力（仅当其在作用范围内且为本地模拟）</summary>
         private void TryPull(PlayerController player, Rect range)
         {
-            if (player == null)
+            if (player == null || !player.BAffectedByItems)
             {
-                return;
+                return;   // 死亡过渡/幽灵不受磁力影响
             }
             Rigidbody2D rb = player.Rb;
             // 远端化身 simulated = false（快照驱动），跳过——其受力由所属客户端自行模拟（见联机说明）

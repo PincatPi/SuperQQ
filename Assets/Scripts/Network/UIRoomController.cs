@@ -28,10 +28,17 @@ namespace SuperQQ.Network
 #endif
         [SerializeField, HideInInspector] private string battleSceneName = "Level1";
 
+        [Header("退出房间后返回的大厅场景（拖入场景资源，需已加入 Build Settings）")]
+#if UNITY_EDITOR
+        [SerializeField] private UnityEditor.SceneAsset lobbySceneAsset;
+#endif
+        [SerializeField, HideInInspector] private string lobbySceneName = "Lobby";
+
 #if UNITY_EDITOR
         private void OnValidate()
         {
             if (battleSceneAsset != null) battleSceneName = battleSceneAsset.name;
+            if (lobbySceneAsset != null) lobbySceneName = lobbySceneAsset.name;
         }
 #endif
 
@@ -67,6 +74,7 @@ namespace SuperQQ.Network
 
             view.ReadyClicked += OnReadyClicked;
             view.StartClicked += OnStartClicked;
+            view.BackClicked += OnBackClicked;
 
             if (_net == null || string.IsNullOrEmpty(_net.RoomId) || _room == null)
             {
@@ -79,6 +87,7 @@ namespace SuperQQ.Network
             _net.Register<SetReadyResponse>(OnSetReady);
             _net.Register<StartGameResponse>(OnStartGame);
             _net.Register<GetRoomResponse>(OnGetRoom);
+            _net.Register<LeaveRoomResponse>(OnLeaveRoom);
             _net.Register<ErrorResponse>(OnError);
 
             Refresh();
@@ -113,12 +122,14 @@ namespace SuperQQ.Network
             {
                 view.ReadyClicked -= OnReadyClicked;
                 view.StartClicked -= OnStartClicked;
+                view.BackClicked -= OnBackClicked;
             }
             if (_net == null) return;
             _net.Unregister<RoomUpdated>();
             _net.Unregister<SetReadyResponse>();
             _net.Unregister<StartGameResponse>();
             _net.Unregister<GetRoomResponse>();
+            _net.Unregister<LeaveRoomResponse>();
             _net.Unregister<ErrorResponse>();
         }
 
@@ -298,6 +309,44 @@ namespace SuperQQ.Network
             }
 
             Refresh();
+        }
+
+        /// <summary>退出当前房间：通知服务端离房（fire-and-forget），清理本地房间状态并返回大厅</summary>
+        private void OnBackClicked()
+        {
+            Debug.Log("[NetWork] 退出房间，返回大厅");
+
+            if (_net != null)
+            {
+                // 在房间中才需要通知服务端；player_id 由服务端以 session 绑定为准，无需填写。
+                // 不等回包：即使请求失败也不阻塞返回大厅。
+                if (!string.IsNullOrEmpty(_net.RoomId))
+                {
+                    _net.Send(new LeaveRoomRequest { RoomId = _net.RoomId });
+                }
+
+                _net.RoomId = "";
+                _net.JoinedRoom = null;
+            }
+
+            // 进房时开了麦，退出时关闭
+            if (MicVolumeManager.Instance != null)
+            {
+                MicVolumeManager.Instance.StopMic();
+            }
+
+            SceneManager.LoadScene(lobbySceneName);
+        }
+
+        /// <summary>离房应答：仅记录结果，无需 UI 反馈</summary>
+        private void OnLeaveRoom(LeaveRoomResponse resp)
+        {
+            if (resp.Status == null || resp.Status.Code != ResultCode.Ok)
+            {
+                Debug.LogWarning($"[NetWork] 服务端离房失败: {resp.Status?.Message}");
+                return;
+            }
+            Debug.Log("[NetWork] 服务端离房成功");
         }
 
         private void OnError(ErrorResponse err)

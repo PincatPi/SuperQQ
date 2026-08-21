@@ -188,6 +188,8 @@ namespace SuperQQ.Player
         public bool BIsFinished => _currentState is PlayerFinishedState;
         // 冻结状态：无法操作但仍视为在场，可被击杀，解冻后恢复存活
         public bool BIsFrozen => _currentState is PlayerFrozenState;
+        // 是否可被道具效果影响（控制类：风力/磁力/减速/传送/震屏等）：死亡过渡与幽灵不受影响
+        public bool BAffectedByItems => !BIsDead && !BIsGhost;
         public float HorizontalVelocity => _currentState?.HorizontalVelocity ?? 0f;
 
         /// <summary>
