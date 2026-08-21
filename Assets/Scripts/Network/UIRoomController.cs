@@ -28,10 +28,17 @@ namespace SuperQQ.Network
 #endif
         [SerializeField, HideInInspector] private string battleSceneName = "Level1";
 
+        [Header("退出房间后返回的大厅场景（拖入场景资源，需已加入 Build Settings）")]
+#if UNITY_EDITOR
+        [SerializeField] private UnityEditor.SceneAsset lobbySceneAsset;
+#endif
+        [SerializeField, HideInInspector] private string lobbySceneName = "Lobby";
+
 #if UNITY_EDITOR
         private void OnValidate()
         {
             if (battleSceneAsset != null) battleSceneName = battleSceneAsset.name;
+            if (lobbySceneAsset != null) lobbySceneName = lobbySceneAsset.name;
         }
 #endif
 
@@ -67,6 +74,7 @@ namespace SuperQQ.Network
 
             view.ReadyClicked += OnReadyClicked;
             view.StartClicked += OnStartClicked;
+            view.BackClicked += OnBackClicked;
 
             if (_net == null || string.IsNullOrEmpty(_net.RoomId) || _room == null)
             {
@@ -113,6 +121,7 @@ namespace SuperQQ.Network
             {
                 view.ReadyClicked -= OnReadyClicked;
                 view.StartClicked -= OnStartClicked;
+                view.BackClicked -= OnBackClicked;
             }
             if (_net == null) return;
             _net.Unregister<RoomUpdated>();
@@ -298,6 +307,27 @@ namespace SuperQQ.Network
             }
 
             Refresh();
+        }
+
+        /// <summary>退出当前房间：清理本地房间状态并返回大厅（服务端 LeaveRoom 接口就绪后在此处补发请求）</summary>
+        private void OnBackClicked()
+        {
+            Debug.Log("[NetWork] 退出房间，返回大厅");
+
+            // TODO: 服务端退出房间接口（LeaveRoomRequest）就绪后，先发送请求再切场景
+            if (_net != null)
+            {
+                _net.RoomId = "";
+                _net.JoinedRoom = null;
+            }
+
+            // 进房时开了麦，退出时关闭
+            if (MicVolumeManager.Instance != null)
+            {
+                MicVolumeManager.Instance.StopMic();
+            }
+
+            SceneManager.LoadScene(lobbySceneName);
         }
 
         private void OnError(ErrorResponse err)

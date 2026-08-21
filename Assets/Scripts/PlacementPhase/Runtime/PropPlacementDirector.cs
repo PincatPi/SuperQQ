@@ -311,6 +311,19 @@ namespace SuperQQ.Placement.Runtime
             Vector2 pointerWorld = PointerWorldPos();
 
             // 按下：开始拖拽；若还有待放置道具则取出
+            if (Input.GetMouseButtonDown(0))
+            {
+                // 【临时诊断】点击未生效排查：记录每次按下的拦截原因，定位后删除
+                if (IsPointerOverUI())
+                {
+                    Debug.Log($"{LOG_TAG} 按下被 UI 拦截: {DescribeBlockingUI()}");
+                }
+                else
+                {
+                    Debug.Log($"{LOG_TAG} 按下生效: BIsPlacing={localSession.BIsPlacing} BHasPendingItem={localSession.BHasPendingItem}");
+                }
+            }
+
             if (Input.GetMouseButtonDown(0) && !IsPointerOverUI())
             {
                 isDragging = true;
@@ -319,6 +332,11 @@ namespace SuperQQ.Placement.Runtime
                     if (localSession.BeginPlace(pointerWorld))
                     {
                         selectFrame = Time.frameCount;
+                        Debug.Log($"{LOG_TAG} 取出道具开始拖拽: {localSession.CurrentItemId}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"{LOG_TAG} BeginPlace 失败（GridManager 缺失或状态异常）");
                     }
                 }
             }
@@ -345,6 +363,32 @@ namespace SuperQQ.Placement.Runtime
                 lastPointerWorld = pointerWorld;
                 OnLocalPointerMoved?.Invoke(pointerWorld);
             }
+        }
+
+        /// <summary>【临时诊断】返回当前拦截指针射线的第一个 UI 对象路径，定位后删除</summary>
+        private static string DescribeBlockingUI()
+        {
+            if (EventSystem.current == null)
+            {
+                return "(无 EventSystem)";
+            }
+
+            var eventData = new PointerEventData(EventSystem.current) { position = Input.mousePosition };
+            var results = new System.Collections.Generic.List<RaycastResult>();
+            EventSystem.current.RaycastAll(eventData, results);
+            if (results.Count == 0)
+            {
+                return "(射线无命中)";
+            }
+
+            Transform t = results[0].gameObject.transform;
+            string path = t.name;
+            while (t.parent != null)
+            {
+                t = t.parent;
+                path = t.name + "/" + path;
+            }
+            return path;
         }
 
         /// <summary>指针是否悬停在 UI 上（触屏与鼠标统一判断）</summary>
