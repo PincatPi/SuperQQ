@@ -4,9 +4,10 @@ using UnityEngine;
 namespace SuperQQ.UI
 {
     /// <summary>
-    /// 弹窗/提示播放参数 — 由调用方构造，经 PopupManager 传递给 PopupView.OnShow 应用
+    /// 弹窗播放参数 — 由调用方构造，经 PopupManager 传递给 PopupView.OnShow 应用
     /// 所有字段均可选：保留默认值时 Prefab 上的原始内容不变
     /// 具体弹窗如需更多参数，可继承本类扩展字段，并在 PopupView 子类的 OnShow 中解析
+    /// （Tips 不使用本类：结构简单，ShowTips 仅接收文本与时长）
     /// </summary>
     public class PopupArgs
     {
@@ -22,7 +23,7 @@ namespace SuperQQ.UI
         /// <summary>
         /// 自动关闭时长（秒）：
         /// 负数 = 使用 PopupManager 注册表中该类型的默认时长；
-        /// 0 = 不自动关闭（仅弹窗有效，需 Prefab 上的关闭按钮或外部 ClosePopup）；
+        /// 0 = 不自动关闭，需 Prefab 上的关闭按钮或外部 ClosePopup 关闭；
         /// 正数 = 指定时长后自动关闭
         /// </summary>
         public float Duration = -1f;

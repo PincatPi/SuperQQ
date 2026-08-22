@@ -59,6 +59,12 @@ namespace SuperQQ.Microphone
         /// <summary>当前使用的设备名（null 表示系统默认设备）</summary>
         public string DeviceName { get; private set; }
 
+        /// <summary>当前采集使用的麦克风 AudioClip（未采集时为 null），供语音识别等模块共享读取，避免同一设备重复开麦</summary>
+        public AudioClip MicClip => _clip;
+
+        /// <summary>当前采集的采样率</summary>
+        public int SampleRate => _sampleRate;
+
         /// <summary>音量更新事件，参数为归一化音量 0~1</summary>
         public event Action<float> OnVolumeUpdated;
 

@@ -12,7 +12,7 @@ namespace SuperQQ.UI
     /// 生命周期规则：
     ///   - 弹窗：时长 > 0 自动关闭（销毁实例）；时长 = 0 不自动关闭，
     ///     由 Prefab 上的关闭按钮（PopupView.RequestClose）或外部 ClosePopup 关闭
-    ///   - Tips：必须自动关闭，未提供有效时长时回退到注册表默认时长
+    ///   - Tips：仅承载一段提示文本，必须自动关闭，未提供有效时长时回退到注册表默认时长
     /// 本类不感知任何具体弹窗的业务逻辑。
     /// 新增弹窗/Tips 只需：枚举加值 → 制作挂有 PopupView/TipsView 的 Prefab → 注册表登记
     /// </summary>
@@ -45,10 +45,10 @@ namespace SuperQQ.UI
         /// <summary>展示中实例的运行时记录</summary>
         private sealed class ActiveEntry
         {
-            public PopupView View;
-            public float RemainingTime; // 负数表示不自动关闭
+            public Component View;      // PopupView 或 TipsView
+            public float RemainingTime; // 负数表示不自动关闭（仅弹窗）
             public bool BIsTips;
-            public Action OnClosed;
+            public Action OnClosed;     // 仅弹窗使用，Tips 无关闭回调
         }
 
         // 单例实例（场景级，不跨场景保留）
@@ -170,7 +170,7 @@ namespace SuperQQ.UI
             }
 
             float duration = args != null && args.Duration >= 0f ? args.Duration : config.DefaultDuration;
-            return ShowInternal(config.Prefab, _popupContainer, duration, args, false);
+            return ShowInternal(config.Prefab, duration, args);
         }
 
         /// <summary>
@@ -190,12 +190,13 @@ namespace SuperQQ.UI
         // ==================== 核心接口：播放 Tips ====================
 
         /// <summary>
-        /// 播放 Tips：固定时长后自动关闭（Tips 不支持手动关闭）
+        /// 播放 Tips：展示一段提示文本，固定时长后自动关闭销毁（Tips 不支持手动关闭）
         /// </summary>
         /// <param name="type">Tips 类型（注册表索引键）</param>
-        /// <param name="args">播放参数，可为 null；时长为正时覆盖注册表默认时长</param>
+        /// <param name="content">提示文本内容</param>
+        /// <param name="duration">展示时长（秒），非正时使用注册表默认时长</param>
         /// <returns>Tips 视图引用；播放失败返回 null</returns>
-        public TipsView ShowTips(TipsType type, PopupArgs args = null)
+        public TipsView ShowTips(TipsType type, string content, float duration = -1f)
         {
             TipsConfig config = FindTipsConfig(type);
             if (config == null)
@@ -203,20 +204,22 @@ namespace SuperQQ.UI
                 return null;
             }
 
-            float duration = args != null && args.Duration > 0f ? args.Duration : config.DefaultDuration;
-            if (duration <= 0f)
+            float actualDuration = duration > 0f ? duration : config.DefaultDuration;
+            if (actualDuration <= 0f)
             {
-                duration = FALLBACK_TIPS_DURATION;
+                actualDuration = FALLBACK_TIPS_DURATION;
             }
-            return ShowInternal(config.Prefab, _tipsContainer, duration, args, true) as TipsView;
-        }
 
-        /// <summary>
-        /// 播放 Tips（便捷重载）：仅指定正文文本，可选指定时长
-        /// </summary>
-        public TipsView ShowTips(TipsType type, string content, float duration = -1f)
-        {
-            return ShowTips(type, PopupArgs.WithContent(content, duration));
+            TipsView view = Instantiate(config.Prefab, _tipsContainer);
+            _activeEntries.Add(new ActiveEntry
+            {
+                View = view,
+                RemainingTime = actualDuration,
+                BIsTips = true
+            });
+
+            view.SetContent(content);
+            return view;
         }
 
         // ==================== 关闭 ====================
@@ -224,7 +227,7 @@ namespace SuperQQ.UI
         /// <summary>
         /// 手动关闭指定弹窗/Tips（对自动关闭中的实例同样生效）
         /// </summary>
-        /// <param name="view">待关闭的视图（ShowPopup/ShowTips 的返回值）</param>
+        /// <param name="view">待关闭的弹窗视图（ShowPopup 的返回值；Tips 只能自动关闭，不在此列）</param>
         public void ClosePopup(PopupView view)
         {
             if (view == null)
@@ -268,19 +271,19 @@ namespace SuperQQ.UI
         // ==================== 内部：播放与关闭 ====================
 
         /// <summary>
-        /// 播放内部实现：实例化到容器下、登记活跃记录并应用参数
+        /// 播放弹窗内部实现：实例化到弹窗容器下、订阅关闭请求、登记活跃记录并应用参数
         /// 实例创建时即订阅关闭请求，实例随关闭销毁，订阅关系随之失效
         /// </summary>
-        private PopupView ShowInternal(PopupView prefab, Transform container, float duration, PopupArgs args, bool bIsTips)
+        private PopupView ShowInternal(PopupView prefab, float duration, PopupArgs args)
         {
-            PopupView view = Instantiate(prefab, container);
+            PopupView view = Instantiate(prefab, _popupContainer);
             view.CloseRequested += HandleCloseRequested;
 
             _activeEntries.Add(new ActiveEntry
             {
                 View = view,
                 RemainingTime = duration > 0f ? duration : -1f,
-                BIsTips = bIsTips,
+                BIsTips = false,
                 OnClosed = args != null ? args.OnClosed : null
             });
 
@@ -290,18 +293,21 @@ namespace SuperQQ.UI
         }
 
         /// <summary>
-        /// 关闭内部实现：移出活跃列表、通知视图、销毁实例、触发关闭回调
+        /// 关闭内部实现：移出活跃列表、通知视图（弹窗）、销毁实例、触发关闭回调
         /// 自动关闭倒计时、关闭按钮请求、外部 ClosePopup 均汇聚到本方法，保证生命周期单一出口
         /// </summary>
         private void CloseInternal(ActiveEntry entry)
         {
             _activeEntries.Remove(entry);
 
-            PopupView view = entry.View;
+            Component view = entry.View;
             if (view != null)
             {
-                view.BIsShowing = false;
-                view.OnHide();
+                if (view is PopupView popupView)
+                {
+                    popupView.BIsShowing = false;
+                    popupView.OnHide();
+                }
                 Destroy(view.gameObject);
             }
 
@@ -382,7 +388,7 @@ namespace SuperQQ.UI
             return null;
         }
 
-        private ActiveEntry FindActiveEntry(PopupView view)
+        private ActiveEntry FindActiveEntry(Component view)
         {
             for (int i = 0; i < _activeEntries.Count; i++)
             {

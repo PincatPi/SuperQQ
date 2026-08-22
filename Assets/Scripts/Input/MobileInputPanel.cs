@@ -22,7 +22,8 @@ namespace SuperQQ.UI
         [SerializeField, Tooltip("在 PC/编辑器中也强制启用触屏输入，便于用鼠标模拟测试")]
         private bool forceTouchInEditor = false;
 
-        private bool _bound;
+        private TouchPlayerInput _touchInput;
+        private PlayerController _localPlayer;
 
         private bool TouchModeEnabled => Application.isMobilePlatform || forceTouchInEditor;
 
@@ -34,21 +35,34 @@ namespace SuperQQ.UI
                 gameObject.SetActive(false);
                 return;
             }
+            _touchInput = new TouchPlayerInput(leftButton, rightButton, jumpButton, downButton);
             TryBindLocalPlayer();
         }
 
         private void Update()
         {
-            // 玩家化身可能晚于面板生成（联机流程），未绑定时轮询重试，绑定成功后停止
-            if (!_bound)
+            // PC 端面板已在 Start 中自隐藏，不会进入 Update；此处兜底直接返回
+            if (_touchInput == null) return;
+
+            // 玩家化身可能晚于面板生成（联机流程），未找到时轮询重试
+            if (_localPlayer == null)
             {
                 TryBindLocalPlayer();
+                return;
+            }
+
+            // 输入源可能被外部流程覆盖（如选择/放置阶段 PlayerAvatarGate 退出时还原了缓存的键盘输入），
+            // 发现被覆盖时重新断言触屏输入；屏蔽期间（NullPlayerInput）不抢占，待其还原后再接管
+            if (_localPlayer.InputSource != _touchInput && !(_localPlayer.InputSource is NullPlayerInput))
+            {
+                _localPlayer.SetInputSource(_touchInput);
+                Debug.Log($"[MobileInputPanel] 本地玩家 {_localPlayer.PlayerName} 已切换为触屏输入");
             }
         }
 
         private void TryBindLocalPlayer()
         {
-            if (_bound) return;
+            if (_localPlayer != null) return;
             if (LevelPlayerRegistry.Instance == null) return;
 
             var players = LevelPlayerRegistry.Instance.Players;
@@ -57,8 +71,8 @@ namespace SuperQQ.UI
                 PlayerController player = players[i];
                 if (player == null || !player.BIsLocal) continue;
 
-                player.SetInputSource(new TouchPlayerInput(leftButton, rightButton, jumpButton, downButton));
-                _bound = true;
+                _localPlayer = player;
+                player.SetInputSource(_touchInput);
                 Debug.Log($"[MobileInputPanel] 本地玩家 {player.PlayerName} 已切换为触屏输入");
                 return;
             }

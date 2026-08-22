@@ -45,5 +45,8 @@ namespace SuperQQ.UI
     {
         /// <summary>未配置（占位值，传入时 PopupManager 拒绝播放并告警）</summary>
         None = 0,
+
+        /// <summary>通用 Tips：仅展示一段提示文本，固定时长后自动关闭</summary>
+        Common = 1,
     }
 }
