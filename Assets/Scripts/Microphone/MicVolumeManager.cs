@@ -30,11 +30,6 @@ namespace SuperQQ.Microphone
         [Header("设备轮询")]
         [SerializeField] private float _devicePollInterval = 1f;    // 麦克风设备/权限轮询间隔（秒）
 
-        [Header("调试显示")]
-        [SerializeField] private bool _showStateHud = true;         // 是否在屏幕上显示开/关麦调用记录（简易 OnGUI）
-        [SerializeField] private int _hudFontSize = 64;             // 显示字号
-        [SerializeField] private float _hudMessageDuration = 2f;    // 每条开/关麦记录常驻时长（秒）
-
         /// <summary>分贝量程下限（静音基准，-120dB）</summary>
         public const float MinDecibels = -120f;
 
@@ -160,7 +155,6 @@ namespace SuperQQ.Microphone
         /// <returns>是否成功开启</returns>
         public bool StartMic(string deviceName = null)
         {
-            PushHudMessage("StartMic 被调用");
             _requestedDevice = deviceName;
             _shouldBeRunning = true;
             bool ok = TryStartMic(deviceName);
@@ -219,7 +213,6 @@ namespace SuperQQ.Microphone
         /// </summary>
         public void StopMic()
         {
-            PushHudMessage("StopMic 被调用");
             // 清除应有采集状态，设备轮询与切前台恢复随之失效（无论当前是否采集都必须执行）
             _shouldBeRunning = false;
 
@@ -371,58 +364,5 @@ namespace SuperQQ.Microphone
             return IsRunning && Volume >= threshold;
         }
 
-        // ==================== 开/关麦调用记录 HUD ====================
-
-        private GUIStyle _hudStyle;
-        private readonly System.Collections.Generic.List<(string text, float expireTime)> _hudMessages
-            = new System.Collections.Generic.List<(string, float)>();
-
-        /// <summary>记录一次开/关麦调用，在屏幕上以大号黑色字体常驻显示数秒</summary>
-        private void PushHudMessage(string message)
-        {
-            if (!_showStateHud)
-            {
-                return;
-            }
-            _hudMessages.Add(($"[{Time.time:F1}s] {message}", Time.unscaledTime + _hudMessageDuration));
-            // 最多保留 5 条，避免刷屏
-            if (_hudMessages.Count > 5)
-            {
-                _hudMessages.RemoveAt(0);
-            }
-        }
-
-        private void OnGUI()
-        {
-            if (!_showStateHud || _hudMessages.Count == 0)
-            {
-                return;
-            }
-
-            // 清理过期消息
-            _hudMessages.RemoveAll(m => Time.unscaledTime > m.expireTime);
-            if (_hudMessages.Count == 0)
-            {
-                return;
-            }
-
-            if (_hudStyle == null)
-            {
-                _hudStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = _hudFontSize,
-                    fontStyle = FontStyle.Bold,
-                    alignment = TextAnchor.UpperLeft,
-                    normal = { textColor = Color.black }
-                };
-            }
-            _hudStyle.fontSize = _hudFontSize;
-
-            float lineHeight = _hudFontSize * 1.4f;
-            for (int i = 0; i < _hudMessages.Count; i++)
-            {
-                GUI.Label(new Rect(20f, 20f + i * lineHeight, 1200f, lineHeight), _hudMessages[i].text, _hudStyle);
-            }
-        }
     }
 }
