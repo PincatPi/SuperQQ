@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _spellText: "\u4E2D\u56FD\u4EBA\u80FD\u98DE"
   _displayName: "\u4E2D\u56FD\u4EBA\u80FD\u98DE"
-  _effect: {fileID: 0}
+  _effect: {fileID: 11400000, guid: 39a49872d3604d4780fdccf46a730aad, type: 2}
