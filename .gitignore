@@ -116,3 +116,7 @@ InitTestScene*.unity*
 .codebuddy/
 # VSCode
 .vscode/
+
+# ASR 云凭证（真实密钥仅存本地，切勿提交）
+/Assets/StreamingAssets/asr_credentials.json
+/Assets/StreamingAssets/asr_credentials.json.meta

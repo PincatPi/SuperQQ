@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace SuperQQ.Microphone
@@ -21,7 +22,7 @@ namespace SuperQQ.Microphone
     {
         public static VoiceChantRecognizer Instance { get; private set; }
 
-        [Header("腾讯云 ASR 凭证（测试期直接填写，正式环境建议由服务端下发）")]
+        [Header("腾讯云 ASR 凭证（留空则从 StreamingAssets/asr_credentials.json 读取；切勿提交真实密钥到仓库）")]
         [SerializeField] private string _appId = "";
         [SerializeField] private string _secretId = "";
         [SerializeField] private string _secretKey = "";
@@ -88,6 +89,48 @@ namespace SuperQQ.Microphone
 
         // ==================== 生命周期 ====================
 
+        [Serializable]
+        private class AsrCredentials
+        {
+            public string appId;
+            public string secretId;
+            public string secretKey;
+        }
+
+        /// <summary>
+        /// Inspector 未配置凭证时，从 StreamingAssets/asr_credentials.json 读取（该文件已加入 .gitignore，不会提交到仓库）。
+        /// 格式参考同目录 asr_credentials.example.json
+        /// </summary>
+        private void LoadCredentialsFromConfig()
+        {
+            if (!string.IsNullOrEmpty(_secretId) && !string.IsNullOrEmpty(_secretKey))
+            {
+                return;
+            }
+
+            string path = Path.Combine(Application.streamingAssetsPath, "asr_credentials.json");
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
+            try
+            {
+                var credentials = JsonUtility.FromJson<AsrCredentials>(File.ReadAllText(path));
+                if (credentials == null)
+                {
+                    return;
+                }
+                if (string.IsNullOrEmpty(_appId)) _appId = credentials.appId;
+                if (string.IsNullOrEmpty(_secretId)) _secretId = credentials.secretId;
+                if (string.IsNullOrEmpty(_secretKey)) _secretKey = credentials.secretKey;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[VoiceChantRecognizer] 读取 ASR 凭证配置失败: {e.Message}");
+            }
+        }
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -96,6 +139,8 @@ namespace SuperQQ.Microphone
                 return;
             }
             Instance = this;
+
+            LoadCredentialsFromConfig();
 
             _asr = GetComponent<TencentRealtimeASR>();
             if (_asr == null)
