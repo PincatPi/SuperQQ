@@ -15,19 +15,19 @@ MonoBehaviour:
   _events:
   - EventType: 1
     DisplayName: "\u5C0F\u86CB\u7CD5\u9668\u77F3"
-    PopupPrefab: {fileID: 0}
+    IntroPopup: 1
     BIsFixed: 0
-    Weight: 1
+    Weight: 0
     Modifier: {fileID: 11400000, guid: 6137f8b46c924c20a5726480e7c9814f, type: 2}
   - EventType: 2
     DisplayName: "\u6DB2\u6C2E\u6CC4\u9732"
-    PopupPrefab: {fileID: 0}
+    IntroPopup: 2
     BIsFixed: 0
     Weight: 0
     Modifier: {fileID: 11400000, guid: 5d96c51a890d41bd989c085e173349ca, type: 2}
   - EventType: 3
     DisplayName: "\u8A00\u51FA\u6CD5\u968F"
-    PopupPrefab: {fileID: 0}
+    IntroPopup: 3
     BIsFixed: 0
-    Weight: 0
+    Weight: 1
     Modifier: {fileID: 11400000, guid: 7a07a6e1b83d4ac195a6a59bf47ae0d8, type: 2}

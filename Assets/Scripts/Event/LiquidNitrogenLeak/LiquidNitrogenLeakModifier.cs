@@ -29,10 +29,7 @@ namespace SuperQQ.Event
         [SerializeField] private float _maxTriggerDelay = 20f;
 
         [Header("预警")]
-        [Tooltip("预警弹窗 Prefab（文字提醒，经 PopupManager 弹出并自动关闭），留空则跳过预警直接冻结")]
-        [SerializeField] private GameObject _warningPopupPrefab;
-
-        [Tooltip("预警时长（秒）：预警弹出到正式冻结之间的缓冲时间")]
+        [Tooltip("预警时长（秒）：预警弹出到正式冻结之间的缓冲时间；预警弹窗经 PopupManager 播放（PopupType.NitrogenWarning，自动关闭）")]
         [Min(0f)]
         [SerializeField] private float _warningDuration = 3f;
 
@@ -41,9 +38,6 @@ namespace SuperQQ.Event
         [SerializeField] private GameObject _iceBlockPrefab;
 
         [Header("解冻进度")]
-        [Tooltip("解冻进度条弹窗 Prefab（根节点需挂 ThawProgressBar，经 PopupManager 弹出）；留空则无进度条 UI")]
-        [SerializeField] private ThawProgressBar _thawProgressBarPrefab;
-
         [Tooltip("以满强度持续摇晃解冻所需的秒数（强度减半则耗时约翻倍）")]
         [Min(0.1f)]
         [SerializeField] private float _fullShakeThawSeconds = 3f;
@@ -92,8 +86,8 @@ namespace SuperQQ.Event
         // 本事件冻结的玩家及其冰块实例，解冻/清理时遍历
         private readonly List<FrozenEntry> _frozenEntries = new();
 
-        // 解冻进度条弹窗引用（PopupManager 池化管理，结束时手动关闭）
-        private PopupController _progressBarPopup;
+        // 解冻进度条弹窗引用（由 PopupManager 管理，结束时手动关闭并销毁）
+        private ThawProgressBar _progressBarPopup;
 
         // 解冻阶段启用的摇晃检测器引用，结束时禁用
         private ShakeDetector _shakeDetector;
@@ -208,23 +202,17 @@ namespace SuperQQ.Event
 
         /// <summary>
         /// 弹出文字预警弹窗，经 PopupManager 自动关闭
-        /// 未配置 Prefab 或 PopupManager 缺失时打 Warning 并跳过（不阻断后续冻结流程）
+        /// PopupManager 缺失或未注册时打 Warning 并跳过（不阻断后续冻结流程）
         /// </summary>
         private void ShowWarning()
         {
-            if (_warningPopupPrefab == null)
-            {
-                Debug.LogWarning("[LiquidNitrogenLeakModifier] 预警弹窗 Prefab 未配置，跳过预警。");
-                return;
-            }
-
             if (PopupManager.Instance == null)
             {
                 Debug.LogWarning("[LiquidNitrogenLeakModifier] PopupManager 不存在，跳过预警。");
                 return;
             }
 
-            PopupManager.Instance.ShowPopup(_warningPopupPrefab, _warningDuration);
+            PopupManager.Instance.ShowPopup(PopupType.NitrogenWarning, PopupArgs.WithDuration(_warningDuration));
         }
 
         // ==================== 冻结 ====================
@@ -269,24 +257,19 @@ namespace SuperQQ.Event
         // ==================== 解冻 ====================
 
         /// <summary>
-        /// 弹出解冻进度条弹窗（不自动关闭，由 EndThaw 手动关闭）
-        /// 未配置 Prefab 或 PopupManager 缺失时返回 null，进度逻辑不受影响
+        /// 弹出解冻进度条弹窗（显式指定时长 0 = 不自动关闭，由 EndThaw 手动关闭）
+        /// PopupManager 缺失或未注册时返回 null，进度逻辑不受影响
         /// </summary>
         private ThawProgressBar ShowProgressBar()
         {
-            if (_thawProgressBarPrefab == null)
-            {
-                return null;
-            }
-
             if (PopupManager.Instance == null)
             {
                 Debug.LogWarning("[LiquidNitrogenLeakModifier] PopupManager 不存在，无法弹出解冻进度条。");
                 return null;
             }
 
-            _progressBarPopup = PopupManager.Instance.ShowPopup(_thawProgressBarPrefab.gameObject, 0f);
-            return _progressBarPopup != null ? _progressBarPopup.GetComponent<ThawProgressBar>() : null;
+            _progressBarPopup = PopupManager.Instance.ShowPopup<ThawProgressBar>(PopupType.ThawProgress, PopupArgs.WithDuration(0f));
+            return _progressBarPopup;
         }
 
         /// <summary>

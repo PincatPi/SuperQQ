@@ -1,3 +1,4 @@
+using SuperQQ.UI;
 using UnityEngine;
 
 namespace SuperQQ.Event
@@ -23,10 +24,10 @@ namespace SuperQQ.Event
         public string DisplayName;
 
         /// <summary>
-        /// 事件说明弹窗的 Prefab
+        /// 事件说明弹窗类型（PopupManager 注册表的索引键，PopupType.None 表示无弹窗）
         /// 由 PopupManager 实例化并自动关闭
         /// </summary>
-        public GameObject PopupPrefab;
+        public PopupType IntroPopup;
 
         /// <summary>
         /// 是否为固定事件

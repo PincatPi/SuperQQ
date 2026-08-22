@@ -1,3 +1,4 @@
+using SuperQQ.Microphone;
 using UnityEngine;
 
 namespace SuperQQ.GameFlow
@@ -20,12 +21,21 @@ namespace SuperQQ.GameFlow
             // 兜底复活：正常路径下玩家已在选择阶段开始时复活（PropSelectionPhase.OnEnter），
             // 此处为幂等二次调用（已存活为空操作），覆盖联机迟到/单机独立进入游玩阶段等路径。
             SuperQQ.Player.LevelPlayerRegistry.Instance?.ReviveLocalPlayersForNewRound();
+
+            // 进入游玩阶段开始接收本地玩家麦克风输入，实时检测分贝
+            MicVolumeManager.EnsureExists().StartMic();
         }
 
         public override void OnExit(GamePhaseContext context)
         {
             base.OnExit(context);
             _bRoundSettled = false;
+
+            // 离开游玩阶段停止麦克风输入接收
+            if (MicVolumeManager.Instance != null)
+            {
+                MicVolumeManager.Instance.StopMic();
+            }
         }
 
         /// <summary>

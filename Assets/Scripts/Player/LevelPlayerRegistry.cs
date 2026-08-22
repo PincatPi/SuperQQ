@@ -33,9 +33,6 @@ namespace SuperQQ.Player
         [Header("出生点")]
         [SerializeField] private Transform[] _spawnPoints;                 // 玩家出生点列表，按索引对应玩家序号
 
-        [Header("提前结束弹窗")]
-        [SerializeField] private GameObject _endEarlyPopupPrefab;          // 仅剩一名存活玩家时弹出的提示窗，3 秒后自动关闭
-
         // 仅剩一名存活玩家时触发的提示标记，防止重复弹出
         private bool _bIsLastPlayerStandingTriggered;
 
@@ -617,24 +614,18 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
-        /// 通过 PopupManager 弹出 EndEarlyPopup，3 秒后自动关闭
-        /// PopupManager 内部负责对象池复用与生命周期管理
+        /// 通过 PopupManager 弹出 EndEarly 弹窗，3 秒后自动关闭并销毁
+        /// PopupManager 内部负责实例的创建与销毁
         /// </summary>
         private void ShowEndEarlyPopup()
         {
-            if (_endEarlyPopupPrefab == null)
-            {
-                Debug.LogWarning("[LevelPlayerRegistry] 未配置 _endEarlyPopupPrefab，无法弹出提前结束提示。");
-                return;
-            }
-
             if (PopupManager.Instance == null)
             {
                 Debug.LogWarning("[LevelPlayerRegistry] PopupManager 不存在，无法弹出提前结束提示。");
                 return;
             }
 
-            PopupManager.Instance.ShowPopup(_endEarlyPopupPrefab, 3f);
+            PopupManager.Instance.ShowPopup(PopupType.EndEarly, PopupArgs.WithDuration(3f));
         }
 
         // ==================== 调试信息 ====================

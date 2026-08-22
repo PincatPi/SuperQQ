@@ -1,3 +1,4 @@
+using SuperQQ.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,9 +6,10 @@ namespace SuperQQ.Event
 {
     /// <summary>
     /// 解冻进度条 — 挂在解冻进度条弹窗 Prefab 的根节点上
+    /// 作为 PopupView 子类经 PopupManager 播放（PopupType.ThawProgress，手动关闭）
     /// 对外仅暴露 SetProgress，由事件逻辑驱动；自身不含任何事件/玩法逻辑
     /// </summary>
-    public class ThawProgressBar : MonoBehaviour
+    public class ThawProgressBar : PopupView
     {
         [Tooltip("填充图像（Image Type 需设为 Filled），按解冻进度更新 fillAmount")]
         [SerializeField] private Image _fillImage;

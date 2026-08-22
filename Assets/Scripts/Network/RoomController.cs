@@ -52,9 +52,6 @@ namespace SuperQQ.Network
             _net = NetworkManager.Instance;
             _room = _net != null ? _net.JoinedRoom : null;
 
-            // 进入房间即开麦（音量检测），失败会自动重试直到成功
-            MicVolumeManager.EnsureExists().StartMic();
-
             BuildUI();
 
             if (_net == null || string.IsNullOrEmpty(_net.RoomId) || _room == null)

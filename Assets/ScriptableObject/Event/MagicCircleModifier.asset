@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MagicCircleModifier
   m_EditorClassIdentifier: 
   _circlePrefab: {fileID: 834475662113966909, guid: d6ef7596d4c874484a037464da232faa, type: 3}
-  _circlePosition: {x: 5, y: 5}
-  _chantPromptPrefab: {fileID: 6375212440707137339, guid: 98e42441c5d744a8fa1b280441ea630a, type: 3}
+  _circlePosition: {x: 5.656745, y: 1.7069302}
+  _chantPromptPrefab: {fileID: 1547929648626745103, guid: 631660be41b5c4ba39f179502d273c83, type: 3}
   _promptText: "\u8BF7\u541F\u5531"
-  _promptOffset: {x: 0, y: 1.2}
+  _promptOffset: {x: 0, y: 2}
