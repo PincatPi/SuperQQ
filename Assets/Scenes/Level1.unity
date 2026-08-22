@@ -2241,7 +2241,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _testKey: 107
-  _testEffect: {fileID: 11400000, guid: 2949623a75e74fee96638fc3505adca6, type: 2}
+  _testEffect: {fileID: 11400000, guid: 65635a2f05eb437b978052c7548f8a27, type: 2}
 --- !u!4 &1007445139
 Transform:
   m_ObjectHideFlags: 0

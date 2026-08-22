@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: ShieldEffect_Invincible
   m_EditorClassIdentifier: 
   _shieldPrefab: {fileID: 1739096776086156, guid: 4d6d0b6c98562024e8896ae6e3312f74, type: 3}
-  _shieldOffset: {x: 0, y: 0}
+  _shieldOffset: {x: 0, y: 1}
   _duration: 10
   _activateTipText: "\u83B7\u5F97\u62A4\u76FE\uFF0C\u53EF\u514D\u75AB10s\u5185\u7684\u81F4\u547D\u4F24\u5BB3"
