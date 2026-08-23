@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0a4e5b7c8d689f4fb08a56196c7822c, type: 3}
+  m_Name: PlacableItemDef_ButterBlock
+  m_EditorClassIdentifier: 
+  itemId: butter_block
+  prefab: {fileID: 5900001724391387817, guid: 27e741ea1d149e544b16556a0a77b04d, type: 3}
+  ghostPrefab: {fileID: 0}
+  footprint: {x: 3, y: 1}
+  rotatable: 0
+  category: 0
+  facingSteps: 0
+  icon: {fileID: 0}

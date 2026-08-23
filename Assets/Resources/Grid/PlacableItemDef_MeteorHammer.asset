@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0a4e5b7c8d689f4fb08a56196c7822c, type: 3}
+  m_Name: PlacableItemDef_MeteorHammer
+  m_EditorClassIdentifier: 
+  itemId: meteor_hammer
+  prefab: {fileID: 4115552277251998557, guid: 5e067e7944961154792339aa4e23a04e, type: 3}
+  ghostPrefab: {fileID: 0}
+  footprint: {x: 1, y: 1}
+  rotatable: 0
+  category: 1
+  facingSteps: 2
+  icon: {fileID: 0}
