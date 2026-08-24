@@ -15,7 +15,7 @@ namespace SuperQQ.Audio
         /// <summary>音乐总线：BGM（大厅/关卡背景音乐）</summary>
         Music = 1,
 
-        /// <summary>音效总线：场景内玩法音效与环境循环音（海浪等）</summary>
+        /// <summary>音效总线：场景内玩法音效</summary>
         SFX = 2,
 
         /// <summary>界面总线：UI 交互音效（点击、悬停、通知等），与场景音效分离便于独立调节</summary>
@@ -36,61 +36,20 @@ namespace SuperQQ.Audio
         /// <summary>无效占位（默认值的防线，不可播放）</summary>
         None = 0,
 
-        // ==================== UI 交互（1xx，对应 Assets/Audio/Click、Hover、Type、Notification） ====================
+        // ==================== 道具与玩法（2xx，Clip 对应 Assets/Audio/Pickup_Place、Notification 等） ====================
 
-        /// <summary>UI 点击</summary>
-        UiClick = 101,
-
-        /// <summary>UI 悬停</summary>
-        UiHover = 102,
-
-        /// <summary>打字/文本逐字音</summary>
-        UiType = 103,
-
-        /// <summary>通知提示（事件播报、系统提示等）</summary>
-        Notify = 104,
-
-        // ==================== 道具与玩法（2xx，对应 Pickup_Place、Combine、Buy_Sell、Equip_Unequip、Upgrade） ====================
-
-        /// <summary>拾取道具</summary>
-        Pickup = 201,
-
-        /// <summary>放置道具</summary>
+        /// <summary>放置道具（ItemBase.OnPlaced 统一播放）</summary>
         Place = 202,
-
-        /// <summary>合成</summary>
-        Combine = 203,
-
-        /// <summary>购买</summary>
-        Buy = 204,
-
-        /// <summary>出售</summary>
-        Sell = 205,
-
-        /// <summary>装备</summary>
-        Equip = 206,
-
-        /// <summary>卸下装备</summary>
-        Unequip = 207,
-
-        /// <summary>升级</summary>
-        Upgrade = 208,
 
         /// <summary>闹钟响铃（震屏生效时播放）</summary>
         AlarmRing = 209,
 
-        // ==================== 表现反馈（3xx，对应 Appear_Swoosh、Success_Bonus） ====================
+        // ==================== 阶段与反馈（3xx） ====================
 
-        /// <summary>出现/掠过（物体入场、转场扫音）</summary>
-        Appear = 301,
+        /// <summary>正式游玩阶段开始（PlayingPhase.OnEnter 播放）</summary>
+        RoundStart = 310,
 
-        /// <summary>成功</summary>
-        Success = 302,
-
-        /// <summary>奖励/加分</summary>
-        Bonus = 303,
-
-        // ==================== 音乐（4xx，经 LoopChannel 循环播放，Clip 资源待补充） ====================
+        // ==================== 音乐（4xx，经 LoopChannel 循环播放） ====================
 
         /// <summary>大厅 BGM</summary>
         BgmLobby = 401,
