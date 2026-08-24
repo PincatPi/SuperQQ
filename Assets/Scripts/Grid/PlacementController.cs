@@ -160,7 +160,15 @@ namespace SuperQQ.Grid
             {
                 return false;
             }
-            return Grid.CanOccupy(AnchorFromRootPos(worldPos), box.Footprint, rotationSteps, AllowsOverlap);
+            return CheckPlacementValid(AnchorFromRootPos(worldPos));
+        }
+
+        /// <summary>落点合法性综合判定：占据检查（含道具声明的区域豁免）+ 道具自身附加校验（附着类道具的承载物要求等）</summary>
+        private bool CheckPlacementValid(Vector2Int anchor)
+        {
+            GridZoneType toleratedZones = itemBase != null ? itemBase.ToleratedZoneMask : GridZoneType.None;
+            return Grid.CanOccupy(anchor, box.Footprint, rotationSteps, AllowsOverlap, toleratedZones)
+                && (itemBase == null || itemBase.ValidatePlacement(Grid, anchor, rotationSteps));
         }
 
         // ==================== 状态接口 ====================
@@ -191,7 +199,7 @@ namespace SuperQQ.Grid
             {
                 SnapToNearestCell();
                 Vector2Int anchor = AnchorFromRootPos(transform.position);
-                if (Grid.CanOccupy(anchor, box.Footprint, rotationSteps, AllowsOverlap))
+                if (CheckPlacementValid(anchor))
                 {
                     RegisterAt(anchor);
                 }
@@ -256,7 +264,7 @@ namespace SuperQQ.Grid
                 Vector2Int newAnchor = AnchorFromPivot(pivotGridCell);
 
                 Grid.Release(placedItem);
-                if (Grid.CanOccupy(newAnchor, box.Footprint, rotationSteps, AllowsOverlap))
+                if (CheckPlacementValid(newAnchor))
                 {
                     ApplyRotation();
                     transform.position = RootPosFromAnchor(newAnchor);
@@ -280,7 +288,7 @@ namespace SuperQQ.Grid
 
             if (dragging)
             {
-                currentValid = Grid.CanOccupy(AnchorFromPivot(pivotCell), box.Footprint, rotationSteps, AllowsOverlap);
+                currentValid = CheckPlacementValid(AnchorFromPivot(pivotCell));
                 box.SetColor(currentValid ? validColor : invalidColor);
             }
             return true;
@@ -375,7 +383,7 @@ namespace SuperQQ.Grid
 
             transform.position = RootPosFromAnchor(AnchorFromPivot(currentPivotCell));
 
-            currentValid = Grid.CanOccupy(AnchorFromPivot(currentPivotCell), box.Footprint, rotationSteps, AllowsOverlap);
+            currentValid = CheckPlacementValid(AnchorFromPivot(currentPivotCell));
             box.SetColor(currentValid ? validColor : invalidColor);
         }
 

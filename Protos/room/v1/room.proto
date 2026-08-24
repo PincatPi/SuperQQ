@@ -341,6 +341,10 @@ message ItemPlaceConfirm {
   int32 rotation = 6;             // 旋转档：0=0° 1=顺时针90° 2=180° 3=270°
   repeated GridCell cells = 7;    // 本道具占据的全部格子
   int64 client_time_ms = 8;
+  // 附着类道具（黄油块等）置 true：跳过格子冲突检查，且不把 cells 记入 occupied
+  // （客户端权威模型下信任客户端声明；此类道具仍入 placedItems 供快照恢复，
+  //  爆破匹配需按 placedItems 各道具的 cells 直接判定，而非 occupied 集合）
+  bool allow_overlap = 9;
 }
 
 // 服务器 → 全房间：摆放仲裁结果。先到先得，格子冲突则失败。
@@ -380,6 +384,24 @@ message ItemDemolishResult {
   int32 rotation = 5;
   repeated PlacedItemState removed_items = 6; // 被拆除的道具（含摆放者/锚点/朝向，各端按锚点 RemoveAt）
   int64 server_time_ms = 7;
+}
+
+// 客户端 → 服务器：旋转吐司本轮尺寸上报。
+// 放置者端本地随机出尺寸后上传，服务器纯透传广播（建议缓存供快照/断线重连补发）。
+message ToastSizeSync {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;           // 上报者（吐司放置者）
+  int32 round = 4;                // 生效轮次
+  int32 size = 5;                 // 边长格数：1/2/3
+}
+
+// 服务器 → 全房间：透传吐司尺寸，各端据此 ApplySyncedSize 保证尺寸一致。
+message ToastSizeBroadcast {
+  string room_id = 1;
+  string player_id = 2;           // 上报者
+  int32 round = 3;
+  int32 size = 4;
 }
 
 // ==================== 通关/出局裁决与结算同步 ====================

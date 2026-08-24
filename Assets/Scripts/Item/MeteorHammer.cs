@@ -41,6 +41,21 @@ namespace SuperQQ.Item
         private Vector3 armBaseScale = Vector3.one;
 
         public override ItemCategory Category => ItemCategory.Hazard;
+
+        [Header("吸附")]
+        [Tooltip("可被黄油黏住的吸附点（footprint 内的本地格坐标，通常设为底座挂点所在格）")]
+        [SerializeField] private Vector2Int stickPointCell = new Vector2Int(3, 0);
+
+        /// <summary>
+        /// 仅吸附点格可被黄油黏住：摆锤有独立的钟摆运动逻辑，
+        /// 只有底座挂点被黏住随承载物运动才是合理的（锤臂/锤头格命中不黏）
+        /// </summary>
+        public override bool CanBeStuckAt(Vector2Int stickyCell)
+        {
+            // 锤子不做四档旋转（仅镜像，格子布局不变），吸附点 = 锚点 + 本地格坐标
+            return Placed != null && stickyCell == Placed.AnchorCell + stickPointCell;
+        }
+
         /// <summary>锤头当前线速度方向（供命中表现查询）</summary>
         public Vector2 HeadVelocityDir { get; private set; } = Vector2.right;
         /// <summary>命中弹飞速度</summary>
@@ -53,6 +68,26 @@ namespace SuperQQ.Item
                 armBaseScale = arm.localScale;
             }
             ApplyHeadLayout();
+            // 采样摆臂"竖直下挂"的世界旋转（摆放朝向；锤子不可旋转，此值在生命周期内有效）
+            if (arm != null)
+            {
+                armBaseWorldRotation = arm.rotation;
+            }
+        }
+
+        // 黏住跟随模型：底座纯父子刚性跟随（永远贴着黄油，位置/旋转都随承载物）；
+        // 摆臂单独锁定世界摆动平面——被旋转的承载物带着公转时，链条始终竖直、左右摆
+        private Quaternion armBaseWorldRotation;  // 摆臂"竖直下挂"对应的世界旋转（Awake 采样）
+        private float currentSwingAngle;          // 当前摆动角（局部平面内的角度）
+
+        private void LateUpdate()
+        {
+            // 被黏住（有父物体）时，把摆臂世界旋转锁回"竖直平面 + 当前摆角"，
+            // 抵消承载物（旋转吐司经黄油）传给根节点的旋转，摆锤方向始终不变
+            if (transform.parent != null && arm != null)
+            {
+                arm.rotation = armBaseWorldRotation * Quaternion.Euler(0f, 0f, currentSwingAngle);
+            }
         }
 
         /// <summary>
@@ -151,6 +186,7 @@ namespace SuperQQ.Item
 
         private void ApplySwingAngle(float angle)
         {
+            currentSwingAngle = angle;
             if (arm != null)
             {
                 arm.localRotation = Quaternion.Euler(0f, 0f, angle);

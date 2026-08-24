@@ -220,7 +220,6 @@ GameObject:
   - component: {fileID: 768216225951300669}
   - component: {fileID: 3174208597974919059}
   - component: {fileID: 3829295930717131665}
-  - component: {fileID: 7651494086526191380}
   - component: {fileID: 282739100342669457}
   - component: {fileID: 3331076012558116040}
   m_Layer: 9
@@ -261,6 +260,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: 
   icon: {fileID: 0}
+  placeSfx: 202
 --- !u!114 &768216225951300669
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,7 +273,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb67369568e92dc4a9c25958ba6fd362, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  footprint: {x: 1, y: 1}
+  footprint: {x: 2, y: 2}
   autoInitOnStart: 0
   startRotated: 0
   canRotate: 0
@@ -349,32 +349,7 @@ MonoBehaviour:
   ghostAlpha: 0.5
   validColor: {r: 0.3, g: 1, b: 0.3, a: 0.9}
   invalidColor: {r: 1, g: 0.3, b: 0.3, a: 0.9}
-  rotatedAngle: 90
   debugHotkeys: 1
---- !u!114 &7651494086526191380
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8801241474347195598}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb67369568e92dc4a9c25958ba6fd362, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  footprint: {x: 2, y: 2}
-  autoInitOnStart: 0
-  startRotated: 0
-  canRotate: 1
-  pivotCell: {x: -1, y: -1}
-  drawBoxInEditor: 1
-  lineColor: {r: 1, g: 1, b: 1, a: 0.9}
-  lineWidthPixels: 3
-  dashPixels: 10
-  gapPixels: 6
-  pixelsPerUnit: 100
-  sortingOrder: 10
 --- !u!61 &282739100342669457
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -439,5 +414,4 @@ MonoBehaviour:
   ghostAlpha: 0.5
   validColor: {r: 0.3, g: 1, b: 0.3, a: 0.9}
   invalidColor: {r: 1, g: 0.3, b: 0.3, a: 0.9}
-  rotatedAngle: 90
   debugHotkeys: 1

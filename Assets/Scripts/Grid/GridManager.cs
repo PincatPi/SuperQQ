@@ -47,6 +47,10 @@ namespace SuperQQ.Grid
         // 占据表：格子 -> 占据该格子的物体（一个 PlacedItem 会登记其 footprint 覆盖的所有格子）
         private readonly Dictionary<Vector2Int, PlacedItem> occupiedCells = new Dictionary<Vector2Int, PlacedItem>();
 
+        // 附着表：格子 -> 附着在该格上的附着类道具（黄油块等：不占格子，
+        // 但需被爆破联动清除、随承载物移除而级联销毁）
+        private readonly Dictionary<Vector2Int, List<SuperQQ.Item.ItemBase>> attachmentsByCell = new Dictionary<Vector2Int, List<SuperQQ.Item.ItemBase>>();
+
         [Header("区域配置")]
         [Tooltip("本关卡的区域配置资产（由编辑器工具从场景标记烘焙生成）")]
         [SerializeField] private LevelZoneConfig zoneConfig;
@@ -340,8 +344,12 @@ namespace SuperQQ.Grid
             return CanOccupy(anchorCell, footprint, rotated ? 1 : 0, allowOccupiedCells);
         }
 
-        /// <summary>四档旋转版本的 CanOccupy</summary>
-        public bool CanOccupy(Vector2Int anchorCell, Vector2Int footprint, int rotationSteps, bool allowOccupiedCells = false)
+        /// <summary>
+        /// 四档旋转版本的 CanOccupy。
+        /// toleratedZoneMask：道具声明的区域豁免（如黄油块豁免关卡预占 Occupied），
+        /// 命中这些区域类型时不视为禁止布置
+        /// </summary>
+        public bool CanOccupy(Vector2Int anchorCell, Vector2Int footprint, int rotationSteps, bool allowOccupiedCells = false, GridZoneType toleratedZoneMask = GridZoneType.None)
         {
             List<Vector2Int> cells = GetFootprintCells(anchorCell, footprint, rotationSteps);
             foreach (Vector2Int cell in cells)
@@ -356,8 +364,9 @@ namespace SuperQQ.Grid
                     return false;
                 }
             }
-            // 区域限制：出生终点/水底/被占用区域不可放置
-            if (GetZonesAt(cells).BlocksPlacement())
+            // 区域限制：出生终点/水底/被占用区域不可放置（豁免掩码中的区域类型除外）
+            GridZoneType zones = GetZonesAt(cells) & ~toleratedZoneMask;
+            if (zones.BlocksPlacement())
             {
                 return false;
             }
@@ -411,14 +420,16 @@ namespace SuperQQ.Grid
         }
 
         /// <summary>
-        /// 移除占据某格子的物体（拾回/拆除），释放其全部占位格子
+        /// 移除占据某格子的物体（拾回/拆除），释放其全部占位格子；
+        /// 附带级联清除其 footprint 各格上的附着物（黄油块随承载平台一起消失）。
+        /// 若该格无占据物，退而尝试清除该格附着物（拆除广播按附着物锚点下发的场景）
         /// </summary>
         public bool RemoveAt(Vector2Int cell)
         {
             PlacedItem item = GetItemAt(cell);
             if (item == null)
             {
-                return false;
+                return RemoveAttachmentsAt(cell);
             }
 
             // 触发道具基类的移除钩子（清理运行状态）
@@ -432,11 +443,77 @@ namespace SuperQQ.Grid
             // 无组件时回退 Def 配置
             FootprintBoxView box = item.GetComponent<FootprintBoxView>();
             Vector2Int footprint = box != null ? box.Footprint : ResolveFootprint(item.Def);
-            foreach (Vector2Int c in GetFootprintCells(item.AnchorCell, footprint, item.Rotation))
+            List<Vector2Int> cells = GetFootprintCells(item.AnchorCell, footprint, item.Rotation);
+            foreach (Vector2Int c in cells)
             {
                 occupiedCells.Remove(c);
             }
+            // 级联：承载物消失后，附着在其各格上的附着物一并移除
+            foreach (Vector2Int c in cells)
+            {
+                RemoveAttachmentsAt(c);
+            }
             Destroy(item.gameObject);
+            return true;
+        }
+
+        // ==================== 附着物（黄油块等不占格子的道具） ====================
+
+        /// <summary>登记附着物到指定格（由附着类道具 OnPlaced 时调用）</summary>
+        public void RegisterAttachment(Vector2Int cell, SuperQQ.Item.ItemBase attachment)
+        {
+            if (!attachmentsByCell.TryGetValue(cell, out List<SuperQQ.Item.ItemBase> list))
+            {
+                list = new List<SuperQQ.Item.ItemBase>();
+                attachmentsByCell[cell] = list;
+            }
+            if (!list.Contains(attachment))
+            {
+                list.Add(attachment);
+            }
+        }
+
+        /// <summary>反登记附着物（由附着类道具 OnRemoved 时调用）</summary>
+        public void UnregisterAttachment(Vector2Int cell, SuperQQ.Item.ItemBase attachment)
+        {
+            if (attachmentsByCell.TryGetValue(cell, out List<SuperQQ.Item.ItemBase> list))
+            {
+                list.Remove(attachment);
+                if (list.Count == 0)
+                {
+                    attachmentsByCell.Remove(cell);
+                }
+            }
+        }
+
+        /// <summary>查询指定格上的附着物（无则空列表；返回副本可安全遍历）</summary>
+        public List<SuperQQ.Item.ItemBase> GetAttachments(Vector2Int cell)
+        {
+            return attachmentsByCell.TryGetValue(cell, out List<SuperQQ.Item.ItemBase> list)
+                ? new List<SuperQQ.Item.ItemBase>(list)
+                : new List<SuperQQ.Item.ItemBase>();
+        }
+
+        /// <summary>
+        /// 移除并销毁指定格上的全部附着物（爆破联动 / 承载物级联；触发各附着物 OnRemoved）
+        /// </summary>
+        public bool RemoveAttachmentsAt(Vector2Int cell)
+        {
+            if (!attachmentsByCell.TryGetValue(cell, out List<SuperQQ.Item.ItemBase> list))
+            {
+                return false;
+            }
+            var snapshot = new List<SuperQQ.Item.ItemBase>(list);
+            attachmentsByCell.Remove(cell);
+            foreach (SuperQQ.Item.ItemBase attachment in snapshot)
+            {
+                if (attachment == null)
+                {
+                    continue;
+                }
+                attachment.OnRemoved();
+                Destroy(attachment.gameObject);
+            }
             return true;
         }
 
