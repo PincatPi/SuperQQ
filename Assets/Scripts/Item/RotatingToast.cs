@@ -34,8 +34,7 @@ namespace SuperQQ.Item
         [SerializeField] private bool debugAutoRotate;
 
         private FootprintBoxView box;
-        private float baseVisualScale;    // 1x1 时的视觉缩放基准
-        private Vector2 baseColliderSize; // 1x1 时的碰撞尺寸基准
+        private int appliedSize;          // 已应用到视觉/碰撞的尺寸（0=未初始化，取当前字段值）
         private Quaternion baseRotation;
 
         private bool rotating;
@@ -66,9 +65,7 @@ namespace SuperQQ.Item
                 solidCollider = GetComponent<BoxCollider2D>();
             }
             baseRotation = transform.rotation;
-            // 以生成时（1x1）的尺寸为基准，SetSize 按比例缩放
-            baseVisualScale = visual.localScale.x;
-            baseColliderSize = solidCollider != null ? solidCollider.size : Vector2.one;
+            appliedSize = Mathf.Clamp(sizeInCells, 1, 3); // 以 prefab 当前配置为已应用基准
 
             // 应用本轮已决定的尺寸（尺寸同步先于实例化发生时生效）
             if (RotatingToastSizeSync.CurrentSize > 0 && RotatingToastSizeSync.CurrentSize != sizeInCells)
@@ -91,20 +88,60 @@ namespace SuperQQ.Item
         /// </summary>
         public void SetSize(int cells)
         {
-            sizeInCells = Mathf.Clamp(cells, 1, 3);
-            float scale = sizeInCells;
+            int newSize = Mathf.Clamp(cells, 1, 3);
+            // 增量缩放：按新旧尺寸比例调整视觉/碰撞，与历史调用次数无关
+            if (appliedSize <= 0)
+            {
+                appliedSize = Mathf.Clamp(sizeInCells, 1, 3); // 首次调用前的 prefab 原值
+            }
+            float factor = (float)newSize / appliedSize;
+            appliedSize = newSize;
+            sizeInCells = newSize;
 
             if (box != null)
             {
-                box.SetFootprint(new Vector2Int(sizeInCells, sizeInCells));
+                box.SetFootprint(new Vector2Int(newSize, newSize));
             }
             if (solidCollider != null)
             {
-                solidCollider.size = baseColliderSize * scale;
+                solidCollider.size *= factor;
             }
             if (visual != null)
             {
-                visual.localScale = new Vector3(baseVisualScale * scale, baseVisualScale * scale, visual.localScale.z);
+                visual.localScale = new Vector3(
+                    visual.localScale.x * factor,
+                    visual.localScale.y * factor,
+                    visual.localScale.z);
+            }
+        }
+
+        /// <summary>
+        /// Inspector 中直接修改 Size In Cells 时同步缩放碰撞体与 Visual。
+        /// 仅编辑期生效：运行期 OnValidate 与 Awake 执行时机不定，可能与 Awake 的尺寸应用
+        /// 叠加造成二次缩放；运行期尺寸统一由 Awake / RotatingToastSizeSync 驱动。
+        /// </summary>
+        private void OnValidate()
+        {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+            if (visual == null)
+            {
+                Transform found = transform.Find("Visual");
+                visual = found != null ? found : transform;
+            }
+            if (solidCollider == null)
+            {
+                solidCollider = GetComponent<BoxCollider2D>();
+            }
+            if (box == null)
+            {
+                box = GetComponent<FootprintBoxView>();
+            }
+            if (sizeInCells > 0)
+            {
+                SetSize(sizeInCells);
             }
         }
 

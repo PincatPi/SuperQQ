@@ -35,17 +35,28 @@ namespace SuperQQ.Grid.EditorTools
 
                 root.AddComponent<Item.RotatingToast>();
 
-                var box = root.AddComponent<FootprintBoxView>();
+                // 注意：编辑器下 AddComponent<PlacementController>() 会因 RequireComponent
+                // 重复执行导致补挂两份，这里先查再补，保证只有一个
+                if (root.GetComponent<PlacementController>() == null)
+                {
+                    root.AddComponent<PlacementController>();
+                }
+                // 若 RequireComponent 已补挂出多余实例，移除多余的只留一个
+                var pcs = root.GetComponents<PlacementController>();
+                for (int i = 1; i < pcs.Length; i++)
+                {
+                    Object.DestroyImmediate(pcs[i]);
+                }
+
+                var box = root.GetComponent<FootprintBoxView>();
                 var boxSo = new SerializedObject(box);
                 boxSo.FindProperty("footprint").vector2IntValue = Vector2Int.one;
                 boxSo.FindProperty("canRotate").boolValue = false;           // 放置不可旋转（自身持续转动）
                 boxSo.FindProperty("pivotCell").vector2IntValue = new Vector2Int(-1, -1);
                 boxSo.ApplyModifiedPropertiesWithoutUndo();
 
-                var solid = root.AddComponent<BoxCollider2D>();
+                var solid = root.GetComponent<BoxCollider2D>();
                 solid.size = Vector2.one * baseSize;
-
-                root.AddComponent<PlacementController>();
 
                 // ---------- Visual ----------
                 var visual = new GameObject("Visual");
@@ -58,7 +69,8 @@ namespace SuperQQ.Grid.EditorTools
                 float scale = baseSize / Mathf.Max(spriteSize.x, spriteSize.y);
                 visual.transform.localScale = new Vector3(scale, scale, 1f);
 
-                // ---------- 保存 ----------
+                // ---------- 保存（先删旧资产，避免覆盖时残留历史组件） ----------
+                AssetDatabase.DeleteAsset(PrefabPath);
                 GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
                 AssetDatabase.SaveAssets();
                 EditorGUIUtility.PingObject(saved);
