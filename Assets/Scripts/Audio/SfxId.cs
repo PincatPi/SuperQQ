@@ -76,6 +76,9 @@ namespace SuperQQ.Audio
         /// <summary>升级</summary>
         Upgrade = 208,
 
+        /// <summary>闹钟响铃（震屏生效时播放）</summary>
+        AlarmRing = 209,
+
         // ==================== 表现反馈（3xx，对应 Appear_Swoosh、Success_Bonus） ====================
 
         /// <summary>出现/掠过（物体入场、转场扫音）</summary>

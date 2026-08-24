@@ -9,8 +9,9 @@ namespace SuperQQ.Event
     /// <summary>
     /// 中国人能飞（飞行）咒语效果 — ScriptableObject 资产
     /// 触发时在目标玩家身上挂载飞行特效（作为玩家子节点随其移动），持续配置时长后自动移除；
-    /// 效果期间玩家死亡/通关/化身销毁时特效提前移除（冻结不移除）
-    /// 注：本次仅做特效视觉与计时，不含飞行玩法逻辑
+    /// 效果期间玩家的跳跃逻辑替换为飞行：按住跳跃键持续向上飞行（封顶最大速度），
+    /// 左右移动、击退、死亡等其余逻辑与普通状态一致；
+    /// 玩家死亡/通关/化身销毁时特效提前移除（冻结不移除）
     /// </summary>
     [CreateAssetMenu(fileName = "FlightSpellEffect", menuName = "SuperQQ/Event/Spells/Flight Spell Effect")]
     public class FlightSpellEffect : SpellEffect
@@ -24,6 +25,14 @@ namespace SuperQQ.Event
         [Tooltip("飞行持续时长（秒）")]
         [Min(0.5f)]
         [SerializeField] private float _duration = 20f;
+
+        [Tooltip("飞行最大上升速度（单位/秒）：按住跳跃键持续加速，封顶为该速度")]
+        [Min(0.1f)]
+        [SerializeField] private float _maxFlySpeed = 5f;
+
+        [Tooltip("飞行上升加速度（单位/秒²）：按住跳跃键时的上升提速快慢")]
+        [Min(0.1f)]
+        [SerializeField] private float _flyAcceleration = 30f;
 
         [Tooltip("效果生效时播放的 Tips 文本内容（经 PopupManager 播放，留空则不播放）")]
         [SerializeField] private string _activateTipText = "中国人能飞！";
@@ -45,7 +54,7 @@ namespace SuperQQ.Event
             }
 
             ShowActivateTip();
-            return new FlightInstance(context, _flightPrefab, _flightOffset, _duration);
+            return new FlightInstance(context, _flightPrefab, _flightOffset, _duration, _maxFlySpeed, _flyAcceleration);
         }
 
         /// <summary>
@@ -76,8 +85,12 @@ namespace SuperQQ.Event
             private GameObject _flightInstance;
             private Coroutine _expireCoroutine;
 
-            public FlightInstance(SpellEffectContext context, GameObject flightPrefab, Vector2 offset, float duration) : base(context)
+            public FlightInstance(SpellEffectContext context, GameObject flightPrefab, Vector2 offset,
+                float duration, float maxFlySpeed, float flyAcceleration) : base(context)
             {
+                // 开启飞行模式：跳跃逻辑替换为按住持续上升（End 时复位）
+                Target.SetFlying(true, flyAcceleration, maxFlySpeed);
+
                 if (flightPrefab != null)
                 {
                     _flightInstance = Instantiate(flightPrefab, Target.transform);
@@ -152,6 +165,12 @@ namespace SuperQQ.Event
 
             protected override void OnEnd()
             {
+                // 关闭飞行模式，恢复普通跳跃逻辑（玩家已销毁时跳过）
+                if (Target != null)
+                {
+                    Target.SetFlying(false);
+                }
+
                 if (LevelPlayerRegistry.Instance != null)
                 {
                     LevelPlayerRegistry.Instance.OnPlayerStateChanged -= HandlePlayerStateChanged;

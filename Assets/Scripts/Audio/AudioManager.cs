@@ -36,6 +36,20 @@ namespace SuperQQ.Audio
         [Tooltip("SFX/UI 复音 AudioSource 池容量（同时发声上限，超出时抢占最早播放者）")]
         [SerializeField, Min(4)] private int _poolSize = 16;
 
+        [Header("增益补偿（分贝）")]
+        [Tooltip("各总线在持久化音量基础上叠加的增益（dB），用于统一抬升/压低整体响度；正值放大，0 为不补偿。" +
+                 "默认 SFX/UI +6dB（当前音效素材录制响度偏低的全局补偿）；需要再调时在首个场景手动挂载 AudioManager 修改")]
+        [SerializeField] private float _masterGainDb;
+        [SerializeField] private float _musicGainDb;
+        [SerializeField] private float _sfxGainDb = 6f;
+        [SerializeField] private float _uiGainDb = 6f;
+
+        [Header("3D 音效听距")]
+        [Tooltip("3D 定位音效的距离衰减配置（线性滚降）：最小听距内不衰减，超出后线性衰减至最大听距静音。" +
+                 "默认 10/30 世界单位，覆盖 2D 画面可视范围；0 距离处音量不受影响")]
+        [SerializeField, Min(0f)] private float _spatialMinDistance = 10f;
+        [SerializeField, Min(0.1f)] private float _spatialMaxDistance = 30f;
+
         // ==================== 常量 ====================
 
         // Mixer 暴露参数名（须与 MainAudioMixer 资产中暴露的参数一致）
@@ -107,7 +121,7 @@ namespace SuperQQ.Audio
             ResolveAssets();
             ResolveMixerGroups();
 
-            _sfxPool = new SfxSourcePool(transform, _poolSize, this, GetGroup);
+            _sfxPool = new SfxSourcePool(transform, _poolSize, this, GetGroup, _spatialMinDistance, _spatialMaxDistance);
             _musicChannel = new LoopChannel("MusicChannel", transform, _musicGroup, this);
 
             LoadVolumes();
@@ -293,7 +307,7 @@ namespace SuperQQ.Audio
             }
         }
 
-        /// <summary>将某总线的有效音量写入 Mixer（静音时 Master 取 0）</summary>
+        /// <summary>将某总线的有效音量写入 Mixer（持久化音量 + 增益补偿；静音时 Master 取纯静音不叠加补偿）</summary>
         private void ApplyBusVolume(AudioBus bus)
         {
             if (_mixer == null)
@@ -305,7 +319,23 @@ namespace SuperQQ.Audio
             {
                 linear = 0f;
             }
-            _mixer.SetFloat(ParamName(bus), LinearToDb(linear));
+            float db = linear <= SilenceThreshold
+                ? SilenceDb
+                : LinearToDb(linear) + GainDb(bus);
+            _mixer.SetFloat(ParamName(bus), db);
+        }
+
+        /// <summary>各总线的增益补偿（分贝）</summary>
+        private float GainDb(AudioBus bus)
+        {
+            switch (bus)
+            {
+                case AudioBus.Music: return _musicGainDb;
+                case AudioBus.SFX: return _sfxGainDb;
+                case AudioBus.UI: return _uiGainDb;
+                case AudioBus.Master:
+                default: return _masterGainDb;
+            }
         }
 
         private static string ParamName(AudioBus bus)

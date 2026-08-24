@@ -21,5 +21,15 @@ MonoBehaviour:
   - Id: 402
     Clip: {fileID: 8300000, guid: dce1402efe4be4a90b80f1b917ec38c5, type: 3}
     Bus: 1
+    Volume: 0.127
+    MinReplayInterval: 0
+  - Id: 202
+    Clip: {fileID: 8300000, guid: c3f482c314be1473c94344a62670e4b4, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
+  - Id: 209
+    Clip: {fileID: 8300000, guid: 6186c45e006cfeb48b6764edce5c0d2d, type: 3}
+    Bus: 2
     Volume: 1
     MinReplayInterval: 0

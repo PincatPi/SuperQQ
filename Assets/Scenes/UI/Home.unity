@@ -525,6 +525,7 @@ GameObject:
   m_Component:
   - component: {fileID: 304293537}
   - component: {fileID: 304293536}
+  - component: {fileID: 304293538}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -545,9 +546,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bgm: 401
-  _ambient: 0
   _fadeTime: 1
-  _stopAmbientOnStart: 1
 --- !u!4 &304293537
 Transform:
   m_ObjectHideFlags: 0
@@ -563,6 +562,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &304293538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 304293535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32cc96a724cad462cb25af5280959342, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _catalog: {fileID: 11400000, guid: 7483384168e2d4428b3878dc44e067dd, type: 2}
+  _mixer: {fileID: 24100000, guid: 6b8d21e4550044778867bfa07efb4fd5, type: 2}
+  _poolSize: 16
+  _masterGainDb: 0
+  _musicGainDb: 0
+  _sfxGainDb: 0
+  _uiGainDb: 0
+  _spatialMinDistance: 10
+  _spatialMaxDistance: 30
 --- !u!1 &404581574
 GameObject:
   m_ObjectHideFlags: 0

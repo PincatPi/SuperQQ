@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Cinemachine;
+using SuperQQ.Audio;
 using SuperQQ.Grid;
 using SuperQQ.Player;
 using UnityEngine;
@@ -37,6 +38,10 @@ namespace SuperQQ.Item
         [SerializeField, Min(0f)] private float windUpTime = 1f;
         [Tooltip("震屏冲量源；留空则取本物体上的 CinemachineImpulseSource。震动时长/幅度在该组件的 Impulse Definition 中配置")]
         [SerializeField] private CinemachineImpulseSource impulseSource;
+
+        [Header("音效")]
+        [Tooltip("响铃音效：震屏生效时在闹钟位置 3D 播放。音效 Clip 在 AudioCatalog 资产中按本 Id 拖配；None 表示静默")]
+        [SerializeField] private SfxId ringSfx = SfxId.AlarmRing;
 
         [Header("调试")]
         [Tooltip("始终激活检测（无 GameFlow 的测试场景使用；阶段系统接入后关闭，由 OnRunPhaseStart/OnBuildPhaseStart 控制）")]
@@ -156,6 +161,12 @@ namespace SuperQQ.Item
             }
             EnsureImpulseListener();
             impulseSource.GenerateImpulse();
+
+            // 震屏生效时同步播放响铃音效（3D 定位，随 AudioManager 走 SFX 总线与复音限频）
+            if (ringSfx != SfxId.None)
+            {
+                AudioManager.PlaySfxAt(ringSfx, transform.position);
+            }
         }
 
         /// <summary>确保场景 vcam 挂有 Impulse Listener（缺失时自动补挂，否则收不到冲量、震屏无效）</summary>

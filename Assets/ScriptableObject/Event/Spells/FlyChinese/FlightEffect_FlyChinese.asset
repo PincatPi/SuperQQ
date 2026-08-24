@@ -15,4 +15,6 @@ MonoBehaviour:
   _flightPrefab: {fileID: 1167155001037120, guid: 14777e4d41f0de84cafca6d871768538, type: 3}
   _flightOffset: {x: 0, y: 0}
   _duration: 20
+  _maxFlySpeed: 5
+  _flyAcceleration: 30
   _activateTipText: "\u957F\u6309\u8DF3\u8DC3\u6309\u94AE\u4F7F\u7528\u98DE\u884C\u80FD\u529B"

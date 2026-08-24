@@ -9,8 +9,8 @@ namespace SuperQQ.Event
     /// <summary>
     /// 无敌金身（护盾）咒语效果 — ScriptableObject 资产
     /// 触发时在目标玩家身上挂载护盾特效（作为玩家子节点随其移动），持续配置时长后自动移除；
-    /// 效果期间玩家死亡/通关/化身销毁时护盾提前移除（冻结不移除）
-    /// 注：本次仅做护盾视觉与计时，不含免疫死亡等玩法逻辑
+    /// 效果期间玩家获得无敌：免疫伤害、不会进入死亡/幽灵状态，但物理效果（如击退击飞）仍正常作用；
+    /// 玩家化身销毁时护盾提前移除
     /// </summary>
     [CreateAssetMenu(fileName = "ShieldSpellEffect", menuName = "SuperQQ/Event/Spells/Shield Spell Effect")]
     public class ShieldSpellEffect : SpellEffect
@@ -78,6 +78,9 @@ namespace SuperQQ.Event
 
             public ShieldInstance(SpellEffectContext context, GameObject shieldPrefab, Vector2 offset, float duration) : base(context)
             {
+                // 无敌金身：效果期间免疫死亡（引用计数，End 时移除）
+                Target.AddInvincibility();
+
                 if (shieldPrefab != null)
                 {
                     _shieldInstance = Instantiate(shieldPrefab, Target.transform);
@@ -152,6 +155,12 @@ namespace SuperQQ.Event
 
             protected override void OnEnd()
             {
+                // 移除无敌标记（玩家已销毁时跳过）
+                if (Target != null)
+                {
+                    Target.RemoveInvincibility();
+                }
+
                 if (LevelPlayerRegistry.Instance != null)
                 {
                     LevelPlayerRegistry.Instance.OnPlayerStateChanged -= HandlePlayerStateChanged;

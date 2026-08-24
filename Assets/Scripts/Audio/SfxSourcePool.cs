@@ -29,6 +29,8 @@ namespace SuperQQ.Audio
         private readonly Dictionary<SfxId, float> _lastPlayTime = new();   // 各音效最近一次实际发声时刻（限频用）
         private readonly MonoBehaviour _runner;                            // 协程宿主（AudioManager）
         private readonly Func<AudioBus, AudioMixerGroup> _groupResolver;   // 总线 → Mixer 分组解析（由 AudioManager 提供）
+        private readonly float _spatialMinDistance;                        // 3D 音效最小听距（内不衰减）
+        private readonly float _spatialMaxDistance;                        // 3D 音效最大听距（外静音）
 
         /// <summary>
         /// 创建对象池并在 parent 下预生成全部 AudioSource
@@ -37,10 +39,15 @@ namespace SuperQQ.Audio
         /// <param name="capacity">池容量（同时发声上限）</param>
         /// <param name="runner">协程宿主</param>
         /// <param name="groupResolver">总线分组解析器，返回 null 表示直连 AudioListener</param>
-        public SfxSourcePool(Transform parent, int capacity, MonoBehaviour runner, Func<AudioBus, AudioMixerGroup> groupResolver)
+        /// <param name="spatialMinDistance">3D 音效最小听距（线性滚降起点，2D 游戏应覆盖画面半宽）</param>
+        /// <param name="spatialMaxDistance">3D 音效最大听距（线性滚降终点，超出静音）</param>
+        public SfxSourcePool(Transform parent, int capacity, MonoBehaviour runner, Func<AudioBus, AudioMixerGroup> groupResolver,
+            float spatialMinDistance = 10f, float spatialMaxDistance = 30f)
         {
             _runner = runner;
             _groupResolver = groupResolver;
+            _spatialMinDistance = spatialMinDistance;
+            _spatialMaxDistance = Mathf.Max(spatialMaxDistance, spatialMinDistance);
 
             var poolObj = new GameObject("SfxSourcePool");
             poolObj.transform.SetParent(parent, false);
@@ -102,6 +109,10 @@ namespace SuperQQ.Audio
             {
                 src.transform.position = worldPosition.Value;
                 src.spatialBlend = 1f;
+                // 线性滚降 + 较大最小听距：2D 画面范围内不衰减（默认对数滚降在几米外即明显变小，不适合本视角）
+                src.rolloffMode = AudioRolloffMode.Linear;
+                src.minDistance = _spatialMinDistance;
+                src.maxDistance = _spatialMaxDistance;
             }
             else
             {
