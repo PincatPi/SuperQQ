@@ -71,6 +71,12 @@ namespace SuperQQ.Audio
         /// <summary>玩家走路脚步（Run 帧动画的落地帧事件触发，每次播放一次）</summary>
         Footstep = 219,
 
+        /// <summary>玩家起跳（起跳瞬间播放）</summary>
+        Jump = 220,
+
+        /// <summary>玩家落地（滞空后着地瞬间播放）</summary>
+        Land = 221,
+
         /// <summary>冻结开始（液氮泄露事件：全员冻结、弹出冻结 UI 时播放）</summary>
         FreezeStart = 216,
 

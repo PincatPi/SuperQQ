@@ -46,6 +46,12 @@ namespace SuperQQ.Player
         [Tooltip("被命中音效：被伤害型道具/事件命中致死或击飞时在玩家位置 3D 播放（坠落出界不播放）；None 表示静默")]
         [SerializeField] private SfxId hitSfx = SfxId.PlayerHit;
 
+        [Tooltip("起跳音效：起跳瞬间在玩家位置 3D 播放；None 表示静默")]
+        [SerializeField] private SfxId jumpSfx = SfxId.Jump;
+
+        [Tooltip("落地音效：滞空后着地瞬间在玩家位置 3D 播放；None 表示静默")]
+        [SerializeField] private SfxId landSfx = SfxId.Land;
+
         [Header("幽灵设置")]
         [SerializeField] private float ghostMoveSpeed = 6f;             // 幽灵四向移动速度
         [SerializeField] private float ghostAcceleration = 80f;         // 幽灵加速速率
@@ -638,6 +644,24 @@ namespace SuperQQ.Player
             if (hitSfx != SfxId.None)
             {
                 AudioManager.PlaySfxAt(hitSfx, transform.position);
+            }
+        }
+
+        /// <summary>播放起跳音效；由存活状态的起跳处理调用（飞行模式不走该路径，其音效由咒语自身控制）</summary>
+        internal void PlayJumpSfx()
+        {
+            if (jumpSfx != SfxId.None)
+            {
+                AudioManager.PlaySfxAt(jumpSfx, transform.position);
+            }
+        }
+
+        /// <summary>播放落地音效；由存活状态的地面检测在滞空→着地的边沿调用</summary>
+        internal void PlayLandSfx()
+        {
+            if (landSfx != SfxId.None)
+            {
+                AudioManager.PlaySfxAt(landSfx, transform.position);
             }
         }
 

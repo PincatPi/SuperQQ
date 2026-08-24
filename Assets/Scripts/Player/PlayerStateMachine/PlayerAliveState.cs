@@ -217,6 +217,7 @@ namespace SuperQQ.Player
                 if (!bWasGrounded)
                 {
                     _bIsJumping = false;
+                    _ctx.PlayLandSfx();   // 滞空→着地边沿：落地音效
                 }
             }
             else
@@ -239,6 +240,8 @@ namespace SuperQQ.Player
                 _jumpHoldTimer = 0f;
                 // 起跳消耗土狼时间，避免连跳
                 _coyoteTimer = 0f;
+
+                _ctx.PlayJumpSfx();
 
                 // 联机：上报起跳事件（远端播音效/尘土），离线时为空操作
                 SuperQQ.Network.NetEventSync.ReportEvent(

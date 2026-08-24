@@ -104,9 +104,9 @@ MonoBehaviour:
     Volume: 1
     MinReplayInterval: 0
   - Id: 220
-    Clip: {fileID: 8300000, guid: c3f8819a93d1b474ca1cf3e987fdc3d5, type: 3}
+    Clip: {fileID: 8300000, guid: 37d1d71aa7a6c4693b5a799887c903be, type: 3}
     Bus: 2
-    Volume: 1
+    Volume: 0.5
     MinReplayInterval: 0
   - Id: 221
     Clip: {fileID: 8300000, guid: 472426bd1a25f4f2388b6a0f4b6da9f7, type: 3}
