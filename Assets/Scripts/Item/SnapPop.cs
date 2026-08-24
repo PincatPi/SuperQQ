@@ -1,3 +1,4 @@
+using SuperQQ.Audio;
 using UnityEngine;
 
 namespace SuperQQ.Item
@@ -16,5 +17,8 @@ namespace SuperQQ.Item
     {
         /// <summary>摔炮固定 2x2 占位</summary>
         protected override Vector2Int DefaultFootprint => new Vector2Int(2, 2);
+
+        /// <summary>摔炮引爆音效</summary>
+        protected override SfxId ExplodeSfx => SfxId.SnapPopExplode;
     }
 }

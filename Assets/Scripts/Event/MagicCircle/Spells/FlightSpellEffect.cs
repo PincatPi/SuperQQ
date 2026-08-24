@@ -48,7 +48,7 @@ namespace SuperQQ.Event
         /// <summary>
         /// 激活飞行效果：在目标玩家身上挂载特效并启动计时
         /// </summary>
-        public override SpellEffectInstance Activate(SpellEffectContext context)
+        protected override SpellEffectInstance OnActivate(SpellEffectContext context)
         {
             if (context == null || context.Target == null)
             {
@@ -140,7 +140,6 @@ namespace SuperQQ.Event
                 if (held && !_bSfxPlaying)
                 {
                     _bSfxPlaying = true;
-                    Debug.Log("[FlightSpellEffect] 按下跳跃键，StartLoopSfx " + _loopSfx);
                     AudioManager.StartLoopSfx(_loopSfx);
                 }
                 else if (!held && _bSfxPlaying)

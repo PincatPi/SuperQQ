@@ -290,7 +290,6 @@ namespace SuperQQ.Audio
             }
             // LoopChannel 内部幂等：相同 Clip 不重启循环
             channel.CrossFadeTo(entry.Clip, fadeInTime, entry.Volume);
-            Debug.Log($"[AudioManager] StartLoopSfx {id}：Clip={entry.Clip.name}，Bus={entry.Bus}，Vol={entry.Volume}，已下发 CrossFadeTo");
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using SuperQQ.Audio;
 using SuperQQ.Grid;
 using UnityEngine;
 
@@ -30,6 +31,10 @@ namespace SuperQQ.Item
         [Tooltip("引爆时在中心生成的特效预制体（闪光/烟雾等），留空则无")]
         [SerializeField] private GameObject explosionEffectPrefab;
 
+        [Header("音效")]
+        [Tooltip("引爆音效：执行消除逻辑时在道具位置 3D 播放（Clip 在 AudioCatalog 资产中按 Id 拖配）；None 表示静默。基类默认按子类声明的 ExplodeSfx 播放")]
+        [SerializeField] private SfxId explodeSfxOverride = SfxId.None;
+
         /// <summary>拆除：即放即爆的消耗品</summary>
         public sealed override ItemCategory Category => ItemCategory.Demolition;
 
@@ -44,6 +49,15 @@ namespace SuperQQ.Item
         /// 子类按策划表重写（摔炮 2x2 / 黑炸弹 3x3 / 原子弹 5x5）
         /// </summary>
         protected abstract Vector2Int DefaultFootprint { get; }
+
+        /// <summary>
+        /// 子类声明的引爆音效键（摔炮/黑炸弹/原子弹各自不同）；
+        /// prefab 上配置了 explodeSfxOverride 时优先使用覆盖值
+        /// </summary>
+        protected virtual SfxId ExplodeSfx => SfxId.None;
+
+        /// <summary>生效的引爆音效（覆盖值优先，其次子类声明）</summary>
+        private SfxId EffectiveExplodeSfx => explodeSfxOverride != SfxId.None ? explodeSfxOverride : ExplodeSfx;
 
         // 联机模式下等待服务器拆除仲裁的本地炸弹（锚点 → 实例）：
         // 本地放置后挂起不引爆，ItemDemolishResult 到达时统一引爆，保证各端移除集合一致
@@ -213,6 +227,12 @@ namespace SuperQQ.Item
             if (explosionEffectPrefab != null)
             {
                 Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
+            }
+
+            // 引爆音效（3D 定位在道具位置，走 SFX 总线；单机与联机同步引爆共用此出口）
+            if (EffectiveExplodeSfx != SfxId.None)
+            {
+                AudioManager.PlaySfxAt(EffectiveExplodeSfx, transform.position);
             }
         }
     }

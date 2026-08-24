@@ -23,5 +23,7 @@ MonoBehaviour:
   _fullShakeThawSeconds: 3
   _progressDecayPerSecond: 0.1
   _autoThawTimeout: 10
+  _vibrateShakeThreshold: 0.5
+  _vibrateMinInterval: 0.3
   _crackSfx: 210
   _fixedSeed: 0

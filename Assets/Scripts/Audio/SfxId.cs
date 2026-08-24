@@ -53,6 +53,27 @@ namespace SuperQQ.Audio
         /// <summary>冰块碎裂（液氮泄露事件：解冻进度里程碑与完全解冻时播放）</summary>
         IceCrack = 211,
 
+        /// <summary>摔炮引爆（2x2 小范围拆除）</summary>
+        SnapPopExplode = 212,
+
+        /// <summary>黑炸弹引爆（3x3 中范围拆除）</summary>
+        BlackBombExplode = 213,
+
+        /// <summary>原子弹引爆（5x5 大范围拆除）</summary>
+        AtomicBombExplode = 214,
+
+        /// <summary>磁铁吸附循环音效（玩家在磁铁作用范围内持续循环播放，离开淡出；经 StartLoopSfx/StopLoopSfx 控制）</summary>
+        MagnetPull = 215,
+
+        /// <summary>排气扇吹风循环音效（玩家在吹风范围内持续循环播放，离开淡出；经 StartLoopSfx/StopLoopSfx 控制）</summary>
+        FanWind = 218,
+
+        /// <summary>冻结开始（液氮泄露事件：全员冻结、弹出冻结 UI 时播放）</summary>
+        FreezeStart = 216,
+
+        /// <summary>咒语生效（魔法阵事件：任一咒语效果成功激活时播放，全咒语共用）</summary>
+        SpellCast = 217,
+
         // ==================== 阶段与反馈（3xx） ====================
 
         /// <summary>正式游玩阶段开始（PlayingPhase.OnEnter 播放）</summary>

@@ -18,6 +18,13 @@ namespace SuperQQ.Player
         // 进入冻结前的刚体约束，Exit 时原样恢复
         private RigidbodyConstraints2D _previousConstraints;
 
+        // 风力累积的水平速度分量（与 Alive 状态同一套积分规则：风区内累积、风区外衰减）
+        private float _windVelocity;
+
+        // 风力响应参数（与 PlayerAliveState 保持一致）
+        private const float WIND_RESPONSE_TIME = 0.35f; // 风速累积到风力全量所需时间（秒）
+        private const float WIND_DECAY_RATE = 30f;      // 出风区后风速衰减速率
+
         public PlayerFrozenState(PlayerController ctx)
         {
             _ctx = ctx;
@@ -62,6 +69,7 @@ namespace SuperQQ.Player
             _ctx.Rb.velocity = new Vector2(0f, _ctx.Rb.velocity.y);
             _ctx.Rb.angularVelocity = 0f;
             _ctx.Rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+            _windVelocity = 0f;
         }
 
         /// <summary>
@@ -78,14 +86,33 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
-        /// 每帧更新：不消费任何输入，冻结期间无法操作
+        /// 每帧更新：不消费任何输入；仅检测地图边界（冻结中下坠越过下边界时立即死亡）
         /// </summary>
-        public void Update() { }
+        public void Update()
+        {
+            CheckLevelBounds();
+        }
 
         /// <summary>
-        /// 物理帧更新：仅将"非击飞导致的"水平速度归零（贴边挤压、传送带等持续外力），
+        /// 边界检测：y 越过下边界时立即死亡（与存活状态同一判定口径，不可豁免）
+        /// 冻结中仍受重力影响会下坠，无此检测会无限坠落
+        /// </summary>
+        private void CheckLevelBounds()
+        {
+            SuperQQ.Map.LevelBounds bounds = _ctx.LevelBounds;
+            if (bounds != null && bounds.IsBelow(_ctx.Rb.position.y))
+            {
+                _ctx.PlayerForceDie();
+            }
+        }
+
+        /// <summary>
+        /// 物理帧更新：
+        /// 风力（电风扇风区）：与 Alive 状态同一套规则——风区内累积、风区外衰减、竖直分量持续加速，
+        /// 冻结中被吹会照常飞出去；
+        /// 无风力时将"非击飞导致的"水平速度归零（贴边挤压、传送带等持续外力），
         /// 本帧被击飞（击退压制窗口内）时保留水平速度自然衰减；
-        /// 竖直方向完全交给物理引擎（重力/击飞均不受影响）
+        /// 竖直方向除风力加速外完全交给物理引擎（重力/击飞均不受影响）
         /// </summary>
         public void FixedUpdate()
         {
@@ -95,11 +122,33 @@ namespace SuperQQ.Player
             }
 
             Vector2 velocity = _ctx.Rb.velocity;
-            if (velocity.x != 0f)
+            velocity.y += _ctx.WindForce.y * Time.fixedDeltaTime;
+
+            // 风力累积分量不为 0 时，水平速度由风力接管（被吹走）；否则清零输入无关的水平速度
+            float windVelocity = UpdateWindVelocity();
+            velocity.x = Mathf.Abs(windVelocity) > 0.01f ? windVelocity : 0f;
+            _ctx.Rb.velocity = velocity;
+        }
+
+        /// <summary>
+        /// 积分风力水平速度分量：风区内累积（封顶 风力×响应时间），风区外衰减回 0
+        /// 与 PlayerAliveState.UpdateWindVelocity 保持同一规则，保证冻结前后风力手感一致
+        /// </summary>
+        private float UpdateWindVelocity()
+        {
+            float windX = _ctx.WindForce.x;
+            if (Mathf.Abs(windX) > 0.01f)
             {
-                velocity.x = 0f;
-                _ctx.Rb.velocity = velocity;
+                _windVelocity = Mathf.Clamp(
+                    _windVelocity + windX * Time.fixedDeltaTime,
+                    -Mathf.Abs(windX) * WIND_RESPONSE_TIME,
+                    Mathf.Abs(windX) * WIND_RESPONSE_TIME);
             }
+            else
+            {
+                _windVelocity = Mathf.MoveTowards(_windVelocity, 0f, WIND_DECAY_RATE * Time.fixedDeltaTime);
+            }
+            return _windVelocity;
         }
     }
 }

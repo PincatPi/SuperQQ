@@ -1,3 +1,4 @@
+using SuperQQ.Audio;
 using UnityEngine;
 
 namespace SuperQQ.Item
@@ -16,5 +17,8 @@ namespace SuperQQ.Item
     {
         /// <summary>原子弹固定 5x5 占位</summary>
         protected override Vector2Int DefaultFootprint => new Vector2Int(5, 5);
+
+        /// <summary>原子弹引爆音效</summary>
+        protected override SfxId ExplodeSfx => SfxId.AtomicBombExplode;
     }
 }

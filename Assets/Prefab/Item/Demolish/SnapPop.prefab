@@ -50,8 +50,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "\u6454\u70AE"
   icon: {fileID: 21300000, guid: 90da90cf3b1624548837803d23c44397, type: 3}
+  placeSfx: 202
   fuseDelay: 0
   explosionEffectPrefab: {fileID: 0}
+  explodeSfxOverride: 212
 --- !u!114 &4161634963361784273
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -140,7 +142,6 @@ MonoBehaviour:
   ghostAlpha: 0.5
   validColor: {r: 0.3, g: 1, b: 0.3, a: 0.9}
   invalidColor: {r: 1, g: 0.3, b: 0.3, a: 0.9}
-  rotatedAngle: 90
   debugHotkeys: 1
 --- !u!1 &7397441463824352622
 GameObject:

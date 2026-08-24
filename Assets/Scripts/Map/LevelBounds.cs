@@ -97,6 +97,18 @@ namespace SuperQQ.Map
         }
 
         /// <summary>
+        /// 水平 + 上边界夹紧：x 夹紧到 [min.x, max.x]，y 仅夹紧上边界（不超过 max.y），下边界保持开放
+        /// 用于存活状态：左右与上方不允许越界，下方开放（越界触发掉落死亡）
+        /// </summary>
+        public Vector2 ClampHorizontalAndTop(Vector2 pos)
+        {
+            Bounds bounds = Bounds;
+            pos.x = Mathf.Clamp(pos.x, bounds.min.x, bounds.max.x);
+            pos.y = Mathf.Min(pos.y, bounds.max.y);
+            return pos;
+        }
+
+        /// <summary>
         /// 四边夹紧：x/y 均夹紧到包围盒内
         /// 用于幽灵状态：上下左右均不允许越界
         /// </summary>

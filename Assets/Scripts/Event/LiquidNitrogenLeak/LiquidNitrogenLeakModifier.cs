@@ -64,9 +64,25 @@ namespace SuperQQ.Event
         [Min(1f)]
         [SerializeField] private float _autoThawTimeout = 15f;
 
+        [Header("震动反馈")]
+        [Tooltip("触发震动的有效摇晃强度（0~1）：解冻阶段摇晃强度达到该值时产生震动反馈")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _vibrateShakeThreshold = 0.5f;
+
+        [Tooltip("相邻两次震动的最小间隔（秒），防止震动过于频繁")]
+        [Min(0.05f)]
+        [SerializeField] private float _vibrateMinInterval = 0.3f;
+
         [Header("音效")]
         [Tooltip("冰块碎裂音效（经 AudioManager 播放，玩家结束冻结状态时统一播放一次）；None 则静默")]
         [SerializeField] private SfxId _crackSfx = SfxId.IceCrack;
+
+        [Tooltip("冻结循环音效：冻结期间持续循环播放（与冻结 UI 同帧开始），解冻后音量渐弱至停止；None 则静默")]
+        [SerializeField] private SfxId _freezeStartSfx = SfxId.FreezeStart;
+
+        [Tooltip("解冻后冻结循环音效的淡出时长（秒）")]
+        [Min(0.05f)]
+        [SerializeField] private float _freezeSfxFadeOut = 0.5f;
 
         [Header("随机源")]
         [Tooltip("固定随机种子；为 0 时使用时间种子。联机模式下主机广播该种子即可各端确定性模拟")]
@@ -104,6 +120,9 @@ namespace SuperQQ.Event
 
         // 冻结期间显示的 UI 实例，解冻/清理时销毁
         private GameObject _frozenUiInstance;
+
+        // 上次震动反馈时刻（Time.time，用于最小间隔节流）
+        private float _lastVibrateTime = float.NegativeInfinity;
 
         // ==================== LevelEventModifier 实现 ====================
 
@@ -171,6 +190,7 @@ namespace SuperQQ.Event
             // 解冻循环：进度按摇晃强度累积、无摇晃时缓慢衰减；满进度或超时兜底退出
             float progress = 0f;
             float elapsed = 0f;
+            _lastVibrateTime = float.NegativeInfinity;
 
             while (progress < 1f && elapsed < _autoThawTimeout)
             {
@@ -178,6 +198,14 @@ namespace SuperQQ.Event
                 elapsed += deltaTime;
                 progress = Mathf.Clamp01(progress +
                     (_shakeDetector.CurrentIntensity / _fullShakeThawSeconds - _progressDecayPerSecond) * deltaTime);
+
+                // 有效摇晃幅度触发震动反馈（按最小间隔节流，防止震动过于频繁）
+                if (_shakeDetector.CurrentIntensity >= _vibrateShakeThreshold
+                    && Time.time - _lastVibrateTime >= _vibrateMinInterval)
+                {
+                    _lastVibrateTime = Time.time;
+                    Handheld.Vibrate();
+                }
 
                 if (progressBar != null)
                 {
@@ -297,6 +325,12 @@ namespace SuperQQ.Event
             }
 
             _frozenUiInstance = Instantiate(_frozenUiPrefab, canvasRect, false);
+
+            // 冻结循环音效：与全屏冻结 UI 同帧开始循环，解冻收尾（EndThaw）时淡出
+            if (_freezeStartSfx != SfxId.None)
+            {
+                AudioManager.StartLoopSfx(_freezeStartSfx);
+            }
         }
 
         /// <summary>
@@ -378,6 +412,12 @@ namespace SuperQQ.Event
             if (bAnyPlayerThawed && playCrackSfx)
             {
                 PlayCrackSfx();
+            }
+
+            // 冻结循环音效淡出停止（正常解冻、超时兜底、Deactivate 强制中断共用本出口）
+            if (_freezeStartSfx != SfxId.None)
+            {
+                AudioManager.StopLoopSfx(_freezeStartSfx, _freezeSfxFadeOut);
             }
 
             if (_frozenUiInstance != null)

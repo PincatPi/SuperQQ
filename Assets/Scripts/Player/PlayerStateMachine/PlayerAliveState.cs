@@ -173,7 +173,7 @@ namespace SuperQQ.Player
         // ==================== 地图边界 ====================
 
         /// <summary>
-        /// 边界约束：水平夹紧（左右不允许越界），上下开放；
+        /// 边界约束：水平与上边界夹紧（左右、上方不允许越界），下方开放；
         /// y 越过下边界时触发死亡。未配置 LevelBounds 时静默跳过
         /// </summary>
         private void ClampToLevelBounds()
@@ -184,9 +184,9 @@ namespace SuperQQ.Player
                 return;
             }
 
-            // 先水平夹紧写回（仅在产生修正时写入），死亡判定使用钳制后的位置
+            // 先夹紧写回（仅在产生修正时写入），死亡判定使用钳制后的位置
             Vector2 pos = _ctx.Rb.position;
-            Vector2 clamped = bounds.ClampHorizontal(pos);
+            Vector2 clamped = bounds.ClampHorizontalAndTop(pos);
             if (clamped != pos)
             {
                 _ctx.Rb.position = clamped;

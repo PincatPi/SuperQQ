@@ -31,7 +31,7 @@ namespace SuperQQ.Event
         /// <summary>
         /// 激活雷电效果：在目标玩家身上挂载特效并启动计时
         /// </summary>
-        public override SpellEffectInstance Activate(SpellEffectContext context)
+        protected override SpellEffectInstance OnActivate(SpellEffectContext context)
         {
             if (context == null || context.Target == null)
             {

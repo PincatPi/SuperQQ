@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using SuperQQ.Audio;
 using SuperQQ.Microphone;
 using SuperQQ.Player;
 using SuperQQ.UI;
