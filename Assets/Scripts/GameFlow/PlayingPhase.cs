@@ -1,3 +1,4 @@
+using SuperQQ.Audio;
 using SuperQQ.Microphone;
 using UnityEngine;
 
@@ -11,12 +12,22 @@ namespace SuperQQ.GameFlow
     [CreateAssetMenu(menuName = "SuperQQ/Game Flow/Phases/Playing Phase")]
     public class PlayingPhase : GamePhaseBase
     {
+        [Header("音效")]
+        [Tooltip("进入正式游玩阶段时播放的开始音效（Clip 在 AudioCatalog 资产中按 Id 拖配）；None 表示静默")]
+        [SerializeField] private SfxId _roundStartSfx = SfxId.RoundStart;
+
         private bool _bRoundSettled;
 
         public override void OnEnter(GamePhaseContext context)
         {
             base.OnEnter(context);
             _bRoundSettled = false;
+
+            // 阶段开始音效（2D 全局，走 SFX 总线）
+            if (_roundStartSfx != SfxId.None)
+            {
+                AudioManager.PlaySfx(_roundStartSfx);
+            }
 
             // 兜底复活：正常路径下玩家已在选择阶段开始时复活（PropSelectionPhase.OnEnter），
             // 此处为幂等二次调用（已存活为空操作），覆盖联机迟到/单机独立进入游玩阶段等路径。
