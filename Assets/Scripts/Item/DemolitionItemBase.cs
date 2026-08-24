@@ -61,6 +61,8 @@ namespace SuperQQ.Item
         /// </summary>
         public override void OnPlaced()
         {
+            PlayPlaceSfx();   // 放置确认音效（基类 OnPlaced 的其余职责为联机登记，拆除类行为特殊不补调）
+
             if (BNetMode && Placed != null)
             {
                 _pendingByAnchor[Placed.AnchorCell] = this;

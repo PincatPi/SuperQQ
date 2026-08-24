@@ -1,3 +1,4 @@
+using SuperQQ.Audio;
 using SuperQQ.Grid;
 using UnityEngine;
 
@@ -19,6 +20,10 @@ namespace SuperQQ.Item
         [SerializeField] private string displayName = "";
         [Tooltip("道具图标，用于选择面板等 UI 展示；留空时回退为自身首个 SpriteRenderer 的 Sprite")]
         [SerializeField] private Sprite icon;
+
+        [Header("音效")]
+        [Tooltip("放置确认音效：OnPlaced 时在道具位置 3D 播放（Clip 在 AudioCatalog 资产中按 Id 拖配）；None 表示静默")]
+        [SerializeField] private SfxId placeSfx = SfxId.Place;
 
         /// <summary>道具类别（策划分类：搭路/伤害/控制/拆除）</summary>
         public abstract ItemCategory Category { get; }
@@ -87,9 +92,23 @@ namespace SuperQQ.Item
             return renderer != null ? renderer.sprite : null;
         }
 
-        /// <summary>被放置到网格后调用（GridManager.Place 完成时）</summary>
+        /// <summary>播放放置确认音效（若已配置）；重写 OnPlaced 的子类需在自身实现中显式调用</summary>
+        protected void PlayPlaceSfx()
+        {
+            if (placeSfx != SfxId.None)
+            {
+                AudioManager.PlaySfxAt(placeSfx, transform.position);
+            }
+        }
+
+        /// <summary>
+        /// 被放置到网格后调用（GridManager.Place / PlacementController 放置完成时）
+        /// 重写注意：必须在子类实现开头调用 base.OnPlaced()，或至少调用 PlayPlaceSfx()，否则放置音效与联机登记不生效
+        /// </summary>
         public virtual void OnPlaced()
         {
+            PlayPlaceSfx();
+
             // 联机登记：金币进拾取注册表，所有道具进生命周期注册表（离线时为空操作）
             if (this is Coin coin)
             {

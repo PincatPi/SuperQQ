@@ -7,7 +7,7 @@ namespace SuperQQ.Microphone
     /// 麦克风音量管理器（单例，跨场景常驻）
     /// 开启麦克风后实时检测玩家输入音量，对外提供分贝值与归一化音量
     ///
-    /// 生命周期：进入房间时开麦（UIRoomController 调用 StartMic），退出房间时关麦（UIRoomController 调用 StopMic）
+    /// 生命周期：进入游玩阶段（PlayingPhase）时开麦，退出游玩阶段时关麦（PlayingPhase 调用 StartMic/StopMic）
     ///
     /// 使用方式：
     ///   float db = MicVolumeManager.Instance.Decibels;  // 当前分贝（静音约 -90dB）
@@ -27,8 +27,23 @@ namespace SuperQQ.Microphone
         [SerializeField] private float _maxDb = -5f;                // 归一化上界（高于此分贝视为 1）
         [SerializeField, Range(0f, 1f)] private float _smoothing = 0.3f; // 平滑系数，越大越平滑
 
-        /// <summary>当前分贝值（范围约 -90 ~ 0，静音为 -90）</summary>
-        public float Decibels { get; private set; } = -90f;
+        [Header("设备轮询")]
+        [SerializeField] private float _devicePollInterval = 1f;    // 麦克风设备/权限轮询间隔（秒）
+
+        /// <summary>分贝量程下限（静音基准，-120dB）</summary>
+        public const float MinDecibels = -120f;
+
+        /// <summary>正值分贝量程上限（120dB）</summary>
+        public const float MaxPositiveDecibels = -MinDecibels;
+
+        /// <summary>当前分贝值（范围约 -120 ~ 0，静音为 -120）</summary>
+        public float Decibels { get; private set; } = MinDecibels;
+
+        /// <summary>从 0 开始的正值分贝（静音为 0，满量程约 120），供 UI 展示使用</summary>
+        public float PositiveDecibels => Decibels - MinDecibels;
+
+        /// <summary>正值分贝占满量程的比例 0~1（= PositiveDecibels / 120），供音量条填充使用</summary>
+        public float NormalizedPositiveDecibels => Mathf.Clamp01(PositiveDecibels / MaxPositiveDecibels);
 
         /// <summary>归一化音量 0~1（已平滑，推荐玩法逻辑使用）</summary>
         public float Volume { get; private set; }
@@ -38,6 +53,12 @@ namespace SuperQQ.Microphone
 
         /// <summary>当前使用的设备名（null 表示系统默认设备）</summary>
         public string DeviceName { get; private set; }
+
+        /// <summary>当前采集使用的麦克风 AudioClip（未采集时为 null），供语音识别等模块共享读取，避免同一设备重复开麦</summary>
+        public AudioClip MicClip => _clip;
+
+        /// <summary>当前采集的采样率</summary>
+        public int SampleRate => _sampleRate;
 
         /// <summary>音量更新事件，参数为归一化音量 0~1</summary>
         public event Action<float> OnVolumeUpdated;
@@ -49,7 +70,10 @@ namespace SuperQQ.Microphone
         private float[] _samples;
         private float _timer;
         private Coroutine _retryCoroutine;
+        private Coroutine _deviceWatchCoroutine;
         private string _requestedDevice;
+        private bool _shouldBeRunning;   // 标记「当前应当处于采集状态」，供断连轮询判断是否自动恢复
+        private int _lastMicPosition;    // 上一次轮询时的录音位置，用于检测录音流是否停走（设备断连特征）
 
         /// <summary>
         /// 获取单例；场景中未挂载时自动创建一个常驻实例
@@ -70,7 +94,8 @@ namespace SuperQQ.Microphone
         private System.Collections.IEnumerator RetryStartMic()
         {
             var wait = new WaitForSecondsRealtime(0.5f);
-            while (!IsRunning)
+            // 每轮重试前检查应有采集状态：挂起期间收到 StopMic 时不得再尝试开麦
+            while (_shouldBeRunning && !IsRunning)
             {
                 TryStartMic(_requestedDevice);
                 if (!IsRunning)
@@ -91,6 +116,18 @@ namespace SuperQQ.Microphone
             }
             Instance = this;
             DontDestroyOnLoad(gameObject); // 跨场景保持录音不中断
+
+            // 防线：场景卸载时强制关麦，防止对局中途退出（如直接返回大厅）
+            // 绕过 PlayingPhase.OnExit 时麦克风跨场景残留采集
+            UnityEngine.SceneManagement.SceneManager.sceneUnloaded += HandleSceneUnloaded;
+        }
+
+        private void HandleSceneUnloaded(UnityEngine.SceneManagement.Scene scene)
+        {
+            if (_shouldBeRunning)
+            {
+                StopMic();
+            }
         }
 
         private void OnDestroy()
@@ -105,7 +142,7 @@ namespace SuperQQ.Microphone
         private void OnApplicationPause(bool pause)
         {
             // 移动端切后台时系统会中断录音，回到前台后自动恢复
-            if (!pause && IsRunning)
+            if (!pause && _shouldBeRunning)
             {
                 RestartMic();
             }
@@ -119,12 +156,19 @@ namespace SuperQQ.Microphone
         public bool StartMic(string deviceName = null)
         {
             _requestedDevice = deviceName;
+            _shouldBeRunning = true;
             bool ok = TryStartMic(deviceName);
 
             // 失败时启动自动重试（如移动端首次需等待用户授权）
             if (!ok && _retryCoroutine == null)
             {
                 _retryCoroutine = StartCoroutine(RetryStartMic());
+            }
+
+            // 启动设备轮询：采集期间设备断连/权限变化后自动恢复
+            if (_deviceWatchCoroutine == null)
+            {
+                _deviceWatchCoroutine = StartCoroutine(DeviceWatchLoop());
             }
             return ok;
         }
@@ -156,9 +200,10 @@ namespace SuperQQ.Microphone
                 _samples = new float[_sampleWindow];
             }
 
-            Decibels = -90f;
+            Decibels = MinDecibels;
             Volume = 0f;
             _timer = 0f;
+            _lastMicPosition = -1;
             IsRunning = true;
             return true;
         }
@@ -168,28 +213,98 @@ namespace SuperQQ.Microphone
         /// </summary>
         public void StopMic()
         {
+            // 清除应有采集状态，设备轮询与切前台恢复随之失效（无论当前是否采集都必须执行）
+            _shouldBeRunning = false;
+
             // 停止自动重试，避免关麦后被重新打开
             if (_retryCoroutine != null)
             {
                 StopCoroutine(_retryCoroutine);
                 _retryCoroutine = null;
             }
-            if (!IsRunning)
+
+            // 直接停止设备轮询协程：协程可能正处于 yield 挂起中，
+            // 仅靠 _shouldBeRunning 标志无法阻止它醒来后先执行一轮恢复逻辑再退出
+            if (_deviceWatchCoroutine != null)
             {
-                return;
+                StopCoroutine(_deviceWatchCoroutine);
+                _deviceWatchCoroutine = null;
             }
 
-            UnityEngine.Microphone.End(DeviceName);
+            // 即便 IsRunning 已为 false（如录音流被系统中断），只要还有残留录音会话也要确保结束
+            if (IsRunning || _clip != null)
+            {
+                UnityEngine.Microphone.End(DeviceName);
+            }
             _clip = null;
             IsRunning = false;
-            Decibels = -90f;
+            Decibels = MinDecibels;
             Volume = 0f;
         }
 
         private void RestartMic()
         {
             UnityEngine.Microphone.End(DeviceName);
+
+            if (!HasDevice)
+            {
+                // 设备已拔出：标记为未采集，交由设备轮询在设备恢复后重新开麦
+                _clip = null;
+                IsRunning = false;
+                return;
+            }
+
             _clip = UnityEngine.Microphone.Start(DeviceName, true, 1, _sampleRate);
+            _lastMicPosition = -1;
+            IsRunning = _clip != null;
+        }
+
+        /// <summary>
+        /// 设备轮询：开麦期间以固定间隔检查权限、设备列表与录音流活性。
+        /// 设备断连后（GetPosition 停走/设备消失）自动重开录音，设备重新接入或权限授予后自动恢复采集。
+        /// StopMic 后协程自动退出，不会影响非游玩阶段。
+        /// </summary>
+        private System.Collections.IEnumerator DeviceWatchLoop()
+        {
+            var wait = new WaitForSecondsRealtime(Mathf.Max(0.2f, _devicePollInterval));
+            while (_shouldBeRunning)
+            {
+                yield return wait;
+
+                // 挂起期间可能收到 StopMic：醒来后先复核应有采集状态再执行任何恢复逻辑
+                if (!_shouldBeRunning)
+                {
+                    break;
+                }
+
+                // 1) 权限被撤销或正在等待授权：触发重试链路（内部含权限请求）
+                if (!Application.HasUserAuthorization(UserAuthorization.Microphone))
+                {
+                    if (_retryCoroutine == null)
+                    {
+                        _retryCoroutine = StartCoroutine(RetryStartMic());
+                    }
+                    continue;
+                }
+
+                // 2) 应有采集但实际未在采集（启动失败、设备拔出等）：尝试直接重开
+                if (!IsRunning || _clip == null)
+                {
+                    TryStartMic(_requestedDevice);
+                    continue;
+                }
+
+                // 3) 正在采集：通过录音位置是否推进判断录音流是否存活
+                int pos = UnityEngine.Microphone.GetPosition(DeviceName);
+                if (pos == 0 && _lastMicPosition == 0)
+                {
+                    // 位置连续停走，视为设备断连/流中断，重开录音（设备仍拔出时内部会标记未采集，下轮继续重试）
+                    Debug.LogWarning("[MicVolumeManager] 检测到录音流中断，尝试重启麦克风");
+                    RestartMic();
+                }
+                _lastMicPosition = pos;
+            }
+            _deviceWatchCoroutine = null;
         }
 
         private void Update()
@@ -230,7 +345,7 @@ namespace SuperQQ.Microphone
             float rms = Mathf.Sqrt(sum / _sampleWindow);
 
             float db = 20f * Mathf.Log10(Mathf.Max(rms, 1e-5f));
-            db = Mathf.Max(db, -90f);
+            db = Mathf.Max(db, MinDecibels);
             float target = Mathf.Clamp01(Mathf.InverseLerp(_minDb, _maxDb, db));
 
             // 指数平滑，避免数值剧烈跳动
@@ -248,5 +363,6 @@ namespace SuperQQ.Microphone
         {
             return IsRunning && Volume >= threshold;
         }
+
     }
 }

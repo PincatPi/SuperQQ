@@ -63,9 +63,6 @@ namespace SuperQQ.Network
             _net = NetworkManager.Instance;
             _room = _net != null ? _net.JoinedRoom : null;
 
-            // 进入房间即开麦（音量检测），失败会自动重试直到成功
-            MicVolumeManager.EnsureExists().StartMic();
-
             if (view == null)
             {
                 Debug.LogError("[Room] 未配置 RoomView 引用");
@@ -327,12 +324,6 @@ namespace SuperQQ.Network
 
                 _net.RoomId = "";
                 _net.JoinedRoom = null;
-            }
-
-            // 进房时开了麦，退出时关闭
-            if (MicVolumeManager.Instance != null)
-            {
-                MicVolumeManager.Instance.StopMic();
             }
 
             SceneManager.LoadScene(lobbySceneName);

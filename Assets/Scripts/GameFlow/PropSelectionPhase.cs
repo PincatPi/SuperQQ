@@ -28,6 +28,12 @@ namespace SuperQQ.GameFlow
             base.OnEnter(context);
             _bPhaseStarted = false;
 
+            // 新一轮开始即复活本地玩家并回出生点（不能等到游玩阶段）：
+            // InputReporter 全阶段持续上报 player_state，若选择/放置阶段仍是上一轮的
+            // 幽灵/通关状态，服务器会在进入游玩阶段时误判全员出局并秒切结算。
+            // 本方法幂等（已存活为空操作，单机新场景新实例亦为空操作）。
+            Player.LevelPlayerRegistry.Instance?.ReviveLocalPlayersForNewRound();
+
             // 必须在 base.OnEnter 之后解析：此时转移才完成运行时条件实例化，
             // 缓存到的才是累计计时的那份副本而非共享资产
             _selectCondition = ResolveSelectCondition();

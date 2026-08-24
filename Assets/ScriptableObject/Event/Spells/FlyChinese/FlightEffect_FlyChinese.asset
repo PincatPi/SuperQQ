@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e192f3dcaf946b797ab6359777e96e1, type: 3}
+  m_Name: FlightEffect_FlyChinese
+  m_EditorClassIdentifier: 
+  _flightPrefab: {fileID: 1167155001037120, guid: 14777e4d41f0de84cafca6d871768538, type: 3}
+  _flightOffset: {x: 0, y: 0}
+  _duration: 20
+  _maxFlySpeed: 5
+  _flyAcceleration: 30
+  _activateTipText: "\u957F\u6309\u8DF3\u8DC3\u6309\u94AE\u4F7F\u7528\u98DE\u884C\u80FD\u529B"

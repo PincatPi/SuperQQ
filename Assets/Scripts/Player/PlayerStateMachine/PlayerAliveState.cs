@@ -78,8 +78,14 @@ namespace SuperQQ.Player
         public void Update()
         {
             CheckGround();
-            HandleJumpStart();
-            HandleJumpCut();
+
+            // 击退压制中：跳过起跳/短跳等输入驱动的速度改写，让击退速度纯物理飞行
+            // 飞行模式（如"中国人能飞"咒语）中：跳跃输入由飞行逻辑接管，无需普通起跳/短跳处理
+            if (!_ctx.BIsKnockbackStunned && !_ctx.BIsFlying)
+            {
+                HandleJumpStart();
+                HandleJumpCut();
+            }
             HandleEarlyQuit();
         }
 
@@ -88,9 +94,25 @@ namespace SuperQQ.Player
         /// </summary>
         public void FixedUpdate()
         {
+            // 击退压制中：跳过输入驱动的移动改写（击退速度自然飞行），仅保留边界约束
+            if (_ctx.BIsKnockbackStunned)
+            {
+                ClampToLevelBounds();
+                return;
+            }
+
             ApplyHorizontalMovement();
-            ApplyVariableJumpHeight();
-            ApplyBetterFallGravity();
+
+            // 飞行模式：跳跃逻辑替换为"按住跳跃键持续向上飞行"，其余物理照常
+            if (_ctx.BIsFlying)
+            {
+                ApplyFlight();
+            }
+            else
+            {
+                ApplyVariableJumpHeight();
+                ApplyBetterFallGravity();
+            }
             ClampToLevelBounds();
             CheckWaterDeath();
         }
@@ -118,6 +140,36 @@ namespace SuperQQ.Player
             }
         }
 
+        /// <summary>
+        /// 飞行（如"中国人能飞"咒语生效期间）：
+        /// 按住跳跃键持续向上加速（封顶最大飞行速度）；松开按键按普通手感自然减速/下落
+        /// 水平移动由 ApplyHorizontalMovement 照常处理，与普通状态一致
+        /// </summary>
+        private void ApplyFlight()
+        {
+            float effectiveGravity = Physics2D.gravity.y * _ctx.GravityScale;
+            Vector2 velocity = _ctx.Rb.velocity;
+
+            if (_ctx.JumpHeld)
+            {
+                // 按住跳跃键：持续向上加速，封顶最大飞行速度
+                velocity.y = Mathf.Min(velocity.y + _ctx.FlyAcceleration * Time.fixedDeltaTime, _ctx.FlyMaxSpeed);
+            }
+            else if (velocity.y >= 0f)
+            {
+                // 松开按键仍在上行：按普通重力自然减速
+                velocity.y += effectiveGravity * Time.fixedDeltaTime;
+            }
+            else
+            {
+                // 松开按键且下落：按普通下落手感加速下落
+                velocity.y += effectiveGravity * _ctx.FallMultiplier * Time.fixedDeltaTime;
+                velocity.y = Mathf.Max(velocity.y, _ctx.MaxFallSpeed);
+            }
+
+            _ctx.Rb.velocity = velocity;
+        }
+
         // ==================== 地图边界 ====================
 
         /// <summary>
@@ -140,10 +192,10 @@ namespace SuperQQ.Player
                 _ctx.Rb.position = clamped;
             }
 
-            // 越过下边界：掉落死亡
+            // 越过下边界：掉落死亡（不可豁免，无视无敌金身等无敌保护）
             if (bounds.IsBelow(clamped.y))
             {
-                _ctx.PlayerDie();
+                _ctx.PlayerForceDie();
             }
         }
 

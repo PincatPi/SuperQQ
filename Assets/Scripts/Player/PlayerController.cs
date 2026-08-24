@@ -188,6 +188,88 @@ namespace SuperQQ.Player
         public bool BIsFinished => _currentState is PlayerFinishedState;
         // 冻结状态：无法操作但仍视为在场，可被击杀，解冻后恢复存活
         public bool BIsFrozen => _currentState is PlayerFrozenState;
+
+        // 无敌标记的引用计数（支持多个无敌来源叠加，全部解除后才失去无敌）
+        private int _invincibilityCount;
+
+        /// <summary>
+        /// 无敌状态：免疫伤害，不会进入死亡/幽灵状态（物理效果仍正常作用于自身）
+        /// </summary>
+        public bool BIsInvincible => _invincibilityCount > 0;
+
+        /// <summary>
+        /// 添加一个无敌来源（如无敌金身护盾）；需与 RemoveInvincibility 成对调用
+        /// </summary>
+        public void AddInvincibility()
+        {
+            _invincibilityCount++;
+        }
+
+        /// <summary>
+        /// 移除一个无敌来源；计数归零后恢复可死亡
+        /// </summary>
+        public void RemoveInvincibility()
+        {
+            _invincibilityCount = Mathf.Max(0, _invincibilityCount - 1);
+        }
+
+        // 击退压制窗口的剩余时间（>0 时存活状态跳过输入驱动的移动改写，让击退速度纯物理飞行）
+        private float _knockbackStunTimer;
+
+        /// <summary>
+        /// 击退压制窗口的默认时长（秒）：免疫死亡但保留击退时，恢复操控前的物理飞行时间
+        /// </summary>
+        [Header("击退")]
+        [Tooltip("免疫死亡但保留击退效果时，被击退后恢复操控所需的时间（秒），期间击退速度自然飞行不受输入改写")]
+        [SerializeField] private float _knockbackStunDuration = 0.6f;
+
+        /// <summary>
+        /// 是否处于击退压制中：存活状态在该窗口内不执行输入驱动的移动改写（击退速度自然飞行）
+        /// </summary>
+        public bool BIsKnockbackStunned => _knockbackStunTimer > 0f;
+
+        /// <summary>
+        /// 开启击退压制窗口（免疫死亡但保留击退物理时使用）；不切换状态，不影响出局判定
+        /// </summary>
+        public void BeginKnockbackStun()
+        {
+            _knockbackStunTimer = _knockbackStunDuration;
+        }
+
+        // ==================== 飞行（咒语效果注入，如"中国人能飞"） ====================
+
+        // 飞行模式标记与参数（由咒语效果激活时注入，结束时复位）
+        private bool _bIsFlying;
+        private float _flyAcceleration;
+        private float _flyMaxSpeed;
+
+        /// <summary>
+        /// 是否处于飞行模式：按住跳跃键持续向上飞行（替代普通跳跃逻辑），左右移动不变
+        /// </summary>
+        public bool BIsFlying => _bIsFlying;
+
+        /// <summary>飞行上升加速度（单位/秒²）</summary>
+        public float FlyAcceleration => _flyAcceleration;
+
+        /// <summary>飞行最大上升速度（单位/秒）</summary>
+        public float FlyMaxSpeed => _flyMaxSpeed;
+
+        /// <summary>
+        /// 开关飞行模式（由咒语效果调用，如"中国人能飞"）
+        /// 开启时注入飞行参数；关闭后恢复普通跳跃逻辑
+        /// </summary>
+        /// <param name="flying">是否开启飞行</param>
+        /// <param name="flyAcceleration">飞行上升加速度</param>
+        /// <param name="maxFlySpeed">飞行最大上升速度</param>
+        public void SetFlying(bool flying, float flyAcceleration = 0f, float maxFlySpeed = 0f)
+        {
+            _bIsFlying = flying;
+            if (flying)
+            {
+                _flyAcceleration = flyAcceleration;
+                _flyMaxSpeed = maxFlySpeed;
+            }
+        }
         // 是否可被道具效果影响（控制类：风力/磁力/减速/传送/震屏等）：死亡过渡与幽灵不受影响
         public bool BAffectedByItems => !BIsDead && !BIsGhost;
         public float HorizontalVelocity => _currentState?.HorizontalVelocity ?? 0f;
@@ -354,6 +436,10 @@ namespace SuperQQ.Player
         private void Update()
         {
             ReadInput();
+            if (_knockbackStunTimer > 0f)
+            {
+                _knockbackStunTimer -= Time.deltaTime;
+            }
             // 状态机在 Start 初始化；晚生成的远端化身首帧可能先于 Start 执行 Update
             if (_currentState != null)
             {
@@ -468,6 +554,20 @@ namespace SuperQQ.Player
         /// </summary>
         public void PlayerDie()
         {
+            // 无敌状态免疫伤害性死亡（掉落出界等不可豁免的死亡走 PlayerForceDie）
+            if (BIsInvincible)
+            {
+                return;
+            }
+            PlayerForceDie();
+        }
+
+        /// <summary>
+        /// 强制死亡：无视无敌状态，立即进入死亡过渡
+        /// 用于掉落出界等不可豁免的死亡场景（无敌金身等护盾不提供保护）
+        /// </summary>
+        public void PlayerForceDie()
+        {
             if (BIsDead || BIsGhost)
             {
                 return;
@@ -494,6 +594,15 @@ namespace SuperQQ.Player
             {
                 _rb.velocity = knockbackVelocity;
             }
+
+            // 无敌：免疫死亡但仍保留击退——速度已施加，开启击退压制窗口让击退纯物理飞行
+            // （否则存活状态的输入驱动会在下一物理帧改写击退速度，表现为击退力度骤减）
+            if (BIsInvincible)
+            {
+                BeginKnockbackStun();
+                return;
+            }
+
             // 联机：受击+死亡事件（远端播受击闪色与死亡表现）
             SuperQQ.Network.NetEventSync.ReportEvent(
                 Minigame.Room.V1.PlayerEventType.Hit, transform.position);

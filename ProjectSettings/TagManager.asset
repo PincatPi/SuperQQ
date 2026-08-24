@@ -57,3 +57,6 @@ TagManager:
   - name: Popup
     uniqueID: 3452539423
     locked: 0
+  - name: Event
+    uniqueID: 199928789
+    locked: 0
