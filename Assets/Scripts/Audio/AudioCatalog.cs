@@ -62,6 +62,8 @@ namespace SuperQQ.Audio
             // 配置变更后索引失效，下次查询时重建
             _index = null;
 
+            ValidateSfxIdUniqueness();
+
             var seen = new HashSet<SfxId>();
             for (int i = 0; i < _entries.Count; i++)
             {
@@ -82,6 +84,38 @@ namespace SuperQQ.Audio
                 if (!entry.HasValidClip)
                 {
                     Debug.LogWarning($"[AudioCatalog] SfxId.{entry.Id} 未配置任何 AudioClip，播放时将被跳过。", this);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 枚举值重复检测：SfxId 显式编号靠人工保证唯一，撞值会导致 Inspector 选 A 存 B。
+        /// 用反射扫描全部枚举值，发现同值多名字即报 Error（比条目重复更严重，需立即修枚举）。
+        /// </summary>
+        private static void ValidateSfxIdUniqueness()
+        {
+            SfxId[] values = (SfxId[])System.Enum.GetValues(typeof(SfxId));
+            string[] names = System.Enum.GetNames(typeof(SfxId));
+
+            var valueToNames = new Dictionary<int, List<string>>();
+            for (int i = 0; i < values.Length; i++)
+            {
+                int v = (int)values[i];
+                if (!valueToNames.TryGetValue(v, out List<string> list))
+                {
+                    list = new List<string>();
+                    valueToNames[v] = list;
+                }
+                list.Add(names[i]);
+            }
+
+            foreach (KeyValuePair<int, List<string>> pair in valueToNames)
+            {
+                if (pair.Value.Count > 1)
+                {
+                    Debug.LogError(
+                        $"[AudioCatalog] SfxId 枚举值 {pair.Key} 被重复定义：{string.Join("、", pair.Value)}。" +
+                        "枚举按整数序列化，同值会导致选择显示错乱，请为每个键分配唯一编号。");
                 }
             }
         }

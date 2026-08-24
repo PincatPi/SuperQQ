@@ -1,3 +1,4 @@
+using SuperQQ.Audio;
 using SuperQQ.Grid;
 using SuperQQ.Network;
 using SuperQQ.Player;
@@ -41,6 +42,10 @@ namespace SuperQQ.Item
         [SerializeField, Min(0.01f)] private float followSmoothTime = 0.08f;
         [Tooltip("跟随点相对玩家轨迹点的偏移（如让金币浮在角色头顶）")]
         [SerializeField] private Vector2 followOffset = new Vector2(0f, 0.5f);
+
+        [Header("音效")]
+        [Tooltip("拾取音效：金币被获取时在金币位置 3D 播放（Clip 在 AudioCatalog 资产中按 Id 拖配）；None 表示静默")]
+        [SerializeField] private SfxId pickupSfx = SfxId.CoinPickup;
 
         private bool collected;
         private PlayerController follower;
@@ -155,6 +160,12 @@ namespace SuperQQ.Item
         {
             collected = true;
             follower = player;
+
+            // 拾取音效（3D 定位在金币位置，走 SFX 总线；同帧批量拾取受复音限频保护）
+            if (pickupSfx != SfxId.None)
+            {
+                AudioManager.PlaySfxAt(pickupSfx, transform.position);
+            }
 
             // 只释放占据、不销毁自身（RemoveAt 会销毁物体，这里要留下跟随表现）
             GridManager grid = GridManager.Instance;

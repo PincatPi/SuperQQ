@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using SuperQQ.Microphone;
@@ -130,6 +131,8 @@ namespace SuperQQ.Event
                 // 玩家化身销毁时清理其残留记录
                 LevelPlayerRegistry.Instance.OnPlayersChanged += HandlePlayersChanged;
             }
+
+            // 咒语效果的每帧驱动（如飞行音效）已由效果实例内置驱动器自治，无需事件协程驱动
         }
 
         /// <summary>
@@ -163,7 +166,7 @@ namespace SuperQQ.Event
                 VoiceChantRecognizer.Instance.OnChantRecognized -= HandleChantRecognized;
             }
 
-            // 统一结束所有生效中的咒语效果（计时/订阅/特效由各实例自行清理）
+            // 统一结束所有生效中的咒语效果（计时/订阅/特效/驱动器由各实例自行清理）
             for (int i = 0; i < _activeEffects.Count; i++)
             {
                 _activeEffects[i]?.End();

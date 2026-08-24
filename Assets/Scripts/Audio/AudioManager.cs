@@ -75,6 +75,10 @@ namespace SuperQQ.Audio
         private SfxSourcePool _sfxPool;
         private LoopChannel _musicChannel;      // BGM 通道（Music 组）
 
+        // 循环音效注册表（按住播放/松开淡出型，如飞行咒语）：SfxId → 专属循环通道
+        // 与一次性音效不同，这类音效由调用方控制起停，通道按 SfxId 惰性创建并复用
+        private readonly Dictionary<SfxId, LoopChannel> _loopedSfxChannels = new();
+
         private AudioMixerGroup _musicGroup;
         private AudioMixerGroup _sfxGroup;
         private AudioMixerGroup _uiGroup;
@@ -83,6 +87,19 @@ namespace SuperQQ.Audio
         private bool _muted;
 
         // ==================== 引导 ====================
+
+        // 关闭期标志：单例销毁后（退出播放模式等场景收尾阶段）禁止 EnsureExists 重新创建，
+        // 避免其他对象的 OnDestroy 清理链路经静态 API 在场景关闭过程中生成新 GameObject
+        // （Unity 告警：Some objects were not cleaned up when closing the scene）
+        private static bool _bShuttingDown;
+
+        /// <summary>每次进入播放前重置静态状态（禁用 Domain Reload 时尤为必要）</summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            Instance = null;
+            _bShuttingDown = false;
+        }
 
         /// <summary>
         /// 场景加载完成后自动引导，无需手动挂载。
@@ -95,16 +112,28 @@ namespace SuperQQ.Audio
         }
 
         /// <summary>
-        /// 获取单例；场景中未挂载时自动创建一个常驻实例
+        /// 获取单例；场景中未挂载时自动创建一个常驻实例。
+        /// 关闭期（单例已销毁）返回 null，调用方需判空
         /// </summary>
         public static AudioManager EnsureExists()
         {
-            if (Instance == null)
+            if (Instance == null && !_bShuttingDown)
             {
                 var obj = new GameObject("AudioManager");
                 obj.AddComponent<AudioManager>();
             }
             return Instance;
+        }
+
+        private void OnDestroy()
+        {
+            // 单例销毁（退出播放模式/手动销毁）后进入关闭期：清空引用并禁止重建，
+            // 防止其他对象的 OnDestroy 清理链路经静态 API 重新创建本对象
+            if (Instance == this)
+            {
+                Instance = null;
+                _bShuttingDown = true;
+            }
         }
 
         private void Awake()
@@ -199,6 +228,10 @@ namespace SuperQQ.Audio
         public static void PlaySfx(SfxId id, float volumeScale = 1f)
         {
             AudioManager m = EnsureExists();
+            if (m == null)
+            {
+                return;
+            }
             m.PlayInternal(id, volumeScale, null);
         }
 
@@ -208,6 +241,10 @@ namespace SuperQQ.Audio
         public static void PlaySfxAt(SfxId id, Vector3 worldPos)
         {
             AudioManager m = EnsureExists();
+            if (m == null)
+            {
+                return;
+            }
             m.PlayInternal(id, 1f, worldPos);
         }
 
@@ -220,6 +257,59 @@ namespace SuperQQ.Audio
             _sfxPool.Play(entry, volumeScale, worldPos);
         }
 
+        // ==================== 对外 API：循环音效 ====================
+
+        /// <summary>
+        /// 开始循环播放音效（幂等：同一音效在播放中重复调用不重启，仅同步配置）。
+        /// 适合「按住持续播放、松开停止」型音效（如飞行咒语），停止请用 StopLoopSfx。
+        /// 输出总线取条目 Bus 配置（通常 SFX）。
+        /// </summary>
+        /// <param name="id">音效标识</param>
+        /// <param name="fadeInTime">淡入时长（秒）</param>
+        public static void StartLoopSfx(SfxId id, float fadeInTime = 0.1f)
+        {
+            AudioManager m = EnsureExists();
+            if (m == null)
+            {
+                return;
+            }
+            if (!m.TryGetEntry(id, out SfxEntry entry))
+            {
+                return;
+            }
+            if (entry.Clip == null)
+            {
+                Debug.LogWarning($"[AudioManager] 循环音效 {id} 未在 AudioCatalog 中拖配 Clip，播放被跳过。", m);
+                return;
+            }
+
+            if (!m._loopedSfxChannels.TryGetValue(id, out LoopChannel channel))
+            {
+                channel = new LoopChannel($"LoopSfx_{id}", m.transform, m.GetGroup(entry.Bus), m);
+                m._loopedSfxChannels[id] = channel;
+            }
+            // LoopChannel 内部幂等：相同 Clip 不重启循环
+            channel.CrossFadeTo(entry.Clip, fadeInTime, entry.Volume);
+            Debug.Log($"[AudioManager] StartLoopSfx {id}：Clip={entry.Clip.name}，Bus={entry.Bus}，Vol={entry.Volume}，已下发 CrossFadeTo");
+        }
+
+        /// <summary>
+        /// 停止循环音效（音量渐小直至消失）
+        /// </summary>
+        /// <param name="id">音效标识</param>
+        /// <param name="fadeOutTime">淡出时长（秒）</param>
+        public static void StopLoopSfx(SfxId id, float fadeOutTime = 0.5f)
+        {
+            if (Instance == null)
+            {
+                return;
+            }
+            if (Instance._loopedSfxChannels.TryGetValue(id, out LoopChannel channel))
+            {
+                channel.Stop(fadeOutTime);
+            }
+        }
+
         // ==================== 对外 API：音乐与环境音 ====================
 
         /// <summary>
@@ -230,6 +320,10 @@ namespace SuperQQ.Audio
         public static void PlayMusic(SfxId id, float fadeTime = 1f)
         {
             AudioManager m = EnsureExists();
+            if (m == null)
+            {
+                return;
+            }
             if (!m.TryGetEntry(id, out SfxEntry entry))
             {
                 return;
@@ -261,6 +355,10 @@ namespace SuperQQ.Audio
         public static void SetVolume(AudioBus bus, float linear01)
         {
             AudioManager m = EnsureExists();
+            if (m == null)
+            {
+                return;
+            }
             m.SetVolumeInternal(bus, linear01);
         }
 
@@ -278,6 +376,10 @@ namespace SuperQQ.Audio
         public static void SetMuted(bool muted)
         {
             AudioManager m = EnsureExists();
+            if (m == null)
+            {
+                return;
+            }
             m._muted = muted;
             PlayerPrefs.SetInt(PrefKeyMuted, muted ? 1 : 0);
             PlayerPrefs.Save();

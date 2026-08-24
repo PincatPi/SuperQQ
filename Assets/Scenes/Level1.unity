@@ -2125,6 +2125,9 @@ MonoBehaviour:
   - Type: 3
     Prefab: {fileID: 6025555612304353574, guid: d8889855de8b145768a2c3e3e7aca878, type: 3}
     DefaultDuration: 3
+  - Type: 12
+    Prefab: {fileID: 3128525747150584807, guid: a08b8c63ebe1a49f88eb598428152a02, type: 3}
+    DefaultDuration: 0
   _tips:
   - Type: 1
     Prefab: {fileID: -5804504903879468968, guid: d132f58d80458491c8c7c9cf34d92f5d, type: 3}

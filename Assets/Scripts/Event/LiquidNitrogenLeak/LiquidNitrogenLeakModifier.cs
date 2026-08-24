@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using SuperQQ.Audio;
 using SuperQQ.Sensors;
 using SuperQQ.Player;
 using SuperQQ.UI;
@@ -9,7 +10,7 @@ namespace SuperQQ.Event
 {
     /// <summary>
     /// 液氮泄露事件修饰符 — ScriptableObject 资产
-    /// 整局随机触发一次，流程：随机延迟 → 文字预警（屏幕上方正中央，自动关闭）
+    /// 整局随机触发一次，流程：随机延迟 → Tips 文字预警（经 PopupManager 播放，自动关闭）
     /// → 冻结所有存活玩家（刚体全约束，冰块视觉挂为玩家子节点）
     /// → 玩家摇晃手机累积解冻进度（摇晃强度越大进度涨得越快，配进度条 UI）
     /// → 进度满（或超时兜底）后全员解冻，伴随冰块碎裂音效
@@ -29,13 +30,26 @@ namespace SuperQQ.Event
         [SerializeField] private float _maxTriggerDelay = 20f;
 
         [Header("预警")]
-        [Tooltip("预警时长（秒）：预警弹出到正式冻结之间的缓冲时间；预警弹窗经 PopupManager 播放（PopupType.NitrogenWarning，自动关闭）")]
+        [Tooltip("预警 Tips 文本内容（经 PopupManager 以通用 Tips 播放，自动关闭）；留空则跳过预警直接冻结")]
+        [SerializeField] private string _warningTipText = "液氮即将泄露，注意躲避！";
+
+        [Tooltip("预警时长（秒）：预警 Tips 弹出到正式冻结之间的缓冲时间")]
         [Min(0f)]
         [SerializeField] private float _warningDuration = 3f;
 
         [Header("冻结表现")]
-        [Tooltip("冰块视觉 Prefab（无物理组件），冻结时实例化为玩家子节点，解冻时销毁；留空则无冰块视觉")]
-        [SerializeField] private GameObject _iceBlockPrefab;
+        [Tooltip("冰封特效 Prefab（根节点需挂 FrozenIceEffect 脚本）：冻结时实例化为玩家子节点随其移动（播放后自动定格为冰封画面），解冻时调用其 Dissipate 接口让粒子自然消散后销毁；留空则无冰封视觉")]
+        [SerializeField] private FrozenIceEffect _iceBlockPrefab;
+
+        [Tooltip("解冻时调用 Dissipate 后到销毁的等待时长（秒），需不短于特效的 fadeTime 消散时长")]
+        [Min(0.1f)]
+        [SerializeField] private float _iceEffectDestroyDelay = 0.6f;
+
+        [Tooltip("冻结发生时经 PopupManager 播放的 Tips 文本内容（留空则不播放）")]
+        [SerializeField] private string _freezeTipText = "全员被冻结！快摇晃手机解冻！";
+
+        [Tooltip("冻结期间显示的 UI Prefab（屏幕空间 UI，冻结时实例化到本地主 Canvas 下，解冻时销毁）；留空则无冻结 UI")]
+        [SerializeField] private GameObject _frozenUiPrefab;
 
         [Header("解冻进度")]
         [Tooltip("以满强度持续摇晃解冻所需的秒数（强度减半则耗时约翻倍）")]
@@ -51,27 +65,23 @@ namespace SuperQQ.Event
         [SerializeField] private float _autoThawTimeout = 15f;
 
         [Header("音效")]
-        [Tooltip("冰块碎裂音效：在解冻进度里程碑（1/3、2/3）与完全解冻时播放；留空则静默")]
-        [SerializeField] private AudioClip _crackSfx;
+        [Tooltip("冰块碎裂音效（经 AudioManager 播放，玩家结束冻结状态时统一播放一次）；None 则静默")]
+        [SerializeField] private SfxId _crackSfx = SfxId.IceCrack;
 
         [Header("随机源")]
         [Tooltip("固定随机种子；为 0 时使用时间种子。联机模式下主机广播该种子即可各端确定性模拟")]
         [SerializeField] private int _fixedSeed = 0;
 
-        // 解冻进度的碎裂音效里程碑（1/3、2/3）
-        private const float FIRST_CRACK_MILESTONE = 1f / 3f;
-        private const float SECOND_CRACK_MILESTONE = 2f / 3f;
-
-        // 被本事件冻结的玩家记录（玩家 + 其冰块实例）
+        // 被本事件冻结的玩家记录（玩家 + 其冰封特效实例）
         private sealed class FrozenEntry
         {
             public readonly PlayerController Player;
-            public readonly GameObject IceBlock;
+            public readonly FrozenIceEffect IceEffect;
 
-            public FrozenEntry(PlayerController player, GameObject iceBlock)
+            public FrozenEntry(PlayerController player, FrozenIceEffect iceEffect)
             {
                 Player = player;
-                IceBlock = iceBlock;
+                IceEffect = iceEffect;
             }
         }
 
@@ -91,6 +101,9 @@ namespace SuperQQ.Event
 
         // 解冻阶段启用的摇晃检测器引用，结束时禁用
         private ShakeDetector _shakeDetector;
+
+        // 冻结期间显示的 UI 实例，解冻/清理时销毁
+        private GameObject _frozenUiInstance;
 
         // ==================== LevelEventModifier 实现 ====================
 
@@ -120,15 +133,17 @@ namespace SuperQQ.Event
                 _eventCoroutine = null;
             }
 
-            // 无论事件进行到哪个阶段，统一走解冻清理（内部各项均有空值守卫）
-            EndThaw();
+            // 无论事件进行到哪个阶段，统一走解冻清理（内部各项均有空值守卫）。
+            // 强制中断属于清理路径（场景销毁/阶段切换），静默解冻不播放碎裂音效，
+            // 避免场景关闭阶段经 OnDestroy 链路调用 AudioManager 重建已销毁的单例
+            EndThaw(playCrackSfx: false);
             _random = null;
         }
 
         // ==================== 事件流程协程 ====================
 
         /// <summary>
-        /// 事件主流程：随机延迟一次 → 文字预警 → 冻结全员 → 摇晃解冻循环 → 解冻收尾
+        /// 事件主流程：随机延迟一次 → Tips 文字预警 → 冻结全员 → 摇晃解冻循环 → 解冻收尾
         /// 整局只触发一次，流程结束后协程自然退出
         /// </summary>
         private IEnumerator EventRoutine(LevelEventContext context)
@@ -146,6 +161,9 @@ namespace SuperQQ.Event
                 yield break;
             }
 
+            PlayFreezeTip();
+            ShowFrozenUi();
+
             ThawProgressBar progressBar = ShowProgressBar();
             _shakeDetector = ShakeDetector.GetOrCreate();
             _shakeDetector.enabled = true;
@@ -153,8 +171,6 @@ namespace SuperQQ.Event
             // 解冻循环：进度按摇晃强度累积、无摇晃时缓慢衰减；满进度或超时兜底退出
             float progress = 0f;
             float elapsed = 0f;
-            bool bFirstCrackPlayed = false;
-            bool bSecondCrackPlayed = false;
 
             while (progress < 1f && elapsed < _autoThawTimeout)
             {
@@ -168,17 +184,6 @@ namespace SuperQQ.Event
                     progressBar.SetProgress(progress);
                 }
 
-                if (!bFirstCrackPlayed && progress >= FIRST_CRACK_MILESTONE)
-                {
-                    bFirstCrackPlayed = true;
-                    PlayCrackSfx();
-                }
-                else if (!bSecondCrackPlayed && progress >= SECOND_CRACK_MILESTONE)
-                {
-                    bSecondCrackPlayed = true;
-                    PlayCrackSfx();
-                }
-
                 PruneInvalidFrozenEntries();
                 if (_frozenEntries.Count == 0)
                 {
@@ -189,11 +194,6 @@ namespace SuperQQ.Event
                 yield return null;
             }
 
-            if (progress >= 1f)
-            {
-                PlayCrackSfx();
-            }
-
             EndThaw();
             _eventCoroutine = null;
         }
@@ -201,18 +201,23 @@ namespace SuperQQ.Event
         // ==================== 预警 ====================
 
         /// <summary>
-        /// 弹出文字预警弹窗，经 PopupManager 自动关闭
-        /// PopupManager 缺失或未注册时打 Warning 并跳过（不阻断后续冻结流程）
+        /// 播放预警 Tips（通用 Tips 类型，按预警时长展示后自动关闭）
+        /// 文本未配置或 PopupManager 缺失时跳过（不阻断后续冻结流程）
         /// </summary>
         private void ShowWarning()
         {
-            if (PopupManager.Instance == null)
+            if (string.IsNullOrEmpty(_warningTipText))
             {
-                Debug.LogWarning("[LiquidNitrogenLeakModifier] PopupManager 不存在，跳过预警。");
                 return;
             }
 
-            PopupManager.Instance.ShowPopup(PopupType.NitrogenWarning, PopupArgs.WithDuration(_warningDuration));
+            if (PopupManager.Instance == null)
+            {
+                Debug.LogWarning("[LiquidNitrogenLeakModifier] PopupManager 不存在，跳过预警 Tips 播放。");
+                return;
+            }
+
+            PopupManager.Instance.ShowTips(TipsType.Common, _warningTipText, _warningDuration);
         }
 
         // ==================== 冻结 ====================
@@ -245,13 +250,74 @@ namespace SuperQQ.Event
                     continue;
                 }
 
-                GameObject iceBlock = null;
+                FrozenIceEffect iceEffect = null;
                 if (_iceBlockPrefab != null)
                 {
-                    iceBlock = Instantiate(_iceBlockPrefab, player.transform);
+                    iceEffect = Instantiate(_iceBlockPrefab, player.transform);
                 }
-                _frozenEntries.Add(new FrozenEntry(player, iceBlock));
+                _frozenEntries.Add(new FrozenEntry(player, iceEffect));
             }
+        }
+
+        /// <summary>
+        /// 播放冻结 Tips（通用 Tips 类型，自动关闭）；文本未配置或 PopupManager 缺失时静默跳过
+        /// </summary>
+        private void PlayFreezeTip()
+        {
+            if (string.IsNullOrEmpty(_freezeTipText))
+            {
+                return;
+            }
+
+            if (PopupManager.Instance == null)
+            {
+                Debug.LogWarning("[LiquidNitrogenLeakModifier] PopupManager 不存在，跳过冻结 Tips 播放。");
+                return;
+            }
+
+            PopupManager.Instance.ShowTips(TipsType.Common, _freezeTipText);
+        }
+
+        /// <summary>
+        /// 弹出冻结期间 UI：实例化到本地主 Canvas 下（各客户端本地各自执行，即所有玩家的本地 UI 都会弹出）
+        /// 未配置 Prefab 或未找到主 Canvas 时跳过，解冻逻辑不受影响
+        /// </summary>
+        private void ShowFrozenUi()
+        {
+            if (_frozenUiPrefab == null)
+            {
+                return;
+            }
+
+            RectTransform canvasRect = ResolveMainCanvasRect();
+            if (canvasRect == null)
+            {
+                Debug.LogWarning("[LiquidNitrogenLeakModifier] 未找到主 Canvas，跳过冻结 UI。");
+                return;
+            }
+
+            _frozenUiInstance = Instantiate(_frozenUiPrefab, canvasRect, false);
+        }
+
+        /// <summary>
+        /// 解析本地主 Canvas：优先玩家名称标签管理器所在的 Canvas（玩家头顶 UI 的既有宿主），
+        /// 其次 PopupManager 所在的 Canvas；均未找到时返回 null
+        /// </summary>
+        private static RectTransform ResolveMainCanvasRect()
+        {
+            Canvas canvas = null;
+
+            if (PlayerNameLabelManager.Instance != null)
+            {
+                canvas = PlayerNameLabelManager.Instance.GetComponentInParent<Canvas>();
+            }
+
+            if (canvas == null && PopupManager.Instance != null)
+            {
+                canvas = PopupManager.Instance.GetComponentInParent<Canvas>();
+            }
+
+            return canvas != null ? canvas.GetComponent<RectTransform>() : null;
         }
 
         // ==================== 解冻 ====================
@@ -292,18 +358,34 @@ namespace SuperQQ.Event
         /// 解冻收尾：解冻所有仍被本事件冻结的玩家，销毁冰块，关闭进度条，禁用摇晃检测器
         /// 正常结束与 Deactivate 强制中断共用本方法，各项均有空值守卫
         /// </summary>
-        private void EndThaw()
+        /// <param name="playCrackSfx">解冻时是否播放碎裂音效（Deactivate 清理路径传 false）</param>
+        private void EndThaw(bool playCrackSfx = true)
         {
+            bool bAnyPlayerThawed = false;
             for (int i = 0; i < _frozenEntries.Count; i++)
             {
                 FrozenEntry entry = _frozenEntries[i];
                 if (entry.Player != null && entry.Player.BIsFrozen)
                 {
                     entry.Player.Unfreeze();
+                    bAnyPlayerThawed = true;
                 }
                 DestroyIceBlock(entry);
             }
             _frozenEntries.Clear();
+
+            // 有玩家结束冻结状态时统一播放一次碎裂音效（正常解冻与超时兜底共用）
+            if (bAnyPlayerThawed && playCrackSfx)
+            {
+                PlayCrackSfx();
+            }
+
+            if (_frozenUiInstance != null)
+            {
+                // 场景正常销毁时冻结 UI 可能已随之销毁，此处判空后兜底销毁
+                Destroy(_frozenUiInstance);
+                _frozenUiInstance = null;
+            }
 
             if (_progressBarPopup != null)
             {
@@ -322,30 +404,31 @@ namespace SuperQQ.Event
         }
 
         /// <summary>
-        /// 销毁单条冻结记录的冰块实例（场景销毁时可能已随之销毁，判空后兜底）
+        /// 移除单条冻结记录的冰封特效：调用 FrozenIceEffect.Dissipate 让所有粒子
+        /// 在 fadeTime 内自然消散，延迟足够时长后再销毁；
+        /// 场景销毁时特效可能已随之销毁，判空后兜底
         /// </summary>
-        private static void DestroyIceBlock(FrozenEntry entry)
+        private void DestroyIceBlock(FrozenEntry entry)
         {
-            if (entry.IceBlock != null)
+            if (entry.IceEffect == null)
             {
-                Destroy(entry.IceBlock);
+                return;
             }
+
+            entry.IceEffect.Dissipate();
+            Destroy(entry.IceEffect.gameObject, _iceEffectDestroyDelay);
         }
 
         // ==================== 音效 ====================
 
         /// <summary>
-        /// 播放冰块碎裂音效：经 AudioSource.PlayClipAtPoint 自管理临时音源，Clip 为空时静默
+        /// 播放冰块碎裂音效：统一经 AudioManager 播放（未注册/未配置 Clip 时内部静默降级并告警）
         /// </summary>
         private void PlayCrackSfx()
         {
-            if (_crackSfx == null)
-            {
-                return;
-            }
-
-            Vector3 position = Camera.main != null ? Camera.main.transform.position : Vector3.zero;
-            AudioSource.PlayClipAtPoint(_crackSfx, position);
+            Debug.Log($"[LiquidNitrogenLeakModifier] 冰块碎裂音效：请求播放 SfxId={_crackSfx}" +
+                (_crackSfx == SfxId.None ? "（未配置，静默跳过）" : ""));
+            AudioManager.PlaySfx(_crackSfx);
         }
     }
 }

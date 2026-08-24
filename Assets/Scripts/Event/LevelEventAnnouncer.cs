@@ -14,7 +14,8 @@ namespace SuperQQ.Event
     ///   - 待进入 Playing 游玩阶段时，通过 PopupManager 依次播放每个事件的说明弹窗（3秒自动销毁），
     ///     并调用每个事件对应 LevelEventModifier 的 Activate 方法启动事件逻辑
     ///     （事件计时与弹窗播报统一从游玩阶段起算，道具选择/放置阶段不推进计时、不出现弹窗）
-    /// 场景销毁时调用所有 Modifier 的 Deactivate 方法进行清理
+    /// 游玩阶段结束时停止弹窗播放并调用所有 Modifier 的 Deactivate 进行清理（事件随阶段结束而结束）；
+    /// 场景销毁时同样调用 Deactivate 兜底
     /// 选取决策已抽离到 LevelEventSelector（纯 C#，可单元测试），本类只负责调度与播报
     /// </summary>
     public class LevelEventAnnouncer : MonoBehaviour
@@ -28,7 +29,7 @@ namespace SuperQQ.Event
 
         [Header("临时测试开关（恢复正式逻辑时取消勾选）")]
         [Tooltip("【临时】客户端本地触发：忽略服务器事件下发，每轮游玩阶段开始时由客户端本地按权重选取并触发事件，便于特殊事件测试。取消勾选即恢复服务器触发与分发的正式逻辑")]
-        [SerializeField] private bool _bTempClientLocalTrigger = true;
+        [SerializeField] private bool _bTempClientLocalTrigger = false;
 
         // 弹窗自动关闭时长（秒），对应策划文档：3秒后自动销毁
         private const float POPUP_AUTO_CLOSE_DURATION = 3f;
@@ -135,6 +136,7 @@ namespace SuperQQ.Event
             if (GamePhaseManager.Instance != null)
             {
                 GamePhaseManager.Instance.OnPhaseChanged -= HandlePhaseChangedForActivation;
+                GamePhaseManager.Instance.OnPhaseChanged -= HandlePlayingPhaseEnded;
                 // 【临时】测试开关的每轮掷签回调一并退订
                 GamePhaseManager.Instance.OnPhaseChanged -= HandleTempPhaseChanged;
             }
@@ -148,6 +150,12 @@ namespace SuperQQ.Event
 
         private void Start()
         {
+            // 订阅阶段切换：游玩阶段结束时统一结束本轮事件（弹窗播报 + Modifier 清理）
+            if (GamePhaseManager.Instance != null)
+            {
+                GamePhaseManager.Instance.OnPhaseChanged += HandlePlayingPhaseEnded;
+            }
+
             // 【临时】测试开关开启时：联机/单机统一走客户端本地权重选取，
             // 并订阅阶段切换实现"每轮游玩阶段开始重新掷签"；服务器下发路径由守卫跳过
             if (_bTempClientLocalTrigger)
@@ -173,6 +181,23 @@ namespace SuperQQ.Event
         }
 
         /// <summary>
+        /// 阶段切换回调：游玩阶段结束时结束本轮事件——
+        /// 停止事件说明弹窗播放、停用所有已激活的 Modifier（陨石停止落石、液氮强制解冻等），
+        /// 并重置激活状态，使下一轮游玩阶段开始时事件重新激活（联机新一轮由 ApplyServerEvent 驱动）
+        /// </summary>
+        private void HandlePlayingPhaseEnded(GamePhaseBase previousPhase, GamePhaseBase nextPhase)
+        {
+            if (!(previousPhase is PlayingPhase) || nextPhase is PlayingPhase)
+            {
+                return;
+            }
+
+            StopPopupPlayback();
+            DeactivateAllModifiers();
+            _bModifiersActivated = false;
+        }
+
+        /// <summary>
         /// 【临时】阶段切换回调（测试开关开启时生效）：
         /// 离开游玩阶段时清理本轮事件；进入游玩阶段时重新按权重掷签（首轮沿用 Start 的选取）
         /// </summary>
@@ -180,9 +205,7 @@ namespace SuperQQ.Event
         {
             if (previousPhase is PlayingPhase && !(nextPhase is PlayingPhase))
             {
-                // 本轮游玩阶段结束：清理本轮事件并停止弹窗播放，避免跨结算/放置阶段继续生效
-                DeactivateAllModifiers();
-                StopPopupPlayback();
+                // 本轮游玩阶段结束的清理已由 HandlePlayingPhaseEnded 统一处理，此处不再重复
                 return;
             }
 

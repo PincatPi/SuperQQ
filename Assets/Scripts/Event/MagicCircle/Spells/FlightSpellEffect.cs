@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using SuperQQ.Audio;
 using SuperQQ.Player;
 using SuperQQ.UI;
 using UnityEngine;
@@ -37,6 +38,13 @@ namespace SuperQQ.Event
         [Tooltip("效果生效时播放的 Tips 文本内容（经 PopupManager 播放，留空则不播放）")]
         [SerializeField] private string _activateTipText = "中国人能飞！";
 
+        [Header("音效")]
+        [Tooltip("飞行循环音效：按住跳跃键开始循环播放，松开后音量渐小直至消失（Clip 在 AudioCatalog 资产中按 Id 拖配）；None 表示静默")]
+        [SerializeField] private SfxId _flightLoopSfx = SfxId.FlightLoop;
+
+        [Tooltip("松开跳跃键（或效果结束）后音效淡出时长（秒）")]
+        [SerializeField, Min(0.05f)] private float _sfxFadeOutTime = 0.5f;
+
         /// <summary>
         /// 激活飞行效果：在目标玩家身上挂载特效并启动计时
         /// </summary>
@@ -54,7 +62,8 @@ namespace SuperQQ.Event
             }
 
             ShowActivateTip();
-            return new FlightInstance(context, _flightPrefab, _flightOffset, _duration, _maxFlySpeed, _flyAcceleration);
+            return new FlightInstance(context, _flightPrefab, _flightOffset, _duration, _maxFlySpeed, _flyAcceleration,
+                _flightLoopSfx, _sfxFadeOutTime);
         }
 
         /// <summary>
@@ -84,10 +93,17 @@ namespace SuperQQ.Event
         {
             private GameObject _flightInstance;
             private Coroutine _expireCoroutine;
+            private readonly SfxId _loopSfx;
+            private readonly float _sfxFadeOutTime;
+            private bool _bSfxPlaying;   // 循环音效当前是否处于播放态（边沿触发起停）
 
             public FlightInstance(SpellEffectContext context, GameObject flightPrefab, Vector2 offset,
-                float duration, float maxFlySpeed, float flyAcceleration) : base(context)
+                float duration, float maxFlySpeed, float flyAcceleration,
+                SfxId loopSfx, float sfxFadeOutTime) : base(context)
             {
+                _loopSfx = loopSfx;
+                _sfxFadeOutTime = sfxFadeOutTime;
+
                 // 开启飞行模式：跳跃逻辑替换为按住持续上升（End 时复位）
                 Target.SetFlying(true, flyAcceleration, maxFlySpeed);
 
@@ -107,6 +123,30 @@ namespace SuperQQ.Event
                 if (Runner != null)
                 {
                     _expireCoroutine = Runner.StartCoroutine(ExpireRoutine(duration));
+                }
+            }
+
+            /// <summary>
+            /// 每帧轮询跳跃键（由事件 Modifier 的效果驱动协程调用）：按下边沿开始循环音效（循环由音频系统保证），松开边沿淡出停止
+            /// </summary>
+            public override void Tick()
+            {
+                if (_loopSfx == SfxId.None || Target == null)
+                {
+                    return;
+                }
+
+                bool held = Target.JumpHeld;
+                if (held && !_bSfxPlaying)
+                {
+                    _bSfxPlaying = true;
+                    Debug.Log("[FlightSpellEffect] 按下跳跃键，StartLoopSfx " + _loopSfx);
+                    AudioManager.StartLoopSfx(_loopSfx);
+                }
+                else if (!held && _bSfxPlaying)
+                {
+                    _bSfxPlaying = false;
+                    AudioManager.StopLoopSfx(_loopSfx, _sfxFadeOutTime);
                 }
             }
 
@@ -165,6 +205,13 @@ namespace SuperQQ.Event
 
             protected override void OnEnd()
             {
+                // 效果提前结束（死亡/通关/化身销毁/到期）时淡出循环音效，避免残留
+                if (_bSfxPlaying)
+                {
+                    _bSfxPlaying = false;
+                    AudioManager.StopLoopSfx(_loopSfx, _sfxFadeOutTime);
+                }
+
                 // 关闭飞行模式，恢复普通跳跃逻辑（玩家已销毁时跳过）
                 if (Target != null)
                 {

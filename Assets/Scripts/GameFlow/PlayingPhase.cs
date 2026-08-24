@@ -16,6 +16,9 @@ namespace SuperQQ.GameFlow
         [Tooltip("进入正式游玩阶段时播放的开始音效（Clip 在 AudioCatalog 资产中按 Id 拖配）；None 表示静默")]
         [SerializeField] private SfxId _roundStartSfx = SfxId.RoundStart;
 
+        [Tooltip("离开正式游玩阶段时播放的结束音效（Clip 在 AudioCatalog 资产中按 Id 拖配）；None 表示静默")]
+        [SerializeField] private SfxId _roundFinishSfx = SfxId.RoundFinish;
+
         private bool _bRoundSettled;
 
         public override void OnEnter(GamePhaseContext context)
@@ -41,6 +44,12 @@ namespace SuperQQ.GameFlow
         {
             base.OnExit(context);
             _bRoundSettled = false;
+
+            // 阶段结束音效（2D 全局，走 SFX 总线）
+            if (_roundFinishSfx != SfxId.None)
+            {
+                AudioManager.PlaySfx(_roundFinishSfx);
+            }
 
             // 离开游玩阶段停止麦克风输入接收
             if (MicVolumeManager.Instance != null)

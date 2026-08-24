@@ -1,4 +1,5 @@
 using UnityEngine;
+using SuperQQ.Audio;
 using SuperQQ.Map;
 using SuperQQ.UI;
 
@@ -40,6 +41,10 @@ namespace SuperQQ.Player
 
         [Header("死亡设置")]
         [SerializeField] private float deathDuration = 0.6f;           // 死亡过渡时长（秒），结束后自动进入幽灵状态
+
+        [Header("音效")]
+        [Tooltip("被命中音效：被伤害型道具/事件命中致死或击飞时在玩家位置 3D 播放（坠落出界不播放）；None 表示静默")]
+        [SerializeField] private SfxId hitSfx = SfxId.PlayerHit;
 
         [Header("幽灵设置")]
         [SerializeField] private float ghostMoveSpeed = 6f;             // 幽灵四向移动速度
@@ -551,26 +556,39 @@ namespace SuperQQ.Player
 
         /// <summary>
         /// 死亡，进入死亡过渡状态（倒计时结束后自动切换为幽灵状态）
+        /// 伤害型死亡（道具/事件命中）：播放命中音效
         /// </summary>
-        public void PlayerDie()
+        /// <param name="playHitSfx">是否播放命中音效；落水等非命中死亡传 false</param>
+        public void PlayerDie(bool playHitSfx = true)
         {
+            // 命中音效先于免疫判定播放：无敌时虽免疫死亡，但被命中事实成立，仍需命中反馈
+            if (playHitSfx)
+            {
+                PlayHitSfx();
+            }
+
             // 无敌状态免疫伤害性死亡（掉落出界等不可豁免的死亡走 PlayerForceDie）
             if (BIsInvincible)
             {
                 return;
             }
-            PlayerForceDie();
+            PlayerForceDie(playHitSfx: false);   // 音效已在上方播放，避免重复
         }
 
         /// <summary>
         /// 强制死亡：无视无敌状态，立即进入死亡过渡
         /// 用于掉落出界等不可豁免的死亡场景（无敌金身等护盾不提供保护）
         /// </summary>
-        public void PlayerForceDie()
+        /// <param name="playHitSfx">是否播放命中音效；坠落出界等非命中死亡传 false</param>
+        public void PlayerForceDie(bool playHitSfx = false)
         {
             if (BIsDead || BIsGhost)
             {
                 return;
+            }
+            if (playHitSfx)
+            {
+                PlayHitSfx();
             }
             // 联机：上报死亡瞬间事件（远端播死亡表现），离线时为空操作
             SuperQQ.Network.NetEventSync.ReportEvent(
@@ -595,6 +613,9 @@ namespace SuperQQ.Player
                 _rb.velocity = knockbackVelocity;
             }
 
+            // 命中音效先于免疫判定播放：无敌时免疫死亡但保留击退，被命中反馈照常
+            PlayHitSfx();
+
             // 无敌：免疫死亡但仍保留击退——速度已施加，开启击退压制窗口让击退纯物理飞行
             // （否则存活状态的输入驱动会在下一物理帧改写击退速度，表现为击退力度骤减）
             if (BIsInvincible)
@@ -609,6 +630,15 @@ namespace SuperQQ.Player
             SuperQQ.Network.NetEventSync.ReportEvent(
                 Minigame.Room.V1.PlayerEventType.Die, transform.position);
             TransitionTo(new PlayerDyingState(this));
+        }
+
+        /// <summary>播放被命中音效（3D 定位在玩家位置，走 SFX 总线）；未配置时静默</summary>
+        private void PlayHitSfx()
+        {
+            if (hitSfx != SfxId.None)
+            {
+                AudioManager.PlaySfxAt(hitSfx, transform.position);
+            }
         }
 
         /// <summary>

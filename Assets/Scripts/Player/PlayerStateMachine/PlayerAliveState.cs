@@ -120,7 +120,7 @@ namespace SuperQQ.Player
         // ==================== 水域淹没判定 ====================
 
         /// <summary>
-        /// 淹没判定：玩家所在格子命中 Water 区域即死亡。
+        /// 淹没判定：玩家所在格子命中 Water 区域即死亡（不播放受击音效——非命中型死亡）。
         /// 判定走 GridManager.GetZonesAt，已内置夜晚水位偏移（WaterYOffsetCells），
         /// 因此黑夜水面上升后站在新水格子里同样会判死，昼夜切换无需额外处理。
         /// 未配置区域（GridManager/ZoneConfig 缺失）时静默跳过。
@@ -136,7 +136,7 @@ namespace SuperQQ.Player
             Vector2Int cell = grid.WorldToCell(_ctx.Rb.position);
             if ((grid.GetZonesAt(cell) & GridZoneType.Water) != 0)
             {
-                _ctx.PlayerDie();
+                _ctx.PlayerDie(playHitSfx: false);
             }
         }
 

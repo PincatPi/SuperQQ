@@ -29,9 +29,6 @@ namespace SuperQQ.UI
         /// <summary>仅剩一名存活玩家时的提前结束提示</summary>
         EndEarly = 10,
 
-        /// <summary>液氮泄露预警弹窗（文字提醒，自动关闭）</summary>
-        NitrogenWarning = 11,
-
         /// <summary>解冻进度条弹窗（手动关闭，Prefab 根节点挂 ThawProgressBar）</summary>
         ThawProgress = 12,
     }

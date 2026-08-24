@@ -14,12 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _minTriggerDelay: 8
   _maxTriggerDelay: 20
-  _warningPopupPrefab: {fileID: 5300360020494581001, guid: f01f0882f6a4497ea3214f09774ef681, type: 3}
+  _warningTipText: "\u6DB2\u6C2E\u5373\u5C06\u6CC4\u9732\uFF0C\u6CE8\u610F\u8EB2\u907F\uFF01"
   _warningDuration: 3
-  _iceBlockPrefab: {fileID: 8723000000000000101, guid: 3470070f632d4ca6911b012ce9900e6e, type: 3}
-  _thawProgressBarPrefab: {fileID: 3128525747150584807, guid: a08b8c63ebe1a49f88eb598428152a02, type: 3}
+  _iceBlockPrefab: {fileID: -8696185239438031818, guid: 17f280cc693ee44aab8fb5980a00f524, type: 3}
+  _iceEffectDestroyDelay: 0.6
+  _freezeTipText: "\u5168\u5458\u88AB\u51BB\u7ED3\uFF01\u5FEB\u6447\u6643\u624B\u673A\u89E3\u51BB\uFF01"
+  _frozenUiPrefab: {fileID: 8204921928607008166, guid: 70df8c4e447574d06931a04b2e50191a, type: 3}
   _fullShakeThawSeconds: 3
   _progressDecayPerSecond: 0.1
   _autoThawTimeout: 10
-  _crackSfx: {fileID: 0}
+  _crackSfx: 210
   _fixedSeed: 0

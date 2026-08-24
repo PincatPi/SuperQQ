@@ -38,16 +38,31 @@ namespace SuperQQ.Audio
 
         // ==================== 道具与玩法（2xx，Clip 对应 Assets/Audio/Pickup_Place、Notification 等） ====================
 
+        /// <summary>金币拾取（Coin 被获取时播放）</summary>
+        CoinPickup = 201,
+
         /// <summary>放置道具（ItemBase.OnPlaced 统一播放）</summary>
         Place = 202,
 
         /// <summary>闹钟响铃（震屏生效时播放）</summary>
         AlarmRing = 209,
 
+        /// <summary>玩家被命中（伤害型道具/事件命中致死或击飞时播放；坠落出界不播放）</summary>
+        PlayerHit = 210,
+
+        /// <summary>冰块碎裂（液氮泄露事件：解冻进度里程碑与完全解冻时播放）</summary>
+        IceCrack = 211,
+
         // ==================== 阶段与反馈（3xx） ====================
 
         /// <summary>正式游玩阶段开始（PlayingPhase.OnEnter 播放）</summary>
         RoundStart = 310,
+
+        /// <summary>正式游玩阶段结束（PlayingPhase.OnExit 播放）</summary>
+        RoundFinish = 311,
+
+        /// <summary>飞行咒语循环音效（按住跳跃键循环播放，松开淡出；经 StartLoopSfx/StopLoopSfx 控制）</summary>
+        FlightLoop = 320,
 
         // ==================== 音乐（4xx，经 LoopChannel 循环播放） ====================
 
