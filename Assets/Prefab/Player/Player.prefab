@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6696225443426713469}
   - component: {fileID: 7639169951848718314}
   - component: {fileID: 432204406649400064}
+  - component: {fileID: 5154479909354002247}
   m_Layer: 6
   m_Name: Visual
   m_TagString: Untagged
@@ -110,6 +111,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5154479909354002247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2389183224659491528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed34d86e5e0434a91bc4eae06b73b429, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  footstepSfx: 219
 --- !u!1 &2589623088379354774
 GameObject:
   m_ObjectHideFlags: 0
@@ -255,6 +269,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 768
   deathDuration: 0.35
+  hitSfx: 210
   ghostMoveSpeed: 10
   ghostAcceleration: 80
   ghostDeceleration: 100
@@ -266,11 +281,13 @@ MonoBehaviour:
   playerName: Player1
   playerColor: {r: 0.5730121, g: 1, b: 0, a: 1}
   cursorMarkerSprite: {fileID: 21300218, guid: 02503a0208504eff95da4cdeab44ed59, type: 3}
+  selectionIconSprite: {fileID: 0}
   leftKey: 97
   rightKey: 100
   jumpKey: 32
   jumpKeyAlt: 119
   downKey: 115
+  _knockbackStunDuration: 0.6
 --- !u!114 &7027497864802993098
 MonoBehaviour:
   m_ObjectHideFlags: 0

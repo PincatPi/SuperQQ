@@ -21,10 +21,10 @@ MonoBehaviour:
   - Id: 402
     Clip: {fileID: 8300000, guid: 8987cabd0d7024a5c847633103518182, type: 3}
     Bus: 1
-    Volume: 0.127
+    Volume: 1
     MinReplayInterval: 0
   - Id: 202
-    Clip: {fileID: 8300000, guid: 5a9a027e2bc78409d8320d1f86e505e7, type: 3}
+    Clip: {fileID: 8300000, guid: 25d834f3186ce43ff89bc9262502eb5a, type: 3}
     Bus: 2
     Volume: 1
     MinReplayInterval: 0
@@ -38,18 +38,78 @@ MonoBehaviour:
     Bus: 2
     Volume: 1
     MinReplayInterval: 0
-  - Id: 320
-    Clip: {fileID: 0}
-    Bus: 2
-    Volume: 1
-    MinReplayInterval: 0
   - Id: 210
     Clip: {fileID: 8300000, guid: 50962faad2c8749aa8ab1bad41cf21f0, type: 3}
     Bus: 2
     Volume: 1
     MinReplayInterval: 0
+  - Id: 320
+    Clip: {fileID: 8300000, guid: 62f8270b4f98d4ada92ef3b658898032, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
   - Id: 201
     Clip: {fileID: 8300000, guid: 6a741a82dd75542f08f5eaaa5dba21fb, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
+  - Id: 211
+    Clip: {fileID: 8300000, guid: e5510eda6d4464f94afd256296f4371a, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
+  - Id: 212
+    Clip: {fileID: 8300000, guid: b9970faa35e5740e6af208c35bf544a3, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
+  - Id: 213
+    Clip: {fileID: 8300000, guid: c58475cd7622e4d918da3e2c3246f55e, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
+  - Id: 214
+    Clip: {fileID: 8300000, guid: 3e01dd0a7a8774df7b04b1761d9c2b50, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
+  - Id: 215
+    Clip: {fileID: 8300000, guid: e7e227b3b4c724a86974f2730ea8cb98, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
+  - Id: 216
+    Clip: {fileID: 8300000, guid: ebf17f912274b4635bba067fcd375bbb, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
+  - Id: 217
+    Clip: {fileID: 8300000, guid: 6131067ade7d64c8ea806a35fe080a82, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
+  - Id: 218
+    Clip: {fileID: 8300000, guid: 4e7a46afc957743cab157496337f444d, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
+  - Id: 219
+    Clip: {fileID: 8300000, guid: 29da8caf265ca48c994f06464f3a2c8b, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0.2
+  - Id: 209
+    Clip: {fileID: 8300000, guid: 215a2e479d39647f3b773f50327865ec, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
+  - Id: 220
+    Clip: {fileID: 8300000, guid: c3f8819a93d1b474ca1cf3e987fdc3d5, type: 3}
+    Bus: 2
+    Volume: 1
+    MinReplayInterval: 0
+  - Id: 221
+    Clip: {fileID: 8300000, guid: 472426bd1a25f4f2388b6a0f4b6da9f7, type: 3}
     Bus: 2
     Volume: 1
     MinReplayInterval: 0

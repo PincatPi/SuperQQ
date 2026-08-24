@@ -40,8 +40,16 @@ namespace SuperQQ.Item
         [SerializeField] private CinemachineImpulseSource impulseSource;
 
         [Header("音效")]
-        [Tooltip("响铃音效：震屏生效时在闹钟位置 3D 播放。音效 Clip 在 AudioCatalog 资产中按本 Id 拖配；None 表示静默")]
+        [Tooltip("响铃循环音效：震屏生效时开始循环播放，震屏结束时音量渐弱至停止（Clip 在 AudioCatalog 资产中按 Id 拖配，需无缝循环素材）；None 表示静默")]
         [SerializeField] private SfxId ringSfx = SfxId.AlarmRing;
+
+        [Tooltip("响铃循环时长（秒）：应等于震屏持续时长（Impulse Source 的 Impulse Definition → Impulse Duration，当前 prefab 为 3s），到时音效自动淡出")]
+        [SerializeField, Min(0.1f)] private float ringSfxDuration = 3f;
+
+        [Tooltip("震屏结束后响铃音效淡出时长（秒）")]
+        [SerializeField, Min(0.05f)] private float ringSfxFadeOut = 0.5f;
+
+        private Coroutine _ringSfxRoutine;   // 响铃定时淡出协程（重复触发时取消重开）
 
         [Header("调试")]
         [Tooltip("始终激活检测（无 GameFlow 的测试场景使用；阶段系统接入后关闭，由 OnRunPhaseStart/OnBuildPhaseStart 控制）")]
@@ -161,11 +169,45 @@ namespace SuperQQ.Item
             }
             EnsureImpulseListener();
             impulseSource.GenerateImpulse();
+            PlayRingSfx();
+        }
 
-            // 震屏生效时同步播放响铃音效（3D 定位，随 AudioManager 走 SFX 总线与复音限频）
-            if (ringSfx != SfxId.None)
+        // ==================== 响铃音效 ====================
+
+        /// <summary>
+        /// 响铃循环音效：震屏生效时开始循环，ringSfxDuration 秒后（= 震屏结束）音量渐弱至停止；
+        /// 震屏未结束时重复触发则重新计时（铃声与震屏同步续长）
+        /// </summary>
+        private void PlayRingSfx()
+        {
+            if (ringSfx == SfxId.None)
             {
-                AudioManager.PlaySfxAt(ringSfx, transform.position);
+                return;
+            }
+
+            AudioManager.StartLoopSfx(ringSfx);
+            if (_ringSfxRoutine != null)
+            {
+                StopCoroutine(_ringSfxRoutine);
+            }
+            _ringSfxRoutine = StartCoroutine(RingSfxFadeOutRoutine());
+        }
+
+        /// <summary>响铃定时淡出：等待震屏时长后停止循环音效（音量渐弱至 0）</summary>
+        private System.Collections.IEnumerator RingSfxFadeOutRoutine()
+        {
+            yield return new WaitForSeconds(ringSfxDuration);
+            AudioManager.StopLoopSfx(ringSfx, ringSfxFadeOut);
+            _ringSfxRoutine = null;
+        }
+
+        /// <summary>销毁兜底：响铃期间被拆除/拾回/场景卸载时停止循环音效（AudioManager 跨场景常驻，不清理会残留）</summary>
+        private void OnDestroy()
+        {
+            if (_ringSfxRoutine != null)
+            {
+                _ringSfxRoutine = null;
+                AudioManager.StopLoopSfx(ringSfx, ringSfxFadeOut);
             }
         }
 

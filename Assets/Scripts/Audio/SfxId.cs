@@ -68,6 +68,9 @@ namespace SuperQQ.Audio
         /// <summary>排气扇吹风循环音效（玩家在吹风范围内持续循环播放，离开淡出；经 StartLoopSfx/StopLoopSfx 控制）</summary>
         FanWind = 218,
 
+        /// <summary>玩家走路脚步（Run 帧动画的落地帧事件触发，每次播放一次）</summary>
+        Footstep = 219,
+
         /// <summary>冻结开始（液氮泄露事件：全员冻结、弹出冻结 UI 时播放）</summary>
         FreezeStart = 216,
 

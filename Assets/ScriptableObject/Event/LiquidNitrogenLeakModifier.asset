@@ -25,5 +25,7 @@ MonoBehaviour:
   _autoThawTimeout: 10
   _vibrateShakeThreshold: 0.5
   _vibrateMinInterval: 0.3
-  _crackSfx: 210
+  _crackSfx: 211
+  _freezeStartSfx: 216
+  _freezeSfxFadeOut: 0.5
   _fixedSeed: 0
