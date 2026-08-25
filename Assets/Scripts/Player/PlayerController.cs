@@ -498,6 +498,32 @@ namespace SuperQQ.Player
             _speedMultiplier = 1f;
         }
 
+        // 全运动减速系数（蛛网等环境效果：水平移动/跳跃/下落/飞行统一生效）
+        private float _motionSlowFactor = 1f;
+
+        /// <summary>
+        /// 全运动减速系数（1=正常，0.1=仅保留 10%）：
+        /// 与 _speedMultiplier 的区别——后者仅作用于水平移速（黄油块等表面效果），
+        /// 本系数作用于全部运动通道（移动/跳跃/下落/飞行），由状态机在对应通道乘算
+        /// </summary>
+        public float MotionSlowFactor => _motionSlowFactor;
+
+        /// <summary>
+        /// 设置全运动减速系数（如蛛网减速），自动夹紧到 0~1
+        /// </summary>
+        public void SetMotionSlow(float factor)
+        {
+            _motionSlowFactor = Mathf.Clamp01(factor);
+        }
+
+        /// <summary>
+        /// 恢复全运动减速系数为 1
+        /// </summary>
+        public void ResetMotionSlow()
+        {
+            _motionSlowFactor = 1f;
+        }
+
         /// <summary>
         /// 进入/离开无摩擦状态（肥皂表面：滑行不可控）
         /// </summary>

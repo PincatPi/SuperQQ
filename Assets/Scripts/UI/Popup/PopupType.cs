@@ -24,6 +24,9 @@ namespace SuperQQ.UI
         /// <summary>Boss 巡逻事件说明弹窗</summary>
         BossPatrolIntro = 4,
 
+        /// <summary>蜘蛛网事件说明弹窗</summary>
+        SpiderWebIntro = 5,
+
         // ==================== 通用局内弹窗 ====================
 
         /// <summary>仅剩一名存活玩家时的提前结束提示</summary>

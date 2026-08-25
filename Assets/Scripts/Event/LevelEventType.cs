@@ -20,6 +20,11 @@ namespace SuperQQ.Event
         /// <summary>
         /// 言出法随：场景中创建固定位置的法阵，存活玩家走入范围后头顶弹出吟唱提示
         /// </summary>
-        MagicCircle = 3
+        MagicCircle = 3,
+
+        /// <summary>
+        /// 蜘蛛网：地图上出现多处蛛网，触碰后大幅减速，双指滑动累积挣脱进度
+        /// </summary>
+        SpiderWeb = 4
     }
 }

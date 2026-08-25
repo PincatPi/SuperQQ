@@ -147,13 +147,17 @@ namespace SuperQQ.Player
         /// </summary>
         private void ApplyFlight()
         {
-            float effectiveGravity = Physics2D.gravity.y * _ctx.GravityScale;
+            // 全运动减速（蛛网等）：飞行加速度/极速、松手重力与下落限速同比例降低
+            float slow = _ctx.MotionSlowFactor;
+            float effectiveGravity = Physics2D.gravity.y * _ctx.GravityScale * slow;
             Vector2 velocity = _ctx.Rb.velocity;
 
             if (_ctx.JumpHeld)
             {
                 // 按住跳跃键：持续向上加速，封顶最大飞行速度
-                velocity.y = Mathf.Min(velocity.y + _ctx.FlyAcceleration * Time.fixedDeltaTime, _ctx.FlyMaxSpeed);
+                velocity.y = Mathf.Min(
+                    velocity.y + _ctx.FlyAcceleration * slow * Time.fixedDeltaTime,
+                    _ctx.FlyMaxSpeed * slow);
             }
             else if (velocity.y >= 0f)
             {
@@ -164,7 +168,7 @@ namespace SuperQQ.Player
             {
                 // 松开按键且下落：按普通下落手感加速下落
                 velocity.y += effectiveGravity * _ctx.FallMultiplier * Time.fixedDeltaTime;
-                velocity.y = Mathf.Max(velocity.y, _ctx.MaxFallSpeed);
+                velocity.y = Mathf.Max(velocity.y, _ctx.MaxFallSpeed * slow);
             }
 
             _ctx.Rb.velocity = velocity;
@@ -235,7 +239,8 @@ namespace SuperQQ.Player
         {
             if (_ctx.JumpPressed && (_bIsGrounded || _coyoteTimer > 0f) && !_bIsJumping)
             {
-                _ctx.Rb.velocity = new Vector2(_ctx.Rb.velocity.x, _ctx.JumpVelocity);
+                // 全运动减速（蛛网等）：起跳速度同比例降低
+                _ctx.Rb.velocity = new Vector2(_ctx.Rb.velocity.x, _ctx.JumpVelocity * _ctx.MotionSlowFactor);
                 _bIsJumping = true;
                 _jumpHoldTimer = 0f;
                 // 起跳消耗土狼时间，避免连跳
@@ -270,7 +275,8 @@ namespace SuperQQ.Player
         /// </summary>
         private void ApplyHorizontalMovement()
         {
-            float targetVelocity = _ctx.HorizontalInput * _ctx.MoveSpeed;
+            // 全运动减速（蛛网等）：与跳跃/下落同比例减慢水平移动
+            float targetVelocity = _ctx.HorizontalInput * _ctx.MoveSpeed * _ctx.MotionSlowFactor;
             float rate;
             if (_ctx.Frictionless && _bIsGrounded)
             {
@@ -280,7 +286,7 @@ namespace SuperQQ.Player
                 if (Mathf.Abs(_currentHorizontalVelocity) < 0.01f
                     && Mathf.Abs(_ctx.HorizontalInput) > 0.01f)
                 {
-                    _currentHorizontalVelocity = Mathf.Sign(_ctx.HorizontalInput) * _ctx.MoveSpeed;
+                    _currentHorizontalVelocity = Mathf.Sign(_ctx.HorizontalInput) * _ctx.MoveSpeed * _ctx.MotionSlowFactor;
                 }
             }
             else
@@ -337,7 +343,8 @@ namespace SuperQQ.Player
         {
             if (_bIsJumping && _ctx.JumpHeld && _jumpHoldTimer < _ctx.MaxJumpHoldTime)
             {
-                _ctx.Rb.velocity += Vector2.up * (_ctx.JumpHoldAccel * Time.fixedDeltaTime);
+                // 全运动减速（蛛网等）：长按追加的跳跃加速度同比例降低
+                _ctx.Rb.velocity += Vector2.up * (_ctx.JumpHoldAccel * _ctx.MotionSlowFactor * Time.fixedDeltaTime);
                 _jumpHoldTimer += Time.fixedDeltaTime;
             }
             else if (_jumpHoldTimer >= _ctx.MaxJumpHoldTime)
@@ -351,7 +358,9 @@ namespace SuperQQ.Player
         /// </summary>
         private void ApplyBetterFallGravity()
         {
-            float effectiveGravity = Physics2D.gravity.y * _ctx.GravityScale;
+            // 全运动减速（蛛网等）：重力加速度与最大下落速度同比例降低（下落变慢）
+            float slow = _ctx.MotionSlowFactor;
+            float effectiveGravity = Physics2D.gravity.y * _ctx.GravityScale * slow;
             Vector2 vel = _ctx.Rb.velocity;
 
             if (vel.y < 0f)
@@ -365,10 +374,11 @@ namespace SuperQQ.Player
                 vel.y += effectiveGravity * (_ctx.LowJumpMultiplier - 1f) * Time.fixedDeltaTime;
             }
 
-            // 限制最大下落速度
-            if (vel.y < _ctx.MaxFallSpeed)
+            // 限制最大下落速度（减速比例同步作用于限速）
+            float maxFallSpeed = _ctx.MaxFallSpeed * slow;
+            if (vel.y < maxFallSpeed)
             {
-                vel.y = _ctx.MaxFallSpeed;
+                vel.y = maxFallSpeed;
             }
 
             _ctx.Rb.velocity = vel;
