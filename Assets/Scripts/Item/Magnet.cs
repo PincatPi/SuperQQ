@@ -72,8 +72,9 @@ namespace SuperQQ.Item
         }
 
         /// <summary>销毁兜底：场景卸载/外部销毁时停止循环音效（AudioManager 跨场景常驻，不清理会残留）</summary>
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             StopPullSfx();
         }
 

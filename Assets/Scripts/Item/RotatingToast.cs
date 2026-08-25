@@ -88,8 +88,9 @@ namespace SuperQQ.Item
             RotatingToastSizeSync.Register(this);
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             RotatingToastSizeSync.Unregister(this);
         }
 

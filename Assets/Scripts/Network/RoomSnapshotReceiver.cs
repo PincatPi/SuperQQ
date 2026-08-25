@@ -133,7 +133,7 @@ namespace SuperQQ.Network
                 if (!_bLoggedEventParams2Received)
                 {
                     _bLoggedEventParams2Received = true;
-                    Debug.Log($"[RoomSnapshotReceiver] 收到事件2参数包: 冰冻时长={snapshot.EventParams2.DurationMs}ms");
+                    Debug.Log($"[RoomSnapshotReceiver] 收到事件2参数包: unfreeze={snapshot.EventParams2.Unfreeze}");
                 }
                 SuperQQ.Event.LevelEventAnnouncer.Instance?.OnServerEventParams2(snapshot.EventParams2);
             }
@@ -262,6 +262,7 @@ namespace SuperQQ.Network
             {
                 1 => PlayerStateType.Ghost,
                 2 => PlayerStateType.Finished,
+                3 => PlayerStateType.Frozen,   // 冻结（液氮事件）：仍在场，远端挂载冰封视觉
                 _ => PlayerStateType.Alive
             };
 

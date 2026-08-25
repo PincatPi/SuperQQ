@@ -202,8 +202,9 @@ namespace SuperQQ.Item
         }
 
         /// <summary>销毁兜底：响铃期间被拆除/拾回/场景卸载时停止循环音效（AudioManager 跨场景常驻，不清理会残留）</summary>
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             if (_ringSfxRoutine != null)
             {
                 _ringSfxRoutine = null;

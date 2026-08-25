@@ -55,8 +55,12 @@ namespace SuperQQ.Network
             Vector2 pos = transform.position;
             Vector2 vel = _rb != null ? _rb.velocity : Vector2.zero;
 
-            // 玩家状态：0=存活 1=幽灵 2=已通关（与 proto player_state 约定一致）
-            int playerState = (_player.BIsDead || _player.BIsGhost) ? 1 : _player.BIsFinished ? 2 : 0;
+            // 玩家状态：0=存活 1=幽灵 2=已通关 3=冻结（与 proto player_state 约定一致，
+            // 冻结经快照广播后远端为化身挂载冰封特效）
+            int playerState = (_player.BIsDead || _player.BIsGhost) ? 1
+                : _player.BIsFinished ? 2
+                : _player.BIsFrozen ? 3
+                : 0;
 
             net.Send(new SyncPlayerStateRequest
             {

@@ -68,7 +68,7 @@ message TransformState {
   uint64 state_seq = 4;
   int64 client_time_ms = 5;
   int64 server_time_ms = 6;
-  // 玩家状态：0=存活 1=幽灵（死亡） 2=已通关。远端用于同步透明度等表现。
+  // 玩家状态：0=存活 1=幽灵（死亡） 2=已通关 3=冻结（液氮事件，远端挂载冰封视觉）。远端用于同步透明度等表现。
   int32 player_state = 7;
   // 朝向：true=面向左。静止时 direction 为 0 无法表达朝向，故单独上报。
   bool facing_left = 8;
@@ -605,5 +605,5 @@ message RandomEventParams {
 
 // 随机事件2参数（event_params2）：冰冻。
 message RandomEventParams2 {
-  int64 duration_ms = 1;                  // 冰冻持续时间（毫秒，8~20 秒随机）
+  bool unfreeze = 1;                      // 最晚解冻时间已到（触发后 10 秒置 true，随快照动态计算）
 }

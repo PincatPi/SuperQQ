@@ -258,8 +258,8 @@ namespace Minigame.Room.V1 {
             "bS52MS5WZWN0b3IyUhBpbml0aWFsUG9zaXRpb25zEkYKEWN1cnJlbnRfcG9z",
             "aXRpb25zGAMgAygLMhkubWluaWdhbWUucm9vbS52MS5WZWN0b3IyUhBjdXJy",
             "ZW50UG9zaXRpb25zEhYKBmFuZ2xlcxgEIAMoAlIGYW5nbGVzEhQKBXNwZWVk",
-            "GAUgASgCUgVzcGVlZCI1ChJSYW5kb21FdmVudFBhcmFtczISHwoLZHVyYXRp",
-            "b25fbXMYASABKANSCmR1cmF0aW9uTXM="));;;;;
+            "GAUgASgCUgVzcGVlZCIwChJSYW5kb21FdmVudFBhcmFtczISGgoIdW5mcmVl",
+            "emUYASABKAhSCHVuZnJlZXpl"));;;;;;
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Minigame.Common.V1.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Minigame.Room.V1.GamePhaseKind), typeof(global::Minigame.Room.V1.PlayerOutType), typeof(global::Minigame.Room.V1.PlayerEventType), typeof(global::Minigame.Room.V1.ItemStateType), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -322,7 +322,7 @@ namespace Minigame.Room.V1 {
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.GmCommandResponse), global::Minigame.Room.V1.GmCommandResponse.Parser, new[]{ "Status", "Message" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.GmCommandPush), global::Minigame.Room.V1.GmCommandPush.Parser, new[]{ "RoomId", "Command", "Args", "TargetPlayerId", "ServerTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.RandomEventParams), global::Minigame.Room.V1.RandomEventParams.Parser, new[]{ "Count", "InitialPositions", "CurrentPositions", "Angles", "Speed" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.RandomEventParams2), global::Minigame.Room.V1.RandomEventParams2.Parser, new[]{ "DurationMs" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.RandomEventParams2), global::Minigame.Room.V1.RandomEventParams2.Parser, new[]{ "Unfreeze" }, null, null, null, null)
           }));
     }
     #endregion
@@ -20766,7 +20766,7 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public RandomEventParams2(RandomEventParams2 other) : this() {
-      durationMs_ = other.durationMs_;
+      unfreeze_ = other.unfreeze_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -20776,18 +20776,18 @@ namespace Minigame.Room.V1 {
       return new RandomEventParams2(this);
     }
 
-    /// <summary>Field number for the "duration_ms" field.</summary>
-    public const int DurationMsFieldNumber = 1;
-    private long durationMs_;
+    /// <summary>Field number for the "unfreeze" field.</summary>
+    public const int UnfreezeFieldNumber = 1;
+    private bool unfreeze_;
     /// <summary>
-    /// 冰冻持续时间（毫秒，8~20 秒随机）
+    /// 最晚解冻时间已到（触发后 10 秒置 true，随快照动态计算）
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public long DurationMs {
-      get { return durationMs_; }
+    public bool Unfreeze {
+      get { return unfreeze_; }
       set {
-        durationMs_ = value;
+        unfreeze_ = value;
       }
     }
 
@@ -20806,7 +20806,7 @@ namespace Minigame.Room.V1 {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (DurationMs != other.DurationMs) return false;
+      if (Unfreeze != other.Unfreeze) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -20814,7 +20814,7 @@ namespace Minigame.Room.V1 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
-      if (DurationMs != 0L) hash ^= DurationMs.GetHashCode();
+      if (Unfreeze != false) hash ^= Unfreeze.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -20833,9 +20833,9 @@ namespace Minigame.Room.V1 {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
     #else
-      if (DurationMs != 0L) {
+      if (Unfreeze != false) {
         output.WriteRawTag(8);
-        output.WriteInt64(DurationMs);
+        output.WriteBool(Unfreeze);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -20847,9 +20847,9 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
-      if (DurationMs != 0L) {
+      if (Unfreeze != false) {
         output.WriteRawTag(8);
-        output.WriteInt64(DurationMs);
+        output.WriteBool(Unfreeze);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -20861,8 +20861,8 @@ namespace Minigame.Room.V1 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
-      if (DurationMs != 0L) {
-        size += 1 + pb::CodedOutputStream.ComputeInt64Size(DurationMs);
+      if (Unfreeze != false) {
+        size += 1 + 1;
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -20876,8 +20876,8 @@ namespace Minigame.Room.V1 {
       if (other == null) {
         return;
       }
-      if (other.DurationMs != 0L) {
-        DurationMs = other.DurationMs;
+      if (other.Unfreeze != false) {
+        Unfreeze = other.Unfreeze;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -20899,7 +20899,7 @@ namespace Minigame.Room.V1 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            DurationMs = input.ReadInt64();
+            Unfreeze = input.ReadBool();
             break;
           }
         }
@@ -20922,7 +20922,7 @@ namespace Minigame.Room.V1 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
-            DurationMs = input.ReadInt64();
+            Unfreeze = input.ReadBool();
             break;
           }
         }

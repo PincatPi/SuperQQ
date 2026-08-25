@@ -14,9 +14,9 @@ namespace SuperQQ.Event
     /// → 冻结所有存活玩家（刚体全约束，冰块视觉挂为玩家子节点）
     /// → 玩家摇晃手机累积解冻进度（摇晃强度越大进度涨得越快，配进度条 UI）
     /// → 进度满（或超时兜底）后全员解冻，伴随冰块碎裂音效
-    /// 联机模式（服务端驱动）：冰冻持续时间由服务端 RoomSnapshot.event_params2 下发，
-    /// 作为自动解冻兜底时间（本地资产的 _autoThawTimeout 仅作服务端参数未到达时的回退值），
-    /// 两端解冻时刻对齐，摇晃进度等手感仍保持本地
+    /// 联机模式（服务端驱动）：触发时刻由服务端 event_triggered_at_ms 锚定（两端对齐），
+    /// 最晚解冻由服务端 event_params2.unfreeze 信号驱动（触发后 10 秒置 true，收到即解冻），
+    /// 本地资产的 _autoThawTimeout 仅作信号未到达时的兜底，摇晃进度等手感保持本地
     /// 摇晃检测由独立的 ShakeDetector 模块提供，本事件只轮询其强度输出
     /// 所有策划参数均在本资产上配置；运行时状态（随机源、协程、冻结记录、UI）不序列化
     /// </summary>
@@ -63,7 +63,7 @@ namespace SuperQQ.Event
         [Min(0f)]
         [SerializeField] private float _progressDecayPerSecond = 0.1f;
 
-        [Tooltip("自动解冻兜底时间（秒）：从冻结开始计时，超时强制解冻，防止传感器不可用时玩家被永久冻结；联机模式下以服务端 event_params2.duration_ms 为准（未到达时回退本值）")]
+        [Tooltip("自动解冻兜底时间（秒）：从冻结开始计时，超时强制解冻，防止传感器不可用时玩家被永久冻结；联机模式下以服务端 unfreeze 信号为准，信号未到达时按本值兜底")]
         [Min(1f)]
         [SerializeField] private float _autoThawTimeout = 15f;
 
@@ -127,14 +127,28 @@ namespace SuperQQ.Event
         // 上次震动反馈时刻（Time.time，用于最小间隔节流）
         private float _lastVibrateTime = float.NegativeInfinity;
 
-        // 联机服务端驱动：服务端下发的冰冻持续秒数（event_params2），>0 时代替本地兜底时长
-        private float _serverFreezeSeconds;
+        // 联机服务端驱动：服务端最晚解冻信号（event_params2.unfreeze=true）已到达
+        private bool _bServerUnfreeze;
 
         // ==================== LevelEventModifier 实现 ====================
 
         /// <summary>
         /// 激活事件：创建随机源，启动事件流程协程（随机延迟 → 预警 → 冻结 → 摇晃解冻）
         /// </summary>
+        // ==================== 联机远端冻结视觉支持 ====================
+
+        /// <summary>
+        /// 当前激活的事件实例（联机远端玩家的冰封视觉经快照 player_state=冻结 驱动，
+        /// RemotePlayerSync 复用本资产配置的特效 prefab）。Activate 时登记、Deactivate 时注销。
+        /// </summary>
+        public static LiquidNitrogenLeakModifier ActiveInstance { get; private set; }
+
+        /// <summary>冰封特效 Prefab（联机远端玩家冻结视觉复用本资产配置）</summary>
+        public FrozenIceEffect IceBlockPrefab => _iceBlockPrefab;
+
+        /// <summary>冰封特效 Dissipate 后到销毁的等待时长（秒）</summary>
+        public float IceEffectDestroyDelay => _iceEffectDestroyDelay;
+
         public override void Activate(LevelEventContext context)
         {
             if (context == null || context.CoroutineRunner == null)
@@ -144,7 +158,13 @@ namespace SuperQQ.Event
             }
 
             _random = _fixedSeed != 0 ? new System.Random(_fixedSeed) : new System.Random();
-            _eventCoroutine = context.CoroutineRunner.StartCoroutine(EventRoutine(context));
+            ActiveInstance = this;
+
+            // 联机模式（WaitForTrigger）：只做准备，等服务器触发信号（OnServerTrigger）再开始冻结流程
+            if (!context.WaitForTrigger)
+            {
+                _eventCoroutine = context.CoroutineRunner.StartCoroutine(EventRoutine(context));
+            }
         }
 
         /// <summary>
@@ -163,31 +183,56 @@ namespace SuperQQ.Event
             // 避免场景关闭阶段经 OnDestroy 链路调用 AudioManager 重建已销毁的单例
             EndThaw(playCrackSfx: false);
             _random = null;
-            _serverFreezeSeconds = 0f;
+            _bServerUnfreeze = false;
+            if (ActiveInstance == this)
+            {
+                ActiveInstance = null;
+            }
         }
 
         // ==================== IServerDrivenRandomEvent2 实现（联机服务端驱动） ====================
 
         /// <summary>
-        /// 应用服务端下发的冰冻持续时间（RoomSnapshot.event_params2，快照全量重发）。
-        /// 服务端掷签的冰冻时长作为自动解冻兜底时间，两端解冻时刻对齐；
-        /// 摇晃进度等手感仍保持本地。时长为正数才生效（0 = 未下发，回退本地资产值）。
+        /// 应用服务端下发的解冻信号（RoomSnapshot.event_params2.unfreeze，快照全量重发）。
+        /// 服务端在触发后最晚解冻时间（10 秒）到达时置 true：解冻循环在跑的由循环条件检测
+        /// _bServerUnfreeze 后退出、走 EndThaw 统一收尾（碎裂音效/UI 清理与正常路径一致）；
+        /// 流程未在跑但本地玩家仍处于冻结状态的，兜底直接解冻本地玩家（状态改为非冻结，
+        /// 随后经快照 player_state=0 同步给远端）。
         /// </summary>
         public void ApplyServerEventParams(Minigame.Room.V1.RandomEventParams2 eventParams)
         {
-            if (eventParams == null || eventParams.DurationMs <= 0)
+            if (eventParams == null || !eventParams.Unfreeze || _bServerUnfreeze)
             {
                 return;
             }
 
-            float seconds = eventParams.DurationMs / 1000f;
-            if (Mathf.Approximately(_serverFreezeSeconds, seconds))
+            _bServerUnfreeze = true;
+            Debug.Log("[LiquidNitrogenLeakModifier] 服务端最晚解冻信号到达（unfreeze=true），执行解冻。");
+
+            if (_eventCoroutine == null)
+            {
+                UnfreezeLocalPlayerIfFrozen();
+            }
+        }
+
+        /// <summary>兜底路径：解冻流程协程未在跑时，直接解冻处于冻结状态的本地玩家</summary>
+        private void UnfreezeLocalPlayerIfFrozen()
+        {
+            SuperQQ.Player.LevelPlayerRegistry registry = SuperQQ.Player.LevelPlayerRegistry.Instance;
+            if (registry == null)
             {
                 return;
             }
 
-            _serverFreezeSeconds = seconds;
-            Debug.Log($"[LiquidNitrogenLeakModifier] 服务端冰冻时长已应用: {seconds:F1}s（本地回退值 {_autoThawTimeout:F1}s）");
+            System.Collections.Generic.IReadOnlyList<SuperQQ.Player.PlayerController> players = registry.Players;
+            for (int i = 0; i < players.Count; i++)
+            {
+                SuperQQ.Player.PlayerController player = players[i];
+                if (player != null && player.BIsLocal && player.BIsFrozen)
+                {
+                    player.Unfreeze();
+                }
+            }
         }
 
         // ==================== 事件流程协程 ====================
@@ -196,11 +241,36 @@ namespace SuperQQ.Event
         /// 事件主流程：随机延迟一次 → Tips 文字预警 → 冻结全员 → 摇晃解冻循环 → 解冻收尾
         /// 整局只触发一次，流程结束后协程自然退出
         /// </summary>
+        /// <summary>
+        /// 服务器触发回调：联机模式下服务器掷签的事件触发时刻到达后由 LevelEventAnnouncer 调用。
+        /// 触发信号即"事件开始"（两端以服务器时钟锚点对齐），跳过本地随机延迟直接进入
+        /// 预警→冻结→解冻流程；最晚解冻以服务端 event_params2.unfreeze 信号为准（未下发回退资产超时值）。
+        /// </summary>
+        public override void OnServerTrigger(LevelEventContext context)
+        {
+            if (context == null || context.CoroutineRunner == null || _eventCoroutine != null)
+            {
+                return;
+            }
+
+            Debug.Log("[LiquidNitrogenLeakModifier] 服务器触发时刻到达，开始冻结流程。");
+            _eventCoroutine = context.CoroutineRunner.StartCoroutine(FreezeAndThawRoutine());
+        }
+
         private IEnumerator EventRoutine(LevelEventContext context)
         {
             float triggerDelay = Mathf.Lerp(_minTriggerDelay, _maxTriggerDelay, (float)_random.NextDouble());
             yield return new WaitForSeconds(triggerDelay);
+            yield return FreezeAndThawRoutine();
+        }
 
+        /// <summary>
+        /// 冻结→解冻主流程：预警 → 冻结存活玩家 → 摇晃解冻循环 → 解冻收尾。
+        /// 单机在随机延迟后进入、联机在服务器触发时刻进入，两端流程一致；
+        /// 自动解冻时长逐帧求值（服务端 event_params2 可能晚于冻结开始到达，到达即生效）。
+        /// </summary>
+        private IEnumerator FreezeAndThawRoutine()
+        {
             ShowWarning();
             yield return new WaitForSeconds(_warningDuration);
 
@@ -218,14 +288,13 @@ namespace SuperQQ.Event
             _shakeDetector = ShakeDetector.GetOrCreate();
             _shakeDetector.enabled = true;
 
-            // 解冻循环：进度按摇晃强度累积、无摇晃时缓慢衰减；满进度或超时兜底退出。
-            // 自动解冻时长优先取服务端下发的冰冻时长（两端对齐），未下发回退本地资产值
+            // 解冻循环：进度按摇晃强度累积、无摇晃时缓慢衰减；满进度、本地超时兜底
+            // 或服务端最晚解冻信号（unfreeze=true）到达时退出
             float progress = 0f;
             float elapsed = 0f;
-            float autoThawSeconds = _serverFreezeSeconds > 0f ? _serverFreezeSeconds : _autoThawTimeout;
             _lastVibrateTime = float.NegativeInfinity;
 
-            while (progress < 1f && elapsed < autoThawSeconds)
+            while (progress < 1f && elapsed < _autoThawTimeout && !_bServerUnfreeze)
             {
                 float deltaTime = Time.deltaTime;
                 elapsed += deltaTime;
@@ -297,10 +366,18 @@ namespace SuperQQ.Event
             }
 
             List<PlayerController> targets = registry.GetPlayersByState(PlayerStateType.Alive);
+            bool bNetMode = IsNetMode();
             for (int i = 0; i < targets.Count; i++)
             {
                 PlayerController player = targets[i];
                 if (player == null)
+                {
+                    continue;
+                }
+
+                // 联机模式：远端玩家由各自客户端在同一服务器触发时刻冻结，
+                // 状态经快照（player_state=冻结）回传并驱动本端冰封视觉，本端只冻结本地玩家
+                if (bNetMode && !player.BIsLocal)
                 {
                     continue;
                 }
@@ -419,6 +496,13 @@ namespace SuperQQ.Event
                     _frozenEntries.RemoveAt(i);
                 }
             }
+        }
+
+        /// <summary>联机模式判定：已连接且在房间内（远端玩家冻结状态经快照同步，本地只冻结自己）</summary>
+        private static bool IsNetMode()
+        {
+            SuperQQ.Network.NetworkManager net = SuperQQ.Network.NetworkManager.Instance;
+            return net != null && net.IsConnected && !string.IsNullOrEmpty(net.RoomId);
         }
 
         /// <summary>

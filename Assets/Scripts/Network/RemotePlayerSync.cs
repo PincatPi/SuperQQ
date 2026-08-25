@@ -45,6 +45,9 @@ namespace SuperQQ.Network
         private float _ghostEnterTime = -1f;
         private bool _wasGhost;
 
+        // 远端冻结视觉（快照 player_state=3 时挂载冰封特效，解除后消散销毁）
+        private FrozenIceEffect _frozenVisual;
+
         // 快照缓冲：按接收时间升序
         private struct SnapshotPoint
         {
@@ -231,6 +234,42 @@ namespace SuperQQ.Network
                 _animator.SetFloat(VelocityYHash, point.Vel.y);
                 _animator.SetBool(IsDeadHash, playingDeath);
                 _animator.SetBool(IsJumpingHash, point.IsJumping);
+            }
+
+            // 冻结状态视觉（液氮事件）：快照 player_state=3 时挂载冰封特效，解除后消散。
+            // 冻结玩家的移动停止由拥有者本端上报的静止位置自然体现，此处只管视觉
+            UpdateFrozenVisual(point.PlayerState == 3);
+        }
+
+        /// <summary>
+        /// 远端玩家冻结视觉：快照上报冻结状态时挂载冰封特效（复用液氮事件资产配置的 prefab），
+        /// 状态解除后调用 Dissipate 自然消散并延迟销毁。特效挂为化身子节点随其移动。
+        /// </summary>
+        private void UpdateFrozenVisual(bool bFrozen)
+        {
+            if (bFrozen && _frozenVisual == null)
+            {
+                SuperQQ.Event.LiquidNitrogenLeakModifier modifier = SuperQQ.Event.LiquidNitrogenLeakModifier.ActiveInstance;
+                if (modifier != null && modifier.IceBlockPrefab != null)
+                {
+                    _frozenVisual = Instantiate(modifier.IceBlockPrefab, transform);
+                }
+            }
+            else if (!bFrozen && _frozenVisual != null)
+            {
+                _frozenVisual.Dissipate();
+                SuperQQ.Event.LiquidNitrogenLeakModifier modifier = SuperQQ.Event.LiquidNitrogenLeakModifier.ActiveInstance;
+                Destroy(_frozenVisual.gameObject, modifier != null ? modifier.IceEffectDestroyDelay : 0.6f);
+                _frozenVisual = null;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (_frozenVisual != null)
+            {
+                Destroy(_frozenVisual.gameObject);
+                _frozenVisual = null;
             }
         }
     }
