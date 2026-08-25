@@ -137,12 +137,34 @@ namespace SuperQQ.Network
                 }
                 SuperQQ.Event.LevelEventAnnouncer.Instance?.OnServerEventParams2(snapshot.EventParams2);
             }
+
+            // 随机事件3玩家状态（言出法随：子类型/检测声音/劈/音量超标玩家列表）：
+            // 事件期间随快照全量重复下发，Announcer 路由给事件3 Modifier（内部边沿触发去重）；
+            // map 由多变空时补发一次空 map，供 Modifier 清理服务端驱动的表现
+            if (snapshot.Event3States.Count > 0 || _bHadEvent3States)
+            {
+                if (!_bLoggedEvent3StatesReceived && snapshot.Event3States.Count > 0)
+                {
+                    _bLoggedEvent3StatesReceived = true;
+                    Debug.Log($"[RoomSnapshotReceiver] 收到事件3状态包: players={snapshot.Event3States.Count}");
+                }
+                _bHadEvent3States = snapshot.Event3States.Count > 0;
+                if (!_bHadEvent3States)
+                {
+                    _bLoggedEvent3StatesReceived = false;
+                }
+                SuperQQ.Event.LevelEventAnnouncer.Instance?.OnServerEvent3States(snapshot.Event3States);
+            }
         }
 
         // 联调诊断用日志去重标志（随事件触发状态复位）
         private bool _bLoggedMissingEventParams;
         private bool _bLoggedEventParamsReceived;
         private bool _bLoggedEventParams2Received;
+        private bool _bLoggedEvent3StatesReceived;
+
+        // 上一帧快照是否携带过事件3状态（由多变空时补发一次空 map 用）
+        private bool _bHadEvent3States;
 
         // 已恢复的远端道具：anchorCell key -> 实例，避免每次快照重复生成
         private readonly HashSet<string> _restoredItems = new();

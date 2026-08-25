@@ -194,6 +194,8 @@ message RoomSnapshot {
   RandomEventParams event_params1 = 10;
   // 随机事件2参数（冰冻，事件触发后随快照下发；未触发为 nil）。
   RandomEventParams2 event_params2 = 11;
+  // 随机事件3（言出法随）各玩家状态：player_id -> 状态，事件期间随快照全量重复下发。
+  map<string, Event3PlayerState> event3_states = 12;
 }
 
 message SettlementPlayerResult {
@@ -614,4 +616,30 @@ message RandomEventParams {
 // 随机事件2参数（event_params2）：冰冻。
 message RandomEventParams2 {
   bool unfreeze = 1;                      // 最晚解冻时间已到（触发后 10 秒置 true，随快照动态计算）
+}
+
+// ==================== 随机事件3（言出法随）同步 ====================
+
+// 客户端 → 服务器：上报本地玩家选择的咒语子类型（无同步应答，状态通过快照下发）。
+message ReportEvent3Subtype {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;   // 网关自动补，可不传
+  int32 subtype = 4;      // 子类型：1 / 2 / 3
+}
+
+// 客户端 → 服务器：上报音量超标玩家（无同步应答，状态通过快照下发）。
+message ReportEvent3LoudPlayer {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;   // 网关自动补（= 音量超标的玩家）
+}
+
+// 事件3 单个玩家状态（随快照下发，客户端只读做表现，不需要自己算时间）。
+message Event3PlayerState {
+  int32 subtype = 1;              // 0=未上报 / 1 / 2 / 3
+  int64 remaining_ms = 2;         // 剩余时间（子类型1/2用，归0恒0）
+  bool detect_voice = 3;          // 开始检测声音（子类型3）
+  bool strike = 4;                // 劈（子类型3）
+  repeated string loud_players = 5; // 音量超标玩家列表（子类型3）
 }

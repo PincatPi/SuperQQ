@@ -1,9 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using Minigame.Room.V1;
 using SuperQQ.Microphone;
+using SuperQQ.Network;
 using SuperQQ.Player;
 using SuperQQ.UI;
 using UnityEngine;
+using Vector2 = UnityEngine.Vector2;
 
 namespace SuperQQ.Event
 {
@@ -16,6 +19,12 @@ namespace SuperQQ.Event
     ///   之后每隔配置间隔重复一轮，直至持续时间结束
     /// 施法者本人大声说话同样会被记录位置，走进自己招来的雷击范围也会受伤
     /// 效果期间玩家死亡/通关/化身销毁时提前结束（冻结不移除）；退场时已发出的预警与雷电照常收尾
+    ///
+    /// 联机（服务端驱动）模式：吟唱命中后由 MagicCircleModifier 上报子类型（report_event3_subtype），
+    /// 之后本地不跑攻击循环，全部由服务端快照 RoomSnapshot.event3_states 驱动——
+    ///   subtype==3 的玩家各端挂载施法者雷光；detect_voice=true 时本机检测音量并上报超标
+    ///   （report_event3_loud_player）；strike 边沿按 loud_players 列表执行 预警→落雷→伤害。
+    ///   时间线（检测/劈/轮次）由服务端算好随快照下发，客户端只读值做表现
     /// </summary>
     [CreateAssetMenu(fileName = "ThunderSpellEffect", menuName = "SuperQQ/Event/Spells/Thunder Spell Effect")]
     public class ThunderSpellEffect : SpellEffect
@@ -68,6 +77,13 @@ namespace SuperQQ.Event
         [Tooltip("效果生效时播放的 Tips 文本内容（经 PopupManager 播放，留空则不播放）")]
         [SerializeField] private string _activateTipText = "雷公助我！";
 
+        [Tooltip("服务端驱动模式：检测声音窗口开启时播放的 Tips 文本（提示玩家发声会引来落雷，留空则不播放）")]
+        [SerializeField] private string _detectVoiceTipText = "雷电正在聆听——大声说话会引来落雷！";
+
+        [Header("临时测试（服务端联调完成后删除）")]
+        [Tooltip("【临时测试】勾选后走纯客户端本地测试：每轮检测不判断分贝，直接以本地玩家在检测时刻所在位置为落点执行 预警→雷击；联机下也不会走服务端驱动逻辑")]
+        [SerializeField] private bool _bTestStrikeLocalPlayer = false;
+
         /// <summary>
         /// 激活雷电效果：在目标玩家身上挂载特效并启动攻击循环
         /// </summary>
@@ -85,7 +101,37 @@ namespace SuperQQ.Event
             }
 
             ShowActivateTip();
+
+            // 联机（服务端正式流程）：子类型已由 MagicCircleModifier 上报，
+            // 施法者雷光/声音检测/预警/落雷全部由服务端快照 event3_states 驱动（ApplyServerEvent3States），
+            // 本地不创建攻击循环实例，各端读值做表现即可
+            // 【临时测试】勾选测试开关时跳过服务端驱动，强制走本地攻击循环
+            if (BServerDriven && !_bTestStrikeLocalPlayer)
+            {
+                PlayCastSfx(context.Target.transform.position);
+                return null;
+            }
+
             return new ThunderInstance(context, this);
+        }
+
+        /// <summary>
+        /// 服务端驱动模式判定：已连接且在房间内，且未开启"客户端本地触发"临时测试开关
+        /// （测试开关开启时事件由客户端本地掷签触发，咒语走纯本地逻辑）
+        /// </summary>
+        private static bool BServerDriven
+        {
+            get
+            {
+                LevelEventAnnouncer announcer = LevelEventAnnouncer.Instance;
+                if (announcer != null && announcer.BTempClientLocalTrigger)
+                {
+                    return false;
+                }
+
+                NetworkManager net = NetworkManager.Instance;
+                return net != null && net.IsConnected && !string.IsNullOrEmpty(net.RoomId);
+            }
         }
 
         /// <summary>
@@ -106,6 +152,393 @@ namespace SuperQQ.Event
             }
 
             PopupManager.Instance.ShowTips(TipsType.Common, _activateTipText);
+        }
+
+        /// <summary>
+        /// 播放"检测声音"提示 Tips（服务端驱动模式：detect_voice 窗口开启时提示玩家发声会引来落雷）
+        /// </summary>
+        private void ShowDetectVoiceTip()
+        {
+            if (string.IsNullOrEmpty(_detectVoiceTipText) || PopupManager.Instance == null)
+            {
+                return;
+            }
+
+            PopupManager.Instance.ShowTips(TipsType.Common, _detectVoiceTipText);
+        }
+
+        // ==================== 单机/联机共用的落雷流程 ====================
+
+        /// <summary>
+        /// 单个落点的预警→雷击流程：生成预警，等待预警时长，销毁预警并落雷+范围伤害
+        /// </summary>
+        /// <param name="position">落点（世界坐标）</param>
+        /// <param name="sceneRoot">预警/雷电视觉的父节点（可为 null）</param>
+        /// <param name="bLocalOnly">true（联机服务端驱动）时只杀伤本机玩家：各端本地权威自己的生死</param>
+        private IEnumerator StrikeRoutine(Vector2 position, Transform sceneRoot, bool bLocalOnly)
+        {
+            GameObject warning = null;
+            if (_warningPrefab != null)
+            {
+                warning = Instantiate(_warningPrefab, position, Quaternion.identity, sceneRoot);
+            }
+
+            yield return new WaitForSeconds(_warningDuration);
+
+            if (warning != null)
+            {
+                Destroy(warning);
+            }
+
+            if (_lightningPrefab != null)
+            {
+                GameObject lightning = Instantiate(_lightningPrefab, position, Quaternion.identity, sceneRoot);
+                Destroy(lightning, _lightningLifetime);
+            }
+
+            DamagePlayersInRange(position, bLocalOnly);
+        }
+
+        /// <summary>
+        /// 雷击伤害：以落点为中心做范围判定，命中仍在场（存活/冻结）的玩家即死
+        /// 走 PlayerDie——无敌金身可免疫，掉落出界等强制死亡不受影响
+        /// bLocalOnly=true（联机服务端驱动）时跳过远端化身：远端玩家的生死由其所属端本地判定，
+        /// 各端跑同一套服务端时间线，落点一致，各自结算自己的本地玩家即可
+        /// </summary>
+        private void DamagePlayersInRange(Vector2 position, bool bLocalOnly)
+        {
+            LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
+            if (registry == null)
+            {
+                return;
+            }
+
+            float sqrRadius = _strikeRadius * _strikeRadius;
+            IReadOnlyList<PlayerController> players = registry.Players;
+            for (int i = 0; i < players.Count; i++)
+            {
+                PlayerController player = players[i];
+                if (player == null)
+                {
+                    continue;
+                }
+
+                if (bLocalOnly && !player.BIsLocal)
+                {
+                    continue;
+                }
+
+                PlayerStateType state = registry.GetPlayerState(player);
+                if (state != PlayerStateType.Alive && state != PlayerStateType.Frozen)
+                {
+                    continue;
+                }
+
+                if (((Vector2)player.transform.position - position).sqrMagnitude <= sqrRadius)
+                {
+                    player.PlayerDie();
+                }
+            }
+        }
+
+        /// <summary>按网络 playerId 在场景中查找玩家化身（本地/远端均可）</summary>
+        private static PlayerController FindPlayerById(string playerId)
+        {
+            LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
+            if (registry == null || string.IsNullOrEmpty(playerId))
+            {
+                return null;
+            }
+
+            IReadOnlyList<PlayerController> players = registry.Players;
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i] != null && players[i].PlayerId == playerId)
+                {
+                    return players[i];
+                }
+            }
+            return null;
+        }
+
+        /// <summary>是否存在仍在场（存活/冻结）的本机玩家</summary>
+        private static bool HasAliveLocalPlayer()
+        {
+            LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
+            if (registry == null)
+            {
+                return false;
+            }
+
+            IReadOnlyList<PlayerController> players = registry.Players;
+            for (int i = 0; i < players.Count; i++)
+            {
+                PlayerController player = players[i];
+                if (player != null && player.BIsLocal)
+                {
+                    PlayerStateType state = registry.GetPlayerState(player);
+                    if (state == PlayerStateType.Alive || state == PlayerStateType.Frozen)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // ==================== 服务端驱动模式（联机） ====================
+
+        // 与服务端 Event3 子类型约定：雷公助我 = 3（SpellDefinition_Thunder 资产同步配置 _subtype=3）
+        private const int THUNDER_SUBTYPE = 3;
+
+        // 服务端驱动运行时（非序列化）：事件期间由快照驱动，事件结束/状态清空时清理
+        private ServerDrivenRuntime _serverRuntime;
+
+        /// <summary>
+        /// 联机：应用服务端下发的事件3玩家状态（每次快照到达都可能调用，全量重复下发，内部边沿触发幂等）。
+        /// 客户端只读值做表现，不算时间：
+        ///   subtype==3 的玩家：各端为其化身挂载施法者雷光，状态消失时移除；
+        ///   detect_voice=true：提示检测声音，本机音量超标时上报 report_event3_loud_player（每检测窗口至多一次）；
+        ///   strike 边沿（false→true）：按 loud_players 列表在对应玩家当前位置执行 预警→落雷→范围伤害
+        /// </summary>
+        public override void ApplyServerEvent3States(IDictionary<string, Event3PlayerState> states, LevelEventContext eventContext)
+        {
+            // 【临时测试】测试开关开启时忽略服务端状态下发（纯本地测试，联调完成后随开关一并删除）
+            if (states == null || _bTestStrikeLocalPlayer)
+            {
+                return;
+            }
+
+            _serverRuntime ??= new ServerDrivenRuntime(this);
+            _serverRuntime.Apply(states, eventContext);
+        }
+
+        /// <summary>
+        /// 联机：事件结束，清理服务端驱动表现（施法者雷光等）；已发出的预警/落雷协程照常收尾
+        /// </summary>
+        public override void EndServerDrivenEffects()
+        {
+            _serverRuntime?.Clear();
+            _serverRuntime = null;
+        }
+
+        /// <summary>
+        /// 服务端驱动运行时：按快照 event3_states 驱动施法者雷光挂载、声音检测上报与落雷表现。
+        /// 快照全量重复下发，所有触发均为边沿/去重语义，重复 Apply 幂等
+        /// </summary>
+        private sealed class ServerDrivenRuntime
+        {
+            private readonly ThunderSpellEffect _config;
+
+            // 施法者 playerId -> 已挂载的雷光特效
+            private readonly Dictionary<string, GameObject> _casterFx = new();
+
+            // 施法者 playerId -> 上一帧快照的 strike 值（边沿触发用）
+            private readonly Dictionary<string, bool> _prevStrike = new();
+
+            // 移除用的临时缓存（避免遍历时修改集合）
+            private readonly List<string> _removeCache = new();
+
+            // 本检测窗口是否已上报过音量超标（detect_voice 变 false 时复位）
+            private bool _bLoudReported;
+
+            // 本检测窗口是否已播放过提示 Tips（detect_voice 变 false 时复位）
+            private bool _bDetectTipShown;
+
+            public ServerDrivenRuntime(ThunderSpellEffect config)
+            {
+                _config = config;
+            }
+
+            public void Apply(IDictionary<string, Event3PlayerState> states, LevelEventContext eventContext)
+            {
+                // ① 施法者雷光：subtype==3 的玩家各端统一挂载，状态消失时移除
+                SyncCasterFx(states);
+
+                // ② 检测声音：任一施法者处于检测窗口时，本机检测音量并上报超标（服务端时间线统一驱动）
+                bool bDetectVoice = false;
+                foreach (KeyValuePair<string, Event3PlayerState> pair in states)
+                {
+                    Event3PlayerState state = pair.Value;
+                    if (state != null && state.Subtype == THUNDER_SUBTYPE && state.DetectVoice)
+                    {
+                        bDetectVoice = true;
+                        break;
+                    }
+                }
+
+                if (bDetectVoice)
+                {
+                    if (!_bDetectTipShown)
+                    {
+                        _bDetectTipShown = true;
+                        _config.ShowDetectVoiceTip();
+                    }
+                    TryReportLoud();
+                }
+                else
+                {
+                    _bDetectTipShown = false;
+                    _bLoudReported = false;
+                }
+
+                // ③ 劈：strike 边沿（false→true）按 loud_players 落雷
+                foreach (KeyValuePair<string, Event3PlayerState> pair in states)
+                {
+                    Event3PlayerState state = pair.Value;
+                    if (state == null || state.Subtype != THUNDER_SUBTYPE)
+                    {
+                        continue;
+                    }
+
+                    bool bPrev = _prevStrike.TryGetValue(pair.Key, out bool prev) && prev;
+                    if (state.Strike && !bPrev)
+                    {
+                        StrikeLoudPlayers(state.LoudPlayers, eventContext);
+                    }
+                    _prevStrike[pair.Key] = state.Strike;
+                }
+            }
+
+            /// <summary>清理服务端驱动表现：销毁全部施法者雷光并复位标记（已发出的预警/落雷协程照常收尾）</summary>
+            public void Clear()
+            {
+                foreach (KeyValuePair<string, GameObject> pair in _casterFx)
+                {
+                    if (pair.Value != null)
+                    {
+                        Object.Destroy(pair.Value);
+                    }
+                }
+                _casterFx.Clear();
+                _prevStrike.Clear();
+                _bLoudReported = false;
+                _bDetectTipShown = false;
+            }
+
+            /// <summary>
+            /// 同步施法者雷光：为 subtype==3 的玩家化身挂载雷光特效（化身尚未生成时下一帧快照重试）；
+            /// 子类型变更/状态清空/事件结束时移除残留雷光与边沿记录
+            /// </summary>
+            private void SyncCasterFx(IDictionary<string, Event3PlayerState> states)
+            {
+                if (_casterFx.Count > 0)
+                {
+                    _removeCache.Clear();
+                    foreach (KeyValuePair<string, GameObject> pair in _casterFx)
+                    {
+                        if (!states.TryGetValue(pair.Key, out Event3PlayerState state)
+                            || state == null || state.Subtype != THUNDER_SUBTYPE)
+                        {
+                            _removeCache.Add(pair.Key);
+                        }
+                    }
+                    for (int i = 0; i < _removeCache.Count; i++)
+                    {
+                        if (_casterFx[_removeCache[i]] != null)
+                        {
+                            Object.Destroy(_casterFx[_removeCache[i]]);
+                        }
+                        _casterFx.Remove(_removeCache[i]);
+                    }
+                }
+
+                if (_prevStrike.Count > 0)
+                {
+                    _removeCache.Clear();
+                    foreach (KeyValuePair<string, bool> pair in _prevStrike)
+                    {
+                        if (!states.TryGetValue(pair.Key, out Event3PlayerState state)
+                            || state == null || state.Subtype != THUNDER_SUBTYPE)
+                        {
+                            _removeCache.Add(pair.Key);
+                        }
+                    }
+                    for (int i = 0; i < _removeCache.Count; i++)
+                    {
+                        _prevStrike.Remove(_removeCache[i]);
+                    }
+                }
+
+                if (_config._thunderPrefab == null)
+                {
+                    return;
+                }
+
+                foreach (KeyValuePair<string, Event3PlayerState> pair in states)
+                {
+                    Event3PlayerState state = pair.Value;
+                    if (state == null || state.Subtype != THUNDER_SUBTYPE || _casterFx.ContainsKey(pair.Key))
+                    {
+                        continue;
+                    }
+
+                    PlayerController player = FindPlayerById(pair.Key);
+                    if (player == null)
+                    {
+                        continue;
+                    }
+
+                    GameObject fx = Object.Instantiate(_config._thunderPrefab, player.transform);
+                    fx.transform.localPosition = _config._thunderOffset;
+                    _casterFx.Add(pair.Key, fx);
+                }
+            }
+
+            /// <summary>检测窗口内本机音量超标则上报（每窗口至多一次；本机玩家不在场或麦克风未运行时跳过）</summary>
+            private void TryReportLoud()
+            {
+                if (_bLoudReported)
+                {
+                    return;
+                }
+
+                MicVolumeManager mic = MicVolumeManager.Instance;
+                if (mic == null || !mic.IsRunning || mic.Volume < _config._volumeThreshold)
+                {
+                    return;
+                }
+
+                if (!HasAliveLocalPlayer())
+                {
+                    return;
+                }
+
+                _bLoudReported = true;
+                NetEventSync.ReportEvent3LoudPlayer();
+            }
+
+            /// <summary>
+            /// strike 边沿：按音量超标玩家列表在其当前位置启动 预警→落雷→范围伤害（与单机版同一套流程与配置）。
+            /// 落点取边沿时刻的玩家位置，预警期间（与单机版同为 _warningDuration）玩家仍可躲避
+            /// </summary>
+            private void StrikeLoudPlayers(IList<string> loudPlayers, LevelEventContext eventContext)
+            {
+                if (loudPlayers == null || loudPlayers.Count == 0)
+                {
+                    return;
+                }
+
+                MonoBehaviour runner = eventContext != null ? eventContext.CoroutineRunner : null;
+                if (runner == null)
+                {
+                    Debug.LogWarning("[ThunderSpellEffect] 服务端驱动落雷失败：无协程宿主。");
+                    return;
+                }
+
+                for (int i = 0; i < loudPlayers.Count; i++)
+                {
+                    PlayerController player = FindPlayerById(loudPlayers[i]);
+                    if (player == null)
+                    {
+                        continue;
+                    }
+
+                    Vector2 position = player.transform.position;
+                    Transform sceneRoot = eventContext.SceneRoot;
+                    runner.StartCoroutine(_config.StrikeRoutine(position, sceneRoot, true));
+                }
+            }
         }
 
         /// <summary>
@@ -172,16 +605,61 @@ namespace SuperQQ.Event
 
             /// <summary>
             /// 执行一轮检测：找出分贝超阈值的玩家并记录其当前位置，逐位置启动预警→雷击流程
+            /// （落雷流程与联机服务端驱动模式共用配置层实现）
             /// </summary>
             private void RunDetectRound()
             {
+                // 【临时测试】测试开关开启时：不判断分贝，直接以本地玩家当前位置为落点
+                if (_config._bTestStrikeLocalPlayer)
+                {
+                    StrikeAtLocalPlayer();
+                    return;
+                }
+
                 List<PlayerController> loudPlayers = CollectLoudPlayers();
                 for (int i = 0; i < loudPlayers.Count; i++)
                 {
                     Vector2 position = loudPlayers[i].transform.position;
                     if (Runner != null)
                     {
-                        Runner.StartCoroutine(StrikeRoutine(position));
+                        Runner.StartCoroutine(_config.StrikeRoutine(position, Context.SceneRoot, false));
+                    }
+                }
+            }
+
+            /// <summary>
+            /// 【临时测试】以本地玩家在检测时刻的所在位置为落点执行 预警→雷击（不判断分贝）。
+            /// 落点在检测时刻即锁定，预警期间走开即可躲避，用于纯客户端本地测试雷公助我效果
+            /// </summary>
+            private void StrikeAtLocalPlayer()
+            {
+                if (Runner == null)
+                {
+                    return;
+                }
+
+                LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
+                if (registry == null)
+                {
+                    return;
+                }
+
+                IReadOnlyList<PlayerController> players = registry.Players;
+                for (int i = 0; i < players.Count; i++)
+                {
+                    PlayerController player = players[i];
+                    if (player != null && player.BIsLocal
+                        && registry.GetPlayerState(player) == PlayerStateType.Alive)
+                    {
+                        Vector2 position = player.transform.position;
+                        Runner.StartCoroutine(_config.StrikeRoutine(position, Context.SceneRoot, false));
+                        // 【临时测试】日志便于确认攻击循环在跑、落点在哪
+                        Debug.Log($"[ThunderSpellEffect] 测试落雷：落点=({position.x:F1},{position.y:F1})，预警 {_config._warningDuration:F1}s 后雷击（预警Prefab={(_config._warningPrefab != null ? "已配置" : "未配置")} 雷电Prefab={(_config._lightningPrefab != null ? "已配置" : "未配置")}）");
+                    }
+                    else if (player != null && player.BIsLocal)
+                    {
+                        // 【临时测试】本地玩家存在但状态非 Alive 时明确提示（如未进入游玩阶段/被冻结）
+                        Debug.LogWarning($"[ThunderSpellEffect] 测试落雷跳过：本地玩家状态为 {registry.GetPlayerState(player)}（需 Alive）");
                     }
                 }
             }
@@ -218,70 +696,6 @@ namespace SuperQQ.Event
                     }
                 }
                 return loudPlayers;
-            }
-
-            /// <summary>
-            /// 单个落点的预警→雷击流程：生成预警，等待预警时长，销毁预警并落雷+范围伤害
-            /// </summary>
-            private IEnumerator StrikeRoutine(Vector2 position)
-            {
-                GameObject warning = null;
-                if (_config._warningPrefab != null)
-                {
-                    Transform parent = Context.SceneRoot != null ? Context.SceneRoot : null;
-                    warning = Instantiate(_config._warningPrefab, position, Quaternion.identity, parent);
-                }
-
-                yield return new WaitForSeconds(_config._warningDuration);
-
-                if (warning != null)
-                {
-                    Object.Destroy(warning);
-                }
-
-                if (_config._lightningPrefab != null)
-                {
-                    Transform parent = Context.SceneRoot != null ? Context.SceneRoot : null;
-                    GameObject lightning = Instantiate(_config._lightningPrefab, position, Quaternion.identity, parent);
-                    Object.Destroy(lightning, _config._lightningLifetime);
-                }
-
-                DamagePlayersInRange(position);
-            }
-
-            /// <summary>
-            /// 雷击伤害：以落点为中心做范围判定，命中仍在场（存活/冻结）的玩家即死
-            /// 走 PlayerDie——无敌金身可免疫，掉落出界等强制死亡不受影响
-            /// </summary>
-            private void DamagePlayersInRange(Vector2 position)
-            {
-                LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
-                if (registry == null)
-                {
-                    return;
-                }
-
-                float sqrRadius = _config._strikeRadius * _config._strikeRadius;
-                IReadOnlyList<PlayerController> players = registry.Players;
-                for (int i = 0; i < players.Count; i++)
-                {
-                    PlayerController player = players[i];
-                    if (player == null)
-                    {
-                        continue;
-                    }
-
-                    PlayerStateType state = registry.GetPlayerState(player);
-                    if (state != PlayerStateType.Alive && state != PlayerStateType.Frozen)
-                    {
-                        continue;
-                    }
-
-                    if (((Vector2)player.transform.position - position).sqrMagnitude <= sqrRadius)
-                    {
-                        player.PlayerDie();
-                    }
-                }
             }
 
             // ==================== 提前结束 ====================

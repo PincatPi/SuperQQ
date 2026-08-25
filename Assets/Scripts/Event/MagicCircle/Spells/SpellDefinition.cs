@@ -19,6 +19,10 @@ namespace SuperQQ.Event
         [Tooltip("咒语效果：匹配命中后执行；留空则仅做匹配打印，无玩法效果")]
         [SerializeField] private SpellEffect _effect;
 
+        [Tooltip("联机子类型（与服务端 Event3 约定一致：0=不上报；1/2/3=对应咒语子类型，雷公助我=3）。吟唱命中后上报服务端，事件状态经 RoomSnapshot.event3_states 下发")]
+        [Range(0, 3)]
+        [SerializeField] private int _subtype = 0;
+
         /// <summary>咒语文本（匹配用）</summary>
         public string SpellText => _spellText;
 
@@ -27,5 +31,8 @@ namespace SuperQQ.Event
 
         /// <summary>咒语效果（可为 null，表示纯匹配咒语）</summary>
         public SpellEffect Effect => _effect;
+
+        /// <summary>联机子类型（0=不上报；1/2/3=对应服务端 Event3 子类型）</summary>
+        public int Subtype => _subtype;
     }
 }
