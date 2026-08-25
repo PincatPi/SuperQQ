@@ -1103,7 +1103,7 @@ MonoBehaviour:
   smallCellSprite: {fileID: 21300000, guid: 2ff7d4811a5aaa7448cc64db0f747f96, type: 3}
   bigCellSprite: {fileID: 21300000, guid: 1edc61f2fd557c84b9d09465df7b26e9, type: 3}
   gridSortingOrder: -1
-  zoneConfig: {fileID: 11400000, guid: b89bc82c620baeb4b9f336eed21049df, type: 2}
+  zoneConfig: {fileID: 11400000, guid: ec47312f737d38f4484466cc6efd1a63, type: 2}
 --- !u!4 &513723304
 Transform:
   m_ObjectHideFlags: 0

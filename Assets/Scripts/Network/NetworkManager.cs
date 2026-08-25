@@ -225,6 +225,8 @@ namespace SuperQQ.Network
 
             cts = new CancellationTokenSource();
             socket = new ClientWebSocket();
+            // ngrok 免费版对非浏览器请求返回告警页导致握手失败，移动端必现；带此头跳过
+            socket.Options.SetRequestHeader("ngrok-skip-browser-warning", "true");
 
             Debug.Log($"[NetWork] 正在连接服务器: {url}");
 
