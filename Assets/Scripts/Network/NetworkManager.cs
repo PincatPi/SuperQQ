@@ -185,6 +185,30 @@ namespace SuperQQ.Network
         [Header("心跳间隔（秒）")]
         [SerializeField] private float heartbeatInterval = 5f;
 
+        [Header("断线重连")]
+        [Tooltip("断线后自动重连的总时长上限（秒），与服务器房间保留期一致；仅对已登录玩家生效")]
+        [SerializeField] private float reconnectMaxDuration = 120f;
+        [Tooltip("重连尝试的最大间隔（秒），指数退避到此值封顶")]
+        [SerializeField] private float reconnectMaxInterval = 15f;
+
+        // ---- 断线重连状态 ----
+        private string _lastUrl;                       // 最近一次 Connect 的地址
+        private LoginRequest _lastLoginRequest;        // Send 拦截缓存的登录请求（重连后自动恢复会话）
+        private bool _bIntentionalDisconnect;          // 主动断开（Disconnect/退出）不触发重连
+        private bool _reconnecting;
+        private int _reconnectAttempt;
+        private float _nextReconnectAt;                // 下一次重连尝试的本地时刻
+        private float _reconnectDeadline;              // 重连总时长截止时刻
+        private float _reconnectStepDeadline;          // 等待登录/进房回包的超时时刻（0=未在等待）
+        private bool _bReconnectHandlersRegistered;    // 重连流程是否占用了登录/进房回包 handler
+
+        /// <summary>重连并恢复会话（重新登录+重新进房）成功时触发</summary>
+        public event Action OnReconnected;
+        /// <summary>重连彻底失败（超时/房间解散）时触发，参数为原因</summary>
+        public event Action<string> OnReconnectFailed;
+        /// <summary>是否处于断线重连流程中</summary>
+        public bool BIsReconnecting => _reconnecting;
+
         private ClientWebSocket socket;
         private CancellationTokenSource cts;
         private ulong sendSeq;
@@ -221,8 +245,10 @@ namespace SuperQQ.Network
         public void Connect(string url)
         {
             if (IsConnected) return;
-            Disconnect();
+            CloseSocket();
 
+            _lastUrl = url;
+            _bIntentionalDisconnect = false;
             cts = new CancellationTokenSource();
             socket = new ClientWebSocket();
             // ngrok 免费版对非浏览器请求返回告警页导致握手失败，移动端必现；带此头跳过
@@ -258,6 +284,12 @@ namespace SuperQQ.Network
                 return;
             }
 
+            // 缓存登录请求：断线重连后用它自动恢复会话（覆盖两种登录入口，业务层无需关心）
+            if (payload is LoginRequest loginReq)
+            {
+                _lastLoginRequest = loginReq.Clone();
+            }
+
             var envelope = new ClientEnvelope { Seq = ++sendSeq, Trace = BuildTrace() };
             setField(envelope, payload);
             sendQueue.Enqueue(envelope.ToByteArray());
@@ -274,8 +306,16 @@ namespace SuperQQ.Network
             }
         }
 
-        /// <summary>主动断开连接</summary>
+        /// <summary>主动断开连接（不触发自动重连）</summary>
         public void Disconnect()
+        {
+            _bIntentionalDisconnect = true;
+            StopReconnect();
+            CloseSocket();
+        }
+
+        /// <summary>关闭底层 socket（内部 teardown，不改动重连状态）</summary>
+        private void CloseSocket()
         {
             try { cts?.Cancel(); } catch { }
             try
@@ -300,8 +340,19 @@ namespace SuperQQ.Network
                 Debug.Log(connected
                     ? "[NetWork] 连接状态: 已连接"
                     : "[NetWork] 连接状态: 已断开/连接失败");
-                OnConnectionChanged?.Invoke(connected);
+                if (connected)
+                {
+                    OnConnectionChanged(true);
+                    HandleReconnectedSocket();
+                }
+                else
+                {
+                    OnConnectionChanged(false);
+                    HandleUnexpectedDisconnect();
+                }
             }
+
+            TickReconnect();
 
             while (recvQueue.TryDequeue(out var envelope))
             {
@@ -395,6 +446,170 @@ namespace SuperQQ.Network
 
                 try { recvQueue.Enqueue(ServerEnvelope.Parser.ParseFrom(frame)); }
                 catch (Exception e) { Debug.LogWarning($"[NetWork] 解析帧失败: {e.Message}"); }
+            }
+        }
+
+        // ==================== 断线重连 ====================
+
+        /// <summary>
+        /// 连接意外断开（含重连尝试失败）后的处理：仅对已登录玩家启动/延续自动重连。
+        /// 每次失败按指数退避安排下一次尝试（1s/2s/4s…封顶 reconnectMaxInterval），
+        /// 总时长超过 reconnectMaxDuration（与服务器房间保留期一致）则判失败。
+        /// </summary>
+        private void HandleUnexpectedDisconnect()
+        {
+            if (_bIntentionalDisconnect
+                || string.IsNullOrEmpty(LocalPlayerId)
+                || _lastLoginRequest == null
+                || string.IsNullOrEmpty(_lastUrl))
+            {
+                return;
+            }
+
+            if (!_reconnecting)
+            {
+                _reconnecting = true;
+                _reconnectAttempt = 0;
+                _reconnectDeadline = Time.realtimeSinceStartup + reconnectMaxDuration;
+                Debug.Log($"[NetWork] 检测到断线，开始自动重连（上限 {reconnectMaxDuration:F0}s）...");
+            }
+
+            float delay = Mathf.Min(Mathf.Pow(2f, _reconnectAttempt), reconnectMaxInterval);
+            _reconnectAttempt++;
+            _nextReconnectAt = Time.realtimeSinceStartup + delay;
+            _reconnectStepDeadline = 0f;
+            Debug.Log($"[NetWork] 第 {_reconnectAttempt} 次重连将在 {delay:F0}s 后发起");
+        }
+
+        /// <summary>重连状态机推进：到点发起 Connect；等待会话回包超时则断开重试</summary>
+        private void TickReconnect()
+        {
+            if (!_reconnecting)
+            {
+                return;
+            }
+
+            if (Time.realtimeSinceStartup > _reconnectDeadline)
+            {
+                FailReconnect("超过最大重连时长");
+                return;
+            }
+
+            // 已连上但在等登录/进房回包：超时则断开，由 false 事件安排下一次尝试
+            if (IsConnected)
+            {
+                if (_reconnectStepDeadline > 0f && Time.realtimeSinceStartup > _reconnectStepDeadline)
+                {
+                    Debug.LogWarning("[NetWork] 重连后恢复会话超时，断开重试");
+                    _reconnectStepDeadline = 0f;
+                    CloseSocket();
+                }
+                return;
+            }
+
+            if (Time.realtimeSinceStartup >= _nextReconnectAt)
+            {
+                _nextReconnectAt = float.MaxValue; // 防同帧/失败事件前重复触发
+                Debug.Log($"[NetWork] 发起第 {_reconnectAttempt} 次重连: {_lastUrl}");
+                Connect(_lastUrl);
+            }
+        }
+
+        /// <summary>重连中的 socket 握手成功：重新登录恢复会话；不在重连流程则什么都不做</summary>
+        private void HandleReconnectedSocket()
+        {
+            if (!_reconnecting)
+            {
+                return;
+            }
+
+            // 房间为空说明断线时不在对局中（如大厅）：socket 恢复即可，交给场景内控制器继续
+            if (string.IsNullOrEmpty(RoomId))
+            {
+                FinishReconnect();
+                return;
+            }
+
+            // 重新登录 → 重新进房。此流程只在房间/对局场景发生（Home 场景的
+            // LoginController 不存在于此），临时占用两个回包 handler 不会覆盖他人。
+            Register<LoginResponse>(HandleReconnectLogin);
+            Register<JoinRoomResponse>(HandleReconnectJoin);
+            _bReconnectHandlersRegistered = true;
+            _reconnectStepDeadline = Time.realtimeSinceStartup + 8f;
+            Debug.Log("[NetWork] 重连握手成功，正在恢复登录会话...");
+            Send(_lastLoginRequest);
+        }
+
+        private void HandleReconnectLogin(LoginResponse resp)
+        {
+            if (!_reconnecting)
+            {
+                return;
+            }
+            if (resp.Status == null || resp.Status.Code != ResultCode.Ok || resp.Player == null)
+            {
+                Debug.LogWarning($"[NetWork] 重连登录失败: {resp.Status?.Message}，断开重试");
+                CloseSocket(); // false 事件驱动下一次尝试
+                return;
+            }
+
+            Token = resp.Token;
+            LocalPlayerId = resp.Player.PlayerId;
+
+            _reconnectStepDeadline = Time.realtimeSinceStartup + 8f;
+            Debug.Log($"[NetWork] 重连登录成功，重新进房: room={RoomId}");
+            Send(new JoinRoomRequest
+            {
+                RoomId = RoomId,
+                PlayerId = LocalPlayerId,
+                GatewayId = GatewayId,
+                SessionId = SessionId
+            });
+        }
+
+        private void HandleReconnectJoin(JoinRoomResponse resp)
+        {
+            if (!_reconnecting)
+            {
+                return;
+            }
+            if (resp.Status == null || resp.Status.Code != ResultCode.Ok)
+            {
+                FailReconnect($"房间已不存在或无法加入（{resp.Status?.Message}）");
+                return;
+            }
+
+            JoinedRoom = resp.Room;
+            FinishReconnect();
+        }
+
+        private void FinishReconnect()
+        {
+            StopReconnect();
+            Debug.Log("[NetWork] 断线重连完成，会话已恢复（后续快照/阶段消息自动同步状态）");
+            OnReconnected?.Invoke();
+        }
+
+        private void FailReconnect(string reason)
+        {
+            StopReconnect();
+            Debug.LogWarning($"[NetWork] 断线重连失败: {reason}");
+            OnReconnectFailed?.Invoke(reason);
+        }
+
+        private void StopReconnect()
+        {
+            if (!_reconnecting)
+            {
+                return;
+            }
+            _reconnecting = false;
+            _reconnectStepDeadline = 0f;
+            if (_bReconnectHandlersRegistered)
+            {
+                _bReconnectHandlersRegistered = false;
+                Unregister<LoginResponse>();
+                Unregister<JoinRoomResponse>();
             }
         }
 
