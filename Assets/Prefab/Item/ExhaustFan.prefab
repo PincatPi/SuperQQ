@@ -175,6 +175,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   windForce: 20
+  windLoopSfx: 218
+  windSfxFadeOut: 0.5
 --- !u!1 &4612774861442418649
 GameObject:
   m_ObjectHideFlags: 0
@@ -276,7 +278,7 @@ MonoBehaviour:
   footprint: {x: 2, y: 2}
   autoInitOnStart: 0
   startRotated: 0
-  canRotate: 0
+  canRotate: 1
   pivotCell: {x: -1, y: -1}
   drawBoxInEditor: 1
   lineColor: {r: 1, g: 1, b: 1, a: 0.9}

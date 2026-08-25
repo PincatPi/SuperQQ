@@ -167,6 +167,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "\u80A5\u7682"
   icon: {fileID: 21300000, guid: 31c7404393a5a994fa5c533f274581ac, type: 3}
+  placeSfx: 202
 --- !u!114 &5704616245031174902
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182,7 +183,7 @@ MonoBehaviour:
   footprint: {x: 2, y: 1}
   autoInitOnStart: 0
   startRotated: 0
-  canRotate: 0
+  canRotate: 1
   pivotCell: {x: -1, y: -1}
   drawBoxInEditor: 1
   lineColor: {r: 1, g: 1, b: 1, a: 0.9}
@@ -255,7 +256,6 @@ MonoBehaviour:
   ghostAlpha: 0.5
   validColor: {r: 0.3, g: 1, b: 0.3, a: 0.9}
   invalidColor: {r: 1, g: 0.3, b: 0.3, a: 0.9}
-  rotatedAngle: 90
   debugHotkeys: 1
 --- !u!1 &9101383088234189525
 GameObject:
