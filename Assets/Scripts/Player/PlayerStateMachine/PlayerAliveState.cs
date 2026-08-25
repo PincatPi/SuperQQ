@@ -133,8 +133,15 @@ namespace SuperQQ.Player
                 return;
             }
 
-            Vector2Int cell = grid.WorldToCell(_ctx.Rb.position);
-            if ((grid.GetZonesAt(cell) & GridZoneType.Water) != 0)
+            // 玩家 1x2：取脚底格与头顶格，两格都被水淹没（完全没入）才判死。
+            // 半淹（脚踩水、头在水面上）不判——跳上船/踩浅水平台等场景因此合法
+            float cs = grid.PublicCellSize;
+            Vector2 pos = _ctx.Rb.position;
+            Vector2Int bottomCell = grid.WorldToCell(pos + Vector2.down * cs);
+            Vector2Int topCell = grid.WorldToCell(pos + Vector2.up * cs);
+            bool bottomInWater = (grid.GetZonesAt(bottomCell) & GridZoneType.Water) != 0;
+            bool topInWater = (grid.GetZonesAt(topCell) & GridZoneType.Water) != 0;
+            if (bottomInWater && topInWater)
             {
                 _ctx.PlayerDie(playHitSfx: false);
             }
