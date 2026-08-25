@@ -15,164 +15,24 @@ MonoBehaviour:
   zones:
   - zoneType: 8
     cells:
+      x: -10
+      y: 13
+      width: 1
+      height: 1
+    riseWithWater: 0
+  - zoneType: 8
+    cells:
       x: -7
       y: 6
       width: 1
       height: 1
     riseWithWater: 0
   - zoneType: 8
-    cells:
-      x: 33
-      y: 12
-      width: 1
-      height: 1
-    riseWithWater: 0
-  - zoneType: 2
-    cells:
-      x: 33
-      y: 12
-      width: 1
-      height: 1
-    riseWithWater: 0
-  - zoneType: 1
-    cells:
-      x: -20
-      y: 0
-      width: 8
-      height: 36
-    riseWithWater: 0
-  - zoneType: 2
     cells:
       x: -8
-      y: 6
-      width: 1
-      height: 2
-    riseWithWater: 0
-  - zoneType: 2
-    cells:
-      x: 36
-      y: 9
-      width: 1
-      height: 4
-    riseWithWater: 0
-  - zoneType: 8
-    cells:
-      x: 35
-      y: 10
+      y: 7
       width: 1
       height: 1
-    riseWithWater: 0
-  - zoneType: 2
-    cells:
-      x: -10
-      y: 0
-      width: 5
-      height: 6
-    riseWithWater: 0
-  - zoneType: 2
-    cells:
-      x: 34
-      y: 11
-      width: 1
-      height: 2
-    riseWithWater: 0
-  - zoneType: 2
-    cells:
-      x: -18
-      y: 13
-      width: 10
-      height: 6
-    riseWithWater: 0
-  - zoneType: 2
-    cells:
-      x: -7
-      y: 6
-      width: 1
-      height: 1
-    riseWithWater: 0
-  - zoneType: 8
-    cells:
-      x: 31
-      y: 13
-      width: 1
-      height: 6
-    riseWithWater: 0
-  - zoneType: 8
-    cells:
-      x: -10
-      y: 9
-      width: 1
-      height: 1
-    riseWithWater: 0
-  - zoneType: 2
-    cells:
-      x: 31
-      y: 13
-      width: 13
-      height: 6
-    riseWithWater: 0
-  - zoneType: 8
-    cells:
-      x: 31
-      y: 18
-      width: 4
-      height: 1
-    riseWithWater: 0
-  - zoneType: 2
-    cells:
-      x: -20
-      y: 0
-      width: 64
-      height: 6
-    riseWithWater: 0
-  - zoneType: 8
-    cells:
-      x: 32
-      y: 13
-      width: 1
-      height: 1
-    riseWithWater: 0
-  - zoneType: 2
-    cells:
-      x: 37
-      y: 6
-      width: 4
-      height: 7
-    riseWithWater: 0
-  - zoneType: 8
-    cells:
-      x: 37
-      y: 6
-      width: 1
-      height: 3
-    riseWithWater: 0
-  - zoneType: 8
-    cells:
-      x: -10
-      y: 13
-      width: 1
-      height: 1
-    riseWithWater: 0
-  - zoneType: 2
-    cells:
-      x: -10
-      y: 6
-      width: 1
-      height: 4
-    riseWithWater: 0
-  - zoneType: 2
-    cells:
-      x: 35
-      y: 10
-      width: 1
-      height: 3
-    riseWithWater: 0
-  - zoneType: 2
-    cells:
-      x: -19
-      y: 0
-      width: 9
-      height: 13
     riseWithWater: 0
   - zoneType: 8
     cells:
@@ -183,17 +43,17 @@ MonoBehaviour:
     riseWithWater: 0
   - zoneType: 8
     cells:
-      x: -12
-      y: 18
-      width: 4
+      x: -10
+      y: 9
+      width: 1
       height: 1
     riseWithWater: 0
-  - zoneType: 2
+  - zoneType: 8
     cells:
-      x: 41
+      x: 37
       y: 6
-      width: 3
-      height: 7
+      width: 1
+      height: 3
     riseWithWater: 0
   - zoneType: 8
     cells:
@@ -204,22 +64,29 @@ MonoBehaviour:
     riseWithWater: 0
   - zoneType: 8
     cells:
-      x: -9
-      y: 13
-      width: 1
-      height: 6
-    riseWithWater: 0
-  - zoneType: 1
-    cells:
       x: 35
-      y: 14
-      width: 8
-      height: 20
+      y: 10
+      width: 1
+      height: 1
     riseWithWater: 0
   - zoneType: 8
     cells:
       x: 34
       y: 11
+      width: 1
+      height: 1
+    riseWithWater: 0
+  - zoneType: 8
+    cells:
+      x: 33
+      y: 12
+      width: 1
+      height: 1
+    riseWithWater: 0
+  - zoneType: 8
+    cells:
+      x: 32
+      y: 13
       width: 1
       height: 1
     riseWithWater: 0
@@ -232,22 +99,155 @@ MonoBehaviour:
     riseWithWater: 0
   - zoneType: 8
     cells:
-      x: -8
-      y: 7
+      x: 31
+      y: 13
+      width: 1
+      height: 6
+    riseWithWater: 0
+  - zoneType: 8
+    cells:
+      x: -9
+      y: 13
+      width: 1
+      height: 6
+    riseWithWater: 0
+  - zoneType: 8
+    cells:
+      x: 31
+      y: 18
+      width: 4
+      height: 1
+    riseWithWater: 0
+  - zoneType: 8
+    cells:
+      x: -12
+      y: 18
+      width: 4
+      height: 1
+    riseWithWater: 0
+  - zoneType: 4
+    cells:
+      x: 34
+      y: 0
+      width: 10
+      height: 6
+    riseWithWater: 0
+  - zoneType: 4
+    cells:
+      x: 33
+      y: 12
       width: 1
       height: 1
     riseWithWater: 0
-  - zoneType: 2
+  - zoneType: 4
+    cells:
+      x: 34
+      y: 11
+      width: 1
+      height: 2
+    riseWithWater: 0
+  - zoneType: 4
+    cells:
+      x: 35
+      y: 10
+      width: 1
+      height: 3
+    riseWithWater: 0
+  - zoneType: 4
+    cells:
+      x: 36
+      y: 9
+      width: 1
+      height: 4
+    riseWithWater: 0
+  - zoneType: 4
+    cells:
+      x: 37
+      y: 6
+      width: 4
+      height: 7
+    riseWithWater: 0
+  - zoneType: 4
+    cells:
+      x: 41
+      y: 6
+      width: 3
+      height: 7
+    riseWithWater: 0
+  - zoneType: 4
+    cells:
+      x: 31
+      y: 13
+      width: 13
+      height: 6
+    riseWithWater: 0
+  - zoneType: 4
+    cells:
+      x: -7
+      y: 6
+      width: 1
+      height: 1
+    riseWithWater: 0
+  - zoneType: 4
+    cells:
+      x: -8
+      y: 6
+      width: 1
+      height: 2
+    riseWithWater: 0
+  - zoneType: 4
     cells:
       x: -9
       y: 6
       width: 1
       height: 3
     riseWithWater: 0
+  - zoneType: 4
+    cells:
+      x: -10
+      y: 6
+      width: 1
+      height: 4
+    riseWithWater: 0
   - zoneType: 2
     cells:
-      x: 34
+      x: -10
       y: 0
+      width: 5
+      height: 6
+    riseWithWater: 0
+  - zoneType: 1
+    cells:
+      x: 35
+      y: 14
+      width: 8
+      height: 20
+    riseWithWater: 0
+  - zoneType: 1
+    cells:
+      x: -20
+      y: 0
+      width: 8
+      height: 36
+    riseWithWater: 0
+  - zoneType: 4
+    cells:
+      x: -18
+      y: 13
       width: 10
+      height: 6
+    riseWithWater: 0
+  - zoneType: 4
+    cells:
+      x: -19
+      y: 0
+      width: 9
+      height: 13
+    riseWithWater: 0
+  - zoneType: 2
+    cells:
+      x: -20
+      y: 0
+      width: 64
       height: 6
     riseWithWater: 0
