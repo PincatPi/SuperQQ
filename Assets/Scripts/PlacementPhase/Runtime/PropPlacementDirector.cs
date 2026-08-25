@@ -213,6 +213,15 @@ namespace SuperQQ.Placement.Runtime
                 ShowConfirmPlaceButton();
             }
 
+            // 旋转吐司：摆放阶段开始即决定本轮尺寸（在道具实例生成/拖拽占格判定之前），
+            // 放置者端本地随机并上传广播，远端经 ToastSizeBroadcast 同步；
+            // 道具 Awake 读取 CurrentSize 设置 footprint，保证拖拽时的占格判定按真实尺寸
+            if (item is SuperQQ.Item.RotatingToast && SuperQQ.Item.RotatingToastSizeSync.CurrentSize == 0)
+            {
+                int size = SuperQQ.Item.RotatingToastSizeSync.DecideSizeLocally();
+                Debug.Log($"{LOG_TAG} 摆放阶段开始，本地随机吐司尺寸: {size}（已上传）");
+            }
+
             // 发牌后立即开始跟随鼠标（等下一帧 Update 会晚一拍）
             TryBeginPendingItem();
             string dealId = (ItemCatalog.Instance != null && item != null)
@@ -826,7 +835,10 @@ namespace SuperQQ.Placement.Runtime
                 ItemId = localSession.CurrentItemId,
                 AnchorCell = new GridCell { X = anchor.Value.x, Y = anchor.Value.y },
                 Rotation = localSession.CurrentRotation,
-                ClientTimeMs = NetworkManager.NowMs()
+                ClientTimeMs = NetworkManager.NowMs(),
+                // 附着类道具（黄油块等，声明 AllowsOccupiedOverlap 但非拆除类）：
+                // 通知服务器跳过冲突检查且不记录占据（客户端权威，与本地不登记占据的口径一致）
+                AllowOverlap = prefab != null && prefab.AllowsOccupiedOverlap
             };
             foreach (Vector2Int cell in cells)
             {
@@ -866,6 +878,15 @@ namespace SuperQQ.Placement.Runtime
                 awaitingPlaceResult = false;
                 localSession.Confirm();
                 Debug.Log($"{LOG_TAG} 摆放已确认: {result.ItemId} @ ({result.AnchorCell.X},{result.AnchorCell.Y})");
+
+                // 旋转吐司：放置者端本地随机本轮尺寸并上传广播（各端尺寸一致）
+                ItemBase confirmedPrefab = FindPoolItem(result.ItemId);
+                if (confirmedPrefab is SuperQQ.Item.RotatingToast
+                    && SuperQQ.Item.RotatingToastSizeSync.CurrentSize == 0)
+                {
+                    int size = SuperQQ.Item.RotatingToastSizeSync.DecideSizeLocally();
+                    Debug.Log($"{LOG_TAG} 本地随机吐司尺寸: {size}（已上传）");
+                }
             }
             else
             {
@@ -1061,11 +1082,15 @@ namespace SuperQQ.Placement.Runtime
                 GridManager.GetRotationQuaternion(result.Rotation));
             item.name = $"RemotePlaced_{result.PlayerId}_{result.ItemId}";
 
-            // 登记占用：占据格子对所有人生效，本地落点合法性检查自动包含这些格子
+            // 登记占用：占据格子对所有人生效，本地落点合法性检查自动包含这些格子。
+            // 附着类道具（RegistersOccupancy=false，如黄油块）不登记占据——与本地端口径一致
             var placed = item.AddComponent<PlacedItem>();
             placed.Init(null, anchor, result.Rotation, -1);
             placed.SetOwnerKey(result.PlayerId); // 陷阱击杀计分归属
-            grid.Occupy(anchor, footprint, placed, result.Rotation);
+            if (prefab.RegistersOccupancy)
+            {
+                grid.Occupy(anchor, footprint, placed, result.Rotation);
+            }
 
             // 锁定：摆放组件与碰撞体不再需要参与交互
             PlacementController pc = item.GetComponent<PlacementController>();

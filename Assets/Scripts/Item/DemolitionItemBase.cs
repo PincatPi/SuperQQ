@@ -117,7 +117,11 @@ namespace SuperQQ.Item
                 foreach (Vector2Int anchor in removedAnchors)
                 {
                     // RemoveAt 会释放目标的全部占位格子并销毁物体（含 OnRemoved 钩子）
-                    grid.RemoveAt(anchor);
+                    bool removed = grid.RemoveAt(anchor);
+                    if (!removed)
+                    {
+                        Debug.LogWarning($"[Demolition] 同步移除失败：锚点{anchor}无占据物也无附着物（本端占据表与服务器不一致？）", this);
+                    }
                 }
             }
 
@@ -140,10 +144,19 @@ namespace SuperQQ.Item
             }
 
             // 先收集目标再逐个移除，避免在遍历中修改网格占据表
-            foreach (PlacedItem target in CollectTargetsInArea(grid))
+            HashSet<PlacedItem> targets = CollectTargetsInArea(grid);
+            Debug.Log($"[Demolition] 本地引爆: 锚点{Placed.AnchorCell} 目标数={targets.Count}（{string.Join("、", System.Linq.Enumerable.Select(targets, t => t.name + "@" + t.AnchorCell))}）", this);
+            foreach (PlacedItem target in targets)
             {
                 // RemoveAt 会释放目标的全部占位格子并销毁物体（含 OnRemoved 钩子）
                 grid.RemoveAt(target.AnchorCell);
+            }
+
+            // 联动清除爆破范围内各格上的附着物（黄油块等不占格子的道具；
+            // 附着的承载物已被移除的格子为空操作，安全重复调用）
+            foreach (Vector2Int cell in grid.GetFootprintCells(Placed.AnchorCell, ResolveOwnFootprint(), Placed.Rotation))
+            {
+                grid.RemoveAttachmentsAt(cell);
             }
 
             SpawnExplosionEffect();

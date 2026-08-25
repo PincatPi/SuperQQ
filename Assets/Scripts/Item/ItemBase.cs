@@ -59,6 +59,49 @@ namespace SuperQQ.Item
         public virtual bool AllowsOccupiedOverlap => false;
 
         /// <summary>
+        /// 摆放时容忍的区域掩码：命中这些区域类型时不视为"禁止布置"（默认无容忍）。
+        /// 附着类道具重写：如黄油块需附着在关卡预占（Occupied）的地形边缘格上，
+        /// 豁免 Occupied 拦截——配合 ValidatePlacement 的 AttachSurface 要求保证落点仍然受控
+        /// </summary>
+        public virtual GridZoneType ToleratedZoneMask => GridZoneType.None;
+
+        /// <summary>
+        /// 是否可被黄油块黏住（默认可以）。
+        /// 自身有独立运动逻辑的道具重写为 false：如流星锤按自身摆锤轨道运动，
+        /// 被黏住会与其运动逻辑冲突
+        /// </summary>
+        public virtual bool CanBeStuck => true;
+
+        /// <summary>
+        /// 指定格子上的黏着是否生效（默认整道具可黏，等同 CanBeStuck）。
+        /// 需要限定吸附点的道具重写：如流星锤仅底座挂点格可被黄油黏住，
+        /// 黏住点以外的格子命中时不黏
+        /// </summary>
+        /// <param name="stickyCell">黄油黏性边相邻格（世界格坐标）</param>
+        public virtual bool CanBeStuckAt(Vector2Int stickyCell) => CanBeStuck;
+
+        /// <summary>
+        /// 被黄油黏住时调用（默认空实现，纯父子层级跟随）。
+        /// 需要自定义黏住行为的道具重写：如流星锤以吸附点为钉点跟随、自身朝向锁定
+        /// </summary>
+        /// <param name="butter">黏住来源的黄油块 transform</param>
+        /// <param name="stickyCell">黄油黏性边相邻格（世界格坐标）</param>
+        public virtual void OnStuckTo(Transform butter, Vector2Int stickyCell) { }
+
+        /// <summary>解除黏住时调用（默认空实现）</summary>
+        public virtual void OnUnstuck() { }
+
+        /// <summary>
+        /// 摆放落点的附加合法性校验（在格子占据检查之后执行，默认通过）。
+        /// 附着类道具重写：如黄油块要求落点格内必须存在平台类道具或地形承载物。
+        /// 拖拽红绿提示、放置登记、已放置旋转共用此判定
+        /// </summary>
+        public virtual bool ValidatePlacement(GridManager grid, Vector2Int anchor, int rotation)
+        {
+            return true;
+        }
+
+        /// <summary>
         /// 初始化放置数据（仅由 GridManager.Place 调用）
         /// </summary>
         internal void InitPlaced(PlacedItem placed, int facing)

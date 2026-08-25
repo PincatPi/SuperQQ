@@ -15,6 +15,8 @@ namespace SuperQQ.Grid
         Water = 1 << 1,
         /// <summary>被占用区域：不可布置道具（关卡预占等）</summary>
         Occupied = 1 << 2,
+        /// <summary>可附着表面：允许附着类道具（黄油块等）吸附的地形表面；仅作附着校验标记，不影响通行与布置</summary>
+        AttachSurface = 1 << 3,
     }
 
     public static class GridZoneTypeExtensions

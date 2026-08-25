@@ -54,7 +54,7 @@ MonoBehaviour:
   rotateDuration: 2
   pauseDuration: 1
   clockwise: 1
-  visual: {fileID: 7733589260747946808}
+  visual: {fileID: 5120887857269553825}
   solidCollider: {fileID: 6185271712286534273}
   debugAutoRotate: 0
 --- !u!114 &1876854700904441066

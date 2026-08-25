@@ -63,6 +63,8 @@ message ClientEnvelope {
     minigame.room.v1.LeaveRoomRequest leave_room = 35;
     // 退出登录：使当前 token 立即失效；幂等。
     minigame.account.v1.LogoutRequest logout = 36;
+    // 旋转吐司尺寸上报：纯透传，无同步应答，广播 ToastSizeBroadcast 给全房间。
+    minigame.room.v1.ToastSizeSync toast_size_sync = 37;
   }
 }
 
@@ -105,6 +107,7 @@ message ServerEnvelope {
     minigame.room.v1.LeaveRoomResponse leave_room = 39;
     // 退出登录同步应答。
     minigame.account.v1.LogoutResponse logout = 40;
+    minigame.room.v1.ToastSizeBroadcast toast_size_broadcast = 41;
     ErrorResponse error = 90;
   }
 }

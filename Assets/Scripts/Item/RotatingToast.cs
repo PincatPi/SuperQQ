@@ -45,6 +45,12 @@ namespace SuperQQ.Item
         /// <summary>搭路：可站立的旋转方块</summary>
         public override ItemCategory Category => ItemCategory.Path;
 
+        /// <summary>是否处于联机房间中（联机下尺寸由放置者随机+服务器广播，本端不自行随机）</summary>
+        private static bool BNetRoom =>
+            SuperQQ.Network.NetworkManager.Instance != null
+            && SuperQQ.Network.NetworkManager.Instance.IsConnected
+            && !string.IsNullOrEmpty(SuperQQ.Network.NetworkManager.Instance.RoomId);
+
         /// <summary>当前边长（格）</summary>
         public int SizeInCells => sizeInCells;
         /// <summary>当前是否顺时针</summary>
@@ -55,7 +61,9 @@ namespace SuperQQ.Item
         private void Awake()
         {
             box = GetComponent<FootprintBoxView>();
-            if (visual == null)
+            // visual 误配为根节点时按未配置处理：缩放根节点会连带 FootprintBox/碰撞体一起放大，
+            // 导致虚线包围盒视觉尺寸失真（2x2 的框渲染得更大）
+            if (visual == null || visual == transform)
             {
                 Transform found = transform.Find("Visual");
                 visual = found != null ? found : transform;
@@ -71,6 +79,11 @@ namespace SuperQQ.Item
             if (RotatingToastSizeSync.CurrentSize > 0 && RotatingToastSizeSync.CurrentSize != sizeInCells)
             {
                 SetSize(RotatingToastSizeSync.CurrentSize);
+            }
+            // 单机兜底：无联机房间且尺寸未决定时本地随机（联机模式由放置者 DecideSizeLocally 后经服务器广播，远端等待同步）
+            if (RotatingToastSizeSync.CurrentSize <= 0 && !BNetRoom)
+            {
+                RotatingToastSizeSync.DecideSizeLocally();
             }
             RotatingToastSizeSync.Register(this);
         }

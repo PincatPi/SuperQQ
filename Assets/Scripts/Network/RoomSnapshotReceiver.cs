@@ -125,19 +125,40 @@ namespace SuperQQ.Network
                 string key = $"{placed.ItemId}_{placed.AnchorCell.X}_{placed.AnchorCell.Y}";
                 if (_restoredItems.Contains(key)) continue;
 
-                // 判重：该锚点格已被占用（实时 ItemPlaceResult 已生成过），跳过避免重复实例化
-                var anchorCell = new Vector2Int(placed.AnchorCell.X, placed.AnchorCell.Y);
-                if (GridManager.Instance.GetItemAt(anchorCell) != null)
-                {
-                    _restoredItems.Add(key);
-                    continue;
-                }
-
                 ItemBase prefab = FindItemPrefab(placed.ItemId);
                 if (prefab == null)
                 {
                     Debug.LogWarning($"[NetWork] 快照恢复道具失败：itemId={placed.ItemId} 无对应 prefab");
                     continue;
+                }
+
+                // 判重：该锚点格已被占用（实时 ItemPlaceResult 已生成过），跳过避免重复实例化。
+                // 附着类道具不占格子，改查附着物注册表判重（同锚点可能合法存在承载物占据）
+                var anchorCell = new Vector2Int(placed.AnchorCell.X, placed.AnchorCell.Y);
+                if (prefab.RegistersOccupancy)
+                {
+                    if (GridManager.Instance.GetItemAt(anchorCell) != null)
+                    {
+                        _restoredItems.Add(key);
+                        continue;
+                    }
+                }
+                else
+                {
+                    bool bAlreadyAttached = false;
+                    foreach (ItemBase attachment in GridManager.Instance.GetAttachments(anchorCell))
+                    {
+                        if (attachment != null && attachment.GetType() == prefab.GetType())
+                        {
+                            bAlreadyAttached = true;
+                            break;
+                        }
+                    }
+                    if (bAlreadyAttached)
+                    {
+                        _restoredItems.Add(key);
+                        continue;
+                    }
                 }
 
                 GridManager grid = GridManager.Instance;
@@ -153,7 +174,11 @@ namespace SuperQQ.Network
                 var placedItem = item.AddComponent<PlacedItem>();
                 placedItem.Init(null, anchor, placed.Rotation, -1);
                 placedItem.SetOwnerKey(placed.PlayerId); // 陷阱击杀计分归属
-                grid.Occupy(anchor, footprint, placedItem, placed.Rotation);
+                // 附着类道具（RegistersOccupancy=false，如黄油块）不登记占据——与各端实时口径一致
+                if (prefab.RegistersOccupancy)
+                {
+                    grid.Occupy(anchor, footprint, placedItem, placed.Rotation);
+                }
 
                 PlacementController pc = item.GetComponent<PlacementController>();
                 if (pc != null)

@@ -46,16 +46,46 @@ namespace SuperQQ.Network
             net.Register<PickupClaimBroadcast>(OnPickupClaim);
             net.Register<ItemStateEventBroadcast>(OnItemStateEvent);
             net.Register<TrapKillBroadcast>(OnTrapKill);
+            net.Register<ToastSizeBroadcast>(OnToastSize);
+
+            // 吐司尺寸上传钩子：本地随机完成后上报服务器透传
+            SuperQQ.Item.RotatingToastSizeSync.OnUploadSize += ReportToastSize;
         }
 
         private void OnDestroy()
         {
             if (Instance == this) Instance = null;
+            SuperQQ.Item.RotatingToastSizeSync.OnUploadSize -= ReportToastSize;
             if (NetworkManager.Instance == null) return;
             NetworkManager.Instance.Unregister<PlayerEventBroadcast>();
             NetworkManager.Instance.Unregister<PickupClaimBroadcast>();
             NetworkManager.Instance.Unregister<ItemStateEventBroadcast>();
             NetworkManager.Instance.Unregister<TrapKillBroadcast>();
+            NetworkManager.Instance.Unregister<ToastSizeBroadcast>();
+        }
+
+        // ==================== 旋转吐司尺寸同步 ====================
+
+        /// <summary>本地决定尺寸后上报（RotatingToastSizeSync.OnUploadSize 钩子）</summary>
+        private static void ReportToastSize(int size)
+        {
+            if (!BReady) return;
+            NetworkManager net = NetworkManager.Instance;
+            net.Send(new ToastSizeSync
+            {
+                RoomId = net.RoomId,
+                PlayerId = net.LocalPlayerId,
+                Round = NetGameFlowGate.CurrentServerRound,
+                Size = size
+            });
+        }
+
+        /// <summary>服务器透传的尺寸广播：应用到本端（含场上已存在实例与后续实例化）</summary>
+        private void OnToastSize(ToastSizeBroadcast msg)
+        {
+            if (NetworkManager.Instance != null && msg.PlayerId == NetworkManager.Instance.LocalPlayerId) return; // 本端已应用
+            SuperQQ.Item.RotatingToastSizeSync.ApplySyncedSize(msg.Size);
+            Debug.Log($"[NetWork] 吐司尺寸同步: playerId={msg.PlayerId} round={msg.Round} size={msg.Size}");
         }
 
         private static bool BReady =>

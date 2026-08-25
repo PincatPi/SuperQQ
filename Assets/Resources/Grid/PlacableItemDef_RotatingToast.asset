@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0a4e5b7c8d689f4fb08a56196c7822c, type: 3}
-  m_Name: PlacableItemDef_ButterBlock
+  m_Name: PlacableItemDef_RotatingToast
   m_EditorClassIdentifier: 
-  itemId: butter_block
-  prefab: {fileID: 5900001724391387817, guid: 27e741ea1d149e544b16556a0a77b04d, type: 3}
+  itemId: rotating_toast
+  prefab: {fileID: 1533664142972189798, guid: d4913871e44dd094785ac8acfe7104f3, type: 3}
   ghostPrefab: {fileID: 0}
   footprint: {x: 1, y: 1}
-  rotatable: 1
+  rotatable: 0
   category: 0
-  facingSteps: 4
+  facingSteps: 0
   icon: {fileID: 0}

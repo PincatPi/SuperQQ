@@ -26,6 +26,7 @@ namespace SuperQQ.Grid
         {
             get
             {
+                if ((zoneType & GridZoneType.AttachSurface) != 0) return new Color(1f, 0.6f, 0.2f, 0.35f);
                 if ((zoneType & GridZoneType.Water) != 0) return new Color(0.2f, 0.5f, 1f, 0.35f);
                 if ((zoneType & GridZoneType.SpawnGoal) != 0) return new Color(0.3f, 1f, 0.3f, 0.35f);
                 return new Color(0.6f, 0.6f, 0.6f, 0.35f);
