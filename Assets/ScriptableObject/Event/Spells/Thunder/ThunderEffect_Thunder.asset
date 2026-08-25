@@ -15,4 +15,12 @@ MonoBehaviour:
   _thunderPrefab: {fileID: 1251993928265596, guid: c445b201205907b4f90b242a07f4dbc9, type: 3}
   _thunderOffset: {x: 0, y: 0.5}
   _duration: 6
+  _firstDetectDelay: 1
+  _roundInterval: 2
+  _warningDuration: 1.5
+  _volumeThreshold: 0.5
+  _warningPrefab: {fileID: 0}
+  _lightningPrefab: {fileID: 0}
+  _lightningLifetime: 1
+  _strikeRadius: 1.5
   _activateTipText: "\u4F60\u8BF7\u795E\u8BF7\u5230\u4E86\u5F20\u89D2\uFF0C\u73B0\u5728\u5929\u96F7\u4F1A\u5E2E\u4F60\u7535\u51FB\u9664\u4F60\u4EE5\u5916\u6240\u6709\u58F0\u97F3\u8FC7\u5927\u6270\u6012\u795E\u660E\u7684\u4EBA"
