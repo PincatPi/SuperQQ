@@ -170,12 +170,30 @@ namespace SuperQQ.Item
             clockwise = value;
         }
 
+        /// <summary>联机同步读取：以 mirrored 语义携带旋转方向（true=逆时针）</summary>
+        public override bool Mirrored => !clockwise;
+
+        /// <summary>联机同步写入：远端生成/快照恢复时应用旋转方向</summary>
+        public override void SetMirrored(bool value)
+        {
+            SetClockwise(!value);
+        }
+
         /// <summary>
         /// 切换旋转方向（顺时针 ↔ 逆时针）
         /// </summary>
         public void ToggleRotationDirection()
         {
             clockwise = !clockwise;
+        }
+
+        /// <summary>
+        /// 摆放阶段旋转键/旋转按钮的"换向"入口（道具不可旋转时由 PlacementSession.Rotate 回退调用）：
+        /// 吐司的朝向语义是旋转方向，映射为切换顺/逆时针
+        /// </summary>
+        public override void ToggleMirror()
+        {
+            ToggleRotationDirection();
         }
 
         // ==================== 阶段钩子 ====================

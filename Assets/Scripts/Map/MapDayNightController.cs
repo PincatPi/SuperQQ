@@ -125,6 +125,16 @@ namespace SuperQQ.Map
         /// <summary>当前是否处于黑夜（含调试覆盖后的目标状态）</summary>
         public bool IsNight => _isNight;
 
+        /// <summary>昼夜过渡进度（0=白天 1=黑夜；白天静止时为 0）</summary>
+        public float Blend => _blend;
+
+        /// <summary>
+        /// 当前全局色调（白=白天，随昼夜过渡渐变）。
+        /// 供运行时生成的物体（樱桃弹体等非 Map 层级的 SpriteRenderer）采样，
+        /// 乘算自身基础色即可与地图同步变暗
+        /// </summary>
+        public static Color CurrentTint { get; private set; } = Color.white;
+
         private void Update()
         {
             bool targetNight = ResolveTargetNight();
@@ -136,6 +146,13 @@ namespace SuperQQ.Map
             // 网格水域判定每帧幂等同步（GridManager 随场景加载可能晚于本组件，
             // 幂等写入保证就绪后自动补上；判定不做渐变，避免过渡中间态模糊）
             ApplyWaterZoneOffset();
+
+            // 白天静止期持续刷新白天基准位置：抬升目标（船）若被网格吸附等外部逻辑
+            // 调整过位置，涨潮始终以吸附后的正确位置为基准上升
+            if (!_isNight && _blend <= 0.001f)
+            {
+                CacheDayPositions();
+            }
 
             float target = _isNight ? 1f : 0f;
             if (Mathf.Approximately(_blend, target))
@@ -214,6 +231,7 @@ namespace SuperQQ.Map
             }
 
             Color tint = Color.Lerp(Color.white, nightTint, blend);
+            CurrentTint = tint; // 运行时生成物体（樱桃弹体等）经此采样同步变暗
             for (int i = 0; i < _renderers.Length; i++)
             {
                 if (_renderers[i] == null)
@@ -256,24 +274,31 @@ namespace SuperQQ.Map
         /// <summary>缓存白天的位置与颜色（切换循环的还原基准）</summary>
         private void CacheDayState()
         {
-            if (nightRiseTargets != null)
-            {
-                _dayPositions = new Vector3[nightRiseTargets.Length];
-                for (int i = 0; i < nightRiseTargets.Length; i++)
-                {
-                    _dayPositions[i] = nightRiseTargets[i] != null ? nightRiseTargets[i].position : Vector3.zero;
-                }
-            }
-            else
-            {
-                _dayPositions = new Vector3[0];
-            }
+            CacheDayPositions();
 
             _renderers = GetComponentsInChildren<SpriteRenderer>(true);
             _dayColors = new Color[_renderers.Length];
             for (int i = 0; i < _renderers.Length; i++)
             {
                 _dayColors[i] = _renderers[i].color;
+            }
+        }
+
+        /// <summary>仅刷新抬升目标的白天基准位置（白天静止期每帧调用，跟踪网格吸附等外部位置调整）</summary>
+        private void CacheDayPositions()
+        {
+            if (nightRiseTargets == null)
+            {
+                _dayPositions = new Vector3[0];
+                return;
+            }
+            if (_dayPositions == null || _dayPositions.Length != nightRiseTargets.Length)
+            {
+                _dayPositions = new Vector3[nightRiseTargets.Length];
+            }
+            for (int i = 0; i < nightRiseTargets.Length; i++)
+            {
+                _dayPositions[i] = nightRiseTargets[i] != null ? nightRiseTargets[i].position : Vector3.zero;
             }
         }
 

@@ -231,6 +231,7 @@ namespace SuperQQ.Network
                 if (itemBase != null)
                 {
                     itemBase.InitPlaced(placedItem, placed.Rotation);
+                    itemBase.SetMirrored(placed.Mirrored); // 镜像朝向同步（樱桃发射器/流星锤等）
                     itemBase.OnPlaced();
                 }
 

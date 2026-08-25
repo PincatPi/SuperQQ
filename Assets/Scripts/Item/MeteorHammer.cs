@@ -127,15 +127,24 @@ namespace SuperQQ.Item
         }
 
         /// <summary>
-        /// 切换左右镜像（改变摆动方向：从左到右扫 / 从右到左扫）
+        /// 切换左右镜像（改变摆动方向：从左到右扫 / 从右到左扫；摆放阶段对不可旋转道具按 R 触发）
         /// </summary>
-        public void ToggleMirror()
+        public override void ToggleMirror()
         {
-            mirrored = !mirrored;
+            SetMirrored(!mirrored);
+        }
+
+        /// <summary>当前是否镜像（从左往右扫 / 从右往左扫）</summary>
+        public override bool Mirrored => mirrored;
+
+        /// <summary>设置镜像状态（联机同步写入）</summary>
+        public override void SetMirrored(bool value)
+        {
+            mirrored = value;
             if (arm != null)
             {
                 Vector3 s = armBaseScale;
-                s.x = mirrored ? -s.x : s.x;
+                s.x = mirrored ? -Mathf.Abs(s.x) : Mathf.Abs(s.x);
                 arm.localScale = s;
             }
         }

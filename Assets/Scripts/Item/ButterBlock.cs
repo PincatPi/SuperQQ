@@ -28,10 +28,25 @@ namespace SuperQQ.Item
         public override bool RegistersOccupancy => false;
 
         /// <summary>
-        /// 豁免关卡预占（Occupied）区域拦截：可附着地形边缘格通常同时被 Occupied 标记，
-        /// 黄油块不占格子、只附着表面，落点合法性由 ValidatePlacement 的 AttachSurface 要求兜底
+        /// 豁免关卡预占（Occupied）与水域（Water）区域拦截：
+        /// 可附着地形边缘格通常同时被 Occupied 标记；船面格子被水域条目覆盖但船是合法承载物。
+        /// 豁免后落点仍受 HasCarrierAt 承载物要求约束（开阔水面无承载物依然放不了），
+        /// 落点合法性由 ValidatePlacement 的承载物判定兜底
         /// </summary>
-        public override GridZoneType ToleratedZoneMask => GridZoneType.Occupied;
+        public override GridZoneType ToleratedZoneMask => GridZoneType.Occupied | GridZoneType.Water;
+
+        [Header("渲染")]
+        [Tooltip("渲染层级（黄油块必须永远显示在其他道具之上，保证小体积也能被看到）")]
+        [SerializeField] private int topSortingOrder = 100;
+
+        private void Awake()
+        {
+            // 强制最高渲染层级：黄油块是 1x1 附着小件，被大件道具遮住会完全看不见
+            foreach (SpriteRenderer r in GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                r.sortingOrder = topSortingOrder;
+            }
+        }
 
         private Transform carrier;            // 承载物（平台道具），跟随其移动/旋转
         private Vector3 carrierLocalOffset;   // 承载物局部坐标系下的位置偏移
@@ -117,11 +132,36 @@ namespace SuperQQ.Item
             {
                 return false;
             }
+            // ① 平台类道具
             if (FindPlatformItem(grid, cell, out carrierItem))
             {
                 return true;
             }
-            return (grid.GetZonesAt(cell) & GridZoneType.AttachSurface) != 0;
+            // ② Zone 标记的可附着表面（权威标记）
+            if ((grid.GetZonesAt(cell) & GridZoneType.AttachSurface) != 0)
+            {
+                return true;
+            }
+            // ③ 物理兜底：格中心有实心非 Trigger 地形碰撞体（未标记区域也能附着，
+            //    与早期纯物理版本行为一致；排除玩家与其他道具，道具走①的路径）
+            Vector2 cellCenter = grid.GetPlacementWorldPos(cell, Vector2Int.one, 0);
+            foreach (Collider2D hit in Physics2D.OverlapPointAll(cellCenter))
+            {
+                if (hit == null || hit.isTrigger)
+                {
+                    continue;
+                }
+                if (hit.GetComponentInParent<SuperQQ.Player.PlayerController>() != null)
+                {
+                    continue;
+                }
+                if (hit.GetComponentInParent<ItemBase>() != null)
+                {
+                    continue;
+                }
+                return true;
+            }
+            return false;
         }
 
         // ==================== 生命周期 ====================

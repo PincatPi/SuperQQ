@@ -23,17 +23,21 @@ namespace SuperQQ.Placement.Core
         /// <summary>是否处于旋转状态（非 0° 档）；兼容旧读法</summary>
         public bool BRotated => Rotation != 0;
 
+        /// <summary>左右镜像（樱桃发射器/流星锤等朝向类道具）</summary>
+        public readonly bool Mirrored;
+
         public PlacementResult(string playerKey, string itemId, Vector2Int anchorCell, bool bRotated)
             : this(playerKey, itemId, anchorCell, bRotated ? 1 : 0)
         {
         }
 
-        public PlacementResult(string playerKey, string itemId, Vector2Int anchorCell, int rotation)
+        public PlacementResult(string playerKey, string itemId, Vector2Int anchorCell, int rotation, bool mirrored = false)
         {
             PlayerKey = playerKey;
             ItemId = itemId;
             AnchorCell = anchorCell;
             Rotation = ((rotation % 4) + 4) % 4;
+            Mirrored = mirrored;
         }
 
         public override string ToString()

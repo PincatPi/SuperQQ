@@ -313,6 +313,7 @@ message PlacedItemState {
   string item_id = 2;           // 数字代号（与 ItemCatalog 一致）
   GridCell anchor_cell = 3;     // 锚点格子（footprint 左下角）
   int32 rotation = 4;           // 旋转档：0=0° 1=顺时针90° 2=180° 3=270°
+  bool mirrored = 5;            // 左右镜像（樱桃发射器/流星锤等朝向类道具；无镜像语义时恒 false）
 }
 
 // 客户端 → 服务器：摆放中道具的拖拽状态（约 10Hz 节流上报，仅表现用）。
@@ -323,6 +324,7 @@ message ItemPlaceState {
   string item_id = 4;             // 道具ID（= prefab 名称）
   Vector2 position = 5;           // 道具根节点世界坐标
   int32 rotation = 6;             // 旋转档：0=0° 1=顺时针90° 2=180° 3=270°
+  bool mirrored = 7;              // 左右镜像
 }
 
 // 服务器 → 全房间：透传拖拽状态，各端生成远端玩家的虚化道具跟随显示。
@@ -332,6 +334,7 @@ message ItemPlaceStateBroadcast {
   string item_id = 3;
   Vector2 position = 4;
   int32 rotation = 5;             // 旋转档：0=0° 1=顺时针90° 2=180° 3=270°
+  bool mirrored = 6;              // 左右镜像
 }
 
 // 客户端 → 服务器：确认摆放请求（占用仲裁点）。
@@ -349,6 +352,10 @@ message ItemPlaceConfirm {
   // （客户端权威模型下信任客户端声明；此类道具仍入 placedItems 供快照恢复，
   //  爆破匹配需按 placedItems 各道具的 cells 直接判定，而非 occupied 集合）
   bool allow_overlap = 9;
+  bool mirrored = 10;             // 左右镜像
+  // 链式道具（传送门第一段等）置 true：本次确认后同一玩家还有后续确认，
+  // 服务器"全员确认完毕"计数时不得将本玩家计入已完成，直到收到其无此标记的确认
+  bool expect_more = 11;
 }
 
 // 服务器 → 全房间：摆放仲裁结果。先到先得，格子冲突则失败。
@@ -363,6 +370,7 @@ message ItemPlaceResult {
   int32 rotation = 7;             // 旋转档：0=0° 1=顺时针90° 2=180° 3=270°
   repeated GridCell cells = 8;
   int64 server_time_ms = 9;
+  bool mirrored = 10;             // 左右镜像
 }
 
 // 客户端 → 服务器：拆除类道具确认（爆破范围允许与已占格子重叠，不走格子冲突仲裁）。
