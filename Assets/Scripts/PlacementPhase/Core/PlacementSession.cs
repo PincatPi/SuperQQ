@@ -67,6 +67,10 @@ namespace SuperQQ.Placement.Core
         /// <summary>摆放中道具的旋转档（0=0° 1=顺时针90° 2=180° 3=270°）；未摆放时为 0</summary>
         public int CurrentRotation => BIsPlacing ? currentPc.RotationSteps : 0;
 
+        /// <summary>摆放中道具的镜像状态（无镜像语义为 false）；未摆放时为 false</summary>
+        public bool CurrentMirrored => BIsPlacing && currentPc != null
+            && currentPc.GetComponent<SuperQQ.Item.ItemBase>() is { } item && item.Mirrored;
+
         /// <summary>摆放中道具根节点的世界坐标；未摆放时为 null</summary>
         public Vector2? CurrentPosition => BIsPlacing ? (Vector2?)current.transform.position : null;
 
@@ -155,8 +159,15 @@ namespace SuperQQ.Placement.Core
         /// <summary>顺时针旋转当前摆放中的道具一档（0°→90°→180°→270°→0°；不可旋转的道具为空操作）</summary>
         public void Rotate()
         {
-            if (!BIsPlacing || !currentPc.ToggleRotate())
+            if (!BIsPlacing)
             {
+                return;
+            }
+
+            if (!currentPc.ToggleRotate())
+            {
+                // 不可旋转的道具：旋转键退化为切换镜像（樱桃发射器/流星锤等有方向语义的道具）
+                currentPc.GetComponent<SuperQQ.Item.ItemBase>()?.ToggleMirror();
                 return;
             }
 
@@ -190,13 +201,15 @@ namespace SuperQQ.Placement.Core
             // 写入放置者归属：陷阱击杀计分（RecordTrapKill）按此归属计分
             placed?.SetOwnerKey(playerKey);
             int rotation = currentPc.RotationSteps;
+            bool mirrored = currentPc.GetComponent<SuperQQ.Item.ItemBase>() is { } itemBase && itemBase.Mirrored;
             UnityEngine.Object.Destroy(currentPc);
 
             OnPlacementConfirmed?.Invoke(new PlacementResult(
                 playerKey,
                 currentItemId,
                 placed != null ? placed.AnchorCell : Vector2Int.zero,
-                rotation));
+                rotation,
+                mirrored));
 
             // 衔接摆放：实现 IChainedPlacement 的道具（如传送门出口）直接接管，摆放流程不中断
             GameObject chained = current.TryGetComponent(out IChainedPlacement chainProvider)
@@ -204,7 +217,8 @@ namespace SuperQQ.Placement.Core
                 : null;
             if (chained != null)
             {
-                currentItemId = chained.name;
+                // 保持 currentItemId 不变（链生段与首段同一道具 id；
+                // 实例名带 "(Clone)" 后缀，覆盖后服务器/远端/快照都无法解析 prefab）
                 Adopt(chained);
                 return true;
             }

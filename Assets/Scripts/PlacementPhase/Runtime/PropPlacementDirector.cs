@@ -429,9 +429,9 @@ namespace SuperQQ.Placement.Runtime
             }
 
             // 左键确认：取出道具的同帧、以及指针悬停在 UI 上时不触发。
-            // PC 调试（编辑器/Standalone）允许左键确认；手机触屏只允许打勾按钮（避免与拖拽冲突）。
-            // 联机模式左键确认走服务器仲裁，单机走本地直接确认。
-            bool allowClickConfirm = !BNetMode || BIsPCDebug;
+            // 联机模式（含 PC 调试）只允许打勾按钮确认——屏幕点击统一作为拖拽开始手势，
+            // 避免"点屏幕想拖拽却直接确认"的手势冲突；单机模式保留左键确认。
+            bool allowClickConfirm = !BNetMode;
             if (allowClickConfirm
                 && Input.GetMouseButtonDown(0)
                 && Time.frameCount != selectFrame
@@ -447,13 +447,6 @@ namespace SuperQQ.Placement.Runtime
                 }
             }
         }
-
-        /// <summary>是否为 PC 调试环境（编辑器或桌面平台）：此类平台允许鼠标左键确认摆放</summary>
-        private static bool BIsPCDebug =>
-            Application.isEditor
-            || Application.platform == RuntimePlatform.WindowsPlayer
-            || Application.platform == RuntimePlatform.OSXPlayer
-            || Application.platform == RuntimePlatform.LinuxPlayer;
 
         /// <summary>鼠标当前的世界坐标（2D 平面）</summary>
         private Vector2 PointerWorldPos()
@@ -527,7 +520,8 @@ namespace SuperQQ.Placement.Runtime
                 PlayerId = net.LocalPlayerId,
                 ItemId = localSession.CurrentItemId,
                 Position = new Minigame.Room.V1.Vector2 { X = pos.Value.x, Y = pos.Value.y },
-                Rotation = localSession.CurrentRotation
+                Rotation = localSession.CurrentRotation,
+                Mirrored = localSession.CurrentMirrored
             });
         }
 
@@ -548,6 +542,12 @@ namespace SuperQQ.Placement.Runtime
 
             ghost.transform.position = new Vector3(msg.Position.X, msg.Position.Y, 0f);
             ghost.transform.rotation = GridManager.GetRotationQuaternion(msg.Rotation);
+            // 镜像朝向同步（樱桃发射器/流星锤等）
+            ItemBase ghostItem = ghost.GetComponent<ItemBase>();
+            if (ghostItem != null)
+            {
+                ghostItem.SetMirrored(msg.Mirrored);
+            }
 
             // 远端玩家的光标标记：跟随其道具位置（与本地 Cursor 一致的偏移与配色）
             ShowRemoteCursor(msg.PlayerId, new Vector2(msg.Position.X, msg.Position.Y));
@@ -838,7 +838,12 @@ namespace SuperQQ.Placement.Runtime
                 ClientTimeMs = NetworkManager.NowMs(),
                 // 附着类道具（黄油块等，声明 AllowsOccupiedOverlap 但非拆除类）：
                 // 通知服务器跳过冲突检查且不记录占据（客户端权威，与本地不登记占据的口径一致）
-                AllowOverlap = prefab != null && prefab.AllowsOccupiedOverlap
+                AllowOverlap = prefab != null && prefab.AllowsOccupiedOverlap,
+                Mirrored = localSession.CurrentMirrored,
+                // 链式道具（传送门第一段）：通知服务器本玩家后续还有确认，
+                // 勿在本次确认后计入"全员确认完毕"（否则第一段摆完阶段就提前推进）
+                ExpectMore = pc != null
+                    && pc.GetComponent<SuperQQ.Item.Portal>() is { } portal && portal.HasChainedItem
             };
             foreach (Vector2Int cell in cells)
             {
@@ -1103,6 +1108,7 @@ namespace SuperQQ.Placement.Runtime
             if (itemBase != null)
             {
                 itemBase.InitPlaced(placed, result.Rotation);
+                itemBase.SetMirrored(result.Mirrored); // 镜像朝向同步（樱桃发射器/流星锤等）
                 itemBase.OnPlaced();
             }
             Debug.Log($"{LOG_TAG} 远端道具生成完成: {item.name} 位置=({worldPos.x},{worldPos.y})");

@@ -67,6 +67,21 @@ namespace SuperQQ.Item
         public bool IsEntrance => role == PortalRole.Entrance;
         /// <summary>是否已完成入口-出口配对</summary>
         public bool IsLinked => linkedPortal != null;
+        /// <summary>本实例是否为 SpawnChainedItem 生成的链生段（出口）</summary>
+        public bool BIsChainedSpawn { get; private set; }
+
+        /// <summary>标记为链生段（由 SpawnChainedItem 在生成时调用）</summary>
+        public void MarkAsChainedSpawn()
+        {
+            BIsChainedSpawn = true;
+        }
+
+        /// <summary>
+        /// 是否为"还有后续确认"的链式首段（非链生段，即玩家手摆的第一段）：
+        /// 摆放确认时据此在 ItemPlaceConfirm 携带 expect_more，避免服务器过早计入"全员确认完毕"。
+        /// 用链生标记而非运行时配对状态判定——确认点击可能先于 OnPlaced/配对建立（竞态安全）
+        /// </summary>
+        public bool HasChainedItem => !BIsChainedSpawn;
         /// <summary>配对的另一端（入口取出口，出口取入口）</summary>
         public Portal LinkedPortal => linkedPortal;
 
@@ -128,6 +143,15 @@ namespace SuperQQ.Item
             if (player != null && player.BAffectedByItems)   // 死亡过渡/幽灵不被传送
             {
                 Teleport(player);
+                return;
+            }
+
+            // 可传送弹体（樱桃等）：保持速度向量从出口继续飞。
+            // 各端本地确定性模拟同一轨迹，必在同一时机碰门，本地传送即各端同步
+            CherryProjectile projectile = other.GetComponentInParent<CherryProjectile>();
+            if (projectile != null && !projectile.BTeleportCoolingDown)
+            {
+                projectile.TeleportTo((Vector2)linkedPortal.transform.position + linkedPortal.exitOffset);
             }
         }
 
@@ -268,7 +292,13 @@ namespace SuperQQ.Item
                 spawnPos += new Vector3(exitSpawnCellOffset.x * cellSize, exitSpawnCellOffset.y * cellSize, 0f);
             }
 
-            return Instantiate(prefab, spawnPos, prefab.transform.rotation);
+            GameObject chained = Instantiate(prefab, spawnPos, prefab.transform.rotation);
+            // 打上链生标记：expect_more 判定与 itemId 解析都依赖"是否链生段"（竞态安全）
+            if (chained.TryGetComponent(out Portal exitPortal))
+            {
+                exitPortal.MarkAsChainedSpawn();
+            }
+            return chained;
         }
 
         /// <summary>按角色染色（调试用，正式素材就位后关闭 tintByRole）</summary>

@@ -183,6 +183,19 @@ namespace SuperQQ.Item
             SuperQQ.Network.ItemLifecycleSync.ReportDestroyed(this);
         }
 
+        /// <summary>
+        /// 切换左右镜像（默认空实现，无可镜像语义的道具不响应）。
+        /// 有朝向/方向语义的道具重写：樱桃发射器切换发射方向、流星锤切换摆动方向。
+        /// 摆放阶段对不可旋转的道具按旋转键时调用（PlacementSession.Rotate 的回退路径）
+        /// </summary>
+        public virtual void ToggleMirror() { }
+
+        /// <summary>当前是否镜像（无镜像语义的道具恒 false；联机同步读取）</summary>
+        public virtual bool Mirrored => false;
+
+        /// <summary>设置镜像状态（联机同步写入：远端生成/快照恢复时调用）</summary>
+        public virtual void SetMirrored(bool value) { }
+
         /// <summary>被移除（拾回/拆除）前调用，用于清理运行状态</summary>
         public virtual void OnRemoved()
         {

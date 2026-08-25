@@ -190,7 +190,8 @@ namespace SuperQQ.Item
             foreach (Vector2Int cell in grid.GetFootprintCells(Placed.AnchorCell, ResolveOwnFootprint(), Placed.Rotation))
             {
                 PlacedItem item = grid.GetItemAt(cell);
-                if (item != null && item != Placed)
+                if (item != null && item != Placed
+                    && item.GetComponent<SuperQQ.Map.BoatPlatform>() == null) // 船等平台类关卡物体不可被爆破
                 {
                     targets.Add(item);
                 }

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0a4e5b7c8d689f4fb08a56196c7822c, type: 3}
+  m_Name: PlacableItemDef_PopcornBoxer
+  m_EditorClassIdentifier: 
+  itemId: popcorn_boxer
+  prefab: {fileID: 5308881992755271978, guid: 9fba583fc775cdd468ae8f087a384dc0, type: 3}
+  ghostPrefab: {fileID: 0}
+  footprint: {x: 2, y: 2}
+  rotatable: 0
+  category: 1
+  facingSteps: 0
+  icon: {fileID: 0}
