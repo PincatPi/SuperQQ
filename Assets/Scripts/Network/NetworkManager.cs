@@ -180,7 +180,7 @@ namespace SuperQQ.Network
         public event Action<bool> OnConnectionChanged;
 
         [Header("服务器地址")]
-        [SerializeField] private string serverUrl = "wss://gliding-dominion-diagnosis.ngrok-free.dev/ws";
+        [SerializeField] private string serverUrl = "wss://12931fc.r29.cpolar.top/ws";
 
         [Header("心跳间隔（秒）")]
         [SerializeField] private float heartbeatInterval = 5f;
