@@ -242,7 +242,7 @@ namespace SuperQQ.Network
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"[NetWork] 连接/接收异常: {e.Message}");
+                    Debug.LogWarning($"[NetWork] 连接/接收异常: {e}");
                 }
                 connEvents.Enqueue(false);
             });
