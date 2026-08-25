@@ -1564,7 +1564,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.5252995, y: 7.1676006, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2124,7 +2124,7 @@ MonoBehaviour:
     Prefab: {fileID: 8951677371387435975, guid: 7ed50d8ea220b4ac8851f7c33df8f4d7, type: 3}
     DefaultDuration: 3
   - Type: 3
-    Prefab: {fileID: 6025555612304353574, guid: d8889855de8b145768a2c3e3e7aca878, type: 3}
+    Prefab: {fileID: 6993257778526718000, guid: 74eb832ad8df64950959b2d12aa72b7d, type: 3}
     DefaultDuration: 3
   - Type: 5
     Prefab: {fileID: 4313469324709259989, guid: 02457c99e5e8b4014a3c8637cd7dcd0b, type: 3}
@@ -2395,7 +2395,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _eventConfig: {fileID: 11400000, guid: 1fcad58204ad04342a9ea57dacabdd43, type: 2}
-  _bTempClientLocalTrigger: 1
+  _bTempClientLocalTrigger: 0
 --- !u!4 &1022101062
 Transform:
   m_ObjectHideFlags: 0
@@ -3875,7 +3875,7 @@ Transform:
   m_GameObject: {fileID: 2045586317}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.5252995, y: 7.1676006, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

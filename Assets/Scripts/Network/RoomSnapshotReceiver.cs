@@ -100,8 +100,49 @@ namespace SuperQQ.Network
             if (snapshot.EventTriggered)
             {
                 SuperQQ.Event.LevelEventAnnouncer.Instance?.OnServerEventTriggered(snapshot.EventTriggeredAtMs);
+
+                // 联调诊断：事件已触发但服务端始终未携带参数包（一次性告警，随触发复位重置）。
+                // 仅在触发后从未收到过参数包时告警——波次间隙服务端不携带参数属于正常行为
+                if (snapshot.EventParams1 == null && !_bLoggedEventParamsReceived && !_bLoggedMissingEventParams)
+                {
+                    _bLoggedMissingEventParams = true;
+                    Debug.LogWarning("[RoomSnapshotReceiver] 事件已触发但快照未携带 event_params1——陨石波次等待服务端下发参数包（请后端确认触发后是否在快照中填充 event_params1）");
+                }
+            }
+            else
+            {
+                _bLoggedMissingEventParams = false;
+                _bLoggedEventParamsReceived = false;
+            }
+
+            // 随机事件参数（陨石波次等）：事件触发后随快照持续下发，
+            // 首包驱动客户端生成、后续包做位置校验；Announcer 路由给对应事件 Modifier
+            if (snapshot.EventParams1 != null)
+            {
+                if (!_bLoggedEventParamsReceived)
+                {
+                    _bLoggedEventParamsReceived = true;
+                    Debug.Log($"[RoomSnapshotReceiver] 收到事件参数包: count={snapshot.EventParams1.Count} initial={snapshot.EventParams1.InitialPositions.Count} current={snapshot.EventParams1.CurrentPositions.Count} angles={snapshot.EventParams1.Angles.Count} speed={snapshot.EventParams1.Speed:F1}");
+                }
+                SuperQQ.Event.LevelEventAnnouncer.Instance?.OnServerEventParams(snapshot.EventParams1);
+            }
+
+            // 随机事件2参数（冰冻事件）：事件触发后随快照下发，服务端决定冰冻持续时间
+            if (snapshot.EventParams2 != null)
+            {
+                if (!_bLoggedEventParams2Received)
+                {
+                    _bLoggedEventParams2Received = true;
+                    Debug.Log($"[RoomSnapshotReceiver] 收到事件2参数包: 冰冻时长={snapshot.EventParams2.DurationMs}ms");
+                }
+                SuperQQ.Event.LevelEventAnnouncer.Instance?.OnServerEventParams2(snapshot.EventParams2);
             }
         }
+
+        // 联调诊断用日志去重标志（随事件触发状态复位）
+        private bool _bLoggedMissingEventParams;
+        private bool _bLoggedEventParamsReceived;
+        private bool _bLoggedEventParams2Received;
 
         // 已恢复的远端道具：anchorCell key -> 实例，避免每次快照重复生成
         private readonly HashSet<string> _restoredItems = new();

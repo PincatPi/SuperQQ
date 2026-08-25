@@ -265,6 +265,8 @@ namespace SuperQQ.Event
             // 新一轮：重置触发状态，停掉上一轮的引爆协程
             _serverEventRound = round;
             _bServerEventTriggered = false;
+            _bWarnedNoServerDrivenModifier = false;
+            _bWarnedNoServerDrivenModifier2 = false;
             if (_serverTriggerCoroutine != null)
             {
                 StopCoroutine(_serverTriggerCoroutine);
@@ -340,6 +342,78 @@ namespace SuperQQ.Event
             _serverTriggerCoroutine = StartCoroutine(ServerTriggerAfterDelay(delaySeconds));
             Debug.Log($"[LevelEventAnnouncer] 服务器事件已掷签: 触发时刻={triggeredAtMs} 预计 {delaySeconds:F2}s 后引爆");
         }
+
+        /// <summary>
+        /// 服务端随机事件参数下发（由 RoomSnapshotReceiver 在 RoomSnapshot.event_params1 到达时调用）。
+        /// 路由给本轮选中事件中实现 IServerDrivenRandomEvent 的 Modifier（如小蛋糕陨石）：
+        /// 首包驱动生成，后续包做位置校验。快照全量重复下发，Modifier 内部自行幂等。
+        /// </summary>
+        public void OnServerEventParams(Minigame.Room.V1.RandomEventParams eventParams)
+        {
+            // 【临时】测试开关开启时忽略服务器参数下发（恢复正式逻辑时取消勾选）
+            if (_bTempClientLocalTrigger || eventParams == null)
+            {
+                return;
+            }
+            if (!IsNetMode())
+            {
+                return;
+            }
+
+            bool bRouted = false;
+            for (int i = 0; i < _selectedEntries.Count; i++)
+            {
+                if (_selectedEntries[i].Modifier is IServerDrivenRandomEvent serverDriven)
+                {
+                    serverDriven.ApplyServerEventParams(eventParams);
+                    bRouted = true;
+                }
+            }
+
+            // 联调诊断：参数包到了但本轮选中事件中没有服务端驱动实现（一次性告警，随新轮重置）
+            if (!bRouted && !_bWarnedNoServerDrivenModifier)
+            {
+                _bWarnedNoServerDrivenModifier = true;
+                Debug.LogWarning("[LevelEventAnnouncer] 收到事件参数包，但本轮选中事件中没有实现 IServerDrivenRandomEvent 的 Modifier（检查事件配置表/服务器 event_id 是否指向小蛋糕陨石）");
+            }
+        }
+
+        /// <summary>
+        /// 服务端随机事件2参数下发（由 RoomSnapshotReceiver 在 RoomSnapshot.event_params2 到达时调用）。
+        /// 路由给本轮选中事件中实现 IServerDrivenRandomEvent2 的 Modifier（如液氮泄露冰冻事件）。
+        /// </summary>
+        public void OnServerEventParams2(Minigame.Room.V1.RandomEventParams2 eventParams)
+        {
+            // 【临时】测试开关开启时忽略服务器参数下发（恢复正式逻辑时取消勾选）
+            if (_bTempClientLocalTrigger || eventParams == null)
+            {
+                return;
+            }
+            if (!IsNetMode())
+            {
+                return;
+            }
+
+            bool bRouted = false;
+            for (int i = 0; i < _selectedEntries.Count; i++)
+            {
+                if (_selectedEntries[i].Modifier is IServerDrivenRandomEvent2 serverDriven)
+                {
+                    serverDriven.ApplyServerEventParams(eventParams);
+                    bRouted = true;
+                }
+            }
+
+            if (!bRouted && !_bWarnedNoServerDrivenModifier2)
+            {
+                _bWarnedNoServerDrivenModifier2 = true;
+                Debug.LogWarning("[LevelEventAnnouncer] 收到事件2参数包，但本轮选中事件中没有实现 IServerDrivenRandomEvent2 的 Modifier（检查服务器 event_id 是否指向液氮泄露冰冻事件）");
+            }
+        }
+
+        // 联调诊断用：无服务端驱动 Modifier 告警去重（ApplyServerEvent 新一轮时重置）
+        private bool _bWarnedNoServerDrivenModifier;
+        private bool _bWarnedNoServerDrivenModifier2;
 
         /// <summary>按服务器时钟锚点延时后，触发本轮事件的 Modifier 逻辑</summary>
         private IEnumerator ServerTriggerAfterDelay(float delaySeconds)

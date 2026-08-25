@@ -29,6 +29,9 @@ namespace SuperQQ.Event
         // 是否已注入飞行参数（未 Launch 前静止不动）
         private bool _bLaunched;
 
+        // 联机服务端驱动：波次内下标（与 event_params1 数组对位，供快照位置校验）；-1 表示本地生成
+        private int _waveIndex = -1;
+
         // 运动学刚体（RequireComponent 保证存在，Awake 中缓存）
         private Rigidbody2D _rigidbody;
 
@@ -57,6 +60,40 @@ namespace SuperQQ.Event
             _bLaunched = true;
         }
 
+        /// <summary>波次内下标（联机服务端驱动模式），由 CakeMeteorModifier 在实例化时注入</summary>
+        public int WaveIndex => _waveIndex;
+
+        /// <summary>设置波次内下标（需在 Launch 之前调用）</summary>
+        public void SetWaveIndex(int waveIndex)
+        {
+            _waveIndex = waveIndex;
+        }
+
+        /// <summary>
+        /// 服务端位置校验纠偏（联机服务端驱动模式）：
+        /// 偏差超过吸附阈值时直接对齐服务端位置（防累计漂移/迟到恢复）；
+        /// 小偏差按系数向服务端位置收敛，避免快照频率造成的抖动。
+        /// 本地匀速直线运动与服务端按时间计算同源，正常偏差极小。
+        /// </summary>
+        public void ApplyServerPosition(Vector2 serverPosition, float snapThreshold, float lerpFactor)
+        {
+            if (!_bLaunched)
+            {
+                return;
+            }
+
+            Vector2 current = _rigidbody.position;
+            float sqrDistance = (serverPosition - current).sqrMagnitude;
+            if (sqrDistance >= snapThreshold * snapThreshold)
+            {
+                _rigidbody.position = serverPosition;
+            }
+            else if (sqrDistance > 0.0001f)
+            {
+                _rigidbody.position = Vector2.Lerp(current, serverPosition, lerpFactor);
+            }
+        }
+
         private void FixedUpdate()
         {
             if (!_bLaunched)
@@ -70,6 +107,7 @@ namespace SuperQQ.Event
             _elapsed += Time.fixedDeltaTime;
             if (_maxLifetime > 0f && _elapsed >= _maxLifetime)
             {
+                Debug.Log($"[CakeMeteor] 生命周期到期销毁: 存活={_elapsed:F1}s 位置={_rigidbody.position}");
                 Destroy(gameObject);
                 return;
             }
@@ -77,6 +115,7 @@ namespace SuperQQ.Event
             // 落出关卡下边界销毁
             if (LevelBounds.Instance != null && LevelBounds.Instance.IsBelow(_rigidbody.position.y))
             {
+                Debug.Log($"[CakeMeteor] 落出下边界销毁: 位置={_rigidbody.position} 下边界={LevelBounds.Instance.Bounds.min.y:F1}");
                 Destroy(gameObject);
             }
         }

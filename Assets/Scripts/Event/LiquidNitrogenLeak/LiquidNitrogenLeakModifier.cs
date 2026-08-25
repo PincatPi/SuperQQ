@@ -14,11 +14,14 @@ namespace SuperQQ.Event
     /// → 冻结所有存活玩家（刚体全约束，冰块视觉挂为玩家子节点）
     /// → 玩家摇晃手机累积解冻进度（摇晃强度越大进度涨得越快，配进度条 UI）
     /// → 进度满（或超时兜底）后全员解冻，伴随冰块碎裂音效
+    /// 联机模式（服务端驱动）：冰冻持续时间由服务端 RoomSnapshot.event_params2 下发，
+    /// 作为自动解冻兜底时间（本地资产的 _autoThawTimeout 仅作服务端参数未到达时的回退值），
+    /// 两端解冻时刻对齐，摇晃进度等手感仍保持本地
     /// 摇晃检测由独立的 ShakeDetector 模块提供，本事件只轮询其强度输出
     /// 所有策划参数均在本资产上配置；运行时状态（随机源、协程、冻结记录、UI）不序列化
     /// </summary>
     [CreateAssetMenu(fileName = "LiquidNitrogenLeakModifier", menuName = "SuperQQ/Event/Liquid Nitrogen Leak Modifier")]
-    public class LiquidNitrogenLeakModifier : LevelEventModifier
+    public class LiquidNitrogenLeakModifier : LevelEventModifier, IServerDrivenRandomEvent2
     {
         [Header("触发时机")]
         [Tooltip("关卡开始后触发事件的最小延迟（秒），实际触发时机在 最小~最大 之间随机")]
@@ -60,7 +63,7 @@ namespace SuperQQ.Event
         [Min(0f)]
         [SerializeField] private float _progressDecayPerSecond = 0.1f;
 
-        [Tooltip("自动解冻兜底时间（秒）：从冻结开始计时，超时强制解冻，防止传感器不可用时玩家被永久冻结")]
+        [Tooltip("自动解冻兜底时间（秒）：从冻结开始计时，超时强制解冻，防止传感器不可用时玩家被永久冻结；联机模式下以服务端 event_params2.duration_ms 为准（未到达时回退本值）")]
         [Min(1f)]
         [SerializeField] private float _autoThawTimeout = 15f;
 
@@ -124,6 +127,9 @@ namespace SuperQQ.Event
         // 上次震动反馈时刻（Time.time，用于最小间隔节流）
         private float _lastVibrateTime = float.NegativeInfinity;
 
+        // 联机服务端驱动：服务端下发的冰冻持续秒数（event_params2），>0 时代替本地兜底时长
+        private float _serverFreezeSeconds;
+
         // ==================== LevelEventModifier 实现 ====================
 
         /// <summary>
@@ -157,6 +163,31 @@ namespace SuperQQ.Event
             // 避免场景关闭阶段经 OnDestroy 链路调用 AudioManager 重建已销毁的单例
             EndThaw(playCrackSfx: false);
             _random = null;
+            _serverFreezeSeconds = 0f;
+        }
+
+        // ==================== IServerDrivenRandomEvent2 实现（联机服务端驱动） ====================
+
+        /// <summary>
+        /// 应用服务端下发的冰冻持续时间（RoomSnapshot.event_params2，快照全量重发）。
+        /// 服务端掷签的冰冻时长作为自动解冻兜底时间，两端解冻时刻对齐；
+        /// 摇晃进度等手感仍保持本地。时长为正数才生效（0 = 未下发，回退本地资产值）。
+        /// </summary>
+        public void ApplyServerEventParams(Minigame.Room.V1.RandomEventParams2 eventParams)
+        {
+            if (eventParams == null || eventParams.DurationMs <= 0)
+            {
+                return;
+            }
+
+            float seconds = eventParams.DurationMs / 1000f;
+            if (Mathf.Approximately(_serverFreezeSeconds, seconds))
+            {
+                return;
+            }
+
+            _serverFreezeSeconds = seconds;
+            Debug.Log($"[LiquidNitrogenLeakModifier] 服务端冰冻时长已应用: {seconds:F1}s（本地回退值 {_autoThawTimeout:F1}s）");
         }
 
         // ==================== 事件流程协程 ====================
@@ -187,12 +218,14 @@ namespace SuperQQ.Event
             _shakeDetector = ShakeDetector.GetOrCreate();
             _shakeDetector.enabled = true;
 
-            // 解冻循环：进度按摇晃强度累积、无摇晃时缓慢衰减；满进度或超时兜底退出
+            // 解冻循环：进度按摇晃强度累积、无摇晃时缓慢衰减；满进度或超时兜底退出。
+            // 自动解冻时长优先取服务端下发的冰冻时长（两端对齐），未下发回退本地资产值
             float progress = 0f;
             float elapsed = 0f;
+            float autoThawSeconds = _serverFreezeSeconds > 0f ? _serverFreezeSeconds : _autoThawTimeout;
             _lastVibrateTime = float.NegativeInfinity;
 
-            while (progress < 1f && elapsed < _autoThawTimeout)
+            while (progress < 1f && elapsed < autoThawSeconds)
             {
                 float deltaTime = Time.deltaTime;
                 elapsed += deltaTime;

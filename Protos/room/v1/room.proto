@@ -190,6 +190,10 @@ message RoomSnapshot {
   bool event_triggered = 8;
   // 事件触发时刻（服务器毫秒时间戳，未触发为 0）。客户端以服务器时钟为锚点定时引爆。
   int64 event_triggered_at_ms = 9;
+  // 随机事件1参数（飞行物，事件触发后随快照下发，含服务端计算的动态当前位置；未触发为 nil）。
+  RandomEventParams event_params1 = 10;
+  // 随机事件2参数（冰冻，事件触发后随快照下发；未触发为 nil）。
+  RandomEventParams2 event_params2 = 11;
 }
 
 message SettlementPlayerResult {
@@ -584,4 +588,22 @@ message GmCommandPush {
   repeated string args = 3;
   string target_player_id = 4; // 空 = 全员生效
   int64 server_time_ms = 5;
+}
+
+// ==================== 随机事件参数 ====================
+
+// 随机事件参数列表（当前仅定义事件1 = paramlist1）。
+// 描述一批从高空匀速飞行的障碍物：初始位置在 y=18 水平线上、x 在 [-20,3] 内随机，
+// 以 75~105 度、速度 8 匀速运动，当前位置由服务端按运动时间计算后随快照下发。
+message RandomEventParams {
+  int32 count = 1;                        // 飞行物数量（1~3）
+  repeated Vector2 initial_positions = 2; // 初始位置数组，长度=count（最大3）
+  repeated Vector2 current_positions = 3; // 当前位置数组，长度=count，服务端按角度/速度/时间计算
+  repeated float angles = 4;              // 各陨石的发射角度数组（度，75~105；90=正下方；长度=count）
+  float speed = 5;                        // 速度（固定 8）
+}
+
+// 随机事件2参数（event_params2）：冰冻。
+message RandomEventParams2 {
+  int64 duration_ms = 1;                  // 冰冻持续时间（毫秒，8~20 秒随机）
 }
