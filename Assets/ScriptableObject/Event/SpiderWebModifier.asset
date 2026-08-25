@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _webFieldPrefab: {fileID: 6981192916707139219, guid: 72d4592a3cb484efcaf9cf353a09544d, type: 3}
   _webFieldPosition: {x: 0, y: 0}
-  _slowFactor: 0.9
+  _slowFactor: 0.95
   _struggleBarPrefab: {fileID: 0}
   _swipePixelsToEscape: 10000
   _decayRate: 0.1
