@@ -163,6 +163,7 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
+    Android: com.Tencent.SuperQQ
     iPhone: com.superqq.game
   buildNumber:
     Standalone: 0

@@ -2599,7 +2599,7 @@ MonoBehaviour:
   Token: 
   SessionId: 
   GatewayId: 
-  serverUrl: ws://9.134.41.238:8080/ws
+  serverUrl: wss://gliding-dominion-diagnosis.ngrok-free.dev/ws
   heartbeatInterval: 5
 --- !u!4 &1057884542
 Transform:
