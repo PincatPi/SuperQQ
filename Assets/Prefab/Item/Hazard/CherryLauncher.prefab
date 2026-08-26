@@ -67,7 +67,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1202990299728095132}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -118,7 +118,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputCamera: {fileID: 0}
+  pointerLiftPixels: 130
   pointerLiftCells: 1
+  dragThresholdPixels: 12
+  liftRampTime: 0.12
   showBoxWhileDragging: 1
   allowPlaceOnOccupied: 0
   ghostAlpha: 0.5
@@ -147,6 +150,10 @@ MonoBehaviour:
   muzzleOffset: {x: 0.35, y: 0.38}
   startFacingRight: 1
   visual: {fileID: 2771727763031491600}
+  chargeDuration: 0.3
+  chargeSquashY: 0.78
+  releaseDuration: 0.35
+  releaseStretchY: 1.3
 --- !u!1 &4483236317770616377
 GameObject:
   m_ObjectHideFlags: 0
