@@ -1317,7 +1317,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.5252995, y: 7.1676006, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1897,7 +1897,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _testKey: 107
-  _testEffect: {fileID: 11400000, guid: 39a49872d3604d4780fdccf46a730aad, type: 2}
+  _testEffect: {fileID: 11400000, guid: 65635a2f05eb437b978052c7548f8a27, type: 2}
 --- !u!4 &1007445139
 Transform:
   m_ObjectHideFlags: 0
@@ -1943,7 +1943,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _eventConfig: {fileID: 11400000, guid: 1fcad58204ad04342a9ea57dacabdd43, type: 2}
-  _bTempClientLocalTrigger: 0
+  _bTempClientLocalTrigger: 1
 --- !u!4 &1022101062
 Transform:
   m_ObjectHideFlags: 0
@@ -2972,7 +2972,7 @@ Transform:
   m_GameObject: {fileID: 2045586317}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.5252995, y: 7.1676006, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

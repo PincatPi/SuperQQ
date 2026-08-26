@@ -112,6 +112,12 @@ namespace SuperQQ.Event
         /// </summary>
         public bool BHasAnnounced => _bHasAnnounced;
 
+        /// <summary>
+        /// 【临时】客户端本地触发开关是否开启：开启时事件由客户端本地掷签触发，
+        /// 事件效果（如咒语）应走纯本地逻辑而非服务端同步
+        /// </summary>
+        public bool BTempClientLocalTrigger => _bTempClientLocalTrigger;
+
         // ==================== 生命周期 ====================
 
         private void Awake()
@@ -267,6 +273,7 @@ namespace SuperQQ.Event
             _bServerEventTriggered = false;
             _bWarnedNoServerDrivenModifier = false;
             _bWarnedNoServerDrivenModifier2 = false;
+            _bWarnedNoServerDrivenModifier3 = false;
             if (_serverTriggerCoroutine != null)
             {
                 StopCoroutine(_serverTriggerCoroutine);
@@ -411,9 +418,44 @@ namespace SuperQQ.Event
             }
         }
 
+        /// <summary>
+        /// 服务端随机事件3玩家状态下发（由 RoomSnapshotReceiver 在 RoomSnapshot.event3_states 到达时调用）。
+        /// 路由给本轮选中事件中实现 IServerDrivenRandomEvent3 的 Modifier（言出法随）。
+        /// 快照全量重复下发，Modifier 内部自行幂等（边沿触发/去重）。
+        /// </summary>
+        public void OnServerEvent3States(System.Collections.Generic.IDictionary<string, Minigame.Room.V1.Event3PlayerState> states)
+        {
+            // 【临时】测试开关开启时忽略服务器参数下发（恢复正式逻辑时取消勾选）
+            if (_bTempClientLocalTrigger || states == null)
+            {
+                return;
+            }
+            if (!IsNetMode())
+            {
+                return;
+            }
+
+            bool bRouted = false;
+            for (int i = 0; i < _selectedEntries.Count; i++)
+            {
+                if (_selectedEntries[i].Modifier is IServerDrivenRandomEvent3 serverDriven)
+                {
+                    serverDriven.ApplyServerEvent3States(states);
+                    bRouted = true;
+                }
+            }
+
+            if (!bRouted && states.Count > 0 && !_bWarnedNoServerDrivenModifier3)
+            {
+                _bWarnedNoServerDrivenModifier3 = true;
+                Debug.LogWarning("[LevelEventAnnouncer] 收到事件3状态包，但本轮选中事件中没有实现 IServerDrivenRandomEvent3 的 Modifier（检查服务器 event_id 是否指向言出法随事件）");
+            }
+        }
+
         // 联调诊断用：无服务端驱动 Modifier 告警去重（ApplyServerEvent 新一轮时重置）
         private bool _bWarnedNoServerDrivenModifier;
         private bool _bWarnedNoServerDrivenModifier2;
+        private bool _bWarnedNoServerDrivenModifier3;
 
         /// <summary>按服务器时钟锚点延时后，触发本轮事件的 Modifier 逻辑</summary>
         private IEnumerator ServerTriggerAfterDelay(float delaySeconds)

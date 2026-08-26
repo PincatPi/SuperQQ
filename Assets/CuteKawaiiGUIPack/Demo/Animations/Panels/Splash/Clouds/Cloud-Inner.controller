@@ -33,7 +33,7 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: 8675214466653742673}
-    m_Position: {x: 273.18573, y: 85.651855, z: 0}
+    m_Position: {x: 270, y: 90, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 5381783362394997504}
     m_Position: {x: 270, y: 150, z: 0}
@@ -76,7 +76,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Cloud-Inner-Idle
+  m_Name: Cloud-Inner-Idle-Outer
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -89,7 +89,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 1de0fe6765e5c4d6ab8f98ac4fbc0b68, type: 2}
+  m_Motion: {fileID: 7400000, guid: fdbef34ceaed14d818aab38acead308d, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 

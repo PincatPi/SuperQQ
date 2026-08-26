@@ -21,7 +21,7 @@ namespace SuperQQ.Event
     /// 所有策划参数均在本资产上配置；运行时状态（法阵实例、提示框实例）不序列化
     /// </summary>
     [CreateAssetMenu(fileName = "MagicCircleModifier", menuName = "SuperQQ/Event/Magic Circle Modifier")]
-    public class MagicCircleModifier : LevelEventModifier
+    public class MagicCircleModifier : LevelEventModifier, IServerDrivenRandomEvent3
     {
         [Header("法阵")]
         [Tooltip("法阵 Prefab（根节点需挂 MagicCircle 脚本与 Trigger 碰撞体，碰撞体形状即触发范围），激活时在固定位置实例化")]
@@ -174,6 +174,19 @@ namespace SuperQQ.Event
             }
             _activeEffects.Clear();
 
+            // 清理服务端同步驱动的咒语表现（如雷公助我的施法者雷光）
+            if (_spells != null)
+            {
+                for (int i = 0; i < _spells.Length; i++)
+                {
+                    SpellDefinition spell = _spells[i];
+                    if (spell != null && spell.Subtype > 0 && spell.Effect != null)
+                    {
+                        spell.Effect.EndServerDrivenEffects();
+                    }
+                }
+            }
+
             _playersInside.Clear();
             _promptCanvasRect = null;
             _camera = null;
@@ -257,6 +270,12 @@ namespace SuperQQ.Event
                 return;
             }
 
+            // 联机：上报本地玩家选择的咒语子类型（服务端据此经快照 event3_states 下发事件状态；离线为空操作）
+            if (spell.Subtype > 0)
+            {
+                SuperQQ.Network.NetEventSync.ReportEvent3Subtype(spell.Subtype);
+            }
+
             SpellEffectContext context = new SpellEffectContext(
                 target,
                 _eventContext != null ? _eventContext.CoroutineRunner : null,
@@ -266,6 +285,29 @@ namespace SuperQQ.Event
             if (instance != null)
             {
                 _activeEffects.Add(instance);
+            }
+        }
+
+        // ==================== 联机：服务端事件3状态同步 ====================
+
+        /// <summary>
+        /// 服务端事件3玩家状态下发（LevelEventAnnouncer 路由，快照全量重复下发）：
+        /// 转发给配置了联机子类型的咒语效果（如雷公助我），各效果内部自行幂等（边沿触发/去重）
+        /// </summary>
+        public void ApplyServerEvent3States(System.Collections.Generic.IDictionary<string, Minigame.Room.V1.Event3PlayerState> states)
+        {
+            if (_spells == null || states == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < _spells.Length; i++)
+            {
+                SpellDefinition spell = _spells[i];
+                if (spell != null && spell.Subtype > 0 && spell.Effect != null)
+                {
+                    spell.Effect.ApplyServerEvent3States(states, _eventContext);
+                }
             }
         }
 

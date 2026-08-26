@@ -150,6 +150,33 @@ namespace SuperQQ.Network
             });
         }
 
+        // ==================== 事件3（言出法随）上行 ====================
+
+        /// <summary>上报本地玩家选择的咒语子类型（1/2/3），无同步应答，服务端状态经 RoomSnapshot.event3_states 下发；离线为空操作</summary>
+        public static void ReportEvent3Subtype(int subtype)
+        {
+            if (!BReady || subtype <= 0) return;
+            NetworkManager net = NetworkManager.Instance;
+            net.Send(new ReportEvent3Subtype
+            {
+                RoomId = net.RoomId,
+                PlayerId = net.LocalPlayerId,
+                Subtype = subtype
+            });
+        }
+
+        /// <summary>上报本机音量超标（player_id 由网关自动补 = 音量超标玩家），无同步应答；离线为空操作</summary>
+        public static void ReportEvent3LoudPlayer()
+        {
+            if (!BReady) return;
+            NetworkManager net = NetworkManager.Instance;
+            net.Send(new ReportEvent3LoudPlayer
+            {
+                RoomId = net.RoomId
+                // PlayerId 留空，网关自动补
+            });
+        }
+
         // ==================== 接收侧（远端表现） ====================
 
         private void OnPlayerEvent(PlayerEventBroadcast msg)

@@ -26,4 +26,17 @@ namespace SuperQQ.Event
         /// <summary>应用服务端下发的事件参数（每次快照到达都可能调用）</summary>
         void ApplyServerEventParams(RandomEventParams2 eventParams);
     }
+
+    /// <summary>
+    /// 服务端驱动的随机事件3状态接收接口（言出法随）。
+    /// 由言出法随事件的 Modifier 实现：事件期间服务端随 RoomSnapshot 持续下发
+    /// event3_states（player_id -> Event3PlayerState：子类型/剩余时间/检测声音/劈/音量超标玩家列表），
+    /// LevelEventAnnouncer 路由给实现方。快照全量重复下发，实现方需自行保证幂等（边沿触发/去重）。
+    /// 状态 map 由多变空时会以空 map 补发一次，供实现方做清理。
+    /// </summary>
+    public interface IServerDrivenRandomEvent3
+    {
+        /// <summary>应用服务端下发的事件3玩家状态（每次快照到达都可能调用）</summary>
+        void ApplyServerEvent3States(System.Collections.Generic.IDictionary<string, Event3PlayerState> states);
+    }
 }

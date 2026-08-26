@@ -76,6 +76,8 @@ namespace SuperQQ.Network
             { typeof(GmSetPhase),               (e, m) => e.GmSetPhase = (GmSetPhase)m },
             { typeof(TrapKillEvent),            (e, m) => e.TrapKillEvent = (TrapKillEvent)m },
             { typeof(ItemDemolishConfirm),      (e, m) => e.ItemDemolishConfirm = (ItemDemolishConfirm)m },
+            { typeof(ReportEvent3Subtype),      (e, m) => e.ReportEvent3Subtype = (ReportEvent3Subtype)m },
+            { typeof(ReportEvent3LoudPlayer),   (e, m) => e.ReportEvent3LoudPlayer = (ReportEvent3LoudPlayer)m },
         };
 
         // 接收侧：消息类型 -> 从 ServerEnvelope 取出的方式

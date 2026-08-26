@@ -15,3 +15,4 @@ MonoBehaviour:
   _spellText: "\u65E0\u654C\u91D1\u8EAB"
   _displayName: "\u65E0\u654C\u91D1\u8EAB"
   _effect: {fileID: 11400000, guid: 2949623a75e74fee96638fc3505adca6, type: 2}
+  _subtype: 2

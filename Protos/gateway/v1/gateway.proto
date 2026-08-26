@@ -65,6 +65,10 @@ message ClientEnvelope {
     minigame.account.v1.LogoutRequest logout = 36;
     // 旋转吐司尺寸上报：纯透传，无同步应答，广播 ToastSizeBroadcast 给全房间。
     minigame.room.v1.ToastSizeSync toast_size_sync = 37;
+    // 事件3（言出法随）子类型上报：无同步应答，状态通过 RoomSnapshot.event3_states 下发。
+    minigame.room.v1.ReportEvent3Subtype report_event3_subtype = 38;
+    // 事件3 音量超标玩家上报：无同步应答，状态通过 RoomSnapshot.event3_states 下发。
+    minigame.room.v1.ReportEvent3LoudPlayer report_event3_loud_player = 39;
   }
 }
 
