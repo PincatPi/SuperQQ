@@ -98,16 +98,17 @@ namespace SuperQQ.Placement.Runtime
         [SerializeField] private Button confirmPlaceButtonPrefab;
         [Tooltip("旋转按钮 prefab（需挂 Button）；留空则运行时搭建默认样式")]
         [SerializeField] private Button rotatePlaceButtonPrefab;
-        [Tooltip("确认按钮相对屏幕顶部居中的锚点偏移（像素）")]
-        [SerializeField] private Vector2 confirmButtonAnchoredPos = new Vector2(90f, -30f);
-        [Tooltip("旋转按钮相对屏幕顶部居中的锚点偏移（像素）")]
-        [SerializeField] private Vector2 rotateButtonAnchoredPos = new Vector2(-90f, -30f);
+        [Tooltip("确认按钮相对道具包围盒顶部中点的偏移（像素）")]
+        [SerializeField] private Vector2 confirmButtonOffset = new Vector2(70f, 24f);
+        [Tooltip("旋转按钮相对道具包围盒顶部中点的偏移（像素）")]
+        [SerializeField] private Vector2 rotateButtonOffset = new Vector2(-70f, 24f);
 
         // ---- 联机状态 ----
         private float placeStateTimer;                                  // 拖拽上报节流
         private bool awaitingPlaceResult;                               // 已发确认、等待服务器仲裁
-        private Button confirmPlaceButton;                              // 屏幕上方打勾确认按钮（prefab 实例或运行时搭建）
-        private Button rotateButton;                                    // 屏幕上方旋转按钮（prefab 实例或运行时搭建）
+        private Button confirmPlaceButton;                              // 打勾确认按钮（prefab 实例或运行时搭建，跟随摆放中道具）
+        private Button rotateButton;                                    // 旋转按钮（prefab 实例或运行时搭建，跟随摆放中道具）
+        private Canvas actionButtonCanvas;                              // 操作按钮所在 Canvas（世界坐标→UI 坐标换算用）
         private readonly Dictionary<string, GameObject> remoteGhosts = new(); // playerId -> 远端玩家摆放中的虚化道具
         private readonly Dictionary<string, string> remoteGhostItemIds = new();
         private readonly Dictionary<string, SpriteRenderer> remoteCursors = new(); // playerId -> 远端玩家的光标标记
@@ -364,6 +365,7 @@ namespace SuperQQ.Placement.Runtime
                 dragPressScreenPos = Input.mousePosition;
                 liftFactor = 0f;
                 liftEngaged = false;
+                HideConfirmPlaceButton(); // 开始拖动：隐藏确认/旋转按钮
                 if (!localSession.BIsPlacing && localSession.BHasPendingItem)
                 {
                     if (localSession.BeginPlace(pointerWorld))
@@ -384,6 +386,8 @@ namespace SuperQQ.Placement.Runtime
                 isDragging = false;
                 liftFactor = 0f;
                 liftEngaged = false;
+                // 停止拖动：确认/旋转按钮出现在道具上方（仅联机模式搭建了按钮时生效）
+                ShowActionButtonsAboveItem();
             }
 
             // 拖拽中：道具跟随指针（叠加悬浮偏移，移动端不被手指遮挡）
@@ -451,11 +455,13 @@ namespace SuperQQ.Placement.Runtime
             if (Input.GetKeyDown(cancelKey))
             {
                 localSession.Cancel();
+                HideConfirmPlaceButton();
                 return;
             }
             if (Input.GetKeyDown(rotateKey))
             {
                 localSession.Rotate();
+                ShowActionButtonsAboveItem(); // 旋转后包围盒尺寸变化，按钮位置跟随刷新
             }
 
             // 左键确认：取出道具的同帧、以及指针悬停在 UI 上时不触发。
@@ -789,12 +795,7 @@ namespace SuperQQ.Placement.Runtime
         {
             if (confirmPlaceButton != null)
             {
-                confirmPlaceButton.gameObject.SetActive(true);
-                if (rotateButton != null)
-                {
-                    rotateButton.gameObject.SetActive(true);
-                }
-                return;
+                return; // 已搭建：显隐由拖拽手势控制（松手显示 / 拖动隐藏）
             }
 
             Canvas canvas = FindFirstObjectByType<Canvas>();
@@ -810,45 +811,91 @@ namespace SuperQQ.Placement.Runtime
                 scaler.matchWidthOrHeight = 1f; // 横屏统一匹配高度，与场景 Canvas 策略一致
             }
             EnsureEventSystem();
+            actionButtonCanvas = canvas;
 
             confirmPlaceButton = SpawnActionButton(canvas.transform, confirmPlaceButtonPrefab,
-                "ConfirmPlaceButton", "✔", confirmButtonAnchoredPos, new Color(0.2f, 0.7f, 0.3f, 0.95f));
+                "ConfirmPlaceButton", "✔", new Color(0.2f, 0.7f, 0.3f, 0.95f));
             confirmPlaceButton.onClick.AddListener(OnConfirmPlaceClicked);
 
             rotateButton = SpawnActionButton(canvas.transform, rotatePlaceButtonPrefab,
-                "RotatePlaceButton", "⟳", rotateButtonAnchoredPos, new Color(0.25f, 0.45f, 0.85f, 0.95f));
+                "RotatePlaceButton", "⟳", new Color(0.25f, 0.45f, 0.85f, 0.95f));
             rotateButton.onClick.AddListener(OnRotateClicked);
+
+            // 初始隐藏：拖拽松手时才出现在道具上方
+            HideConfirmPlaceButton();
+        }
+
+        /// <summary>
+        /// 把确认/旋转按钮移动到摆放中道具包围盒顶部中点上方并显示；
+        /// 无摆放实例、未搭建按钮（单机）或等待仲裁时保持隐藏
+        /// </summary>
+        private void ShowActionButtonsAboveItem()
+        {
+            if (confirmPlaceButton == null || rotateButton == null)
+            {
+                return;
+            }
+            PlacementController pc = localSession != null && localSession.BIsPlacing
+                ? localSession.CurrentPlacementController : null;
+            if (pc == null || actionButtonCanvas == null || awaitingPlaceResult)
+            {
+                HideConfirmPlaceButton();
+                return;
+            }
+
+            // 道具包围盒顶部中点的世界坐标（rootPos 为框中心，上边缘 = 框高一半）
+            Vector2 worldTop = pc.transform.position;
+            FootprintBoxView box = pc.GetComponent<FootprintBoxView>();
+            if (box != null && GridManager.Instance != null)
+            {
+                Vector2Int size = GridManager.GetRotatedSize(box.Footprint, pc.RotationSteps);
+                worldTop += new Vector2(0f, size.y * GridManager.Instance.PublicCellSize * 0.5f);
+            }
+
+            // 世界坐标 → 屏幕像素 → 按钮 Canvas 局部坐标
+            if (inputCamera == null)
+            {
+                inputCamera = Camera.main;
+            }
+            Vector3 screen = inputCamera.WorldToScreenPoint(worldTop);
+            Camera uiCam = actionButtonCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? actionButtonCanvas.worldCamera : null;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                (RectTransform)actionButtonCanvas.transform, screen, uiCam, out Vector2 local);
+
+            ((RectTransform)confirmPlaceButton.transform).anchoredPosition = local + confirmButtonOffset;
+            ((RectTransform)rotateButton.transform).anchoredPosition = local + rotateButtonOffset;
+            confirmPlaceButton.gameObject.SetActive(true);
+            rotateButton.gameObject.SetActive(true);
         }
 
         /// <summary>生成操作按钮：优先实例化 Inspector 指定的 prefab，未指定时退回运行时搭建的默认样式</summary>
-        private static Button SpawnActionButton(Transform parent, Button prefab, string fallbackName,
-            string fallbackLabel, Vector2 anchoredPos, Color fallbackColor)
+        private static Button SpawnActionButton(Transform parent, Button prefab,
+            string fallbackName, string fallbackLabel, Color fallbackColor)
         {
             if (prefab != null)
             {
                 Button instance = Instantiate(prefab, parent, false);
                 instance.name = prefab.name;
-                // 统一锚定屏幕顶部居中，位置由 Inspector 参数控制（不改变 prefab 内部布局与样式）
+                // 统一锚定 Canvas 中心、pivot 底部居中：定位时 anchoredPosition = 道具顶部局部坐标 + Inspector 偏移
                 var rect = (RectTransform)instance.transform;
-                rect.anchorMin = new Vector2(0.5f, 1f);
-                rect.anchorMax = new Vector2(0.5f, 1f);
-                rect.pivot = new Vector2(0.5f, 1f);
-                rect.anchoredPosition = anchoredPos;
+                rect.anchorMin = new Vector2(0.5f, 0.5f);
+                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0f);
                 return instance;
             }
-            return CreateActionButton(parent, fallbackName, fallbackLabel, anchoredPos, fallbackColor);
+            return CreateActionButton(parent, fallbackName, fallbackLabel, fallbackColor);
         }
 
-        /// <summary>在屏幕上方创建一个操作按钮（锚定顶部居中，offsetX 相对中心偏移）</summary>
-        private static Button CreateActionButton(Transform parent, string name, string label, Vector2 anchoredPos, Color color)
+        /// <summary>创建一个操作按钮（锚定 Canvas 中心、pivot 底部居中，位置由 ShowActionButtonsAboveItem 驱动）</summary>
+        private static Button CreateActionButton(Transform parent, string name, string label, Color color)
         {
             var btnGo = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             btnGo.transform.SetParent(parent, false);
             var rect = (RectTransform)btnGo.transform;
-            rect.anchorMin = new Vector2(0.5f, 1f);
-            rect.anchorMax = new Vector2(0.5f, 1f);
-            rect.pivot = new Vector2(0.5f, 1f);
-            rect.anchoredPosition = anchoredPos;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0f);
             rect.sizeDelta = new Vector2(120f, 80f);
             btnGo.GetComponent<Image>().color = color;
 
@@ -892,6 +939,7 @@ namespace SuperQQ.Placement.Runtime
 
             localSession.Rotate();
             placeStateTimer = 1f / placeStateReportRate;
+            ShowActionButtonsAboveItem(); // 旋转后包围盒尺寸变化，按钮位置跟随刷新
         }
 
         /// <summary>打勾按钮回调：落点本地合法才发确认请求，占据格子列表交服务器仲裁</summary>
@@ -918,6 +966,7 @@ namespace SuperQQ.Placement.Runtime
                 return;
             }
 
+            HideConfirmPlaceButton(); // 确认请求发出：隐藏按钮，等待服务器仲裁
             NetworkManager net = NetworkManager.Instance;
 
             // 拆除类道具（爆破范围允许覆盖已占格子）走专用拆除仲裁通道，不走格子冲突仲裁

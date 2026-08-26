@@ -77,6 +77,8 @@ namespace SuperQQ.Selection.Runtime
         [SerializeField] private RectTransform slotsContainer;
         [Tooltip("槽位视图 prefab（挂有 PropSelectionSlotView）；留空时代码生成简易槽位")]
         [SerializeField] private PropSelectionSlotView slotViewPrefab;
+        [Tooltip("认领确认打勾按钮 prefab（需挂 Button）；留空则运行时搭建默认样式")]
+        [SerializeField] private Button confirmCheckButtonPrefab;
 
         [Header("倒计时显示")]
         [Tooltip("显示阶段剩余秒数的文本；留空则不显示倒计时")]
@@ -1238,12 +1240,22 @@ namespace SuperQQ.Selection.Runtime
             });
         }
 
-        /// <summary>运行时搭建打勾按钮（绿色圆角方块+白色对勾，挂到槽位上方）</summary>
+        /// <summary>搭建打勾按钮：优先实例化 Inspector 指定的 prefab，未指定时退回运行时搭建的默认样式（绿色圆角方块+白色对勾，挂到槽位上方）</summary>
         private void BuildConfirmCheckButton()
         {
             Transform panelRoot = ResolvePanelRoot();
             if (panelRoot == null)
             {
+                return;
+            }
+
+            if (confirmCheckButtonPrefab != null)
+            {
+                Button instance = Instantiate(confirmCheckButtonPrefab, panelRoot, false);
+                instance.name = confirmCheckButtonPrefab.name;
+                instance.onClick.AddListener(OnConfirmCheckClicked);
+                confirmCheckButton = (RectTransform)instance.transform;
+                confirmCheckButton.gameObject.SetActive(false);
                 return;
             }
 
