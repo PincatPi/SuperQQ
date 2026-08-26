@@ -15,6 +15,11 @@ namespace SuperQQ.Item
     /// 作用范围 = 自身 footprint 各边外延 rangeExtendCells 格的矩形（围着 footprint 一圈，
     /// 与磁铁的范围口径一致：2x2 外延 1.5 格 → 5x5 格矩形）
     ///
+    /// 多钟联动：footprint 各边外延 linkExtendCells 的矩形与其他闹钟相交即视为"摆在一起"，
+    /// 任一闹钟响铃时整组一起响（沿连接传递：A 连 B、B 连 C 则 ABC 同组），
+    /// 震屏振幅 = 组内数量（上限 maxAmplitudeStack 倍）；整组只发一次冲量（触发钟代发），
+    /// 成员仅同步触发状态，避免同帧/同玩家重复震屏叠爆
+    ///
     /// 震屏实现：调用本物体上 CinemachineImpulseSource 的 GenerateImpulse 发出冲量，
     /// 由虚拟相机上的 CinemachineImpulseListener 响应（缺失时运行时自动补挂）；
     /// 震动时长/波形/幅度在 Impulse Source 的 Impulse Definition 中配置
@@ -39,12 +44,18 @@ namespace SuperQQ.Item
         [Tooltip("震屏冲量源；留空则取本物体上的 CinemachineImpulseSource。震动时长/幅度在该组件的 Impulse Definition 中配置")]
         [SerializeField] private CinemachineImpulseSource impulseSource;
 
+        [Header("多钟联动")]
+        [Tooltip("联动判定外延（格）：两闹钟 footprint 各边外延该格数后矩形相交即视为摆在一起，任一响铃整组一起响（0.5 格 ≈ 贴边/贴角相邻即联动）")]
+        [SerializeField, Min(0f)] private float linkExtendCells = 0.5f;
+        [Tooltip("振幅叠加上限：N 个闹钟一起响时震屏振幅为 N 倍，最高不超过该倍数")]
+        [SerializeField, Min(1)] private int maxAmplitudeStack = 3;
+
         [Header("音效")]
         [Tooltip("响铃循环音效：震屏生效时开始循环播放，震屏结束时音量渐弱至停止（Clip 在 AudioCatalog 资产中按 Id 拖配，需无缝循环素材）；None 表示静默")]
         [SerializeField] private SfxId ringSfx = SfxId.AlarmRing;
 
-        [Tooltip("响铃循环时长（秒）：应等于震屏持续时长（Impulse Source 的 Impulse Definition → Impulse Duration，当前 prefab 为 3s），到时音效自动淡出")]
-        [SerializeField, Min(0.1f)] private float ringSfxDuration = 3f;
+        [Tooltip("响铃循环时长（秒）：应等于震屏持续时长（Impulse Source 的 Impulse Definition → Impulse Duration，当前 prefab 为 1s），到时音效自动淡出")]
+        [SerializeField, Min(0.1f)] private float ringSfxDuration = 1f;
 
         [Tooltip("震屏结束后响铃音效淡出时长（秒）")]
         [SerializeField, Min(0.05f)] private float ringSfxFadeOut = 0.5f;
@@ -56,6 +67,9 @@ namespace SuperQQ.Item
         [SerializeField] private bool debugAlwaysActive = true;
 
         private bool active;
+        private static readonly List<AlarmClock> s_instances = new();     // 场景内全部闹钟（联动判定用，OnEnable/OnDisable 维护）
+        private readonly List<AlarmClock> clusterScratch = new();         // 联动组收集临时列表（BFS）
+        private readonly List<PlayerController> frameRingPlayers = new(); // 本帧完成前摇的玩家（触发者）
         private readonly HashSet<PlayerController> insidePlayers = new();   // 已触发响铃且仍在范围内的玩家（离开后重进重新前摇）
         private readonly Dictionary<PlayerController, float> pendingPlayers = new();   // 前摇中的玩家 → 剩余前摇秒数
         private readonly List<PlayerController> pendingKeys = new();        // 遍历前摇字典的临时列表（避免迭代中修改）
@@ -65,6 +79,16 @@ namespace SuperQQ.Item
 
         /// <summary>控制：改变玩家移动/状态</summary>
         public override ItemCategory Category => ItemCategory.Control;
+
+        private void OnEnable()
+        {
+            s_instances.Add(this);
+        }
+
+        private void OnDisable()
+        {
+            s_instances.Remove(this);
+        }
 
         /// <summary>跑动阶段开始：激活检测</summary>
         public override void OnRunPhaseStart()
@@ -110,7 +134,7 @@ namespace SuperQQ.Item
             }
 
             // 前摇推进：计时结束且仍在范围内 → 响铃；中途离开/销毁 → 取消前摇
-            bool anyRing = false;
+            frameRingPlayers.Clear();
             if (pendingPlayers.Count > 0)
             {
                 pendingKeys.Clear();
@@ -130,7 +154,7 @@ namespace SuperQQ.Item
                     {
                         pendingPlayers.Remove(player);
                         insidePlayers.Add(player);
-                        anyRing = true;
+                        frameRingPlayers.Add(player);
                     }
                 }
             }
@@ -146,17 +170,20 @@ namespace SuperQQ.Item
             // 已触发玩家离开/销毁后移出记录，再次进入时重新前摇
             insidePlayers.IntersectWith(frameInside);
 
-            if (anyRing)
+            if (frameRingPlayers.Count > 0)
             {
-                Ring();
-                Debug.Log($"[AlarmClock] 前摇 {windUpTime}s 结束，响铃震屏");
+                Ring(frameRingPlayers);
             }
         }
 
         // ==================== 震屏 ====================
 
-        /// <summary>响铃：经 Cinemachine Impulse 让本端虚拟相机震屏（时长/波形/幅度由 Impulse Source 配置决定）</summary>
-        private void Ring()
+        /// <summary>
+        /// 响铃：联动组（摆在一起的闹钟）一起响，震屏振幅 = 组内数量（上限 maxAmplitudeStack 倍）。
+        /// 整组只由本钟代发一次冲量，成员仅同步"已触发"状态（成员里该玩家的前摇一并清除），
+        /// 避免每个钟各发一次冲量叠爆、或玩家同时踩多钟时同帧双响
+        /// </summary>
+        private void Ring(List<PlayerController> triggerPlayers)
         {
             if (impulseSource == null)
             {
@@ -168,8 +195,57 @@ namespace SuperQQ.Item
                 return;
             }
             EnsureImpulseListener();
-            impulseSource.GenerateImpulse();
+
+            int count = CollectCluster();
+            foreach (AlarmClock member in clusterScratch)
+            {
+                foreach (PlayerController player in triggerPlayers)
+                {
+                    member.MarkRungByCluster(player);
+                }
+            }
+
+            float force = Mathf.Min(count, maxAmplitudeStack);
+            impulseSource.GenerateImpulse(force);
             PlayRingSfx();
+            Debug.Log($"[AlarmClock] 前摇 {windUpTime}s 结束，{count} 个闹钟一起响，震屏振幅 x{force}（上限 {maxAmplitudeStack}）");
+        }
+
+        /// <summary>被联动组代响时同步触发状态：该玩家对本钟视为已触发（在范围内不再重复前摇/响铃）</summary>
+        private void MarkRungByCluster(PlayerController player)
+        {
+            if (player == null)
+            {
+                return;
+            }
+            pendingPlayers.Remove(player);
+            insidePlayers.Add(player);
+        }
+
+        /// <summary>
+        /// 收集联动组（含自身）：footprint 外延 linkExtendCells 的矩形与其他闹钟相交即相连，
+        /// 沿连接传递（BFS），返回组内闹钟数量
+        /// </summary>
+        private int CollectCluster()
+        {
+            clusterScratch.Clear();
+            clusterScratch.Add(this);
+            for (int i = 0; i < clusterScratch.Count; i++)
+            {
+                Rect rect = clusterScratch[i].ResolveLinkRect();
+                foreach (AlarmClock other in s_instances)
+                {
+                    if (other == null || clusterScratch.Contains(other))
+                    {
+                        continue;
+                    }
+                    if (rect.Overlaps(other.ResolveLinkRect()))
+                    {
+                        clusterScratch.Add(other);
+                    }
+                }
+            }
+            return clusterScratch.Count;
         }
 
         // ==================== 响铃音效 ====================
@@ -242,10 +318,22 @@ namespace SuperQQ.Item
         /// </summary>
         private Rect ResolveRangeRect()
         {
+            return ResolveFootprintRect(rangeExtendCells);
+        }
+
+        /// <summary>联动判定矩形（世界坐标）：footprint 各边外延 linkExtendCells 格，两钟此矩形相交即"摆在一起"</summary>
+        private Rect ResolveLinkRect()
+        {
+            return ResolveFootprintRect(linkExtendCells);
+        }
+
+        /// <summary>footprint 各边外延 extendCells 格的世界坐标矩形（中心与道具重合）</summary>
+        private Rect ResolveFootprintRect(float extendCells)
+        {
             float cellSize = GridManager.Instance != null ? GridManager.Instance.PublicCellSize : 0.5f;
             FootprintBoxView box = GetComponent<FootprintBoxView>();
             Vector2 footprint = box != null ? box.Footprint : new Vector2Int(2, 2);
-            Vector2 size = (footprint + Vector2.one * (rangeExtendCells * 2f)) * cellSize;
+            Vector2 size = (footprint + Vector2.one * (extendCells * 2f)) * cellSize;
             return new Rect((Vector2)transform.position - size * 0.5f, size);
         }
 
