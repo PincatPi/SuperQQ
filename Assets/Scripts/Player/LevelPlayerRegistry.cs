@@ -265,7 +265,8 @@ namespace SuperQQ.Player
             // 通关态会隐藏渲染器（remote 端又无人恢复），表现为"只有名字没有角色"。
             if (!profile.IsLocal
                 && SuperQQ.Network.NetworkManager.Instance != null
-                && SuperQQ.Network.NetworkManager.Instance.BNetMode)
+                && SuperQQ.Network.NetworkManager.Instance.IsConnected
+                && !string.IsNullOrEmpty(SuperQQ.Network.NetworkManager.Instance.RoomId))
             {
                 if (player.GetComponent<SuperQQ.Network.RemotePlayerSync>() == null)
                 {
