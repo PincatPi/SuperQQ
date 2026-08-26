@@ -48,15 +48,18 @@ TagManager:
   - name: Map
     uniqueID: 2002855631
     locked: 0
+  - name: Item
+    uniqueID: 3248832153
+    locked: 0
   - name: Player
     uniqueID: 2493827211
+    locked: 0
+  - name: Event
+    uniqueID: 199928789
     locked: 0
   - name: UI
     uniqueID: 3548082419
     locked: 0
   - name: Popup
     uniqueID: 3452539423
-    locked: 0
-  - name: Event
-    uniqueID: 199928789
     locked: 0

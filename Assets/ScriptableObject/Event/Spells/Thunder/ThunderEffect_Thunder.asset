@@ -15,7 +15,7 @@ MonoBehaviour:
   _castSfx: 217
   _thunderPrefab: {fileID: 1251993928265596, guid: c445b201205907b4f90b242a07f4dbc9, type: 3}
   _thunderOffset: {x: 0, y: 0.5}
-  _duration: 6
+  _duration: 8
   _firstDetectDelay: 1
   _roundInterval: 2
   _warningDuration: 1.5
