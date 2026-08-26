@@ -795,6 +795,7 @@ namespace SuperQQ.Placement.Runtime
                 CanvasScaler scaler = canvasGo.GetComponent<CanvasScaler>();
                 scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
                 scaler.referenceResolution = new Vector2(1920f, 1080f);
+                scaler.matchWidthOrHeight = 1f; // 横屏统一匹配高度，与场景 Canvas 策略一致
             }
             EnsureEventSystem();
 
@@ -1124,7 +1125,9 @@ namespace SuperQQ.Placement.Runtime
                         continue; // 排除炸弹自身
                     }
                     PlacedItem target = grid.GetItemAt(cell);
-                    if (target != null)
+                    // 只消除道具（有 ItemBase 的占据物）：Map 下的关卡物体（船/平台等）
+                    // 也登记在占据表中但没有 ItemBase，一律不可被消除
+                    if (target != null && target.GetComponent<ItemBase>() != null)
                     {
                         anchors.Add(target.AnchorCell);
                     }

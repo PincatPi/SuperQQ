@@ -154,6 +154,7 @@ namespace SuperQQ.Placement.Core
             current.transform.position = worldPos;
             currentPc.SnapToNearestCell();
             RefreshValidityHint();
+            UpdateDemolishPreview();
         }
 
         /// <summary>顺时针旋转当前摆放中的道具一档（0°→90°→180°→270°→0°；不可旋转的道具为空操作）</summary>
@@ -173,6 +174,7 @@ namespace SuperQQ.Placement.Core
 
             // ToggleRotate 会重建虚线框并重置颜色，立即刷回合法性提示色
             RefreshValidityHint();
+            UpdateDemolishPreview();
         }
 
         /// <summary>
@@ -297,6 +299,69 @@ namespace SuperQQ.Placement.Core
             currentBox.SetColor(bValid ? validColor : invalidColor);
         }
 
+        // ==================== 消除预览 ====================
+
+        // 被标红的渲染器 -> 原始颜色（移出爆破范围/结束摆放时恢复）
+        private readonly Dictionary<SpriteRenderer, Color> demolishPreviewColors = new();
+
+        /// <summary>
+        /// 消除类道具拖拽预览：爆破范围（自身 footprint）内可被消除的道具标红。
+        /// 判据与消除执行同一口径——只有道具（有 ItemBase 的占据物）才可被消除，
+        /// Map 关卡物体（船/平台等）不会被标红；范围移开后恢复原色
+        /// </summary>
+        private void UpdateDemolishPreview()
+        {
+            ClearDemolishPreview();
+
+            if (current == null || current.GetComponent<DemolitionItemBase>() == null
+                || currentBox == null || currentPc == null)
+            {
+                return;
+            }
+            GridManager grid = GridManager.Instance;
+            if (grid == null)
+            {
+                return;
+            }
+
+            Vector2Int anchor = currentPc.GetAnchorCellAt(current.transform.position);
+            foreach (Vector2Int cell in grid.GetFootprintCells(anchor, currentBox.Footprint, currentPc.RotationSteps))
+            {
+                PlacedItem occupant = grid.GetItemAt(cell);
+                if (occupant == null || occupant.GetComponent<ItemBase>() == null)
+                {
+                    continue;
+                }
+                foreach (SpriteRenderer r in occupant.GetComponentsInChildren<SpriteRenderer>(true))
+                {
+                    if (r == null || demolishPreviewColors.ContainsKey(r))
+                    {
+                        continue; // 同一道具跨多格去重
+                    }
+                    demolishPreviewColors[r] = r.color;
+                    Color c = r.color;
+                    r.color = new Color(c.r, c.g * 0.35f, c.b * 0.35f, c.a);
+                }
+            }
+        }
+
+        /// <summary>恢复全部标红渲染器的原始颜色（幂等）</summary>
+        private void ClearDemolishPreview()
+        {
+            if (demolishPreviewColors.Count == 0)
+            {
+                return;
+            }
+            foreach (KeyValuePair<SpriteRenderer, Color> pair in demolishPreviewColors)
+            {
+                if (pair.Key != null)
+                {
+                    pair.Key.color = pair.Value;
+                }
+            }
+            demolishPreviewColors.Clear();
+        }
+
         /// <summary>
         /// 释放当前未确认实例：已登记占据的走 RemoveAt 释放格子，未登记的直接销毁。
         /// </summary>
@@ -326,6 +391,7 @@ namespace SuperQQ.Placement.Core
 
         private void ClearCurrentRefs()
         {
+            ClearDemolishPreview();
             current = null;
             currentPc = null;
             currentBox = null;

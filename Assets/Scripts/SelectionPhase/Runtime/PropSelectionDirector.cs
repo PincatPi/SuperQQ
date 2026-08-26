@@ -977,6 +977,7 @@ namespace SuperQQ.Selection.Runtime
             CanvasScaler scaler = canvasGo.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 1f; // 横屏统一匹配高度，与场景 Canvas 策略一致
 
             // 半透明背景
             var bgGo = new GameObject("Background", typeof(RectTransform), typeof(Image));

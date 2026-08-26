@@ -218,17 +218,17 @@ MonoBehaviour:
     riseWithWater: 0
   - zoneType: 1
     cells:
-      x: 35
-      y: 14
-      width: 8
-      height: 20
+      x: 36
+      y: 19
+      width: 7
+      height: 7
     riseWithWater: 0
   - zoneType: 1
     cells:
       x: -20
-      y: 0
+      y: 19
       width: 8
-      height: 36
+      height: 4
     riseWithWater: 0
   - zoneType: 4
     cells:

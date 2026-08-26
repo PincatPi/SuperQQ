@@ -1595,7 +1595,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1280, y: 720}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 1
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -1702,7 +1702,7 @@ MonoBehaviour:
   Token: 
   SessionId: 
   GatewayId: 
-  serverUrl: wss://12931fc.r29.cpolar.top/ws
+  serverUrl: ws://9.134.41.238:8080/ws
   heartbeatInterval: 5
   reconnectMaxDuration: 120
   reconnectMaxInterval: 15
@@ -3717,6 +3717,38 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1252817080903457790, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: cells.x
+      value: -20
+      objectReference: {fileID: 0}
+    - target: {fileID: 1252817080903457790, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: cells.y
+      value: 19
+      objectReference: {fileID: 0}
+    - target: {fileID: 1252817080903457790, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: cells.width
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1252817080903457790, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: cells.height
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3408328916397553318, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: cells.x
+      value: 36
+      objectReference: {fileID: 0}
+    - target: {fileID: 3408328916397553318, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: cells.y
+      value: 19
+      objectReference: {fileID: 0}
+    - target: {fileID: 3408328916397553318, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: cells.width
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3408328916397553318, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: cells.height
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 6986144985396041551, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
       propertyPath: m_Name
       value: Map

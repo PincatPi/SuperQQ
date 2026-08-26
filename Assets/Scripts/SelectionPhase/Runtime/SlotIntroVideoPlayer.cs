@@ -246,6 +246,7 @@ namespace SuperQQ.Selection.Runtime
             CanvasScaler scaler = canvasGo.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = 1f; // 横屏统一匹配高度，与场景 Canvas 策略一致
 
             // 气泡根：锚定 Canvas 中心，pivot 左下角（定位时 anchoredPosition = 槽位右上角局部坐标）
             var bubbleGo = new GameObject("Bubble", typeof(RectTransform), typeof(Image));
