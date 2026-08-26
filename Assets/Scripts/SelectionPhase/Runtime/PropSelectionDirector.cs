@@ -351,6 +351,7 @@ namespace SuperQQ.Selection.Runtime
                 session = null;
             }
             UnregisterNetHandlers();
+            SlotIntroVideoPlayer.Hide(); // 阶段退出：关闭介绍视频气泡
 
             ClearSlotViews();
             ClearPlayerIcons();
@@ -467,6 +468,21 @@ namespace SuperQQ.Selection.Runtime
             }
 
             Debug.Log($"{LOG_TAG} {result}");
+        }
+
+        /// <summary>槽位序号 → ItemCatalog 数字代号（无目录时回退 prefab 名；越界/空槽返回 null）</summary>
+        private string ResolveItemIdAtSlot(int slotIndex)
+        {
+            if (session == null || slotIndex < 0 || slotIndex >= session.OfferItems.Count)
+            {
+                return null;
+            }
+            ItemBase item = session.OfferItems[slotIndex];
+            if (item == null)
+            {
+                return null;
+            }
+            return ItemCatalog.Instance != null ? ItemCatalog.Instance.GetItemId(item) ?? item.name : item.name;
         }
 
         private PropSelectionSlotView FindSlotView(int slotIndex)
@@ -666,6 +682,11 @@ namespace SuperQQ.Selection.Runtime
                 && playerIcons.TryGetValue(playerKey, out PropSelectionPlayerIcon icon)
                 && icon != null)
             {
+                // 本地玩家图标起飞：先藏介绍气泡，到达新槽位后再播放
+                if (playerKey == localPlayerKey)
+                {
+                    SlotIntroVideoPlayer.Hide();
+                }
                 pendingClaims[playerKey] = slotIndex;
                 icon.MoveTo(GetRectWorldCenter((RectTransform)view.transform));
                 return;
@@ -686,6 +707,14 @@ namespace SuperQQ.Selection.Runtime
                 return;
             }
             pendingClaims.Remove(playerKey);
+
+            // 本地玩家到达槽位：聊天气泡贴槽位右上角，循环播放该道具的介绍视频（纯本地表现）
+            if (playerKey == localPlayerKey)
+            {
+                PropSelectionSlotView slotView = FindSlotView(slotIndex);
+                SlotIntroVideoPlayer.Show(ResolveItemIdAtSlot(slotIndex),
+                    slotView != null ? (RectTransform)slotView.transform : null);
+            }
 
             if (session == null)
             {
@@ -1378,6 +1407,7 @@ namespace SuperQQ.Selection.Runtime
             bool applied = session.TrySelect(result.PlayerId, result.SlotIndex);
             if (applied && result.PlayerId == localPlayerKey)
             {
+                SlotIntroVideoPlayer.Hide(); // 本地认领生效：选择已定，关闭介绍气泡
                 Debug.Log($"{LOG_TAG} 已认领槽位 {result.SlotIndex}（含服务器分配）");
             }
         }
