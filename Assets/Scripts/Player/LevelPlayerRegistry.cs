@@ -259,6 +259,23 @@ namespace SuperQQ.Player
             // 应用 Profile：设置名称、颜色、键位
             player.ApplyProfile(profile);
 
+            // 联机远程玩家：生成即挂载同步组件（其 Awake 内关闭本地状态机/物理/碰撞/动画驱动）。
+            // 否则 RemotePlayerSync 要等 RoomSnapshotReceiver 收到首个快照才挂载，这段窗口内
+            // 远程化身会跑本地逻辑：从空中出生点坠落、触发本地淹死/通关判定——
+            // 通关态会隐藏渲染器（remote 端又无人恢复），表现为"只有名字没有角色"。
+            if (!profile.IsLocal
+                && SuperQQ.Network.NetworkManager.Instance != null
+                && SuperQQ.Network.NetworkManager.Instance.BNetMode)
+            {
+                if (player.GetComponent<SuperQQ.Network.RemotePlayerSync>() == null)
+                {
+                    player.gameObject.AddComponent<SuperQQ.Network.RemotePlayerSync>();
+                }
+                // PlayerController 已被禁用，其 Start 不再执行（registry 注册由外层
+                // SpawnMissingPlayerAvatars 完成），这里补上 Start 中的名字标签注册
+                PlayerNameLabelManager.Instance?.RegisterPlayer(player);
+            }
+
             return player;
         }
 
