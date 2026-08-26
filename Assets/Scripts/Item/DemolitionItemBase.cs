@@ -116,6 +116,14 @@ namespace SuperQQ.Item
             {
                 foreach (Vector2Int anchor in removedAnchors)
                 {
+                    // 关卡物体（Map 下的船/平台等，无 ItemBase）不可被消除：
+                    // 服务器裁定集只含玩家道具，此处是对本地兜底集合的防御性过滤
+                    PlacedItem occupant = grid.GetItemAt(anchor);
+                    if (occupant != null && occupant.GetComponent<ItemBase>() == null)
+                    {
+                        Debug.LogWarning($"[Demolition] 跳过非道具占据物（锚点{anchor}，{occupant.name}）：关卡物体不可被消除", this);
+                        continue;
+                    }
                     // RemoveAt 会释放目标的全部占位格子并销毁物体（含 OnRemoved 钩子）
                     bool removed = grid.RemoveAt(anchor);
                     if (!removed)
@@ -182,7 +190,9 @@ namespace SuperQQ.Item
 
         /// <summary>
         /// 收集爆破范围内的所有目标（按 PlacedItem 去重，排除自身）
-        /// 范围 = 自身 footprint 覆盖的格子，不外扩
+        /// 范围 = 自身 footprint 覆盖的格子，不外扩。
+        /// 只消除道具（有 ItemBase 的占据物）：Map 下的关卡物体（船、平台等）
+        /// 也在占据表中登记但没有 ItemBase，一律不可被消除
         /// </summary>
         private HashSet<PlacedItem> CollectTargetsInArea(GridManager grid)
         {
@@ -190,8 +200,7 @@ namespace SuperQQ.Item
             foreach (Vector2Int cell in grid.GetFootprintCells(Placed.AnchorCell, ResolveOwnFootprint(), Placed.Rotation))
             {
                 PlacedItem item = grid.GetItemAt(cell);
-                if (item != null && item != Placed
-                    && item.GetComponent<SuperQQ.Map.BoatPlatform>() == null) // 船等平台类关卡物体不可被爆破
+                if (item != null && item != Placed && item.GetComponent<ItemBase>() != null)
                 {
                     targets.Add(item);
                 }

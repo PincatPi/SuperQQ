@@ -3717,22 +3717,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 5015581898901954499, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
-      propertyPath: drawGizmo
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5015581898901954499, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5015581898901954499, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
-      propertyPath: attachCellOffset.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5015581898901954499, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
-      propertyPath: attachCellOffset.y
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 6986144985396041551, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
       propertyPath: m_Name
       value: Map
@@ -3778,8 +3762,7 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects:
-    - {fileID: 2112188629716981804, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
