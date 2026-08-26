@@ -22,10 +22,12 @@ namespace SuperQQ.Event
     /// 效果期间玩家死亡/通关/化身销毁时提前结束（冻结不移除）；退场时已发出的预警与雷电照常收尾
     ///
     /// 联机（服务端驱动）模式：吟唱命中后由 MagicCircleModifier 上报子类型（report_event3_subtype），
-    /// 之后本地不跑攻击循环，全部由服务端快照 RoomSnapshot.event3_states 驱动——
-    ///   subtype==3 的玩家各端挂载施法者雷光；detect_voice=true 时本机检测音量并上报超标
-    ///   （report_event3_loud_player）；strike 边沿按 loud_players 列表执行 预警→落雷→伤害。
-    ///   时间线（检测/劈/轮次）由服务端算好随快照下发，客户端只读值做表现
+    /// 之后本地不跑攻击循环，攻击时序由服务端快照 RoomSnapshot.event3_states 驱动——
+    ///   detect_voice=true 时本机检测音量并上报超标（report_event3_loud_player，施法者豁免）；
+    ///   strike 边沿按 loud_players 列表执行 预警→落雷→伤害（施法者免疫）。
+    /// 施法者雷光生命周期与无敌金身/飞行同一模式：本地实例挂特效 + 计时到期 +
+    /// 死亡/通关提前结束 + 事件 Deactivate 统一清理；远端施法者的雷光由快照驱动挂载，
+    /// 活动停止超宽限（_casterFxIdleTimeout）或条目消失时移除。
     /// </summary>
     [CreateAssetMenu(fileName = "ThunderSpellEffect", menuName = "SuperQQ/Event/Spells/Thunder Spell Effect")]
     public class ThunderSpellEffect : SpellEffect
@@ -108,16 +110,16 @@ namespace SuperQQ.Event
             ShowActivateTip();
 
             // 联机（服务端正式流程）：子类型已由 MagicCircleModifier 上报，
-            // 施法者雷光/声音检测/预警/落雷全部由服务端快照 event3_states 驱动（ApplyServerEvent3States），
-            // 本地不创建攻击循环实例，各端读值做表现即可
+            // 声音检测/预警/落雷由服务端快照 event3_states 驱动（ApplyServerEvent3States）；
+            // 施法者雷光的生命周期与无敌金身/飞行同一模式——本地实例挂特效 +
+            // 计时到期 + 死亡/通关提前结束 + 事件 Deactivate 统一清理，只是不跑本地攻击循环
             // 【临时测试】勾选测试开关时跳过服务端驱动，强制走本地攻击循环
             if (BServerDriven && !_bTestStrikeLocalPlayer)
             {
-                PlayCastSfx(context.Target.transform.position);
-                return null;
+                return new ThunderInstance(context, this, false);
             }
 
-            return new ThunderInstance(context, this);
+            return new ThunderInstance(context, this, true);
         }
 
         /// <summary>
@@ -552,7 +554,8 @@ namespace SuperQQ.Event
             }
 
             /// <summary>
-            /// 同步施法者雷光：为 subtype==3 的玩家化身挂载雷光特效（化身尚未生成时下一帧快照重试）；
+            /// 同步施法者雷光：为 subtype==3 的【远端】玩家化身挂载雷光特效（化身尚未生成时下一帧快照重试）；
+            /// 本地施法者的雷光由本地 ThunderInstance 挂载管理（与护盾/飞行同一生命周期模式），此处跳过避免双份；
             /// 子类型变更/状态清空/事件结束时移除，或活动（detect_voice/strike）停止超过宽限时长时
             /// 视为效果结束一并移除（服务端在效果结束后仍可能保留 subtype==3 条目）
             /// </summary>
@@ -614,10 +617,19 @@ namespace SuperQQ.Event
                     return;
                 }
 
+                NetworkManager net = NetworkManager.Instance;
+                string localPlayerId = net != null ? net.LocalPlayerId : null;
+
                 foreach (KeyValuePair<string, Event3PlayerState> pair in states)
                 {
                     Event3PlayerState state = pair.Value;
                     if (state == null || state.Subtype != THUNDER_SUBTYPE || _casterFx.ContainsKey(pair.Key))
+                    {
+                        continue;
+                    }
+
+                    // 本地施法者的雷光由本地 ThunderInstance 挂载管理（计时/死亡/Deactivate 清理），跳过避免双份
+                    if (pair.Key == localPlayerId)
                     {
                         continue;
                     }
@@ -731,7 +743,9 @@ namespace SuperQQ.Event
         }
 
         /// <summary>
-        /// 雷电效果运行时实例：挂特效、跑攻击循环（检测→预警→雷击）、监听目标玩家状态以提前结束
+        /// 雷电效果运行时实例：挂特效、监听目标玩家状态以提前结束、计时到期自动结束；
+        /// bRunAttackLoop=true（单机/临时测试）时跑本地攻击循环（检测→预警→雷击），
+        /// false（联机服务端驱动）时只管理施法者雷光生命周期，攻击由服务端快照驱动
         /// </summary>
         private sealed class ThunderInstance : SpellEffectInstance
         {
@@ -742,7 +756,7 @@ namespace SuperQQ.Event
             private Coroutine _expireCoroutine;
             private Coroutine _attackCoroutine;
 
-            public ThunderInstance(SpellEffectContext context, ThunderSpellEffect config) : base(context)
+            public ThunderInstance(SpellEffectContext context, ThunderSpellEffect config, bool bRunAttackLoop) : base(context)
             {
                 _config = config;
 
@@ -762,7 +776,10 @@ namespace SuperQQ.Event
                 if (Runner != null)
                 {
                     _expireCoroutine = Runner.StartCoroutine(ExpireRoutine(config._duration));
-                    _attackCoroutine = Runner.StartCoroutine(AttackRoutine());
+                    if (bRunAttackLoop)
+                    {
+                        _attackCoroutine = Runner.StartCoroutine(AttackRoutine());
+                    }
                 }
             }
 

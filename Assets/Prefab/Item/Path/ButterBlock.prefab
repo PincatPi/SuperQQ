@@ -257,9 +257,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   displayName: "\u9EC4\u6CB9"
-  icon: {fileID: 21300000, guid: 56eb4c38b9a764646ba4008afbf924c0, type: 3}
+  icon: {fileID: 0}
   placeSfx: 202
   stickCheckInterval: 0.1
+  topSortingOrder: 100
   debugValidateLog: 1
 --- !u!114 &5713635989402439402
 MonoBehaviour:
@@ -343,7 +344,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputCamera: {fileID: 0}
+  pointerLiftPixels: 130
   pointerLiftCells: 1
+  dragThresholdPixels: 12
+  liftRampTime: 0.12
   showBoxWhileDragging: 1
   allowPlaceOnOccupied: 1
   ghostAlpha: 0.5

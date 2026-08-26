@@ -166,7 +166,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   displayName: "\u80A5\u7682"
-  icon: {fileID: 21300000, guid: 31c7404393a5a994fa5c533f274581ac, type: 3}
+  icon: {fileID: 0}
   placeSfx: 202
 --- !u!114 &5704616245031174902
 MonoBehaviour:
@@ -250,7 +250,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputCamera: {fileID: 0}
+  pointerLiftPixels: 130
   pointerLiftCells: 1
+  dragThresholdPixels: 12
+  liftRampTime: 0.12
   showBoxWhileDragging: 1
   allowPlaceOnOccupied: 0
   ghostAlpha: 0.5

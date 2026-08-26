@@ -298,7 +298,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   displayName: "\u6D41\u661F\u9524"
-  icon: {fileID: 21300000, guid: 5c9cef0ffc979a940874a367e572756b, type: 3}
+  icon: {fileID: 21300000, guid: 4e196909a0beb254cac3c3d3057cfca0, type: 3}
   placeSfx: 202
   arm: {fileID: 9141920536830378153}
   swingArcDegrees: 130

@@ -150,7 +150,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputCamera: {fileID: 0}
+  pointerLiftPixels: 130
   pointerLiftCells: 1
+  dragThresholdPixels: 12
+  liftRampTime: 0.12
   showBoxWhileDragging: 1
   allowPlaceOnOccupied: 0
   ghostAlpha: 0.5
@@ -170,7 +173,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   displayName: "\u9762\u5305"
-  icon: {fileID: 21300000, guid: 54627c03a3413c740bbcaf52764bed0d, type: 3}
+  icon: {fileID: 0}
   placeSfx: 202
 --- !u!1 &7759195075958798245
 GameObject:
