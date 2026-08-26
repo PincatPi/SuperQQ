@@ -71,8 +71,10 @@ namespace SuperQQ.Placement.Runtime
         [SerializeField] private int placementCameraPriority = 20;
 
         [Header("光标玩家标记")]
-        [Tooltip("标记相对光标的世界坐标偏移，避免被道具本体与光标遮挡")]
+        [Tooltip("未摆放道具时标记相对光标的世界坐标偏移")]
         [SerializeField] private Vector2 cursorMarkerOffset = new Vector2(0.8f, 0.8f);
+        [Tooltip("摆放中标记贴道具包围盒左下角时的内缩距离（世界单位），避免标记压线")]
+        [SerializeField] private Vector2 markerCornerInset = new Vector2(0.15f, 0.15f);
         [Tooltip("标记的 Sorting Order，需高于网格与虚线框（默认为 10）")]
         [SerializeField] private int cursorMarkerSortingOrder = 100;
 
@@ -285,8 +287,19 @@ namespace SuperQQ.Placement.Runtime
 
         // ==================== 输入采集 ====================
 
+        [Header("拖拽手感（移动端防手指遮挡）")]
+        [Tooltip("拖拽时道具相对手指的悬浮高度（屏幕像素）；横屏手机建议 120~160，0=关闭悬浮")]
+        [SerializeField] private float pointerLiftPixels = 130f;
+        [Tooltip("按下后移动超过该距离（像素）才开始悬浮抬起，避免按下瞬间道具跳起")]
+        [SerializeField] private float dragThresholdPixels = 12f;
+        [Tooltip("悬浮偏移渐入时间（秒）：拖动开始后偏移平滑生效，而非瞬移")]
+        [SerializeField] private float liftRampTime = 0.12f;
+
         // 拖拽状态：道具仅在按住拖拽时跟随指针，松开后停留在原地（适配触屏与鼠标）
         private bool isDragging;
+        private Vector2 dragPressScreenPos; // 按下瞬间的屏幕坐标（拖拽阈值判定用）
+        private float liftFactor;           // 悬浮偏移渐入系数（0=未抬起 1=完全抬起）
+        private bool liftEngaged;           // 移动距离已越过阈值，悬浮偏移生效中
 
         /// <summary>
         /// 有待放置道具时取出开始摆放。触屏/拖拽模式（联机）下不自动取出，
@@ -336,6 +349,9 @@ namespace SuperQQ.Placement.Runtime
             if (Input.GetMouseButtonDown(0) && !IsPointerOverUI())
             {
                 isDragging = true;
+                dragPressScreenPos = Input.mousePosition;
+                liftFactor = 0f;
+                liftEngaged = false;
                 if (!localSession.BIsPlacing && localSession.BHasPendingItem)
                 {
                     if (localSession.BeginPlace(pointerWorld))
@@ -354,18 +370,20 @@ namespace SuperQQ.Placement.Runtime
             if (Input.GetMouseButtonUp(0))
             {
                 isDragging = false;
+                liftFactor = 0f;
+                liftEngaged = false;
             }
 
-            // 拖拽中：道具跟随指针
+            // 拖拽中：道具跟随指针（叠加悬浮偏移，移动端不被手指遮挡）
             if (isDragging && localSession.BIsPlacing)
             {
-                localSession.UpdatePointer(pointerWorld);
+                localSession.UpdatePointer(ApplyPointerLift(pointerWorld));
             }
 
-            // 光标标记与事件（始终跟随指针，便于观察）
+            // 光标标记与事件（摆放中贴道具左下角，未摆放时跟随指针）
             if (cursorMarker != null && cursorMarker.enabled)
             {
-                cursorMarker.transform.position = pointerWorld + cursorMarkerOffset;
+                cursorMarker.transform.position = ResolveLocalMarkerPos(pointerWorld);
             }
             if (pointerWorld != lastPointerWorld)
             {
@@ -446,6 +464,75 @@ namespace SuperQQ.Placement.Runtime
                     localSession.Confirm();
                 }
             }
+        }
+
+        /// <summary>
+        /// 悬浮抬起（移动端防手指遮挡）：按下后先跟随手指（liftFactor=0，点选不跳起），
+        /// 移动越过阈值后偏移渐入，道具悬在手指上方；道具的视觉位置即逻辑落点（玩家用道具本体瞄准），
+        /// 确认/取消/联机上报均以抬起后的位置为准，无跳变
+        /// </summary>
+        private Vector2 ApplyPointerLift(Vector2 pointerWorld)
+        {
+            if (pointerLiftPixels <= 0f || inputCamera == null)
+            {
+                return pointerWorld;
+            }
+
+            if (!liftEngaged
+                && Vector2.Distance(dragPressScreenPos, Input.mousePosition) >= dragThresholdPixels)
+            {
+                liftEngaged = true;
+            }
+            if (liftEngaged)
+            {
+                liftFactor = Mathf.MoveTowards(liftFactor, 1f,
+                    liftRampTime > 0f ? Time.deltaTime / liftRampTime : float.MaxValue);
+            }
+            if (liftFactor <= 0f)
+            {
+                return pointerWorld;
+            }
+
+            // 屏幕像素 → 世界高度（双点采样，与相机正交尺寸/分辨率无关）
+            float depth = -inputCamera.transform.position.z;
+            Vector3 a = inputCamera.ScreenToWorldPoint(new Vector3(0f, 0f, depth));
+            Vector3 b = inputCamera.ScreenToWorldPoint(new Vector3(0f, pointerLiftPixels, depth));
+            return pointerWorld + Vector2.up * (Mathf.Abs(b.y - a.y) * liftFactor);
+        }
+
+        /// <summary>
+        /// 本地玩家标记位置：摆放中贴道具包围盒左下角（道具悬浮抬起后与手指有固定距离，
+        /// 继续跟随手指会和道具拉开）；未摆放时跟随光标
+        /// </summary>
+        private Vector2 ResolveLocalMarkerPos(Vector2 pointerWorld)
+        {
+            PlacementController pc = localSession != null && localSession.BIsPlacing
+                ? localSession.CurrentPlacementController : null;
+            if (pc != null && GridManager.Instance != null)
+            {
+                FootprintBoxView box = pc.GetComponent<FootprintBoxView>();
+                return ItemBoxBottomLeft(pc.transform.position, box, pc.RotationSteps) + markerCornerInset;
+            }
+            return pointerWorld + cursorMarkerOffset;
+        }
+
+        /// <summary>道具包围盒（footprint 矩形）左下角的世界坐标；rootPos 为根节点（框中心）</summary>
+        private static Vector2 ItemBoxBottomLeft(Vector2 rootPos, FootprintBoxView box, int rotationSteps)
+        {
+            if (box == null || GridManager.Instance == null)
+            {
+                return rootPos;
+            }
+            Vector2Int size = GridManager.GetRotatedSize(box.Footprint, rotationSteps);
+            float half = GridManager.Instance.PublicCellSize * 0.5f;
+            return rootPos - new Vector2(size.x * half, size.y * half);
+        }
+
+        /// <summary>由 transform 的 Z 轴欧拉角反推旋转档（0=0° 1=顺时针90° 2=180° 3=270°）</summary>
+        private static int RotationStepsFromTransform(Transform t)
+        {
+            int steps = Mathf.RoundToInt(-t.eulerAngles.z / 90f);
+            return ((steps % 4) + 4) % 4;
         }
 
         /// <summary>鼠标当前的世界坐标（2D 平面）</summary>
@@ -574,7 +661,15 @@ namespace SuperQQ.Placement.Runtime
 
             cursor.sprite = sprite;
             cursor.color = remote.PlayerColor;
-            cursor.transform.position = itemPos + cursorMarkerOffset;
+            // 贴远端虚影道具的包围盒左下角（与本地标记行为一致）；虚影缺失时退回根位置偏移
+            Vector2 markerPos = itemPos + cursorMarkerOffset;
+            if (remoteGhosts.TryGetValue(playerId, out GameObject ghost) && ghost != null)
+            {
+                FootprintBoxView ghostBox = ghost.GetComponent<FootprintBoxView>();
+                markerPos = ItemBoxBottomLeft(ghost.transform.position, ghostBox,
+                    RotationStepsFromTransform(ghost.transform)) + markerCornerInset;
+            }
+            cursor.transform.position = markerPos;
             cursor.enabled = true;
         }
 

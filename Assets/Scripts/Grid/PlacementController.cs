@@ -19,8 +19,14 @@ namespace SuperQQ.Grid
         [SerializeField] private Camera inputCamera;
 
         [Header("拖拽")]
-        [Tooltip("拖拽时道具相对指针上移的格数，避免手指遮挡")]
-        [SerializeField] private float pointerLiftCells = 1f;
+        [Tooltip("拖拽时道具相对手指的悬浮高度（屏幕像素），避免手指遮挡；横屏手机建议 120~160")]
+        [SerializeField] private float pointerLiftPixels = 130f;
+        [Tooltip("在悬浮偏移基础上额外叠加的格数偏移（一般保持 0，特殊道具微调用）")]
+        [SerializeField] private float pointerLiftCells;
+        [Tooltip("按下后移动超过该距离（像素）才开始悬浮抬起，避免按下瞬间道具跳起")]
+        [SerializeField] private float dragThresholdPixels = 12f;
+        [Tooltip("悬浮偏移渐入时间（秒）：拖动开始后偏移平滑生效，而非瞬移")]
+        [SerializeField] private float liftRampTime = 0.12f;
         [Tooltip("拖拽时是否显示虚线包围盒")]
         [SerializeField] private bool showBoxWhileDragging = true;
         [Tooltip("允许放置在被占用的格子上（附着类道具开启；拆除类由 ItemBase.AllowsOccupiedOverlap 声明，无需勾选）；开启后登记时跳过已被占据的格子，不覆盖原有道具的占据记录")]
@@ -47,6 +53,9 @@ namespace SuperQQ.Grid
         private int rotationSteps;            // 当前旋转档（0=0° 1=顺时针90° 2=180° 3=270°）
         private bool registered;              // 占据是否已登记（false=未合规放置，可再拖拽）
         private Vector2Int currentPivotCell;  // 拖拽中最近一次吸附的锚点格子（旋转围绕它进行）
+        private Vector2 pressScreenPos;       // 按下瞬间的屏幕坐标（拖拽阈值判定用）
+        private float liftFactor;             // 悬浮偏移渐入系数（0=未抬起 1=完全抬起）
+        private bool liftEngaged;             // 移动距离已越过阈值，悬浮偏移生效中
 
         /// <summary>当前朝向下锚点格子在占位矩形内的索引</summary>
         private Vector2Int PivotInRect => rotationSteps == 0
@@ -341,14 +350,14 @@ namespace SuperQQ.Grid
                 // 按下瞬间做 2D 射线检测：点到本道具才开始拖拽
                 if (pressed && IsPointerDownThisFrame() && HitSelf(ScreenToWorld(pointerScreen)))
                 {
-                    BeginDrag();
+                    BeginDrag(pointerScreen);
                 }
                 return;
             }
 
             if (pressed)
             {
-                DragStep(ScreenToWorld(pointerScreen));
+                DragStep(pointerScreen);
             }
             else
             {
@@ -356,9 +365,12 @@ namespace SuperQQ.Grid
             }
         }
 
-        private void BeginDrag()
+        private void BeginDrag(Vector2 pointerScreen)
         {
             dragging = true;
+            pressScreenPos = pointerScreen;
+            liftFactor = 0f;
+            liftEngaged = false;
             currentPivotCell = PivotCellFromRootPos(transform.position);
 
             // 已登记的物体：先释放占据的格子，腾空后拖动
@@ -375,10 +387,25 @@ namespace SuperQQ.Grid
             }
         }
 
-        private void DragStep(Vector2 pointerWorld)
+        private void DragStep(Vector2 pointerScreen)
         {
-            // 指针位置上移后换算锚点格子，位置完全由格子重建（框中心对齐网格）
-            Vector2 liftedWorld = pointerWorld + Vector2.up * (pointerLiftCells * Grid.PublicCellSize);
+            // 悬浮抬起：按下后先跟随手指（liftFactor=0，点选/点击不跳起），
+            // 移动越过阈值后偏移渐入（避免瞬移感），道具悬在手指上方不被遮挡
+            if (!liftEngaged
+                && Vector2.Distance(pressScreenPos, pointerScreen) >= dragThresholdPixels)
+            {
+                liftEngaged = true;
+            }
+            if (liftEngaged)
+            {
+                liftFactor = Mathf.MoveTowards(liftFactor, 1f,
+                    liftRampTime > 0f ? Time.deltaTime / liftRampTime : float.MaxValue);
+            }
+
+            // 指针位置 + 悬浮偏移后换算锚点格子，位置完全由格子重建（框中心对齐网格）
+            float liftWorld = pointerLiftCells * Grid.PublicCellSize
+                + ScreenPixelsToWorldHeight(pointerLiftPixels) * liftFactor;
+            Vector2 liftedWorld = ScreenToWorld(pointerScreen) + Vector2.up * liftWorld;
             currentPivotCell = Grid.WorldToCell(liftedWorld);
 
             transform.position = RootPosFromAnchor(AnchorFromPivot(currentPivotCell));
@@ -390,6 +417,8 @@ namespace SuperQQ.Grid
         private void EndDrag()
         {
             dragging = false;
+            liftFactor = 0f;
+            liftEngaged = false;
 
             if (currentValid)
             {
@@ -548,6 +577,15 @@ namespace SuperQQ.Grid
         {
             Vector3 world = inputCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, -inputCamera.transform.position.z));
             return new Vector2(world.x, world.y);
+        }
+
+        /// <summary>屏幕纵向像素数对应的世界高度（与相机正交尺寸/分辨率无关，双点采样换算）</summary>
+        private float ScreenPixelsToWorldHeight(float pixels)
+        {
+            float depth = -inputCamera.transform.position.z;
+            Vector3 a = inputCamera.ScreenToWorldPoint(new Vector3(0f, 0f, depth));
+            Vector3 b = inputCamera.ScreenToWorldPoint(new Vector3(0f, pixels, depth));
+            return Mathf.Abs(b.y - a.y);
         }
     }
 }
