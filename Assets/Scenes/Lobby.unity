@@ -522,7 +522,7 @@ MonoBehaviour:
   Token: 
   SessionId: 
   GatewayId: 
-  serverUrl: wss://12931fc.r29.cpolar.top/ws
+  serverUrl: ws://9.134.41.238:8080/ws
   heartbeatInterval: 5
 --- !u!4 &1888073279
 Transform:

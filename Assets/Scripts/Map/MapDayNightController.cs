@@ -20,6 +20,12 @@ namespace SuperQQ.Map
         [Tooltip("抬升/下沉的过渡时长（秒）")]
         [SerializeField] private float riseFadeDuration = 1.5f;
 
+        [Header("白天抬升")]
+        [Tooltip("白天抬升的节点（如 Bell.000）；其当前摆放位置即夜晚（低位）基准")]
+        [SerializeField] private Transform[] dayRiseTargets;
+        [Tooltip("白天抬升的格数（夜晚回落到基准位置）")]
+        [SerializeField] private float dayRiseCells = 13f;
+
         [Header("夜晚色调")]
         [Tooltip("夜晚色调（与原颜色乘算，暗蓝色）")]
         [SerializeField] private Color nightTint = new Color(0.35f, 0.45f, 0.75f, 1f);
@@ -37,6 +43,8 @@ namespace SuperQQ.Map
 
         // 缓存：抬升节点的白天位置
         private Vector3[] _dayPositions;
+        // 缓存：白天抬升节点的夜晚（低位）基准位置
+        private Vector3[] _nightBasePositions;
         // 缓存：渲染器的白天颜色
         private SpriteRenderer[] _renderers;
         private Color[] _dayColors;
@@ -153,10 +161,19 @@ namespace SuperQQ.Map
             {
                 CacheDayPositions();
             }
+            // 夜晚静止期持续刷新夜晚基准位置（白天抬升组的低位还原基准）
+            if (_isNight && _blend >= 0.999f)
+            {
+                CacheNightBasePositions();
+            }
 
             float target = _isNight ? 1f : 0f;
             if (Mathf.Approximately(_blend, target))
             {
+                // 过渡结束后位置不再经 ApplyBlend 刷新：夜晚抬升组静止位置=缓存基准，
+                // 不刷新无影响；但白天抬升组白天位置=基准+抬升量，必须在静止期持续应用，
+                // 否则进白天回合时道具停在夜晚基准（低位）不升起
+                ApplyDayRisePositions(target);
                 return;
             }
 
@@ -230,6 +247,9 @@ namespace SuperQQ.Map
                 }
             }
 
+            // 白天抬升组：白天（blend=0）在基准上方 dayRiseCells 格，夜晚（blend=1）回落至基准
+            ApplyDayRisePositions(blend);
+
             Color tint = Color.Lerp(Color.white, nightTint, blend);
             CurrentTint = tint; // 运行时生成物体（樱桃弹体等）经此采样同步变暗
             for (int i = 0; i < _renderers.Length; i++)
@@ -275,6 +295,7 @@ namespace SuperQQ.Map
         private void CacheDayState()
         {
             CacheDayPositions();
+            CacheNightBasePositions();
 
             _renderers = GetComponentsInChildren<SpriteRenderer>(true);
             _dayColors = new Color[_renderers.Length];
@@ -299,6 +320,42 @@ namespace SuperQQ.Map
             for (int i = 0; i < nightRiseTargets.Length; i++)
             {
                 _dayPositions[i] = nightRiseTargets[i] != null ? nightRiseTargets[i].position : Vector3.zero;
+            }
+        }
+
+        /// <summary>按昼夜进度应用白天抬升组位置（blend=0 全升起，blend=1 回落夜晚基准）</summary>
+        private void ApplyDayRisePositions(float blend)
+        {
+            if (dayRiseTargets == null || _nightBasePositions == null)
+            {
+                return;
+            }
+            float dayRiseHeight = dayRiseCells * GetCellSize() * (1f - blend);
+            for (int i = 0; i < dayRiseTargets.Length; i++)
+            {
+                if (dayRiseTargets[i] == null)
+                {
+                    continue;
+                }
+                dayRiseTargets[i].position = _nightBasePositions[i] + Vector3.up * dayRiseHeight;
+            }
+        }
+
+        /// <summary>刷新白天抬升组的夜晚（低位）基准位置（Awake 与夜晚静止期调用）</summary>
+        private void CacheNightBasePositions()
+        {
+            if (dayRiseTargets == null)
+            {
+                _nightBasePositions = new Vector3[0];
+                return;
+            }
+            if (_nightBasePositions == null || _nightBasePositions.Length != dayRiseTargets.Length)
+            {
+                _nightBasePositions = new Vector3[dayRiseTargets.Length];
+            }
+            for (int i = 0; i < dayRiseTargets.Length; i++)
+            {
+                _nightBasePositions[i] = dayRiseTargets[i] != null ? dayRiseTargets[i].position : Vector3.zero;
             }
         }
 

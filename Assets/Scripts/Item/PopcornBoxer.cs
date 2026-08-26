@@ -154,6 +154,26 @@ namespace SuperQQ.Item
             return Mathf.Abs(local.x) <= size.x * 0.5f && Mathf.Abs(local.y) <= size.y * 0.5f;
         }
 
+        /// <summary>
+        /// 玩家是否处于指定侧攻击范围内：用玩家碰撞体包围盒采样（中心+四角）与攻击区重叠判定。
+        /// 不能用 transform.position 单点——玩家 pivot 在脚下，而攻击区 y 中心对齐拳王身体中心，
+        /// 玩家站在低于拳王半格以上的地面时脚底点会落在区外（视觉命中却判未命中）
+        /// </summary>
+        private bool PlayerInAttackZone(PlayerController p, int side)
+        {
+            Collider2D col = p.GetComponentInChildren<Collider2D>();
+            if (col == null)
+            {
+                return IsInAttackZone(p.transform.position, side);
+            }
+            Bounds b = col.bounds;
+            return IsInAttackZone(b.center, side)
+                || IsInAttackZone(b.min, side)
+                || IsInAttackZone(b.max, side)
+                || IsInAttackZone(new Vector2(b.min.x, b.max.y), side)
+                || IsInAttackZone(new Vector2(b.max.x, b.min.y), side);
+        }
+
         private void Update()
         {
             if (!active || Placed == null)
@@ -243,7 +263,7 @@ namespace SuperQQ.Item
                 {
                     continue;
                 }
-                if (IsInAttackZone(p.transform.position, side))
+                if (PlayerInAttackZone(p, side))
                 {
                     return true;
                 }
@@ -288,7 +308,7 @@ namespace SuperQQ.Item
                     continue;
                 }
                 // 只结算本拳攻击侧的攻击区（另一侧有人不受这一拳影响）
-                if (IsInAttackZone(p.transform.position, punchSide))
+                if (PlayerInAttackZone(p, punchSide))
                 {
                     Debug.Log($"[PopcornBoxer] 击杀: {p.name} pos={p.transform.position}", this);
                     TrapKillReporter.ReportKill(this, p);

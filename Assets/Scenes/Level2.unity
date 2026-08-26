@@ -591,8 +591,8 @@ Transform:
   m_GameObject: {fileID: 250324120}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.37, y: -0.03, z: 0}
+  m_LocalScale: {x: 0.90454, y: 0.90454, z: 0.90454}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 506839329}
@@ -975,6 +975,8 @@ MonoBehaviour:
   GatewayId: 
   serverUrl: wss://12931fc.r29.cpolar.top/ws
   heartbeatInterval: 5
+  reconnectMaxDuration: 120
+  reconnectMaxInterval: 15
 --- !u!1 &449051023
 GameObject:
   m_ObjectHideFlags: 0
@@ -4207,8 +4209,12 @@ MonoBehaviour:
   placementCamera: {fileID: 0}
   placementCameraPriority: 20
   cursorMarkerOffset: {x: -1, y: -1}
+  markerCornerInset: {x: 0.15, y: 0}
   cursorMarkerSortingOrder: 100
   placeStateReportRate: 10
+  pointerLiftPixels: 200
+  dragThresholdPixels: 12
+  liftRampTime: 0.12
 --- !u!1 &1664585788
 GameObject:
   m_ObjectHideFlags: 0
@@ -4757,7 +4763,7 @@ Transform:
   m_GameObject: {fileID: 1884115058}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.39, y: 8.41, z: 0}
+  m_LocalPosition: {x: -0.12, y: 8.19, z: 0}
   m_LocalScale: {x: 0.7, y: 0.7, z: 0.7}
   m_ConstrainProportionsScale: 1
   m_Children:
