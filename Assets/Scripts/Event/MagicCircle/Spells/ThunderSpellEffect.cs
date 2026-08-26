@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using Minigame.Room.V1;
 using SuperQQ.Microphone;
 using SuperQQ.Network;
@@ -313,7 +314,11 @@ namespace SuperQQ.Event
                 return;
             }
 
-            _serverRuntime ??= new ServerDrivenRuntime(this);
+            if (_serverRuntime == null)
+            {
+                Debug.Log("[ThunderSpellEffect] 服务端驱动运行时启动（首个 event3_states 包到达本效果）");
+                _serverRuntime = new ServerDrivenRuntime(this);
+            }
             _serverRuntime.Apply(states, eventContext);
         }
 
@@ -337,9 +342,15 @@ namespace SuperQQ.Event
             // 施法者 playerId -> 已挂载的雷光特效
             private readonly Dictionary<string, GameObject> _casterFx = new();
 
-            // 施法者 playerId -> 最后一次活动（detect_voice/strike 任一为 true）的本地时刻：
-            // 服务端在效果结束后仍可能保留 subtype==3 条目，雷光须以活动信号判断存续
+            // 施法者 playerId -> 自己条目最后一次活动（detect_voice/strike 任一为 true）的本地时刻：
+            // 服务端按协议把 detect/strike 挂在 subtype=3 条目上时，按此精确判定到个人（多施法者互不影响）。
+            // 雷光移除时保留本表记录：避免效果已结束的施法者在他人施法期间被重新挂载
             private readonly Dictionary<string, float> _casterLastActivity = new();
+
+            // 任一条目最后一次活动的本地时刻（兜底：服务端把活动信号挂在其他玩家条目上时，
+            // 施法者自己条目永远没有活动，退化为按全局活动判定）
+            private float _lastAnyActivity;
+            private bool _bSeenAnyActivity;
 
             // 施法者 playerId -> 上一帧快照的 strike 值（边沿触发用）
             private readonly Dictionary<string, bool> _prevStrike = new();
@@ -353,6 +364,12 @@ namespace SuperQQ.Event
             // 本检测窗口是否已播放过提示 Tips（detect_voice 变 false 时复位）
             private bool _bDetectTipShown;
 
+            // ===== 联调埋点（分析用，联调完成后删除）=====
+            private float _lastStatesDumpTime = -999f;  // 状态 dump 节流（1s）
+            private float _lastVolumeLogTime = -999f;   // 音量状态日志节流（0.5s）
+            private bool _bPrevDetectVoice;             // 检测窗口跳变日志用
+            private bool _bLoggedCasterSkip;            // "施法者跳过检测"每窗口只打一次
+
             public ServerDrivenRuntime(ThunderSpellEffect config)
             {
                 _config = config;
@@ -360,6 +377,13 @@ namespace SuperQQ.Event
 
             public void Apply(IDictionary<string, Event3PlayerState> states, LevelEventContext eventContext)
             {
+                // 【联调埋点】每秒 dump 一次服务端下发的完整状态（分析 detect_voice/strike/loud_players 挂在哪些条目上）
+                if (Time.time - _lastStatesDumpTime >= 1f)
+                {
+                    _lastStatesDumpTime = Time.time;
+                    Debug.Log(BuildStatesDump(states));
+                }
+
                 // ① 施法者雷光：subtype==3 的玩家各端统一挂载，状态消失时移除
                 SyncCasterFx(states);
 
@@ -383,6 +407,14 @@ namespace SuperQQ.Event
                     }
                 }
 
+                // 【联调埋点】检测窗口跳变（含本地是否施法者）
+                if (bDetectVoice != _bPrevDetectVoice)
+                {
+                    _bPrevDetectVoice = bDetectVoice;
+                    _bLoggedCasterSkip = false;
+                    Debug.Log($"[ThunderSpellEffect] 检测窗口{(bDetectVoice ? "开启" : "关闭")}（bLocalIsCaster={bLocalIsCaster}）");
+                }
+
                 if (bDetectVoice && !bLocalIsCaster)
                 {
                     if (!_bDetectTipShown)
@@ -397,10 +429,17 @@ namespace SuperQQ.Event
                     _bDetectTipShown = false;
                     _bLoudReported = false;
                 }
+                else if (!_bLoggedCasterSkip)
+                {
+                    // 【联调埋点】bDetectVoice && bLocalIsCaster 分支：确认施法者跳过检测
+                    _bLoggedCasterSkip = true;
+                    Debug.Log("[ThunderSpellEffect] 本地玩家是施法者，本窗口跳过音量检测与上报");
+                }
 
                 // ③ 劈：strike 边沿（false→true）的条目收集 loud_players 并集（宽松判定，不限条目 subtype），
                 // 剔除施法者后逐人落雷——施法者免疫，即使服务端误标也不会被劈
                 HashSet<string> strikeTargets = null;
+                bool bStrikeEdge = false; // 【联调埋点】本帧是否存在 strike 边沿
                 foreach (KeyValuePair<string, Event3PlayerState> pair in states)
                 {
                     Event3PlayerState state = pair.Value;
@@ -410,6 +449,18 @@ namespace SuperQQ.Event
                     }
 
                     bool bPrev = _prevStrike.TryGetValue(pair.Key, out bool prev) && prev;
+
+                    // 【联调埋点】strike 跳变（含该条目 subtype 与 loud 列表原文）
+                    if (state.Strike != bPrev)
+                    {
+                        Debug.Log($"[ThunderSpellEffect] 条目 {pair.Key}（subtype={state.Subtype}）strike: {bPrev}→{state.Strike}，loud=[{string.Join(",", state.LoudPlayers)}]");
+                    }
+
+                    if (state.Strike && !bPrev)
+                    {
+                        bStrikeEdge = true;
+                    }
+
                     if (state.Strike && !bPrev && state.LoudPlayers != null && state.LoudPlayers.Count > 0)
                     {
                         for (int i = 0; i < state.LoudPlayers.Count; i++)
@@ -417,6 +468,7 @@ namespace SuperQQ.Event
                             string loudId = state.LoudPlayers[i];
                             if (IsCaster(states, loudId))
                             {
+                                Debug.Log($"[ThunderSpellEffect] loud 目标 {loudId} 是施法者，已剔除");
                                 continue;
                             }
                             strikeTargets ??= new HashSet<string>();
@@ -424,6 +476,14 @@ namespace SuperQQ.Event
                         }
                     }
                     _prevStrike[pair.Key] = state.Strike;
+                }
+
+                // 【联调埋点】strike 边沿的最终落雷目标
+                if (bStrikeEdge)
+                {
+                    Debug.Log(strikeTargets != null
+                        ? $"[ThunderSpellEffect] strike 边沿触发，落雷目标（已剔除施法者）: {string.Join(",", strikeTargets)}"
+                        : "[ThunderSpellEffect] strike 边沿触发，但 loud_players 为空或全部为施法者，无落雷目标");
                 }
 
                 // 清理已消失条目的 strike 边沿记录
@@ -457,6 +517,21 @@ namespace SuperQQ.Event
                     && state != null && state.Subtype == THUNDER_SUBTYPE;
             }
 
+            /// <summary>【联调埋点】拼装 event3_states 全量 dump 文本</summary>
+            private static string BuildStatesDump(IDictionary<string, Event3PlayerState> states)
+            {
+                NetworkManager net = NetworkManager.Instance;
+                var sb = new StringBuilder($"[ThunderSpellEffect] event3_states dump（count={states.Count}）local={(net != null ? net.LocalPlayerId : "null")}");
+                foreach (KeyValuePair<string, Event3PlayerState> pair in states)
+                {
+                    Event3PlayerState s = pair.Value;
+                    sb.Append(s == null
+                        ? $"\n  {pair.Key}: null"
+                        : $"\n  {pair.Key}: subtype={s.Subtype} detect={s.DetectVoice} strike={s.Strike} remaining={s.RemainingMs} loud=[{string.Join(",", s.LoudPlayers)}]");
+                }
+                return sb.ToString();
+            }
+
             /// <summary>清理服务端驱动表现：销毁全部施法者雷光并复位标记（已发出的预警/落雷协程照常收尾）</summary>
             public void Clear()
             {
@@ -469,6 +544,8 @@ namespace SuperQQ.Event
                 }
                 _casterFx.Clear();
                 _casterLastActivity.Clear();
+                _lastAnyActivity = 0f;
+                _bSeenAnyActivity = false;
                 _prevStrike.Clear();
                 _bLoudReported = false;
                 _bDetectTipShown = false;
@@ -481,13 +558,19 @@ namespace SuperQQ.Event
             /// </summary>
             private void SyncCasterFx(IDictionary<string, Event3PlayerState> states)
             {
-                // 记录施法者活动时刻：detect_voice/strike 任一为 true 即视为效果存续中
+                // 记录活动时刻：detect_voice/strike 任一为 true 即视为效果存续中
+                // （全局记录不限 subtype——宽松兼容服务端把活动信号挂在施法者条目或全员条目上）
                 foreach (KeyValuePair<string, Event3PlayerState> pair in states)
                 {
                     Event3PlayerState state = pair.Value;
-                    if (state != null && state.Subtype == THUNDER_SUBTYPE && (state.DetectVoice || state.Strike))
+                    if (state != null && (state.DetectVoice || state.Strike))
                     {
-                        _casterLastActivity[pair.Key] = Time.time;
+                        _lastAnyActivity = Time.time;
+                        _bSeenAnyActivity = true;
+                        if (state.Subtype == THUNDER_SUBTYPE)
+                        {
+                            _casterLastActivity[pair.Key] = Time.time;
+                        }
                     }
                 }
 
@@ -496,11 +579,22 @@ namespace SuperQQ.Event
                     _removeCache.Clear();
                     foreach (KeyValuePair<string, GameObject> pair in _casterFx)
                     {
+                        // 【联调埋点】记录移除原因（判定语义与原逻辑完全一致，仅拆分条件便于打日志）
+                        string removeReason = null;
                         if (!states.TryGetValue(pair.Key, out Event3PlayerState state)
-                            || state == null || state.Subtype != THUNDER_SUBTYPE
-                            || IsEffectExpired(pair.Key))
+                            || state == null || state.Subtype != THUNDER_SUBTYPE)
+                        {
+                            removeReason = "条目消失或 subtype 变更";
+                        }
+                        else if (IsEffectExpired(pair.Key))
+                        {
+                            removeReason = $"活动停止超 {_config._casterFxIdleTimeout:F1}s，判定效果结束";
+                        }
+
+                        if (removeReason != null)
                         {
                             _removeCache.Add(pair.Key);
+                            Debug.Log($"[ThunderSpellEffect] 移除施法者 {pair.Key} 的雷光：{removeReason}");
                         }
                     }
                     for (int i = 0; i < _removeCache.Count; i++)
@@ -510,7 +604,8 @@ namespace SuperQQ.Event
                             Object.Destroy(_casterFx[_removeCache[i]]);
                         }
                         _casterFx.Remove(_removeCache[i]);
-                        _casterLastActivity.Remove(_removeCache[i]);
+                        // 注意：不清除 _casterLastActivity 记录——保留"该施法者效果已结束"的判定依据，
+                        // 避免其他玩家施法期间（全局有活动）已结束的施法者被重新挂载雷光
                     }
                 }
 
@@ -542,30 +637,51 @@ namespace SuperQQ.Event
                     GameObject fx = Object.Instantiate(_config._thunderPrefab, player.transform);
                     fx.transform.localPosition = _config._thunderOffset;
                     _casterFx.Add(pair.Key, fx);
+                    Debug.Log($"[ThunderSpellEffect] 为施法者 {pair.Key} 挂载雷光特效");
                 }
             }
 
             /// <summary>
             /// 施法者效果是否已结束：见过活动（首轮检测已开始）且活动停止超过宽限时长。
-            /// 尚未见过任何活动时不判定过期（吟唱完成到首轮 detect_voice 之间无活动信号）
+            /// 优先按施法者自己条目的活动判定（精确到个人）；自己条目从未见过活动时按全局活动兜底
+            /// （兼容服务端把 detect/strike 挂在其他玩家条目上的情况）。尚未见过任何活动时不判定过期
             /// </summary>
             private bool IsEffectExpired(string playerId)
             {
-                return _casterLastActivity.TryGetValue(playerId, out float lastActivity)
-                    && Time.time - lastActivity > _config._casterFxIdleTimeout;
+                if (_casterLastActivity.TryGetValue(playerId, out float ownLastActivity))
+                {
+                    return Time.time - ownLastActivity > _config._casterFxIdleTimeout;
+                }
+
+                return _bSeenAnyActivity && Time.time - _lastAnyActivity > _config._casterFxIdleTimeout;
             }
 
             /// <summary>检测窗口内本机音量超标则上报（每窗口至多一次；本机玩家不在场或麦克风未运行时跳过）。
             /// 仅非施法者客户端会调用——施法者不会被标记为攻击目标，不参与上报</summary>
             private void TryReportLoud()
             {
+                // 防御性确保开麦：非施法者从不吟唱，若该端麦克风因权限/启动时序等原因未在采集，
+                // Volume 恒 0 会导致永远上报不出去（StartMic 幂等，内部含权限请求与失败自动重试）
+                MicVolumeManager mic = MicVolumeManager.EnsureExists();
+                if (!mic.IsRunning)
+                {
+                    mic.StartMic();
+                }
+                float volume = mic.Volume;
+
+                // 【联调埋点】检测窗口内每 0.5s 打一次音量状态（分析为何未上报）
+                if (Time.time - _lastVolumeLogTime >= 0.5f)
+                {
+                    _lastVolumeLogTime = Time.time;
+                    Debug.Log($"[ThunderSpellEffect] 检测窗口中：mic={(mic.IsRunning ? "running" : "stopped")} volume={volume:F2}/阈值{_config._volumeThreshold:F2} aliveLocal={HasAliveLocalPlayer()} 本窗口已上报={_bLoudReported}");
+                }
+
                 if (_bLoudReported)
                 {
                     return;
                 }
 
-                MicVolumeManager mic = MicVolumeManager.Instance;
-                if (mic == null || !mic.IsRunning || mic.Volume < _config._volumeThreshold)
+                if (!mic.IsRunning || mic.Volume < _config._volumeThreshold)
                 {
                     return;
                 }
@@ -577,6 +693,7 @@ namespace SuperQQ.Event
 
                 _bLoudReported = true;
                 NetEventSync.ReportEvent3LoudPlayer();
+                Debug.Log($"[ThunderSpellEffect] 音量超标（{volume:F2} ≥ {_config._volumeThreshold:F2}），已上报 report_event3_loud_player");
             }
 
             /// <summary>
@@ -602,6 +719,7 @@ namespace SuperQQ.Event
                     PlayerController player = FindPlayerById(loudId);
                     if (player == null)
                     {
+                        Debug.LogWarning($"[ThunderSpellEffect] 落雷目标 {loudId} 在 LevelPlayerRegistry 中找不到化身，跳过");
                         continue;
                     }
 

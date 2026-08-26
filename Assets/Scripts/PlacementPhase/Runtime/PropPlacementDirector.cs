@@ -93,11 +93,21 @@ namespace SuperQQ.Placement.Runtime
         [Tooltip("拖拽状态上报频率（次/秒）")]
         [SerializeField] private float placeStateReportRate = 10f;
 
+        [Header("操作按钮 UI")]
+        [Tooltip("打勾确认按钮 prefab（需挂 Button）；留空则运行时搭建默认样式")]
+        [SerializeField] private Button confirmPlaceButtonPrefab;
+        [Tooltip("旋转按钮 prefab（需挂 Button）；留空则运行时搭建默认样式")]
+        [SerializeField] private Button rotatePlaceButtonPrefab;
+        [Tooltip("确认按钮相对屏幕顶部居中的锚点偏移（像素）")]
+        [SerializeField] private Vector2 confirmButtonAnchoredPos = new Vector2(90f, -30f);
+        [Tooltip("旋转按钮相对屏幕顶部居中的锚点偏移（像素）")]
+        [SerializeField] private Vector2 rotateButtonAnchoredPos = new Vector2(-90f, -30f);
+
         // ---- 联机状态 ----
         private float placeStateTimer;                                  // 拖拽上报节流
         private bool awaitingPlaceResult;                               // 已发确认、等待服务器仲裁
-        private Button confirmPlaceButton;                              // 屏幕上方打勾确认按钮（运行时搭建）
-        private Button rotateButton;                                    // 屏幕上方旋转按钮（运行时搭建）
+        private Button confirmPlaceButton;                              // 屏幕上方打勾确认按钮（prefab 实例或运行时搭建）
+        private Button rotateButton;                                    // 屏幕上方旋转按钮（prefab 实例或运行时搭建）
         private readonly Dictionary<string, GameObject> remoteGhosts = new(); // playerId -> 远端玩家摆放中的虚化道具
         private readonly Dictionary<string, string> remoteGhostItemIds = new();
         private readonly Dictionary<string, SpriteRenderer> remoteCursors = new(); // playerId -> 远端玩家的光标标记
@@ -801,13 +811,32 @@ namespace SuperQQ.Placement.Runtime
             }
             EnsureEventSystem();
 
-            confirmPlaceButton = CreateActionButton(canvas.transform, "ConfirmPlaceButton", "✔",
-                new Vector2(90f, -30f), new Color(0.2f, 0.7f, 0.3f, 0.95f));
+            confirmPlaceButton = SpawnActionButton(canvas.transform, confirmPlaceButtonPrefab,
+                "ConfirmPlaceButton", "✔", confirmButtonAnchoredPos, new Color(0.2f, 0.7f, 0.3f, 0.95f));
             confirmPlaceButton.onClick.AddListener(OnConfirmPlaceClicked);
 
-            rotateButton = CreateActionButton(canvas.transform, "RotatePlaceButton", "⟳",
-                new Vector2(-90f, -30f), new Color(0.25f, 0.45f, 0.85f, 0.95f));
+            rotateButton = SpawnActionButton(canvas.transform, rotatePlaceButtonPrefab,
+                "RotatePlaceButton", "⟳", rotateButtonAnchoredPos, new Color(0.25f, 0.45f, 0.85f, 0.95f));
             rotateButton.onClick.AddListener(OnRotateClicked);
+        }
+
+        /// <summary>生成操作按钮：优先实例化 Inspector 指定的 prefab，未指定时退回运行时搭建的默认样式</summary>
+        private static Button SpawnActionButton(Transform parent, Button prefab, string fallbackName,
+            string fallbackLabel, Vector2 anchoredPos, Color fallbackColor)
+        {
+            if (prefab != null)
+            {
+                Button instance = Instantiate(prefab, parent, false);
+                instance.name = prefab.name;
+                // 统一锚定屏幕顶部居中，位置由 Inspector 参数控制（不改变 prefab 内部布局与样式）
+                var rect = (RectTransform)instance.transform;
+                rect.anchorMin = new Vector2(0.5f, 1f);
+                rect.anchorMax = new Vector2(0.5f, 1f);
+                rect.pivot = new Vector2(0.5f, 1f);
+                rect.anchoredPosition = anchoredPos;
+                return instance;
+            }
+            return CreateActionButton(parent, fallbackName, fallbackLabel, anchoredPos, fallbackColor);
         }
 
         /// <summary>在屏幕上方创建一个操作按钮（锚定顶部居中，offsetX 相对中心偏移）</summary>

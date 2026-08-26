@@ -19,8 +19,8 @@ namespace SuperQQ.UI
     ///   - 否则自动退化为按 X 轴缩放 RectTransform（需保证 pivot.x = 0，从左向右增长）
     ///
     /// 数据来源：
-    ///   - 填充比例使用 MicVolumeManager.NormalizedPositiveDecibels（当前正值分贝 / 120，0~1，已平滑）
-    ///   - 正值分贝使用 MicVolumeManager.PositiveDecibels（0 起，满量程 120）
+    ///   - 填充比例使用 MicVolumeManager.NormalizedSplDecibels（估算声压级分贝 / 100，0~1，已平滑）
+    ///   - 分贝文本使用 MicVolumeManager.SplDecibels（dB SPL，正值，类似苹果手表的分贝展示）
     /// </summary>
     public class PlayerInfoPanel : MonoBehaviour
     {
@@ -77,11 +77,11 @@ namespace SuperQQ.UI
                 return;
             }
 
-            // 平滑跟随实时分贝：填充比例 = 当前正值分贝 / 120
-            float target = mic.NormalizedPositiveDecibels;
+            // 平滑跟随实时分贝：填充比例 = 当前声压级分贝 / 100
+            float target = mic.NormalizedSplDecibels;
             _volumeDisplayFill = Mathf.Lerp(_volumeDisplayFill, target, 1f - Mathf.Exp(-_volumeFillLerpSpeed * Time.unscaledDeltaTime));
             ApplyVolumeFill(_volumeDisplayFill, _volumeDisplayFill);
-            UpdateVolumeText(mic.PositiveDecibels);
+            UpdateVolumeText(mic.SplDecibels);
         }
 
         /// <summary>
@@ -106,11 +106,11 @@ namespace SuperQQ.UI
             }
         }
 
-        private void UpdateVolumeText(float positiveDb)
+        private void UpdateVolumeText(float splDb)
         {
             if (_volumeDecibelText != null)
             {
-                _volumeDecibelText.text = $"{positiveDb:F0} dB";
+                _volumeDecibelText.text = $"{splDb:F0} dB";
             }
         }
 

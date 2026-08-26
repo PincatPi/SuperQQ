@@ -1,17 +1,15 @@
 using SuperQQ.Item;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace SuperQQ.Selection.Runtime
 {
     /// <summary>
-    /// 道具选择槽位视图：展示候选道具的图标与名称，响应点击并向 Director 发起选中请求。
+    /// 道具选择槽位视图：展示候选道具的图标，响应点击并向 Director 发起选中请求。
     /// 被认领后显示认领者颜色标记并关闭点击；本地玩家完成认领后全部槽位对本地锁定。
     ///
     /// 无需在 Inspector 拖拽任何引用，Awake 按以下子物体命名约定自动识别（均可选）：
     ///   ItemIcon     （Image，道具图标；缺失时兜底取第一个非根物体上的 Image）
-    ///   ItemNameText （TMP_Text 或 legacy Text，道具名称）
     ///   ClaimMarker  （Image，认领者颜色标记，未认领时自动隐藏）
     /// 点击入口取本物体上的 Button。
     /// </summary>
@@ -19,8 +17,6 @@ namespace SuperQQ.Selection.Runtime
     {
         private Button button;
         private Image iconImage;
-        private TMP_Text nameLabel;
-        private Text legacyNameLabel;   // 名称文本为 legacy Text 时的兜底
         private Image claimMarker;
 
         private PropSelectionDirector owner;
@@ -43,7 +39,7 @@ namespace SuperQQ.Selection.Runtime
             }
         }
 
-        /// <summary>绑定槽位数据与点击归属（由 Director 在生成槽位时调用）；图标与名称直接取自 ItemBase</summary>
+        /// <summary>绑定槽位数据与点击归属（由 Director 在生成槽位时调用）；图标直接取自 ItemBase</summary>
         public void Bind(PropSelectionDirector ownerDirector, int index, ItemBase item)
         {
             owner = ownerDirector;
@@ -55,16 +51,6 @@ namespace SuperQQ.Selection.Runtime
                 iconImage.sprite = icon;
                 iconImage.preserveAspect = true;
                 iconImage.enabled = icon != null;
-            }
-
-            string itemName = item != null ? item.DisplayName : string.Empty;
-            if (nameLabel != null)
-            {
-                nameLabel.text = itemName;
-            }
-            else if (legacyNameLabel != null)
-            {
-                legacyNameLabel.text = itemName;
             }
         }
 
@@ -110,20 +96,6 @@ namespace SuperQQ.Selection.Runtime
                         iconImage = images[i];
                         break;
                     }
-                }
-            }
-
-            nameLabel = FindChildComponent<TMP_Text>("ItemNameText");
-            if (nameLabel == null)
-            {
-                nameLabel = GetComponentInChildren<TMP_Text>(true);
-            }
-            if (nameLabel == null)
-            {
-                legacyNameLabel = FindChildComponent<Text>("ItemNameText");
-                if (legacyNameLabel == null)
-                {
-                    legacyNameLabel = GetComponentInChildren<Text>(true);
                 }
             }
 

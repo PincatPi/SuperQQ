@@ -10,8 +10,8 @@ namespace SuperQQ.Microphone
     /// 生命周期：进入游玩阶段（PlayingPhase）时开麦，退出游玩阶段时关麦（PlayingPhase 调用 StartMic/StopMic）
     ///
     /// 使用方式：
-    ///   float db = MicVolumeManager.Instance.Decibels;  // 当前分贝（静音约 -90dB）
-    ///   float v  = MicVolumeManager.Instance.Volume;    // 归一化音量 0~1（推荐用于玩法判定）
+    ///   float db = MicVolumeManager.Instance.SplDecibels;  // 估算声压级分贝（dB SPL，正值，供 UI 展示）
+    ///   float v  = MicVolumeManager.Instance.Volume;       // 归一化音量 0~1（推荐用于玩法判定）
     /// </summary>
     public class MicVolumeManager : MonoBehaviour
     {
@@ -27,23 +27,31 @@ namespace SuperQQ.Microphone
         [SerializeField] private float _maxDb = -5f;                // 归一化上界（高于此分贝视为 1）
         [SerializeField, Range(0f, 1f)] private float _smoothing = 0.3f; // 平滑系数，越大越平滑
 
+        [Header("声压级（SPL）展示")]
+        [Tooltip("dBFS 转 dB SPL 的校准偏移：SPL = dBFS + 校准值。0 dBFS 对应的实际声压级因设备麦克风灵敏度/增益而异，" +
+                 "经验值约 90~100（手机满量程约对应 94 dB SPL）。如需精确值，请用标准声级计在固定距离实测后填入")]
+        [SerializeField] private float _splCalibration = 94f;       // dBFS → dB SPL 校准偏移
+
         [Header("设备轮询")]
         [SerializeField] private float _devicePollInterval = 1f;    // 麦克风设备/权限轮询间隔（秒）
 
         /// <summary>分贝量程下限（静音基准，-120dB）</summary>
         public const float MinDecibels = -120f;
 
-        /// <summary>正值分贝量程上限（120dB）</summary>
-        public const float MaxPositiveDecibels = -MinDecibels;
+        /// <summary>声压级展示满量程（100 dB SPL，展示范围 0~100）</summary>
+        public const float MaxSplDecibels = 100f;
 
-        /// <summary>当前分贝值（范围约 -120 ~ 0，静音为 -120）</summary>
+        /// <summary>当前分贝值（dBFS，范围约 -120 ~ 0，静音为 -120），仅供内部/调试使用</summary>
         public float Decibels { get; private set; } = MinDecibels;
 
-        /// <summary>从 0 开始的正值分贝（静音为 0，满量程约 120），供 UI 展示使用</summary>
-        public float PositiveDecibels => Decibels - MinDecibels;
+        /// <summary>
+        /// 估算声压级分贝（dB SPL，类似苹果手表展示的正值分贝，范围 0~100，如安静室内约 40，交谈约 60）。
+        /// 由 dBFS 加校准偏移得出，静音为 0，超过 100 封顶。未经真机校准时为近似值，仅供 UI 展示，勿用于玩法判定
+        /// </summary>
+        public float SplDecibels => Mathf.Clamp(Decibels + _splCalibration, 0f, MaxSplDecibels);
 
-        /// <summary>正值分贝占满量程的比例 0~1（= PositiveDecibels / 120），供音量条填充使用</summary>
-        public float NormalizedPositiveDecibels => Mathf.Clamp01(PositiveDecibels / MaxPositiveDecibels);
+        /// <summary>声压级分贝占展示满量程的比例 0~1（= SplDecibels / 100），供音量条填充使用</summary>
+        public float NormalizedSplDecibels => SplDecibels / MaxSplDecibels;
 
         /// <summary>归一化音量 0~1（已平滑，推荐玩法逻辑使用）</summary>
         public float Volume { get; private set; }
