@@ -298,12 +298,13 @@ namespace SuperQQ.Player
             }
             else
             {
-                rate = Mathf.Abs(_ctx.HorizontalInput) > 0.01f
-                    ? _ctx.Acceleration
-                    : _ctx.Deceleration;
+                bool hasInput = Mathf.Abs(_ctx.HorizontalInput) > 0.01f;
+                rate = hasInput ? _ctx.Acceleration : _ctx.Deceleration;
                 if (!_bIsGrounded)
                 {
-                    rate *= _ctx.AirControlMultiplier;
+                    // 空中：有输入按操控系数变向/加速；无输入走空气阻尼（远小于地面减速，
+                    // 保住跳跃水平动量，跳距/落点更自然——原逻辑空中松手按地面减速急刹，跳距损失大）
+                    rate = hasInput ? rate * _ctx.AirControlMultiplier : _ctx.AirDrag;
                 }
             }
 

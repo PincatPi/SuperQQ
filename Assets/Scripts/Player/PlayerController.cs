@@ -17,7 +17,8 @@ namespace SuperQQ.Player
         [SerializeField] private float moveSpeed = 6f;                 // 左右移动速度（单位/秒）
         [SerializeField] private float acceleration = 80f;             // 水平加速速率
         [SerializeField] private float deceleration = 100f;            // 水平减速速率（松手回停）
-        [SerializeField] private float airControlMultiplier = 0.85f;   // 空中操控系数
+        [SerializeField] private float airControlMultiplier = 0.85f;   // 空中操控系数（空中有输入时的变向/加速速率 = 地面加速度 × 该系数）
+        [SerializeField] private float airDrag = 28f;                  // 空中无输入水平阻尼（控制松手滑翔距离：越大滑翔越短，0=完全不减速）
 
         [Header("重力设置")]
         [SerializeField] private float gravityScale = 1.5f;             // 整体重力倍率（>1 跳跃更紧凑、上升下落更快）
@@ -125,6 +126,7 @@ namespace SuperQQ.Player
         public float Acceleration => acceleration;
         public float Deceleration => deceleration;
         public float AirControlMultiplier => airControlMultiplier;
+        public float AirDrag => airDrag;
 
         // 无摩擦（肥皂：加/减速率压到 0，初速度保留）
         public bool Frictionless => _frictionless;
