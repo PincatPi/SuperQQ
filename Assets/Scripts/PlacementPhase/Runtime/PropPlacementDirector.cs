@@ -194,6 +194,8 @@ namespace SuperQQ.Placement.Runtime
             localSession.Deal(item);
 
             grid.ShowGrid();
+            // 摆放阶段开启禁区标红：起点/终点区域（SpawnGoal 区，不可布置道具）
+            grid.SetOccupiedOverlay(true);
             avatarGate.Suppress();
             SetPlacementCameraActive(true);
             ShowCursorMarker();

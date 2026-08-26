@@ -44,6 +44,14 @@ namespace SuperQQ.Grid
         [Tooltip("网格显示的 Sorting Order（需高于背景、低于道具）")]
         [SerializeField] private int gridSortingOrder = -1;
 
+        [Header("禁区标红覆盖层")]
+        [Tooltip("起点/终点区域（SpawnGoal 区）的标红颜色（半透明红）")]
+        [SerializeField] private Color occupiedOverlayColor = new Color(1f, 0.2f, 0.2f, 0.35f);
+        [Tooltip("标红块的 Sorting Order（需高于网格线、低于道具与虚线框）")]
+        [SerializeField] private int occupiedOverlaySortingOrder = 5;
+        [Tooltip("标红刷新间隔（秒）：区域配置变化按此节奏同步到标红层")]
+        [SerializeField, Range(0.02f, 0.5f)] private float occupiedRefreshInterval = 0.2f;
+
         // 占据表：格子 -> 占据该格子的物体（一个 PlacedItem 会登记其 footprint 覆盖的所有格子）
         private readonly Dictionary<Vector2Int, PlacedItem> occupiedCells = new Dictionary<Vector2Int, PlacedItem>();
 
@@ -657,11 +665,98 @@ namespace SuperQQ.Grid
             }
         }
 
+        // ==================== 占据标红覆盖层 ====================
+
+        private GameObject occupiedOverlayRoot;
+        private readonly List<SpriteRenderer> occupiedQuads = new List<SpriteRenderer>();
+        private bool occupiedOverlayVisible;
+        private float nextOccupiedRefreshTime;
+
+        /// <summary>
+        /// 开关"禁区标红"覆盖层（道具摆放阶段开启，阶段结束关闭）。
+        /// 标红范围：起点/终点区域（SpawnGoal 区，不可布置道具）。
+        /// 区域为静态配置，周期刷新仅为兜底（与水位等区域偏移改动保持口径一致）
+        /// </summary>
+        public void SetOccupiedOverlay(bool visible)
+        {
+            occupiedOverlayVisible = visible;
+            if (visible)
+            {
+                EnsureOccupiedOverlay();
+                RefreshOccupiedOverlay();
+            }
+            if (occupiedOverlayRoot != null)
+            {
+                occupiedOverlayRoot.SetActive(visible);
+            }
+        }
+
+        private void Update()
+        {
+            if (occupiedOverlayVisible && Time.time >= nextOccupiedRefreshTime)
+            {
+                nextOccupiedRefreshTime = Time.time + occupiedRefreshInterval;
+                RefreshOccupiedOverlay();
+            }
+        }
+
+        private void EnsureOccupiedOverlay()
+        {
+            if (occupiedOverlayRoot != null)
+            {
+                return;
+            }
+            occupiedOverlayRoot = new GameObject("OccupiedOverlay");
+            occupiedOverlayRoot.transform.SetParent(transform, false);
+        }
+
+        /// <summary>按起点/终点区域（SpawnGoal）刷新标红块（四边形池复用，数量随区域格数伸缩）</summary>
+        private void RefreshOccupiedOverlay()
+        {
+            if (occupiedOverlayRoot == null)
+            {
+                return;
+            }
+            float cs = CellSize;
+            int i = 0;
+            for (int x = placeableBounds.xMin; x < placeableBounds.xMax; x++)
+            {
+                for (int y = placeableBounds.yMin; y < placeableBounds.yMax; y++)
+                {
+                    var cell = new Vector2Int(x, y);
+                    if ((GetZonesAt(cell) & GridZoneType.SpawnGoal) == 0)
+                    {
+                        continue;
+                    }
+                    if (i >= occupiedQuads.Count)
+                    {
+                        var quadGo = new GameObject($"OccQuad_{i}");
+                        quadGo.transform.SetParent(occupiedOverlayRoot.transform, false);
+                        var sr = quadGo.AddComponent<SpriteRenderer>();
+                        sr.sprite = CreateWhiteSprite();
+                        sr.color = occupiedOverlayColor;
+                        sr.sortingOrder = occupiedOverlaySortingOrder;
+                        quadGo.transform.localScale = new Vector3(cs * 0.92f, cs * 0.92f, 1f); // 轻微内缩露出格线
+                        occupiedQuads.Add(sr);
+                    }
+                    SpriteRenderer quad = occupiedQuads[i];
+                    quad.transform.position = CellToWorld(cell);
+                    quad.gameObject.SetActive(true);
+                    i++;
+                }
+            }
+            for (; i < occupiedQuads.Count; i++)
+            {
+                occupiedQuads[i].gameObject.SetActive(false);
+            }
+        }
+
         /// <summary>
         /// 关闭网格显示（跑动阶段调用）
         /// </summary>
         public void HideGrid()
         {
+            SetOccupiedOverlay(false);
             if (gridVisualRoot != null)
             {
                 gridVisualRoot.SetActive(false);

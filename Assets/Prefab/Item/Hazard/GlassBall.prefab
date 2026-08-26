@@ -235,7 +235,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputCamera: {fileID: 0}
+  pointerLiftPixels: 130
   pointerLiftCells: 1
+  dragThresholdPixels: 12
+  liftRampTime: 0.12
   showBoxWhileDragging: 1
   allowPlaceOnOccupied: 0
   ghostAlpha: 0.5
