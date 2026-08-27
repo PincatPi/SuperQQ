@@ -402,8 +402,10 @@ namespace SuperQQ.UI.RoundResults
                 return;
             }
 
-            _rowRect.anchoredPosition =
-                _restPosition + Vector2.left * (34f * (1f - _revealEased));
+            // 行进场只走 alpha 淡入，不动位置：行是板的子级，板 reveal 期间正在缩放
+            // （0.88→1，pivot 居中），此时再叠加位置偏移会与板缩放"下沿位置更近"的观感叠加，
+            // 表现为"分数条先在下方然后上移"。位置保持 rest 静止即可，透明度由 SetReveal 控制。
+            _rowRect.anchoredPosition = _restPosition;
         }
 
         private static float EaseOutCubic(float value)
