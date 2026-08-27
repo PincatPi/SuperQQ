@@ -213,6 +213,14 @@ namespace SuperQQ.Player
                     continue;
                 }
 
+                // 本地档案且场景中已有本地玩家对象（预置玩家）：跳过生成。
+                // 联机下档案注册可能先于场景加载（昵称大小写/命名不一致时按名去重会失效），
+                // 不拦这道会在预置玩家之外多生成一个克隆体（双本地玩家、缩放不一致）
+                if (profile.IsLocal && FindLocalPlayerObject() != null)
+                {
+                    continue;
+                }
+
                 PlayerController player = CreatePlayerAvatar(profile, i);
                 if (player != null)
                 {
@@ -449,6 +457,27 @@ namespace SuperQQ.Player
                 if (_players[i] != null && _players[i].PlayerName == playerName)
                 {
                     return _players[i];
+                }
+            }
+            return null;
+        }
+
+        /// <summary>是否已有本地玩家对象（含场景预置的未激活玩家——注册表只收激活对象，需全场景兜底扫描）</summary>
+        public PlayerController FindLocalPlayerObject()
+        {
+            for (int i = 0; i < _players.Count; i++)
+            {
+                if (_players[i] != null && _players[i].BIsLocal)
+                {
+                    return _players[i];
+                }
+            }
+            // 兜底：场景预置玩家可能处于未激活状态（未进注册表），直接扫场景（BIsLocal 读序列化字段，无需 Awake）
+            foreach (PlayerController pc in FindObjectsByType<PlayerController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (pc.BIsLocal)
+                {
+                    return pc;
                 }
             }
             return null;
