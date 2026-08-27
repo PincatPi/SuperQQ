@@ -1341,6 +1341,14 @@ namespace SuperQQ.Placement.Runtime
                     return byName;
                 }
             }
+
+            // 4. 本轮发牌解析映射兜底（传送门等未登记 ItemCatalog 的道具：
+            // 选择阶段已按 offer.ItemId 解析出 prefab，远端回放/虚影直接复用该结果）
+            ItemBase fromOfferMap = SuperQQ.Selection.Runtime.PropSelectionDirector.ResolveOfferPrefab(itemId);
+            if (fromOfferMap != null)
+            {
+                return fromOfferMap;
+            }
             return null;
         }
 

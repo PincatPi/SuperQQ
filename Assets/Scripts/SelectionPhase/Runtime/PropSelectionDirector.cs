@@ -1389,6 +1389,18 @@ namespace SuperQQ.Selection.Runtime
         }
 
         /// <summary>收到服务器下发的道具列表：按 itemId 映射本地 prefab 并发牌建槽位</summary>
+        // 本轮发牌的 itemId→prefab 解析结果（选择阶段解析成功后登记）：
+        // 摆放阶段远端回放/虚影按数字 itemId 解析 prefab 时的兜底映射
+        // （传送门等未登记 ItemCatalog 的道具，靠此表在远端也能实例化）
+        private static readonly Dictionary<string, ItemBase> resolvedOfferPrefabs = new Dictionary<string, ItemBase>();
+
+        /// <summary>摆放阶段兜底：从本轮发牌解析结果按 itemId 取 prefab（无则 null）</summary>
+        public static ItemBase ResolveOfferPrefab(string itemId)
+        {
+            return !string.IsNullOrEmpty(itemId) && resolvedOfferPrefabs.TryGetValue(itemId, out ItemBase prefab)
+                ? prefab : null;
+        }
+
         private void HandleServerOffers(ItemOfferList list)
         {
             if (!BIsActive || session == null || session.OfferCount > 0)
@@ -1398,6 +1410,9 @@ namespace SuperQQ.Selection.Runtime
 
             // 全量打印后端下发内容，便于核对座位/道具字段
             Debug.Log($"{LOG_TAG} ItemOfferList 原始内容: round={list.Round} offers={list.Offers.Count}\n{list}");
+
+            // 新一轮发牌：重建解析映射（itemId 与 prefab 的对应以服务器每轮下发为准）
+            resolvedOfferPrefabs.Clear();
 
             List<ItemBase> items = new List<ItemBase>(list.Offers.Count);
             foreach (ItemOffer offer in list.Offers)
@@ -1411,6 +1426,7 @@ namespace SuperQQ.Selection.Runtime
                     continue;
                 }
                 items.Add(prefab);
+                resolvedOfferPrefabs[offer.ItemId] = prefab;
             }
 
             session.SetOffers(items);
