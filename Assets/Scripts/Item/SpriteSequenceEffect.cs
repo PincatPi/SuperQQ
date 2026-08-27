@@ -13,7 +13,9 @@ namespace SuperQQ.Item
         [SerializeField] private Sprite[] frames;
         [Tooltip("播放帧率（帧/秒）")]
         [SerializeField, Min(1f)] private float fps = 14f;
-        [Tooltip("播放完毕后销毁自身")]
+        [Tooltip("循环播放（风扇叶片等持续动画）；开启后永不销毁")]
+        [SerializeField] private bool loop;
+        [Tooltip("播放完毕后销毁自身（loop 开启时无效）")]
         [SerializeField] private bool destroyOnFinish = true;
 
         private SpriteRenderer sr;
@@ -37,10 +39,23 @@ namespace SuperQQ.Item
             }
 
             timer += Time.deltaTime;
-            int target = Mathf.Min((int)(timer * fps), frames.Length - 1);
-            if (target != index)
+            if (loop)
             {
-                index = target;
+                // 循环：时间对整周期取模，序列首尾相接
+                float cycle = frames.Length / fps;
+                int target = Mathf.Min((int)((timer % cycle) * fps), frames.Length - 1);
+                if (target != index)
+                {
+                    index = target;
+                    sr.sprite = frames[index];
+                }
+                return;
+            }
+
+            int oneShot = Mathf.Min((int)(timer * fps), frames.Length - 1);
+            if (oneShot != index)
+            {
+                index = oneShot;
                 sr.sprite = frames[index];
             }
             if (timer * fps >= frames.Length && destroyOnFinish)
