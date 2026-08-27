@@ -174,11 +174,22 @@ namespace SuperQQ.Network
 
         // ==================== 服务器权威分数 ====================
 
-        /// <summary>服务器下发的玩家分数（本轮/累计）</summary>
+        /// <summary>服务器下发的玩家分数（本轮/累计 + 六个明细子类型）</summary>
         public struct ServerPlayerScore
         {
             public int RoundScore;
             public int TotalScore;
+            public int FinishScore;       // 过关 +20
+            public int FirstFinishScore;  // 第一个过关 +10
+            public int SoloFinishScore;   // 唯一过关 +15
+            public int CoinScore;         // 金币
+            public int TrapKillScore;     // 道具杀人
+            public int OvertakeScore;     // 总积分反超（翻盘）
+
+            /// <summary>六个明细是否有效（服务器新版本下发；全 0 视为旧版本未实现，回退本地明细）</summary>
+            public bool BHasBreakdown =>
+                FinishScore != 0 || FirstFinishScore != 0 || SoloFinishScore != 0 ||
+                CoinScore != 0 || TrapKillScore != 0 || OvertakeScore != 0;
         }
 
         // 服务器结算下发的分数表（键为 playerId），结算面板优先于本地算分使用
@@ -211,7 +222,13 @@ namespace SuperQQ.Network
                     _serverScores[r.PlayerId] = new ServerPlayerScore
                     {
                         RoundScore = r.RoundScore,
-                        TotalScore = r.TotalScore
+                        TotalScore = r.TotalScore,
+                        FinishScore = r.FinishScore,
+                        FirstFinishScore = r.FirstFinishScore,
+                        SoloFinishScore = r.SoloFinishScore,
+                        CoinScore = r.CoinScore,
+                        TrapKillScore = r.TrapKillScore,
+                        OvertakeScore = r.OvertakeScore
                     };
                 }
             }

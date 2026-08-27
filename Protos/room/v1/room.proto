@@ -244,8 +244,15 @@ message SettlementPlayerResult {
   int32 rank = 3;
   int32 mmr_delta = 4;
   int32 coin_delta = 5;
-  int32 round_score = 6;    // 本轮得分（服务器权威计算：通关20/第一名10/独行15/陷阱5*min(次数,2)/安静10/道具分，无人通关全员0）
+  int32 round_score = 6;    // 本轮得分 = 六个明细之和（服务器权威计算，无人通关全员0）
   int32 total_score = 7;    // 截至本轮累计总分
+  // —— 六个明细子类型 ——
+  int32 finish_score = 8;        // 过关 +20
+  int32 first_finish_score = 9;  // 第一个过关 +10
+  int32 solo_finish_score = 10;  // 唯一过关 +15
+  int32 coin_score = 11;         // 金币（score_value 累加）
+  int32 trap_kill_score = 12;    // 道具杀人 +5×封顶2
+  int32 overtake_score = 13;     // 总积分反超（翻盘）
 }
 
 message Settlement {
