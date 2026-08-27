@@ -33,6 +33,9 @@ namespace SuperQQ.Placement.Core
         /// <summary>一次放置确认成功时触发</summary>
         public event Action<PlacementResult> OnPlacementConfirmed;
 
+        /// <summary>确认放置被拒绝（落点非法）时触发；由场景层订阅并给出玩家提示，本类不感知 UI</summary>
+        public event Action OnPlacementRejected;
+
         /// <summary>
         /// 构造放置会话。
         /// </summary>
@@ -194,6 +197,7 @@ namespace SuperQQ.Placement.Core
                 // CompletePlacement 会关闭虚化，确认失败时恢复，保持“摆放中”的视觉提示
                 currentPc.GhostOn();
                 Debug.LogWarning($"{LOG_TAG} 当前落点不合法，请移动到合法位置后再确认。");
+                OnPlacementRejected?.Invoke();
                 return false;
             }
 

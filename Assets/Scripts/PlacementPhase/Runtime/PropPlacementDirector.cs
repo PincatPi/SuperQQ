@@ -8,6 +8,7 @@ using SuperQQ.Item;
 using SuperQQ.Network;
 using SuperQQ.Placement.Core;
 using SuperQQ.Player;
+using SuperQQ.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -202,6 +203,7 @@ namespace SuperQQ.Placement.Runtime
 
             localSession = new PlacementSession(ResolveLocalPlayerKey(), validColor, invalidColor);
             localSession.OnPlacementConfirmed += HandlePlacementConfirmed;
+            localSession.OnPlacementRejected += HandlePlacementRejected;
             localSession.Deal(item);
 
             grid.ShowGrid();
@@ -259,6 +261,7 @@ namespace SuperQQ.Placement.Runtime
             {
                 localSession.DiscardUnconfirmed();
                 localSession.OnPlacementConfirmed -= HandlePlacementConfirmed;
+                localSession.OnPlacementRejected -= HandlePlacementRejected;
                 localSession = null;
             }
 
@@ -963,6 +966,7 @@ namespace SuperQQ.Placement.Runtime
             if (pc == null || !pc.CanPlaceAt(pos.Value))
             {
                 Debug.LogWarning($"{LOG_TAG} 当前落点不合法，请移动到合法位置后再确认。");
+                ShowInvalidPlacementHint();
                 return;
             }
 
@@ -1464,6 +1468,52 @@ namespace SuperQQ.Placement.Runtime
         {
             Debug.Log($"{LOG_TAG} {result}");
             OnLocalPlacementConfirmed?.Invoke(result);
+        }
+
+        /// <summary>确认放置被会话拒绝（单机左键确认路径）：在道具上方弹出提示</summary>
+        private void HandlePlacementRejected()
+        {
+            ShowInvalidPlacementHint();
+        }
+
+        /// <summary>
+        /// 在当前摆放中道具上方弹出「不可放置」浮动文本提示
+        /// （联机打勾按钮本地预检失败、单机左键确认失败两条路径共用）
+        /// 文本内容、位置偏移与时长统一由 PopupManager 浮动文本注册表（FloatingTextType.InvalidPlacement）配置
+        /// </summary>
+        private void ShowInvalidPlacementHint()
+        {
+            if (PopupManager.Instance == null)
+            {
+                return;
+            }
+            PopupManager.Instance.ShowFloatingText(
+                FloatingTextType.InvalidPlacement, ResolvePlacingItemTopWorldPos());
+        }
+
+        /// <summary>
+        /// 摆放中道具包围盒顶部中点的世界坐标（与 ShowActionButtonsAboveItem 同一取点口径）；未摆放时回退指针位置
+        /// 注意返回类型必须是 Vector3：ShowFloatingText 的 Vector2 重载按容器局部坐标处理，
+        /// 返回 Vector2 会被重载决议绑定到错误接口，导致文本固定在界面中央
+        /// </summary>
+        private Vector3 ResolvePlacingItemTopWorldPos()
+        {
+            PlacementController pc = localSession != null && localSession.BIsPlacing
+                ? localSession.CurrentPlacementController : null;
+            if (pc == null)
+            {
+                return lastPointerWorld;
+            }
+
+            Vector2 worldTop = pc.transform.position;
+            FootprintBoxView box = pc.GetComponent<FootprintBoxView>();
+            if (box != null && GridManager.Instance != null)
+            {
+                Vector2Int size = GridManager.GetRotatedSize(box.Footprint, pc.RotationSteps);
+                worldTop += new Vector2(0f, size.y * GridManager.Instance.PublicCellSize * 0.5f);
+            }
+            // 位置偏移由 PopupManager 浮动文本注册表统一配置，此处仅提供世界锚点
+            return worldTop;
         }
 
         /// <summary>解析本地玩家角色；未找到时返回 null，不阻断放置流程</summary>
