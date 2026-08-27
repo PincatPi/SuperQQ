@@ -138,6 +138,36 @@ message StartGameRequest {
   string player_id = 3;
 }
 
+// 【已废弃，改用 VoteLevel 投票】房主设置房间关卡。
+message SetRoomLevelRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;
+  // 关卡ID：0=未设置（默认第一关），1=Level1，2=Level2...
+  int32 level_id = 4;
+}
+
+message SetRoomLevelResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  Room room = 2;
+}
+
+// 选关投票：房间内任意玩家投票/改票（等待阶段）。
+// 服务端更新该玩家 voted_level_id 后重新计票（多数决；平票取最先达到最高票数的关卡），
+// 把计票结果写入 Room.level_id 并广播 RoomUpdated(reason="level_voted")。
+message VoteLevelRequest {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;
+  int32 level_id = 4;
+}
+
+message VoteLevelResponse {
+  minigame.common.v1.ResponseStatus status = 1;
+  // 最新房间状态（players[].voted_level_id 全量携带，客户端据此展示各关得票）
+  Room room = 2;
+}
+
 message StartGameResponse {
   minigame.common.v1.ResponseStatus status = 1;
   Room room = 2;
@@ -162,6 +192,9 @@ message RoomPlayerState {
   bool ready = 8;
   // 玩家色号（服务器按进房顺序分配，客户端查本地色板，保证各端颜色一致且互不撞色）
   int32 color_index = 9;
+  // 选关投票：该玩家投的关卡ID（0=未投）。等待阶段经 VoteLevel 修改，可改票；
+  // 每次投票变化服务端重新计票写入 Room.level_id 并广播 RoomUpdated(reason="level_voted")。
+  int32 voted_level_id = 10;
 }
 
 message Room {
@@ -174,6 +207,10 @@ message Room {
   int64 finished_at_ms = 7;
   // 房主玩家ID（创建者），用于客户端判定是否展示"开始游戏"按钮
   string owner_player_id = 8;
+  // 本局关卡ID：0=未设置（客户端按默认第一关处理），1=Level1，2=Level2...
+  // 投票模式下为服务端的当前计票结果（多数决），随每次投票广播更新；
+  // 开局时服务端以此固化本局关卡，各端按 RoomUpdated(game_started) 中携带的 level_id 进入同一关卡场景。
+  int32 level_id = 9;
 }
 
 // 房间快照用于服务端主动同步客户端状态，客户端拿到后可以直接做插值和表现层更新。
@@ -197,6 +234,8 @@ message RoomSnapshot {
   RandomEventParams2 event_params2 = 11;
   // 随机事件3（言出法随）各玩家状态：player_id -> 状态，事件期间随快照全量重复下发。
   map<string, Event3PlayerState> event3_states = 12;
+  // 本局关卡ID（开局时由 Room.level_id 固化；断连重连/迟到加入时客户端据此恢复关卡场景）。
+  int32 level_id = 13;
 }
 
 message SettlementPlayerResult {
@@ -564,6 +603,8 @@ service RoomService {
   rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
   rpc GetRoom(GetRoomRequest) returns (GetRoomResponse);
   rpc SetReady(SetReadyRequest) returns (SetReadyResponse);
+  rpc SetRoomLevel(SetRoomLevelRequest) returns (SetRoomLevelResponse);  // 已废弃，用 VoteLevel
+  rpc VoteLevel(VoteLevelRequest) returns (VoteLevelResponse);
   rpc StartGame(StartGameRequest) returns (StartGameResponse);
   rpc SubmitPlayerInput(SubmitPlayerInputRequest) returns (SubmitPlayerInputResponse);
   rpc SyncPlayerState(SyncPlayerStateRequest) returns (SyncPlayerStateResponse);

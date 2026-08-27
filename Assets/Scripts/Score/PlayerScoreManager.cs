@@ -467,6 +467,44 @@ namespace SuperQQ.Score
         // ==================== 轮次管理 ====================
 
         /// <summary>
+        /// 联机模式：按服务器轮次对齐本地记分簿。
+        /// 联机时本地阶段转移被屏蔽，AdvanceToNextRound 的唯一调用点（OnTransitionSelected）
+        /// 不会触发，记分簿会永远停在第 1 轮——这里改为跟随服务器 round 翻页：
+        /// 服务器 round 更大 → 逐轮推进（清理中间数据、复位已结算标记）；
+        /// 服务器 round 回退（全新一局） → 清空重开。
+        /// 由 NetGameFlowGate 在收到 GamePhaseSync{PROP_SELECTION} 时调用。
+        /// </summary>
+        /// <param name="serverRound">服务器 GamePhaseSync 携带的轮次（从 1 起）</param>
+        public void SyncToServerRound(int serverRound)
+        {
+            if (serverRound <= 0)
+            {
+                return;
+            }
+
+            if (serverRound < _currentRoundIndex)
+            {
+                // 服务器轮次回退说明是全新一局（本管理器跨场景存活，会残留上局数据）
+                _scoreRecords.Clear();
+                _roundTrapKillCounts.Clear();
+                _roundBonusScores.Clear();
+                // InitializeFirstRound 内部会重新订阅档案事件，先退订防止重复订阅
+                if (PlayerSessionManager.Instance != null)
+                {
+                    PlayerSessionManager.Instance.OnProfileRegistered -= HandleProfileRegistered;
+                }
+                InitializeFirstRound();
+                Debug.Log($"[Score] 检测到新一局（服务器 round={serverRound}），本地记分簿已重置");
+                return;
+            }
+
+            while (_currentRoundIndex < serverRound)
+            {
+                AdvanceToNextRound();
+            }
+        }
+
+        /// <summary>
         /// 进入下一轮：递增轮次索引、清空本轮中间数据
         /// 由 GamePhaseManager 在确认继续下一轮时调用
         /// </summary>

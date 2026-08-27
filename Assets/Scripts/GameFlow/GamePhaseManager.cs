@@ -92,8 +92,12 @@ namespace SuperQQ.GameFlow
         {
             if (_instance != null && _instance != this)
             {
-                Destroy(gameObject);
-                return;
+                // 新场景自带的 GamePhaseManager 优先（携带本场景的 GameFlowConfig）：
+                // 旧实例是上一关卡的 DontDestroyOnLoad 残留，若不替换，
+                // 进入 Level2 会继续跑 Level1 的阶段配置（阶段 _scene 指回 Level1，整局错乱）。
+                // 没有 GamePhaseManager 的场景（FinalSettlement/大厅）不影响旧实例存活，
+                // 终局结算阶段仍可跨场景运行。
+                Destroy(_instance.gameObject);
             }
 
             _instance = this;

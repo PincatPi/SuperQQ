@@ -396,11 +396,13 @@ namespace SuperQQ.Player
             isLocal = profile.IsLocal;
             playerName = profile.PlayerName;
             playerColor = profile.PlayerColor;
-            leftKey = profile.LeftKey;
-            rightKey = profile.RightKey;
-            jumpKey = profile.JumpKey;
-            jumpKeyAlt = profile.JumpKeyAlt;
-            downKey = profile.DownKey;
+            // 档案未配置键位（None）时保留 prefab 序列化键位：
+            // 联机补注册/纯标识档案可能不带键位，无条件覆盖会把按键清成 None（角色无法操控）
+            if (profile.LeftKey != KeyCode.None) leftKey = profile.LeftKey;
+            if (profile.RightKey != KeyCode.None) rightKey = profile.RightKey;
+            if (profile.JumpKey != KeyCode.None) jumpKey = profile.JumpKey;
+            if (profile.JumpKeyAlt != KeyCode.None) jumpKeyAlt = profile.JumpKeyAlt;
+            if (profile.DownKey != KeyCode.None) downKey = profile.DownKey;
 
             // 同步键位到本地输入源
             if (_input is LocalPlayerInput localInput)

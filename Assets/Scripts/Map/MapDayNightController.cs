@@ -143,6 +143,16 @@ namespace SuperQQ.Map
         /// </summary>
         public static Color CurrentTint { get; private set; } = Color.white;
 
+        /// <summary>
+        /// 场景加载前重置静态色调：CurrentTint 是跨场景静态量，
+        /// 无本组件的关卡（Level2 等）若不清零，会沿用上一关卡的夜色（运行时生成物体被错误变暗）
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void ResetTintOnSceneLoad()
+        {
+            CurrentTint = Color.white;
+        }
+
         private void Update()
         {
             bool targetNight = ResolveTargetNight();
