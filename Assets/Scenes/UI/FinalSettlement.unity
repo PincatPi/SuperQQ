@@ -2124,6 +2124,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayAgainBtn
       objectReference: {fileID: 0}
+    - target: {fileID: 2864486697453313663, guid: e3cc799eb64ca416dbc837b0036622ae, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2864486698032309938, guid: e3cc799eb64ca416dbc837b0036622ae, type: 3}
       propertyPath: m_Sprite
       value: 
