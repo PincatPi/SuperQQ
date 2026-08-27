@@ -42,6 +42,8 @@ namespace SuperQQ.Grid
         [SerializeField] private int pixelsPerUnit = 100;
         [Tooltip("Sorting Order，需高于道具本体")]
         [SerializeField] private int sortingOrder = 10;
+        [Tooltip("Sorting Layer 名称（留空用 Default）。地图地形在 Map 层，虚线框必须在 Item 层及以上才不会被地形遮挡")]
+        [SerializeField] private string sortingLayerName = "Item";
 
         private SpriteRenderer boxRenderer;
         private Texture2D generatedTexture;
@@ -187,6 +189,10 @@ namespace SuperQQ.Grid
                 go.transform.localPosition = Vector3.zero;
                 boxRenderer = go.AddComponent<SpriteRenderer>();
                 boxRenderer.sortingOrder = sortingOrder;
+                if (!string.IsNullOrEmpty(sortingLayerName))
+                {
+                    boxRenderer.sortingLayerName = sortingLayerName;
+                }
             }
 
             // 抵消父物体旋转：道具本体旋转 90° 时虚线框保持与世界网格轴对齐，
