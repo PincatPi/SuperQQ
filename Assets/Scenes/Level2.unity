@@ -9119,7 +9119,7 @@ MonoBehaviour:
   pillar2: {fileID: 2072247090}
   pillar3: {fileID: 1593142549}
   pillar1Cells: 10
-  pillar3Cells: 8
+  pillar3Cells: 4
   pillar2Cells: 12
   legDuration: 2
   restoreDuration: 1
