@@ -180,6 +180,7 @@ namespace SuperQQ.Network
             }
 
             _net.LocalPlayerId = resp.Player.PlayerId;
+            _net.LocalNickname = resp.Player.Nickname;
             _net.Token = resp.Token;
             Debug.Log($"[NetWork] 登录成功: playerId={resp.Player.PlayerId} nickname={resp.Player.Nickname}，进入大厅 {hallSceneName}");
             SetStatus($"登录成功：{resp.Player.Nickname}，进入大厅...");

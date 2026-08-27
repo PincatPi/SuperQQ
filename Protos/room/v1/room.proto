@@ -26,6 +26,7 @@ message JoinRoomRequest {
   string player_id = 3;
   string gateway_id = 4;
   string session_id = 5;
+  string nickname = 6;               // 玩家昵称（服务端在网关补全；为空时房间服务兜底生成）
 }
 
 message JoinRoomResponse {

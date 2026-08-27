@@ -190,7 +190,8 @@ namespace SuperQQ.Network
                 RoomId = roomId,
                 PlayerId = _net.LocalPlayerId,
                 GatewayId = _net.GatewayId,
-                SessionId = _net.SessionId
+                SessionId = _net.SessionId,
+                Nickname = _net.LocalNickname
             });
         }
 
@@ -237,6 +238,7 @@ namespace SuperQQ.Network
                 }
 
                 _net.LocalPlayerId = "";
+                _net.LocalNickname = "";
                 _net.Token = "";
             }
 

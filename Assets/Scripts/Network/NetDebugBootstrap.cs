@@ -124,7 +124,8 @@ namespace SuperQQ.Network
                 RoomId = roomId,
                 PlayerId = _net.LocalPlayerId,
                 GatewayId = _net.GatewayId,
-                SessionId = _net.SessionId
+                SessionId = _net.SessionId,
+                Nickname = _net.LocalNickname
             });
         }
 
@@ -179,6 +180,7 @@ namespace SuperQQ.Network
             }
 
             _net.LocalPlayerId = resp.Player.PlayerId;
+            _net.LocalNickname = resp.Player.Nickname;
             _net.Token = resp.Token;
             Debug.Log($"[NetWork] 登录成功: playerId={resp.Player.PlayerId} nickname={resp.Player.Nickname}");
 
@@ -188,7 +190,8 @@ namespace SuperQQ.Network
                 RoomId = roomId,
                 PlayerId = _net.LocalPlayerId,
                 GatewayId = _net.GatewayId,
-                SessionId = _net.SessionId
+                SessionId = _net.SessionId,
+                Nickname = _net.LocalNickname
             });
         }
 

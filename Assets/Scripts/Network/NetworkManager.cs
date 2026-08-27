@@ -31,6 +31,8 @@ namespace SuperQQ.Network
 
         /// <summary>本地玩家ID（登录成功后设置）</summary>
         public string LocalPlayerId = "";
+        /// <summary>本地玩家账号昵称（登录成功后设置，用于头顶名称等展示）</summary>
+        public string LocalNickname = "";
         /// <summary>当前房间ID（进房后设置）</summary>
         public string RoomId = "";
         /// <summary>进房成功时的完整房间数据（含已在房间的玩家列表），跨场景传递给关卡使用</summary>
@@ -557,6 +559,7 @@ namespace SuperQQ.Network
 
             Token = resp.Token;
             LocalPlayerId = resp.Player.PlayerId;
+            LocalNickname = resp.Player.Nickname;
 
             _reconnectStepDeadline = Time.realtimeSinceStartup + 8f;
             Debug.Log($"[NetWork] 重连登录成功，重新进房: room={RoomId}");
@@ -565,7 +568,8 @@ namespace SuperQQ.Network
                 RoomId = RoomId,
                 PlayerId = LocalPlayerId,
                 GatewayId = GatewayId,
-                SessionId = SessionId
+                SessionId = SessionId,
+                Nickname = LocalNickname
             });
         }
 
