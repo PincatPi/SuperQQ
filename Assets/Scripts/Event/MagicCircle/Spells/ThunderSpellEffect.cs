@@ -91,6 +91,9 @@ namespace SuperQQ.Event
         [Tooltip("【临时测试】勾选后走纯客户端本地测试：每轮检测不判断分贝，直接以本地玩家在检测时刻所在位置为落点执行 预警→雷击；联机下也不会走服务端驱动逻辑")]
         [SerializeField] private bool _bTestStrikeLocalPlayer = false;
 
+        [Tooltip("【临时测试】勾选后：联机服务端驱动模式下，非施法者在检测窗口内无条件上报自己为落雷目标（忽略麦克风/音量/在场判定），用于联调落雷链路；原有分贝检测上报逻辑保留，取消勾选即恢复")]
+        [SerializeField] private bool _bTestAlwaysReportLoud = false;
+
         /// <summary>
         /// 激活雷电效果：在目标玩家身上挂载特效并启动攻击循环
         /// </summary>
@@ -676,6 +679,20 @@ namespace SuperQQ.Event
             /// 仅非施法者客户端会调用——施法者不会被标记为攻击目标，不参与上报</summary>
             private void TryReportLoud()
             {
+                // 【临时测试】无条件上报：非施法者在检测窗口内忽略麦克风/音量/在场判定，
+                // 直接将自己上报为落雷目标（联调落雷链路用；下方原有分贝检测上报逻辑不受影响，取消开关即恢复）
+                if (_config._bTestAlwaysReportLoud)
+                {
+                    if (_bLoudReported)
+                    {
+                        return;
+                    }
+                    _bLoudReported = true;
+                    NetEventSync.ReportEvent3LoudPlayer();
+                    Debug.Log("[ThunderSpellEffect] 【临时测试】检测窗口内无条件上报 report_event3_loud_player（忽略音量检测）");
+                    return;
+                }
+
                 // 防御性确保开麦：非施法者从不吟唱，若该端麦克风因权限/启动时序等原因未在采集，
                 // Volume 恒 0 会导致永远上报不出去（StartMic 幂等，内部含权限请求与失败自动重试）
                 MicVolumeManager mic = MicVolumeManager.EnsureExists();

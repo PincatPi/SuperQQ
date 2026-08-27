@@ -28,3 +28,4 @@ MonoBehaviour:
   _detectVoiceTipText: "\u96F7\u7535\u6B63\u5728\u8046\u542C\u2014\u2014\u5927\u58F0\u8BF4\u8BDD\u4F1A\u5F15\u6765\u843D\u96F7\uFF01"
   _casterFxIdleTimeout: 1
   _bTestStrikeLocalPlayer: 0
+  _bTestAlwaysReportLoud: 1
