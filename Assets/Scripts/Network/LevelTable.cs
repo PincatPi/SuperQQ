@@ -18,8 +18,8 @@ namespace SuperQQ.Network
         /// <summary>可选关卡（顺序即房间选关按钮的循环顺序）</summary>
         public static readonly LevelOption[] Options =
         {
-            new LevelOption { Id = 1, SceneName = "Level1", Label = "欢乐写字楼" },
-            new LevelOption { Id = 2, SceneName = "Level2", Label = "火山" },
+            new LevelOption { Id = 1, SceneName = "Level1", Label = "橘汐双岛" },
+            new LevelOption { Id = 2, SceneName = "Level2", Label = "可可熔崖" },
         };
 
         /// <summary>levelId → 场景名（0/未识别 → 默认第一关）</summary>

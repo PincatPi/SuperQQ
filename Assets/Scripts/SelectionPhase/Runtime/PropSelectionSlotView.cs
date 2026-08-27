@@ -51,6 +51,9 @@ namespace SuperQQ.Selection.Runtime
                 iconImage.sprite = icon;
                 iconImage.preserveAspect = true;
                 iconImage.enabled = icon != null;
+                // 单道具图标缩放（风扇等宽幅道具可缩小显示，避免撑满槽位）
+                float iconScale = item != null ? item.IconScale : 1f;
+                iconImage.rectTransform.localScale = new Vector3(iconScale, iconScale, 1f);
             }
         }
 

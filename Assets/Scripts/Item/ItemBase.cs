@@ -20,6 +20,8 @@ namespace SuperQQ.Item
         [SerializeField] private string displayName = "";
         [Tooltip("道具图标，用于选择面板等 UI 展示；留空时回退为自身首个 SpriteRenderer 的 Sprite")]
         [SerializeField] private Sprite icon;
+        [Tooltip("图标在选择面板中的显示缩放（1=铺满槽位；过大/过小的道具用它微调）")]
+        [SerializeField, Range(0.3f, 1.5f)] private float iconScale = 1f;
 
         [Header("音效")]
         [Tooltip("放置确认音效：OnPlaced 时在道具位置 3D 播放（Clip 在 AudioCatalog 资产中按 Id 拖配）；None 表示静默")]
@@ -33,6 +35,9 @@ namespace SuperQQ.Item
 
         /// <summary>道具图标；未配置时回退为自身首个 SpriteRenderer 的 Sprite</summary>
         public Sprite Icon => icon != null ? icon : FindFallbackIcon();
+
+        /// <summary>图标在选择面板中的显示缩放（1=铺满槽位）</summary>
+        public float IconScale => iconScale;
 
         /// <summary>放置信息（锚点格子、旋转、放置者），由 GridManager.Place 注入</summary>
         public PlacedItem Placed { get; private set; }
