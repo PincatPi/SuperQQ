@@ -23,6 +23,12 @@ namespace SuperQQ.UI
         [SerializeField] private string readyText = "已准备";
         [SerializeField] private string notReadyText = "未准备";
 
+        [Header("准备状态背景")]
+        [Tooltip("随准备状态变色的 Image（一般为 BtnReady 的背景）；留空则自动取 BtnReady 上的 Image")]
+        [SerializeField] private Image readyStateBgImage;
+        [SerializeField] private Color readyBgColor = new Color(0.2f, 0.8f, 0.2f, 1f);
+        [SerializeField] private Color notReadyBgColor = new Color(0.6f, 0.6f, 0.6f, 1f);
+
         private void Awake()
         {
             if (playerNameLabel == null)
@@ -32,10 +38,17 @@ namespace SuperQQ.UI
             }
 
             Transform btn = transform.Find("BtnReady");
-            if (readyStateLabel == null && btn != null)
+            if (btn != null)
             {
-                Transform label = btn.Find("Label");
-                if (label != null) readyStateLabel = label.GetComponent<TMP_Text>();
+                if (readyStateLabel == null)
+                {
+                    Transform label = btn.Find("Label");
+                    if (label != null) readyStateLabel = label.GetComponent<TMP_Text>();
+                }
+                if (readyStateBgImage == null)
+                {
+                    readyStateBgImage = btn.GetComponent<Image>();
+                }
             }
 
             // 槽位内的 BtnReady 仅作状态展示，禁用点击交互
@@ -46,11 +59,12 @@ namespace SuperQQ.UI
             }
         }
 
-        /// <summary>填充玩家信息：昵称 + 准备状态文本</summary>
+        /// <summary>填充玩家信息：昵称 + 准备状态文本，并按准备状态切换挂载 Image 的颜色</summary>
         public void SetPlayer(string playerName, bool isReady)
         {
             if (playerNameLabel != null) playerNameLabel.text = playerName;
             if (readyStateLabel != null) readyStateLabel.text = isReady ? readyText : notReadyText;
+            if (readyStateBgImage != null) readyStateBgImage.color = isReady ? readyBgColor : notReadyBgColor;
         }
     }
 }

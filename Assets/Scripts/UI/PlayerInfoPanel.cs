@@ -1,4 +1,6 @@
 using SuperQQ.Microphone;
+using SuperQQ.Network;
+using SuperQQ.Player;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,52 +12,112 @@ namespace SuperQQ.UI
     /// 面板在 Level1 场景中常驻显示，不做阶段显隐控制。
     ///
     /// 职责规划：
-    ///   - VolumeBar：绑定 MicVolumeManager 实时分贝，驱动音量条填充（已实现）
-    ///   - ScoreBar：玩家得分条控制（待实现）
-    ///   - PlayerName / PlayerIcon：玩家名称与头像显示（待实现）
+    ///   - VolumeBar：绑定 MicVolumeManager 实时分贝，驱动 Slider Handle 在固定背景条上移动（已实现）
+    ///   - PlayerName：本地玩家名称显示（已实现：联机取账户昵称，单机退回场景配置名）
+    ///   - PlayerIcon：玩家头像显示（待实现）
     ///
-    /// VolumeBar 绑定方式：在 Inspector 中将 VolumeBarFill（Image）拖入 Volume Fill 字段
-    ///   - Image 为 Filled 类型时：直接驱动 fillAmount（推荐，Image Type 设为 Filled / Horizontal / Left）
-    ///   - 否则自动退化为按 X 轴缩放 RectTransform（需保证 pivot.x = 0，从左向右增长）
+    /// VolumeBar 绑定方式：在 Inspector 中将 VolumeBar 的 Slider 拖入 Volume Slider 字段
+    ///   - Slider 仅作展示：Awake 中自动设为不可交互，并固定 min=0 / max=1
+    ///   - Handle 位置 = 当前声压级分贝 / 100（0~1，已平滑）
     ///
     /// 数据来源：
-    ///   - 填充比例使用 MicVolumeManager.NormalizedPositiveDecibels（当前正值分贝 / 120，0~1，已平滑）
-    ///   - 正值分贝使用 MicVolumeManager.PositiveDecibels（0 起，满量程 120）
+    ///   - MicVolumeManager.NormalizedSplDecibels（估算声压级分贝 / 100，0~1，已平滑）
     /// </summary>
     public class PlayerInfoPanel : MonoBehaviour
     {
         [Header("VolumeBar 绑定")]
-        [SerializeField] private Image _volumeFillImage;                // VolumeBarFill 上的 Image
-        [SerializeField] private TextMeshProUGUI _volumeDecibelText;    // 可选：显示正值分贝的文本
+        [SerializeField] private Slider _volumeSlider;                  // VolumeBar 上的 Slider（Handle 位置表示当前分贝）
         [SerializeField] private GameObject _volumeActiveIcon;          // 麦克风采集中显示的图标
         [SerializeField] private GameObject _volumeInactiveIcon;        // 麦克风未采集时显示的图标
 
         [Header("VolumeBar 行为")]
-        [SerializeField] private float _volumeFillLerpSpeed = 15f;      // 填充跟随的平滑速度（越大越跟手）
+        [SerializeField] private float _volumeHandleLerpSpeed = 15f;    // Handle 跟随的平滑速度（越大越跟手）
 
-        [Header("ScoreBar（待实现）")]
-        [SerializeField] private Image _scoreFillImage;                 // 预留：ScoreBarFill 上的 Image
-
-        [Header("玩家信息（待实现）")]
-        [SerializeField] private TextMeshProUGUI _playerNameText;       // 预留：玩家名称文本
+        [Header("玩家信息")]
+        [SerializeField] private TextMeshProUGUI _playerNameText;       // 玩家名称文本（联机显示账户昵称）
         [SerializeField] private Image _playerIconImage;                // 预留：玩家头像
 
-        private RectTransform _volumeFillRect;
-        private bool _volumeUseFillAmount;
-        private float _volumeDisplayFill;
+        private float _volumeDisplayValue;
+        private bool _playerNameResolved;                               // 名称是否已解析显示（未成功时每帧重试）
 
         private void Awake()
         {
-            if (_volumeFillImage != null)
+            if (_volumeSlider != null)
             {
-                _volumeFillRect = _volumeFillImage.rectTransform;
-                _volumeUseFillAmount = _volumeFillImage.type == Image.Type.Filled;
+                // 仅作展示：禁止拖动，固定 0~1 区间
+                _volumeSlider.interactable = false;
+                _volumeSlider.minValue = 0f;
+                _volumeSlider.maxValue = 1f;
+                _volumeSlider.wholeNumbers = false;
             }
         }
 
         private void Update()
         {
             UpdateVolumeBar();
+
+            // 名称未解析成功时每帧重试（等待联机数据/本地化身就绪），成功后不再轮询
+            if (!_playerNameResolved)
+            {
+                TryResolvePlayerName();
+            }
+        }
+
+        // ==================== 玩家名称 ====================
+
+        /// <summary>
+        /// 解析并显示本地玩家名称：
+        /// 联机模式取账户昵称（NetworkManager.JoinedRoom 按 LocalPlayerId 匹配，进房数据跨场景保留）；
+        /// 单机或查不到时退回 LevelPlayerRegistry 本地玩家的 PlayerName（场景配置，如 "P1"）
+        /// </summary>
+        private void TryResolvePlayerName()
+        {
+            if (_playerNameText == null)
+            {
+                _playerNameResolved = true;
+                return;
+            }
+
+            string resolvedName = null;
+
+            // 联机：账户昵称
+            NetworkManager net = NetworkManager.Instance;
+            if (net != null && !string.IsNullOrEmpty(net.LocalPlayerId) && net.JoinedRoom != null)
+            {
+                foreach (Minigame.Room.V1.RoomPlayerState p in net.JoinedRoom.Players)
+                {
+                    if (p.Player != null && p.Player.PlayerId == net.LocalPlayerId
+                        && !string.IsNullOrEmpty(p.Player.Nickname))
+                    {
+                        resolvedName = p.Player.Nickname;
+                        break;
+                    }
+                }
+            }
+
+            // 单机/兜底：场景本地玩家的配置名
+            if (string.IsNullOrEmpty(resolvedName))
+            {
+                LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
+                if (registry != null)
+                {
+                    System.Collections.Generic.IReadOnlyList<PlayerController> players = registry.Players;
+                    for (int i = 0; i < players.Count; i++)
+                    {
+                        if (players[i] != null && players[i].BIsLocal)
+                        {
+                            resolvedName = players[i].PlayerName;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(resolvedName))
+            {
+                _playerNameText.text = resolvedName;
+                _playerNameResolved = true;
+            }
         }
 
         // ==================== VolumeBar ====================
@@ -68,49 +130,26 @@ namespace SuperQQ.UI
             // 切换麦克风状态图标：采集中显示 ActiveIcon，未采集显示 InactiveIcon
             UpdateVolumeIcons(micRunning);
 
-            // 麦克风未采集：立即归零，不做平滑
+            // 麦克风未采集：Handle 立即归零，不做平滑
             if (!micRunning)
             {
-                _volumeDisplayFill = 0f;
-                ApplyVolumeFill(0f, 1f);
-                UpdateVolumeText(0f);
+                _volumeDisplayValue = 0f;
+                ApplyVolumeValue(0f);
                 return;
             }
 
-            // 平滑跟随实时分贝：填充比例 = 当前正值分贝 / 120
-            float target = mic.NormalizedPositiveDecibels;
-            _volumeDisplayFill = Mathf.Lerp(_volumeDisplayFill, target, 1f - Mathf.Exp(-_volumeFillLerpSpeed * Time.unscaledDeltaTime));
-            ApplyVolumeFill(_volumeDisplayFill, _volumeDisplayFill);
-            UpdateVolumeText(mic.PositiveDecibels);
+            // 平滑跟随实时分贝：Handle 位置 = 当前声压级分贝 / 100
+            float target = mic.NormalizedSplDecibels;
+            _volumeDisplayValue = Mathf.Lerp(_volumeDisplayValue, target, 1f - Mathf.Exp(-_volumeHandleLerpSpeed * Time.unscaledDeltaTime));
+            ApplyVolumeValue(_volumeDisplayValue);
         }
 
-        /// <summary>
-        /// 应用音量条填充比例：Filled Image 用 fillAmount，否则用 X 轴缩放
-        /// </summary>
-        private void ApplyVolumeFill(float fillAmountValue, float scaleValue)
+        /// <summary>应用音量条数值：驱动 Slider Handle 在固定背景条上移动（0~1）</summary>
+        private void ApplyVolumeValue(float value)
         {
-            if (_volumeFillImage == null)
+            if (_volumeSlider != null)
             {
-                return;
-            }
-
-            if (_volumeUseFillAmount)
-            {
-                _volumeFillImage.fillAmount = fillAmountValue;
-            }
-            else if (_volumeFillRect != null)
-            {
-                Vector3 scale = _volumeFillRect.localScale;
-                scale.x = Mathf.Clamp01(scaleValue);
-                _volumeFillRect.localScale = scale;
-            }
-        }
-
-        private void UpdateVolumeText(float positiveDb)
-        {
-            if (_volumeDecibelText != null)
-            {
-                _volumeDecibelText.text = $"{positiveDb:F0} dB";
+                _volumeSlider.value = Mathf.Clamp01(value);
             }
         }
 

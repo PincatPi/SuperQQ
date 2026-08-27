@@ -49,4 +49,19 @@ namespace SuperQQ.UI
         /// <summary>通用 Tips：仅展示一段提示文本，固定时长后自动关闭</summary>
         Common = 1,
     }
+
+    /// <summary>
+    /// 浮动文本（FloatingText）类型 — PopupManager 浮动文本注册表的索引键
+    /// 浮动文本：在指定世界锚点展示一段临时文本，固定时长后自动关闭销毁；
+    /// 文本内容、位置偏移与展示时长统一在 PopupManager 注册表中配置，调用方只传类型与锚点
+    /// 新增浮动文本：在此添加枚举值 → 在 PopupManager 浮动文本注册表中登记
+    /// </summary>
+    public enum FloatingTextType
+    {
+        /// <summary>未配置（占位值，传入时 PopupManager 拒绝播放并告警）</summary>
+        None = 0,
+
+        /// <summary>道具放置阶段确认落点非法时的提示（如「该区域不可放置哦」）</summary>
+        InvalidPlacement = 1,
+    }
 }
