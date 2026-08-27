@@ -22,7 +22,7 @@ namespace SuperQQ.Network
     /// </summary>
     public class UIRoomController : MonoBehaviour
     {
-        [Header("对局场景（拖入场景资源，需已加入 Build Settings）")]
+        [Header("对局场景（已废弃保留字段：关卡改由服务器 Room.level_id 决定，见 LevelTable；此字段不再参与逻辑）")]
 #if UNITY_EDITOR
         [SerializeField] private UnityEditor.SceneAsset battleSceneAsset;
 #endif
@@ -72,6 +72,8 @@ namespace SuperQQ.Network
             view.ReadyClicked += OnReadyClicked;
             view.StartClicked += OnStartClicked;
             view.BackClicked += OnBackClicked;
+            view.VoteOpenClicked += OnVoteOpenClicked;
+            view.VoteSubmitted += OnVoteSubmitted;
 
             if (_net == null || string.IsNullOrEmpty(_net.RoomId) || _room == null)
             {
@@ -82,6 +84,7 @@ namespace SuperQQ.Network
 
             _net.Register<RoomUpdated>(OnRoomUpdated);
             _net.Register<SetReadyResponse>(OnSetReady);
+            _net.Register<VoteLevelResponse>(OnVoteLevel);
             _net.Register<StartGameResponse>(OnStartGame);
             _net.Register<GetRoomResponse>(OnGetRoom);
             _net.Register<LeaveRoomResponse>(OnLeaveRoom);
@@ -120,10 +123,13 @@ namespace SuperQQ.Network
                 view.ReadyClicked -= OnReadyClicked;
                 view.StartClicked -= OnStartClicked;
                 view.BackClicked -= OnBackClicked;
+                view.VoteOpenClicked -= OnVoteOpenClicked;
+                view.VoteSubmitted -= OnVoteSubmitted;
             }
             if (_net == null) return;
             _net.Unregister<RoomUpdated>();
             _net.Unregister<SetReadyResponse>();
+            _net.Unregister<VoteLevelResponse>();
             _net.Unregister<StartGameResponse>();
             _net.Unregister<GetRoomResponse>();
             _net.Unregister<LeaveRoomResponse>();
@@ -172,6 +178,14 @@ namespace SuperQQ.Network
                 view.SetSlotPlayer(i, nickname, ready);
             }
             view.SetReadyProgress(readyCount, _room.Players.Count);
+
+            // 选关投票摘要：按钮全员可点（打开投票弹窗）；levelId=0（旧服务器未下发）显示默认第一关
+            view.SetVoteSummary(BuildVoteSummary());
+            // 弹窗开着时同步刷新得票（其它玩家投票经推送到达）
+            if (view.BVotePopupOpen)
+            {
+                view.OpenVotePopup(BuildVoteIds(), BuildVoteLabels(), CountVotes(), _room.LevelId);
+            }
 
             if (!IsOwner)
             {
@@ -246,6 +260,99 @@ namespace SuperQQ.Network
             });
         }
 
+        // ==================== 选关投票 ====================
+
+        /// <summary>计票：各关卡当前得票数（按 LevelTable.Options 顺序）</summary>
+        private int[] CountVotes()
+        {
+            var votes = new int[LevelTable.Options.Length];
+            if (_room == null) return votes;
+            foreach (RoomPlayerState p in _room.Players)
+            {
+                for (int i = 0; i < LevelTable.Options.Length; i++)
+                {
+                    if (p.VotedLevelId == LevelTable.Options[i].Id)
+                    {
+                        votes[i]++;
+                        break;
+                    }
+                }
+            }
+            return votes;
+        }
+
+        private int[] BuildVoteIds()
+        {
+            var ids = new int[LevelTable.Options.Length];
+            for (int i = 0; i < ids.Length; i++) ids[i] = LevelTable.Options[i].Id;
+            return ids;
+        }
+
+        private string[] BuildVoteLabels()
+        {
+            var labels = new string[LevelTable.Options.Length];
+            for (int i = 0; i < labels.Length; i++) labels[i] = LevelTable.Options[i].Label;
+            return labels;
+        }
+
+        private string BuildVoteSummary()
+        {
+            int[] votes = CountVotes();
+            int total = 0;
+            int leadingVotes = 0;
+            for (int i = 0; i < votes.Length; i++)
+            {
+                total += votes[i];
+                if (LevelTable.Options[i].Id == _room.LevelId)
+                {
+                    leadingVotes = votes[i];
+                }
+            }
+            if (total == 0)
+            {
+                return "点击投票选择关卡";
+            }
+            // 与美术面板格式一致："欢乐写字楼 · 2 票"
+            return $"{LevelTable.ResolveLabel(_room.LevelId)} · {leadingVotes}票";
+        }
+
+        /// <summary>点击"选关投票"：打开投票弹窗（全员可投）</summary>
+        private void OnVoteOpenClicked()
+        {
+            if (_room == null) return;
+            view.OpenVotePopup(BuildVoteIds(), BuildVoteLabels(), CountVotes(), _room.LevelId);
+        }
+
+        /// <summary>弹窗中选中某关：发投票请求（等服务器回包/推送刷新，不做本地预判）</summary>
+        private void OnVoteSubmitted(int levelId)
+        {
+            if (_net == null || _room == null) return;
+
+            Debug.Log($"[NetWork] 投票选关: levelId={levelId}");
+            _net.Send(new VoteLevelRequest
+            {
+                RoomId = _net.RoomId,
+                PlayerId = _net.LocalPlayerId,
+                LevelId = levelId
+            });
+        }
+
+        private void OnVoteLevel(VoteLevelResponse resp)
+        {
+            if (resp.Status == null || resp.Status.Code != ResultCode.Ok)
+            {
+                Debug.LogWarning($"[NetWork] 投票失败: {resp.Status?.Message}");
+                _net.Send(new GetRoomRequest { RoomId = _net.RoomId });
+                return;
+            }
+            // 成功：回包携带服务端确认的 Room（含各玩家 voted_level_id 与新计票结果），
+            // 各端最终都以 RoomUpdated(level_voted) 广播为准
+            if (resp.Room != null)
+            {
+                MergeRoom(resp.Room);
+            }
+        }
+
         private void OnStartGame(StartGameResponse resp)
         {
             if (resp.Status == null || resp.Status.Code != ResultCode.Ok)
@@ -275,11 +382,11 @@ namespace SuperQQ.Network
             _room = update.Room;
             _net.JoinedRoom = update.Room;
 
-            // 游戏开始：全员切对局场景
+            // 游戏开始：全员按服务器下发的 levelId 切同一关卡场景（0/未识别回退默认关）
             if (update.Reason == "game_started" ||
                 update.Room.Phase == RoomPhase.Battle || update.Room.Phase == RoomPhase.Loading)
             {
-                SceneManager.LoadScene(battleSceneName);
+                SceneManager.LoadScene(LevelTable.ResolveSceneName(update.Room.LevelId));
                 return;
             }
 
@@ -298,10 +405,10 @@ namespace SuperQQ.Network
             _room = serverRoom;
             _net.JoinedRoom = serverRoom;
 
-            // 通过轮询也能检测到开局（phase 被服务器推进）
+            // 通过轮询也能检测到开局（phase 被服务器推进），按 levelId 进同一关卡
             if (_room.Phase == RoomPhase.Battle || _room.Phase == RoomPhase.Loading)
             {
-                SceneManager.LoadScene(battleSceneName);
+                SceneManager.LoadScene(LevelTable.ResolveSceneName(_room.LevelId));
                 return;
             }
 

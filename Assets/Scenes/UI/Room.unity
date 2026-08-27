@@ -6160,6 +6160,10 @@ MonoBehaviour:
   notReadyText: "\u70B9\u51FB\u51C6\u5907"
   readyText: "\u53D6\u6D88\u51C6\u5907"
   startGameText: "\u5F00\u59CB\u6E38\u620F"
+  levelButton: {fileID: 0}
+  levelButtonLabel: {fileID: 0}
+  voteSummaryText: {fileID: 0}
+  chineseFont: {fileID: 11400000, guid: da5c05b460c6f9d428b3c072d4811c82, type: 2}
 --- !u!4 &1382913427
 Transform:
   m_ObjectHideFlags: 0

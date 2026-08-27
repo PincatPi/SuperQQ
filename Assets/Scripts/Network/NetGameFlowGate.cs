@@ -36,7 +36,13 @@ namespace SuperQQ.Network
             if (NetworkManager.Instance == null) return;
 
             var go = new GameObject(nameof(NetGameFlowGate));
-            go.AddComponent<NetGameFlowGate>();
+            var gate = go.AddComponent<NetGameFlowGate>();
+
+            // AfterSceneLoad 早于场景中各 Start：立即注册消息并屏蔽本地转移，
+            // 否则关卡场景的 GamePhaseManager.Start 会先自动启动本地流程
+            // （联机下出现"本地流程抢跑：0 候选进选择阶段并秒切"的时序竞争）
+            gate.TryInit();
+            gate.TrySuppressLocalTransitions();
         }
 
         private bool _initialized;
@@ -46,6 +52,16 @@ namespace SuperQQ.Network
             // 跨场景存活：注册一次永久有效，避免场景切换导致注册丢失/时序竞争。
             // 离线时保留物体但不做任何注册（Update 中检测到进房后再初始化）。
             DontDestroyOnLoad(gameObject);
+            // 本对象跨场景存活：场景加载完成（早于场景中各 Start）立即屏蔽本地转移，
+            // 防止关卡场景的 GamePhaseManager.Start 自动抢跑本地流程（联机时序竞争）。
+            // 注意不能只在 AutoSpawn 里做：门控在房间场景已创建，进入关卡时 AutoSpawn 会提前返回。
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += HandleSceneLoaded;
+        }
+
+        private void HandleSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+        {
+            TryInit();
+            TrySuppressLocalTransitions();
         }
 
         private void Update()
@@ -58,17 +74,47 @@ namespace SuperQQ.Network
             // 否则在 Room 场景初始化时 Level1 未加载、GamePhaseManager 为 null，
             // 屏蔽被跳过一次后再不重试，整个对局本地倒计时/条件转移照常触发（阶段被"跳过"）。
             TrySuppressLocalTransitions();
+            TryDeliverPendingOffers();
         }
 
-        private bool _bLocalTransitionsSuppressed;
-
-        private void TrySuppressLocalTransitions()
+        /// <summary>
+        /// 缓存发牌的补投递：ItemOfferList/GamePhaseSync 可能先于关卡场景加载完成到达
+        /// （此时 GamePhaseManager 不存在，消息被缓存），新 Manager 就绪后必须主动补启动流程，
+        /// 否则联机下流程永远不启动（无选择阶段、无玩家化身）
+        /// </summary>
+        private void TryDeliverPendingOffers()
         {
-            if (_bLocalTransitionsSuppressed)
+            if (_pendingOffers == null)
+            {
+                return;
+            }
+            GamePhaseManager flow = GamePhaseManager.Instance;
+            // 仅在联机屏蔽态下补投（单机模式的本地启动不该被抢）；管理器未就绪则下帧重试
+            if (flow == null || flow.BFlowStarted || !ReferenceEquals(flow, _suppressedFlow))
             {
                 return;
             }
 
+            ItemOfferList list = _pendingOffers; // 不清空缓存：EnterPhase 后由 Director 消费（见 OnServerOffers 注释）
+            Debug.Log($"[NetWork] 关卡场景就绪，补投缓存发牌: round={list.Round} 道具数={list.Offers.Count}");
+            EnsureRemotePlayersReady();
+            flow.StartGameFlow();
+            flow.EnterPhaseByType<PropSelectionPhase>("补投缓存发牌");
+
+            SuperQQ.Selection.Runtime.PropSelectionDirector director =
+                UnityEngine.Object.FindFirstObjectByType<SuperQQ.Selection.Runtime.PropSelectionDirector>();
+            if (director != null && director.BIsActive)
+            {
+                director.ReceiveOffers(list);
+            }
+        }
+
+        // 记录已屏蔽的 Manager 实例而非单次标记：跨关卡/跨局时新场景的管理器会替换旧实例
+        // （GamePhaseManager.Awake 新实例优先），屏蔽必须对新实例重新施加
+        private GamePhaseManager _suppressedFlow;
+
+        private void TrySuppressLocalTransitions()
+        {
             NetworkManager net = NetworkManager.Instance;
             if (net == null || !net.IsConnected || string.IsNullOrEmpty(net.RoomId))
             {
@@ -78,12 +124,16 @@ namespace SuperQQ.Network
             GamePhaseManager flow = GamePhaseManager.Instance;
             if (flow == null)
             {
-                return; // Level1 未加载，下一帧重试
+                return; // 关卡场景未加载，下一帧重试
+            }
+            if (ReferenceEquals(flow, _suppressedFlow))
+            {
+                return; // 当前实例已屏蔽过
             }
 
             flow.SetStartFlowOnStart(false);
             flow.SuppressLocalTransitions = true;
-            _bLocalTransitionsSuppressed = true;
+            _suppressedFlow = flow;
             Debug.Log("[NetWork] 已屏蔽本地阶段切换：阶段只响应服务器 GamePhaseSync");
         }
 
@@ -252,19 +302,39 @@ namespace SuperQQ.Network
             }
 
             int registered = 0;
+            bool localRegistered = false;
             for (int i = 0; i < players.Count; i++)
             {
                 Minigame.Room.V1.RoomPlayerState p = players[i];
-                registered += TryRegisterRemote(net, session, p.Player?.PlayerId, p.Player?.Nickname, i);
+                string playerId = p.Player?.PlayerId;
+                if (playerId == net.LocalPlayerId)
+                {
+                    // 本地玩家档案补注册：未在场景预置本地玩家的关卡（Level2 等）档案缺失，
+                    // SpawnMissingPlayerAvatars 无档可生——整局没有一个角色
+                    if (!session.HasPlayerByIdentity(playerId))
+                    {
+                        session.RegisterProfile(new SuperQQ.Player.PlayerProfile
+                        {
+                            PlayerId = playerId,
+                            IsLocal = true,
+                            PlayerName = string.IsNullOrEmpty(p.Player?.Nickname) ? "P1" : p.Player.Nickname,
+                            PlayerColor = PlayerColorPalette.Get(i)
+                        });
+                        localRegistered = true;
+                        Debug.Log($"[NetWork] 本地玩家档案补注册: {playerId}（场景未预置本地玩家）");
+                    }
+                    continue;
+                }
+                registered += TryRegisterRemote(net, session, playerId, p.Player?.Nickname, i);
             }
 
             // 本地玩家也按同一下标规则着色（覆盖场景 prefab 的默认色），保证两端颜色统一
             ApplyLocalPlayerColor(net, players);
 
-            if (registered > 0)
+            if (registered > 0 || localRegistered)
             {
                 SuperQQ.Player.LevelPlayerRegistry.Instance?.SpawnMissingPlayerAvatars();
-                Debug.Log($"[NetWork] 对局开始：注册 {registered} 名远程玩家并生成化身");
+                Debug.Log($"[NetWork] 对局开始：注册 {registered} 名远程玩家{(localRegistered ? " + 本地玩家" : "")}并生成化身");
             }
         }
 
@@ -428,6 +498,7 @@ namespace SuperQQ.Network
 
         private void OnDestroy()
         {
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= HandleSceneLoaded;
             if (NetworkManager.Instance != null)
             {
                 NetworkManager.Instance.Unregister<ItemOfferList>();

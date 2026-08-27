@@ -31,7 +31,7 @@ namespace Minigame.Gateway.V1 {
             "ASgDIkMKEUhlYXJ0YmVhdFJlc3BvbnNlEhYKDnNlcnZlcl90aW1lX21zGAEg",
             "ASgDEhYKDmNsaWVudF90aW1lX21zGAIgASgDIlIKDUVycm9yUmVzcG9uc2US",
             "MgoGc3RhdHVzGAEgASgLMiIubWluaWdhbWUuY29tbW9uLnYxLlJlc3BvbnNl",
-            "U3RhdHVzEg0KBXJvdXRlGAIgASgJIpgPCg5DbGllbnRFbnZlbG9wZRIvCgV0",
+            "U3RhdHVzEg0KBXJvdXRlGAIgASgJItIPCg5DbGllbnRFbnZlbG9wZRIvCgV0",
             "cmFjZRgBIAEoCzIgLm1pbmlnYW1lLmNvbW1vbi52MS5UcmFjZUNvbnRleHQS",
             "CwoDc2VxGAIgASgEEjoKCWhlYXJ0YmVhdBgKIAEoCzIlLm1pbmlnYW1lLmdh",
             "dGV3YXkudjEuSGVhcnRiZWF0UmVxdWVzdEgAEjIKBWxvZ2luGAsgASgLMiEu",
@@ -74,65 +74,68 @@ namespace Minigame.Gateway.V1 {
             "U3luY0gAEkYKFXJlcG9ydF9ldmVudDNfc3VidHlwZRgmIAEoCzIlLm1pbmln",
             "YW1lLnJvb20udjEuUmVwb3J0RXZlbnQzU3VidHlwZUgAEk0KGXJlcG9ydF9l",
             "dmVudDNfbG91ZF9wbGF5ZXIYJyABKAsyKC5taW5pZ2FtZS5yb29tLnYxLlJl",
-            "cG9ydEV2ZW50M0xvdWRQbGF5ZXJIAEIJCgdwYXlsb2FkIpoRCg5TZXJ2ZXJF",
-            "bnZlbG9wZRIvCgV0cmFjZRgBIAEoCzIgLm1pbmlnYW1lLmNvbW1vbi52MS5U",
-            "cmFjZUNvbnRleHQSCwoDc2VxGAIgASgEEjsKCWhlYXJ0YmVhdBgKIAEoCzIm",
-            "Lm1pbmlnYW1lLmdhdGV3YXkudjEuSGVhcnRiZWF0UmVzcG9uc2VIABIzCgVs",
-            "b2dpbhgLIAEoCzIiLm1pbmlnYW1lLmFjY291bnQudjEuTG9naW5SZXNwb25z",
-            "ZUgAEjwKCmdldF9wbGF5ZXIYDCABKAsyJi5taW5pZ2FtZS5hY2NvdW50LnYx",
-            "LkdldFBsYXllclJlc3BvbnNlSAASPAoLc3RhcnRfbWF0Y2gYDSABKAsyJS5t",
-            "aW5pZ2FtZS5tYXRjaC52MS5TdGFydE1hdGNoUmVzcG9uc2VIABI+CgxjYW5j",
-            "ZWxfbWF0Y2gYDiABKAsyJi5taW5pZ2FtZS5tYXRjaC52MS5DYW5jZWxNYXRj",
-            "aFJlc3BvbnNlSAASOgoKZ2V0X3RpY2tldBgPIAEoCzIkLm1pbmlnYW1lLm1h",
-            "dGNoLnYxLkdldFRpY2tldFJlc3BvbnNlSAASPgoQbWF0Y2hfYXNzaWdubWVu",
-            "dBgQIAEoCzIiLm1pbmlnYW1lLm1hdGNoLnYxLk1hdGNoQXNzaWdubWVudEgA",
-            "EjcKCWpvaW5fcm9vbRgRIAEoCzIiLm1pbmlnYW1lLnJvb20udjEuSm9pblJv",
-            "b21SZXNwb25zZUgAEjcKDXJvb21fc25hcHNob3QYEiABKAsyHi5taW5pZ2Ft",
-            "ZS5yb29tLnYxLlJvb21TbmFwc2hvdEgAEjIKCnNldHRsZW1lbnQYEyABKAsy",
-            "HC5taW5pZ2FtZS5yb29tLnYxLlNldHRsZW1lbnRIABJKChNzdWJtaXRfcGxh",
-            "eWVyX2lucHV0GBQgASgLMisubWluaWdhbWUucm9vbS52MS5TdWJtaXRQbGF5",
-            "ZXJJbnB1dFJlc3BvbnNlSAASOwoLY3JlYXRlX3Jvb20YFSABKAsyJC5taW5p",
-            "Z2FtZS5yb29tLnYxLkNyZWF0ZVJvb21SZXNwb25zZUgAEkYKEXN5bmNfcGxh",
-            "eWVyX3N0YXRlGBYgASgLMikubWluaWdhbWUucm9vbS52MS5TeW5jUGxheWVy",
-            "U3RhdGVSZXNwb25zZUgAEjcKCXNldF9yZWFkeRgXIAEoCzIiLm1pbmlnYW1l",
-            "LnJvb20udjEuU2V0UmVhZHlSZXNwb25zZUgAEjkKCnN0YXJ0X2dhbWUYGCAB",
-            "KAsyIy5taW5pZ2FtZS5yb29tLnYxLlN0YXJ0R2FtZVJlc3BvbnNlSAASNQoM",
-            "cm9vbV91cGRhdGVkGBkgASgLMh0ubWluaWdhbWUucm9vbS52MS5Sb29tVXBk",
-            "YXRlZEgAEjUKCGdldF9yb29tGBogASgLMiEubWluaWdhbWUucm9vbS52MS5H",
-            "ZXRSb29tUmVzcG9uc2VIABI6Cg9pdGVtX29mZmVyX2xpc3QYGyABKAsyHy5t",
-            "aW5pZ2FtZS5yb29tLnYxLkl0ZW1PZmZlckxpc3RIABJRChtpdGVtX2NsYWlt",
-            "X2ludGVudF9icm9hZGNhc3QYHCABKAsyKi5taW5pZ2FtZS5yb29tLnYxLkl0",
-            "ZW1DbGFpbUludGVudEJyb2FkY2FzdEgAEj4KEWl0ZW1fY2xhaW1fcmVzdWx0",
-            "GB0gASgLMiEubWluaWdhbWUucm9vbS52MS5JdGVtQ2xhaW1SZXN1bHRIABI6",
-            "Cg9nYW1lX3BoYXNlX3N5bmMYHiABKAsyHy5taW5pZ2FtZS5yb29tLnYxLkdh",
-            "bWVQaGFzZVN5bmNIABJPChppdGVtX3BsYWNlX3N0YXRlX2Jyb2FkY2FzdBgf",
-            "IAEoCzIpLm1pbmlnYW1lLnJvb20udjEuSXRlbVBsYWNlU3RhdGVCcm9hZGNh",
-            "c3RIABI+ChFpdGVtX3BsYWNlX3Jlc3VsdBggIAEoCzIhLm1pbmlnYW1lLnJv",
-            "b20udjEuSXRlbVBsYWNlUmVzdWx0SAASRAoUcGxheWVyX291dF9icm9hZGNh",
-            "c3QYISABKAsyJC5taW5pZ2FtZS5yb29tLnYxLlBsYXllck91dEJyb2FkY2Fz",
-            "dEgAEkgKFnBsYXllcl9ldmVudF9icm9hZGNhc3QYIiABKAsyJi5taW5pZ2Ft",
-            "ZS5yb29tLnYxLlBsYXllckV2ZW50QnJvYWRjYXN0SAASSAoWcGlja3VwX2Ns",
-            "YWltX2Jyb2FkY2FzdBgjIAEoCzImLm1pbmlnYW1lLnJvb20udjEuUGlja3Vw",
-            "Q2xhaW1Ccm9hZGNhc3RIABJPChppdGVtX3N0YXRlX2V2ZW50X2Jyb2FkY2Fz",
-            "dBgkIAEoCzIpLm1pbmlnYW1lLnJvb20udjEuSXRlbVN0YXRlRXZlbnRCcm9h",
-            "ZGNhc3RIABJCChN0cmFwX2tpbGxfYnJvYWRjYXN0GCUgASgLMiMubWluaWdh",
-            "bWUucm9vbS52MS5UcmFwS2lsbEJyb2FkY2FzdEgAEkQKFGl0ZW1fZGVtb2xp",
-            "c2hfcmVzdWx0GCYgASgLMiQubWluaWdhbWUucm9vbS52MS5JdGVtRGVtb2xp",
-            "c2hSZXN1bHRIABI5CgpsZWF2ZV9yb29tGCcgASgLMiMubWluaWdhbWUucm9v",
-            "bS52MS5MZWF2ZVJvb21SZXNwb25zZUgAEjUKBmxvZ291dBgoIAEoCzIjLm1p",
-            "bmlnYW1lLmFjY291bnQudjEuTG9nb3V0UmVzcG9uc2VIABJEChR0b2FzdF9z",
-            "aXplX2Jyb2FkY2FzdBgpIAEoCzIkLm1pbmlnYW1lLnJvb20udjEuVG9hc3RT",
-            "aXplQnJvYWRjYXN0SAASMwoFZXJyb3IYWiABKAsyIi5taW5pZ2FtZS5nYXRl",
-            "d2F5LnYxLkVycm9yUmVzcG9uc2VIAEIJCgdwYXlsb2FkQiZaJG1pbmlnYW1l",
-            "L2dlbi9nby9nYXRld2F5L3YxO2dhdGV3YXl2MWIGcHJvdG8z"));
+            "cG9ydEV2ZW50M0xvdWRQbGF5ZXJIABI4Cgp2b3RlX2xldmVsGCggASgLMiIu",
+            "bWluaWdhbWUucm9vbS52MS5Wb3RlTGV2ZWxSZXF1ZXN0SABCCQoHcGF5bG9h",
+            "ZCLVEQoOU2VydmVyRW52ZWxvcGUSLwoFdHJhY2UYASABKAsyIC5taW5pZ2Ft",
+            "ZS5jb21tb24udjEuVHJhY2VDb250ZXh0EgsKA3NlcRgCIAEoBBI7CgloZWFy",
+            "dGJlYXQYCiABKAsyJi5taW5pZ2FtZS5nYXRld2F5LnYxLkhlYXJ0YmVhdFJl",
+            "c3BvbnNlSAASMwoFbG9naW4YCyABKAsyIi5taW5pZ2FtZS5hY2NvdW50LnYx",
+            "LkxvZ2luUmVzcG9uc2VIABI8CgpnZXRfcGxheWVyGAwgASgLMiYubWluaWdh",
+            "bWUuYWNjb3VudC52MS5HZXRQbGF5ZXJSZXNwb25zZUgAEjwKC3N0YXJ0X21h",
+            "dGNoGA0gASgLMiUubWluaWdhbWUubWF0Y2gudjEuU3RhcnRNYXRjaFJlc3Bv",
+            "bnNlSAASPgoMY2FuY2VsX21hdGNoGA4gASgLMiYubWluaWdhbWUubWF0Y2gu",
+            "djEuQ2FuY2VsTWF0Y2hSZXNwb25zZUgAEjoKCmdldF90aWNrZXQYDyABKAsy",
+            "JC5taW5pZ2FtZS5tYXRjaC52MS5HZXRUaWNrZXRSZXNwb25zZUgAEj4KEG1h",
+            "dGNoX2Fzc2lnbm1lbnQYECABKAsyIi5taW5pZ2FtZS5tYXRjaC52MS5NYXRj",
+            "aEFzc2lnbm1lbnRIABI3Cglqb2luX3Jvb20YESABKAsyIi5taW5pZ2FtZS5y",
+            "b29tLnYxLkpvaW5Sb29tUmVzcG9uc2VIABI3Cg1yb29tX3NuYXBzaG90GBIg",
+            "ASgLMh4ubWluaWdhbWUucm9vbS52MS5Sb29tU25hcHNob3RIABIyCgpzZXR0",
+            "bGVtZW50GBMgASgLMhwubWluaWdhbWUucm9vbS52MS5TZXR0bGVtZW50SAAS",
+            "SgoTc3VibWl0X3BsYXllcl9pbnB1dBgUIAEoCzIrLm1pbmlnYW1lLnJvb20u",
+            "djEuU3VibWl0UGxheWVySW5wdXRSZXNwb25zZUgAEjsKC2NyZWF0ZV9yb29t",
+            "GBUgASgLMiQubWluaWdhbWUucm9vbS52MS5DcmVhdGVSb29tUmVzcG9uc2VI",
+            "ABJGChFzeW5jX3BsYXllcl9zdGF0ZRgWIAEoCzIpLm1pbmlnYW1lLnJvb20u",
+            "djEuU3luY1BsYXllclN0YXRlUmVzcG9uc2VIABI3CglzZXRfcmVhZHkYFyAB",
+            "KAsyIi5taW5pZ2FtZS5yb29tLnYxLlNldFJlYWR5UmVzcG9uc2VIABI5Cgpz",
+            "dGFydF9nYW1lGBggASgLMiMubWluaWdhbWUucm9vbS52MS5TdGFydEdhbWVS",
+            "ZXNwb25zZUgAEjUKDHJvb21fdXBkYXRlZBgZIAEoCzIdLm1pbmlnYW1lLnJv",
+            "b20udjEuUm9vbVVwZGF0ZWRIABI1CghnZXRfcm9vbRgaIAEoCzIhLm1pbmln",
+            "YW1lLnJvb20udjEuR2V0Um9vbVJlc3BvbnNlSAASOgoPaXRlbV9vZmZlcl9s",
+            "aXN0GBsgASgLMh8ubWluaWdhbWUucm9vbS52MS5JdGVtT2ZmZXJMaXN0SAAS",
+            "UQobaXRlbV9jbGFpbV9pbnRlbnRfYnJvYWRjYXN0GBwgASgLMioubWluaWdh",
+            "bWUucm9vbS52MS5JdGVtQ2xhaW1JbnRlbnRCcm9hZGNhc3RIABI+ChFpdGVt",
+            "X2NsYWltX3Jlc3VsdBgdIAEoCzIhLm1pbmlnYW1lLnJvb20udjEuSXRlbUNs",
+            "YWltUmVzdWx0SAASOgoPZ2FtZV9waGFzZV9zeW5jGB4gASgLMh8ubWluaWdh",
+            "bWUucm9vbS52MS5HYW1lUGhhc2VTeW5jSAASTwoaaXRlbV9wbGFjZV9zdGF0",
+            "ZV9icm9hZGNhc3QYHyABKAsyKS5taW5pZ2FtZS5yb29tLnYxLkl0ZW1QbGFj",
+            "ZVN0YXRlQnJvYWRjYXN0SAASPgoRaXRlbV9wbGFjZV9yZXN1bHQYICABKAsy",
+            "IS5taW5pZ2FtZS5yb29tLnYxLkl0ZW1QbGFjZVJlc3VsdEgAEkQKFHBsYXll",
+            "cl9vdXRfYnJvYWRjYXN0GCEgASgLMiQubWluaWdhbWUucm9vbS52MS5QbGF5",
+            "ZXJPdXRCcm9hZGNhc3RIABJIChZwbGF5ZXJfZXZlbnRfYnJvYWRjYXN0GCIg",
+            "ASgLMiYubWluaWdhbWUucm9vbS52MS5QbGF5ZXJFdmVudEJyb2FkY2FzdEgA",
+            "EkgKFnBpY2t1cF9jbGFpbV9icm9hZGNhc3QYIyABKAsyJi5taW5pZ2FtZS5y",
+            "b29tLnYxLlBpY2t1cENsYWltQnJvYWRjYXN0SAASTwoaaXRlbV9zdGF0ZV9l",
+            "dmVudF9icm9hZGNhc3QYJCABKAsyKS5taW5pZ2FtZS5yb29tLnYxLkl0ZW1T",
+            "dGF0ZUV2ZW50QnJvYWRjYXN0SAASQgoTdHJhcF9raWxsX2Jyb2FkY2FzdBgl",
+            "IAEoCzIjLm1pbmlnYW1lLnJvb20udjEuVHJhcEtpbGxCcm9hZGNhc3RIABJE",
+            "ChRpdGVtX2RlbW9saXNoX3Jlc3VsdBgmIAEoCzIkLm1pbmlnYW1lLnJvb20u",
+            "djEuSXRlbURlbW9saXNoUmVzdWx0SAASOQoKbGVhdmVfcm9vbRgnIAEoCzIj",
+            "Lm1pbmlnYW1lLnJvb20udjEuTGVhdmVSb29tUmVzcG9uc2VIABI1CgZsb2dv",
+            "dXQYKCABKAsyIy5taW5pZ2FtZS5hY2NvdW50LnYxLkxvZ291dFJlc3BvbnNl",
+            "SAASRAoUdG9hc3Rfc2l6ZV9icm9hZGNhc3QYKSABKAsyJC5taW5pZ2FtZS5y",
+            "b29tLnYxLlRvYXN0U2l6ZUJyb2FkY2FzdEgAEjkKCnZvdGVfbGV2ZWwYKiAB",
+            "KAsyIy5taW5pZ2FtZS5yb29tLnYxLlZvdGVMZXZlbFJlc3BvbnNlSAASMwoF",
+            "ZXJyb3IYWiABKAsyIi5taW5pZ2FtZS5nYXRld2F5LnYxLkVycm9yUmVzcG9u",
+            "c2VIAEIJCgdwYXlsb2FkQiZaJG1pbmlnYW1lL2dlbi9nby9nYXRld2F5L3Yx",
+            "O2dhdGV3YXl2MWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Minigame.Account.V1.AccountReflection.Descriptor, global::Minigame.Common.V1.CommonReflection.Descriptor, global::Minigame.Match.V1.MatchReflection.Descriptor, global::Minigame.Room.V1.RoomReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.HeartbeatRequest), global::Minigame.Gateway.V1.HeartbeatRequest.Parser, new[]{ "ClientTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.HeartbeatResponse), global::Minigame.Gateway.V1.HeartbeatResponse.Parser, new[]{ "ServerTimeMs", "ClientTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ErrorResponse), global::Minigame.Gateway.V1.ErrorResponse.Parser, new[]{ "Status", "Route" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ClientEnvelope), global::Minigame.Gateway.V1.ClientEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "JoinRoom", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "GetRoom", "ItemClaimIntent", "ItemClaimConfirm", "ItemPlaceState", "ItemPlaceConfirm", "PlayerOutReport", "RoundScoreReport", "PlayerEvent", "PickupClaim", "ItemStateEvent", "GmSetPhase", "TrapKillEvent", "ItemDemolishConfirm", "LeaveRoom", "Logout", "ToastSizeSync", "ReportEvent3Subtype", "ReportEvent3LoudPlayer" }, new[]{ "Payload" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ServerEnvelope), global::Minigame.Gateway.V1.ServerEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "MatchAssignment", "JoinRoom", "RoomSnapshot", "Settlement", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "RoomUpdated", "GetRoom", "ItemOfferList", "ItemClaimIntentBroadcast", "ItemClaimResult", "GamePhaseSync", "ItemPlaceStateBroadcast", "ItemPlaceResult", "PlayerOutBroadcast", "PlayerEventBroadcast", "PickupClaimBroadcast", "ItemStateEventBroadcast", "TrapKillBroadcast", "ItemDemolishResult", "LeaveRoom", "Logout", "ToastSizeBroadcast", "Error" }, new[]{ "Payload" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ClientEnvelope), global::Minigame.Gateway.V1.ClientEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "JoinRoom", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "GetRoom", "ItemClaimIntent", "ItemClaimConfirm", "ItemPlaceState", "ItemPlaceConfirm", "PlayerOutReport", "RoundScoreReport", "PlayerEvent", "PickupClaim", "ItemStateEvent", "GmSetPhase", "TrapKillEvent", "ItemDemolishConfirm", "LeaveRoom", "Logout", "ToastSizeSync", "ReportEvent3Subtype", "ReportEvent3LoudPlayer", "VoteLevel" }, new[]{ "Payload" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Gateway.V1.ServerEnvelope), global::Minigame.Gateway.V1.ServerEnvelope.Parser, new[]{ "Trace", "Seq", "Heartbeat", "Login", "GetPlayer", "StartMatch", "CancelMatch", "GetTicket", "MatchAssignment", "JoinRoom", "RoomSnapshot", "Settlement", "SubmitPlayerInput", "CreateRoom", "SyncPlayerState", "SetReady", "StartGame", "RoomUpdated", "GetRoom", "ItemOfferList", "ItemClaimIntentBroadcast", "ItemClaimResult", "GamePhaseSync", "ItemPlaceStateBroadcast", "ItemPlaceResult", "PlayerOutBroadcast", "PlayerEventBroadcast", "PickupClaimBroadcast", "ItemStateEventBroadcast", "TrapKillBroadcast", "ItemDemolishResult", "LeaveRoom", "Logout", "ToastSizeBroadcast", "VoteLevel", "Error" }, new[]{ "Payload" }, null, null, null)
           }));
     }
     #endregion
@@ -953,6 +956,9 @@ namespace Minigame.Gateway.V1 {
         case PayloadOneofCase.ReportEvent3LoudPlayer:
           ReportEvent3LoudPlayer = other.ReportEvent3LoudPlayer.Clone();
           break;
+        case PayloadOneofCase.VoteLevel:
+          VoteLevel = other.VoteLevel.Clone();
+          break;
       }
 
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -1372,6 +1378,21 @@ namespace Minigame.Gateway.V1 {
       }
     }
 
+    /// <summary>Field number for the "vote_level" field.</summary>
+    public const int VoteLevelFieldNumber = 40;
+    /// <summary>
+    /// 选关投票：等待阶段任意玩家投票/改票，同步应答 VoteLevelResponse，并广播 RoomUpdated(level_voted)。
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.VoteLevelRequest VoteLevel {
+      get { return payloadCase_ == PayloadOneofCase.VoteLevel ? (global::Minigame.Room.V1.VoteLevelRequest) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.VoteLevel;
+      }
+    }
+
     private object payload_;
     /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
@@ -1406,6 +1427,7 @@ namespace Minigame.Gateway.V1 {
       ToastSizeSync = 37,
       ReportEvent3Subtype = 38,
       ReportEvent3LoudPlayer = 39,
+      VoteLevel = 40,
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1468,6 +1490,7 @@ namespace Minigame.Gateway.V1 {
       if (!object.Equals(ToastSizeSync, other.ToastSizeSync)) return false;
       if (!object.Equals(ReportEvent3Subtype, other.ReportEvent3Subtype)) return false;
       if (!object.Equals(ReportEvent3LoudPlayer, other.ReportEvent3LoudPlayer)) return false;
+      if (!object.Equals(VoteLevel, other.VoteLevel)) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
@@ -1508,6 +1531,7 @@ namespace Minigame.Gateway.V1 {
       if (payloadCase_ == PayloadOneofCase.ToastSizeSync) hash ^= ToastSizeSync.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.ReportEvent3Subtype) hash ^= ReportEvent3Subtype.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.ReportEvent3LoudPlayer) hash ^= ReportEvent3LoudPlayer.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.VoteLevel) hash ^= VoteLevel.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -1655,6 +1679,10 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(186, 2);
         output.WriteMessage(ReportEvent3LoudPlayer);
       }
+      if (payloadCase_ == PayloadOneofCase.VoteLevel) {
+        output.WriteRawTag(194, 2);
+        output.WriteMessage(VoteLevel);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1793,6 +1821,10 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(186, 2);
         output.WriteMessage(ReportEvent3LoudPlayer);
       }
+      if (payloadCase_ == PayloadOneofCase.VoteLevel) {
+        output.WriteRawTag(194, 2);
+        output.WriteMessage(VoteLevel);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1898,6 +1930,9 @@ namespace Minigame.Gateway.V1 {
       }
       if (payloadCase_ == PayloadOneofCase.ReportEvent3LoudPlayer) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(ReportEvent3LoudPlayer);
+      }
+      if (payloadCase_ == PayloadOneofCase.VoteLevel) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(VoteLevel);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -2100,6 +2135,12 @@ namespace Minigame.Gateway.V1 {
             ReportEvent3LoudPlayer = new global::Minigame.Room.V1.ReportEvent3LoudPlayer();
           }
           ReportEvent3LoudPlayer.MergeFrom(other.ReportEvent3LoudPlayer);
+          break;
+        case PayloadOneofCase.VoteLevel:
+          if (VoteLevel == null) {
+            VoteLevel = new global::Minigame.Room.V1.VoteLevelRequest();
+          }
+          VoteLevel.MergeFrom(other.VoteLevel);
           break;
       }
 
@@ -2403,6 +2444,15 @@ namespace Minigame.Gateway.V1 {
             ReportEvent3LoudPlayer = subBuilder;
             break;
           }
+          case 322: {
+            global::Minigame.Room.V1.VoteLevelRequest subBuilder = new global::Minigame.Room.V1.VoteLevelRequest();
+            if (payloadCase_ == PayloadOneofCase.VoteLevel) {
+              subBuilder.MergeFrom(VoteLevel);
+            }
+            input.ReadMessage(subBuilder);
+            VoteLevel = subBuilder;
+            break;
+          }
         }
       }
     #endif
@@ -2703,6 +2753,15 @@ namespace Minigame.Gateway.V1 {
             ReportEvent3LoudPlayer = subBuilder;
             break;
           }
+          case 322: {
+            global::Minigame.Room.V1.VoteLevelRequest subBuilder = new global::Minigame.Room.V1.VoteLevelRequest();
+            if (payloadCase_ == PayloadOneofCase.VoteLevel) {
+              subBuilder.MergeFrom(VoteLevel);
+            }
+            input.ReadMessage(subBuilder);
+            VoteLevel = subBuilder;
+            break;
+          }
         }
       }
     }
@@ -2846,6 +2905,9 @@ namespace Minigame.Gateway.V1 {
           break;
         case PayloadOneofCase.ToastSizeBroadcast:
           ToastSizeBroadcast = other.ToastSizeBroadcast.Clone();
+          break;
+        case PayloadOneofCase.VoteLevel:
+          VoteLevel = other.VoteLevel.Clone();
           break;
         case PayloadOneofCase.Error:
           Error = other.Error.Clone();
@@ -3275,6 +3337,21 @@ namespace Minigame.Gateway.V1 {
       }
     }
 
+    /// <summary>Field number for the "vote_level" field.</summary>
+    public const int VoteLevelFieldNumber = 42;
+    /// <summary>
+    /// 选关投票同步应答（VoteLevel 的回包）。
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.VoteLevelResponse VoteLevel {
+      get { return payloadCase_ == PayloadOneofCase.VoteLevel ? (global::Minigame.Room.V1.VoteLevelResponse) payload_ : null; }
+      set {
+        payload_ = value;
+        payloadCase_ = value == null ? PayloadOneofCase.None : PayloadOneofCase.VoteLevel;
+      }
+    }
+
     /// <summary>Field number for the "error" field.</summary>
     public const int ErrorFieldNumber = 90;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3323,6 +3400,7 @@ namespace Minigame.Gateway.V1 {
       LeaveRoom = 39,
       Logout = 40,
       ToastSizeBroadcast = 41,
+      VoteLevel = 42,
       Error = 90,
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
@@ -3388,6 +3466,7 @@ namespace Minigame.Gateway.V1 {
       if (!object.Equals(LeaveRoom, other.LeaveRoom)) return false;
       if (!object.Equals(Logout, other.Logout)) return false;
       if (!object.Equals(ToastSizeBroadcast, other.ToastSizeBroadcast)) return false;
+      if (!object.Equals(VoteLevel, other.VoteLevel)) return false;
       if (!object.Equals(Error, other.Error)) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return Equals(_unknownFields, other._unknownFields);
@@ -3431,6 +3510,7 @@ namespace Minigame.Gateway.V1 {
       if (payloadCase_ == PayloadOneofCase.LeaveRoom) hash ^= LeaveRoom.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.Logout) hash ^= Logout.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.ToastSizeBroadcast) hash ^= ToastSizeBroadcast.GetHashCode();
+      if (payloadCase_ == PayloadOneofCase.VoteLevel) hash ^= VoteLevel.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.Error) hash ^= Error.GetHashCode();
       hash ^= (int) payloadCase_;
       if (_unknownFields != null) {
@@ -3587,6 +3667,10 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(202, 2);
         output.WriteMessage(ToastSizeBroadcast);
       }
+      if (payloadCase_ == PayloadOneofCase.VoteLevel) {
+        output.WriteRawTag(210, 2);
+        output.WriteMessage(VoteLevel);
+      }
       if (payloadCase_ == PayloadOneofCase.Error) {
         output.WriteRawTag(210, 5);
         output.WriteMessage(Error);
@@ -3737,6 +3821,10 @@ namespace Minigame.Gateway.V1 {
         output.WriteRawTag(202, 2);
         output.WriteMessage(ToastSizeBroadcast);
       }
+      if (payloadCase_ == PayloadOneofCase.VoteLevel) {
+        output.WriteRawTag(210, 2);
+        output.WriteMessage(VoteLevel);
+      }
       if (payloadCase_ == PayloadOneofCase.Error) {
         output.WriteRawTag(210, 5);
         output.WriteMessage(Error);
@@ -3852,6 +3940,9 @@ namespace Minigame.Gateway.V1 {
       }
       if (payloadCase_ == PayloadOneofCase.ToastSizeBroadcast) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(ToastSizeBroadcast);
+      }
+      if (payloadCase_ == PayloadOneofCase.VoteLevel) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(VoteLevel);
       }
       if (payloadCase_ == PayloadOneofCase.Error) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(Error);
@@ -4069,6 +4160,12 @@ namespace Minigame.Gateway.V1 {
             ToastSizeBroadcast = new global::Minigame.Room.V1.ToastSizeBroadcast();
           }
           ToastSizeBroadcast.MergeFrom(other.ToastSizeBroadcast);
+          break;
+        case PayloadOneofCase.VoteLevel:
+          if (VoteLevel == null) {
+            VoteLevel = new global::Minigame.Room.V1.VoteLevelResponse();
+          }
+          VoteLevel.MergeFrom(other.VoteLevel);
           break;
         case PayloadOneofCase.Error:
           if (Error == null) {
@@ -4396,6 +4493,15 @@ namespace Minigame.Gateway.V1 {
             ToastSizeBroadcast = subBuilder;
             break;
           }
+          case 338: {
+            global::Minigame.Room.V1.VoteLevelResponse subBuilder = new global::Minigame.Room.V1.VoteLevelResponse();
+            if (payloadCase_ == PayloadOneofCase.VoteLevel) {
+              subBuilder.MergeFrom(VoteLevel);
+            }
+            input.ReadMessage(subBuilder);
+            VoteLevel = subBuilder;
+            break;
+          }
           case 722: {
             global::Minigame.Gateway.V1.ErrorResponse subBuilder = new global::Minigame.Gateway.V1.ErrorResponse();
             if (payloadCase_ == PayloadOneofCase.Error) {
@@ -4721,6 +4827,15 @@ namespace Minigame.Gateway.V1 {
             }
             input.ReadMessage(subBuilder);
             ToastSizeBroadcast = subBuilder;
+            break;
+          }
+          case 338: {
+            global::Minigame.Room.V1.VoteLevelResponse subBuilder = new global::Minigame.Room.V1.VoteLevelResponse();
+            if (payloadCase_ == PayloadOneofCase.VoteLevel) {
+              subBuilder.MergeFrom(VoteLevel);
+            }
+            input.ReadMessage(subBuilder);
+            VoteLevel = subBuilder;
             break;
           }
           case 722: {

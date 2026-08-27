@@ -78,6 +78,7 @@ namespace SuperQQ.Network
             { typeof(ItemDemolishConfirm),      (e, m) => e.ItemDemolishConfirm = (ItemDemolishConfirm)m },
             { typeof(ReportEvent3Subtype),      (e, m) => e.ReportEvent3Subtype = (ReportEvent3Subtype)m },
             { typeof(ReportEvent3LoudPlayer),   (e, m) => e.ReportEvent3LoudPlayer = (ReportEvent3LoudPlayer)m },
+            { typeof(VoteLevelRequest),         (e, m) => e.VoteLevel = (VoteLevelRequest)m },
         };
 
         // 接收侧：消息类型 -> 从 ServerEnvelope 取出的方式
@@ -99,6 +100,7 @@ namespace SuperQQ.Network
             { typeof(SubmitPlayerInputResponse), e => e.SubmitPlayerInput },
             { typeof(SyncPlayerStateResponse),   e => e.SyncPlayerState },
             { typeof(SetReadyResponse),          e => e.SetReady },
+            { typeof(VoteLevelResponse),         e => e.VoteLevel },
             { typeof(StartGameResponse),         e => e.StartGame },
             { typeof(RoomUpdated),               e => e.RoomUpdated },
             { typeof(GetRoomResponse),           e => e.GetRoom },

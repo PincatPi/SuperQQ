@@ -887,6 +887,17 @@ namespace SuperQQ.Selection.Runtime
 
         private void BuildPanel()
         {
+            // 兜底接管：场景中可能摆着未接线的美术面板 prefab 实例（如 Level2 的 PropSelectionPanelNew，
+            // 未激活时 GameObject.Find 找不到）——按名接管，避免退化成运行时简易面板
+            if (selectionPanel == null)
+            {
+                TryAdoptArtPanel("PropSelectionPanelNew");
+            }
+            if (selectionPanel == null)
+            {
+                TryAdoptArtPanel("PropSelectionPanel");
+            }
+
             if (selectionPanel != null)
             {
                 selectionPanel.SetActive(true);
@@ -899,6 +910,68 @@ namespace SuperQQ.Selection.Runtime
             }
 
             BuildRuntimePanel();
+        }
+
+        /// <summary>层级深度查找子物体（含未激活）</summary>
+        private static Transform FindDeepChildByName(Transform parent, string name)
+        {
+            foreach (Transform child in parent)
+            {
+                if (child.name == name)
+                {
+                    return child;
+                }
+                Transform found = FindDeepChildByName(child, name);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>按名查找本场景节点（含未激活）</summary>
+        private Transform FindSceneNodeByName(string name)
+        {
+            foreach (GameObject go in Resources.FindObjectsOfTypeAll<GameObject>())
+            {
+                if (go.scene.name == gameObject.scene.name && go.name == name)
+                {
+                    return go.transform;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>按名接管场景中的美术面板（含未激活节点），并自动补齐槽位容器引用</summary>
+        private void TryAdoptArtPanel(string panelName)
+        {
+            foreach (GameObject go in Resources.FindObjectsOfTypeAll<GameObject>())
+            {
+                if (go.scene.name != gameObject.scene.name || go.name != panelName)
+                {
+                    continue;
+                }
+                selectionPanel = go;
+                if (slotsContainer == null)
+                {
+                    // 槽位容器两种命名都兼容：SlotsContainer / PropSelectionContiner（prefab 内的拼写）
+                    Transform slots = FindDeepChildByName(go.transform, "SlotsContainer")
+                        ?? FindDeepChildByName(go.transform, "PropSelectionContiner");
+                    if (slots == null)
+                    {
+                        // 面板内没有：容器可能是场景中的独立节点，全场景找
+                        slots = FindSceneNodeByName("SlotsContainer")
+                            ?? FindSceneNodeByName("PropSelectionContiner");
+                    }
+                    if (slots != null)
+                    {
+                        slotsContainer = slots as RectTransform;
+                    }
+                }
+                Debug.Log($"{LOG_TAG} 接管场景美术面板: {panelName}（槽位容器={(slotsContainer != null ? slotsContainer.name : "未找到")}）", this);
+                return;
+            }
         }
 
         private void HidePanel()
