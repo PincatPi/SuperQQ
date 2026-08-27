@@ -18,6 +18,8 @@ namespace SuperQQ.UI.PlacementTest
     ///
     /// 测试道具数量无限，可重复选中放置；已确认的道具会销毁其 PlacementController，
     /// 位置彻底固定，不可能再被移动/虚化/重新激活。
+    /// 确认放置的同时对该道具调用 OnRunPhaseStart（等同进入 PlayingPhase 的启动时机），
+    /// 吐司旋转、拳王出拳等"跑动阶段才启动"的逻辑在测试模式下即刻开始运行。
     ///
     /// 实现说明：摆放中实例的 PlacementController 组件被禁用（屏蔽其长按拖拽输入），
     /// 跟随鼠标/吸附/合法性提示由本控制器驱动，确认时调用其 CompletePlacement 完成登记、
@@ -256,6 +258,13 @@ namespace SuperQQ.UI.PlacementTest
             Destroy(currentPc);
 
             confirmed.Add(current);
+
+            // 确认即启动：等同 ItemPhaseHookDispatcher 在进入 PlayingPhase 时派发的 OnRunPhaseStart，
+            // 使吐司旋转、拳王出拳等依赖跑动阶段启动的逻辑在测试模式下立即开始运行
+            if (currentItem != null)
+            {
+                currentItem.OnRunPhaseStart();
+            }
             Debug.Log($"[ItemPlacementTest] {items[selectedIndex].name} 已确认放置");
 
             // 衔接摆放：实现 IChainedPlacement 的道具（如传送门出口）直接接管，摆放流程不中断

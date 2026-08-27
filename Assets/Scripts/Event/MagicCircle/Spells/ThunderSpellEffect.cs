@@ -371,6 +371,8 @@ namespace SuperQQ.Event
             private float _lastVolumeLogTime = -999f;   // 音量状态日志节流（0.5s）
             private bool _bPrevDetectVoice;             // 检测窗口跳变日志用
             private bool _bLoggedCasterSkip;            // "施法者跳过检测"每窗口只打一次
+            private bool _bLoggedMicBlocked;            // "麦克风未采集"每窗口只告警一次
+            private bool _bLoggedAliveBlocked;          // "无在场本地玩家"每窗口只告警一次
 
             public ServerDrivenRuntime(ThunderSpellEffect config)
             {
@@ -430,6 +432,8 @@ namespace SuperQQ.Event
                 {
                     _bDetectTipShown = false;
                     _bLoudReported = false;
+                    _bLoggedMicBlocked = false;
+                    _bLoggedAliveBlocked = false;
                 }
                 else if (!_bLoggedCasterSkip)
                 {
@@ -693,13 +697,30 @@ namespace SuperQQ.Event
                     return;
                 }
 
-                if (!mic.IsRunning || mic.Volume < _config._volumeThreshold)
+                if (!mic.IsRunning)
+                {
+                    // 【联调埋点】麦克风持续未在采集：音量检测无从谈起，必然无法上报（每窗口告警一次）
+                    if (!_bLoggedMicBlocked)
+                    {
+                        _bLoggedMicBlocked = true;
+                        Debug.LogWarning("[ThunderSpellEffect] 检测窗口内麦克风未在采集（mic=stopped），不会上报 loud。请检查该端麦克风权限是否授予、设备是否被其他程序占用");
+                    }
+                    return;
+                }
+
+                if (mic.Volume < _config._volumeThreshold)
                 {
                     return;
                 }
 
                 if (!HasAliveLocalPlayer())
                 {
+                    // 【联调埋点】无在场本地玩家（每窗口告警一次）
+                    if (!_bLoggedAliveBlocked)
+                    {
+                        _bLoggedAliveBlocked = true;
+                        Debug.LogWarning("[ThunderSpellEffect] 检测窗口内无在场（Alive/Frozen）本地玩家，跳过 loud 上报");
+                    }
                     return;
                 }
 
