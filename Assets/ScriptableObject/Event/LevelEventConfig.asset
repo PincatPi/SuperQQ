@@ -17,13 +17,13 @@ MonoBehaviour:
     DisplayName: "\u5C0F\u86CB\u7CD5\u9668\u77F3"
     IntroPopup: 1
     BIsFixed: 0
-    Weight: 0
+    Weight: 1
     Modifier: {fileID: 11400000, guid: 6137f8b46c924c20a5726480e7c9814f, type: 2}
   - EventType: 2
     DisplayName: "\u6DB2\u6C2E\u6CC4\u9732"
     IntroPopup: 2
     BIsFixed: 0
-    Weight: 0
+    Weight: 1
     Modifier: {fileID: 11400000, guid: 5d96c51a890d41bd989c085e173349ca, type: 2}
   - EventType: 3
     DisplayName: "\u8A00\u51FA\u6CD5\u968F"
@@ -35,5 +35,5 @@ MonoBehaviour:
     DisplayName: "\u8718\u86DB\u7F51"
     IntroPopup: 5
     BIsFixed: 0
-    Weight: 0
+    Weight: 1
     Modifier: {fileID: 11400000, guid: d0de6c1f9736473ca589e17bb09b2d97, type: 2}

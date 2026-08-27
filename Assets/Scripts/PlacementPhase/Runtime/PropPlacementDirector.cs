@@ -78,6 +78,8 @@ namespace SuperQQ.Placement.Runtime
         [SerializeField] private Vector2 markerCornerInset = new Vector2(0.15f, 0f);
         [Tooltip("标记的 Sorting Order，需高于网格与虚线框（默认为 10）")]
         [SerializeField] private int cursorMarkerSortingOrder = 100;
+        [Tooltip("光标标记在世界空间中的显示高度（世界单位）；按此值自动缩放 Sprite，避免 PPU 不同导致过大")]
+        [SerializeField] private float cursorMarkerWorldSize = 1f;
         [Tooltip("标记的 Sorting Layer（地图地形在 Map 层，标记必须在 Item 层才不会被地形遮挡）")]
         [SerializeField] private string cursorMarkerSortingLayer = "Item";
 
@@ -686,6 +688,7 @@ namespace SuperQQ.Placement.Runtime
 
             cursor.sprite = sprite;
             cursor.color = remote.PlayerColor;
+            ApplyCursorMarkerScale(cursor);
             // 贴远端虚影道具的包围盒左边中点（与本地标记行为一致）；虚影缺失时退回根位置偏移
             Vector2 markerPos = itemPos + cursorMarkerOffset;
             if (remoteGhosts.TryGetValue(playerId, out GameObject ghost) && ghost != null)
@@ -1456,7 +1459,34 @@ namespace SuperQQ.Placement.Runtime
 
             cursorMarker.sprite = sprite;
             cursorMarker.color = localPlayer != null ? localPlayer.PlayerColor : Color.white;
+            ApplyCursorMarkerScale(cursorMarker);
             cursorMarker.enabled = true;
+        }
+
+        /// <summary>
+        /// 按 cursorMarkerWorldSize 缩放标记，使 Sprite 显示高度恒定为配置的世界尺寸，
+        /// 与 Sprite 自身的 Pixels Per Unit 设置无关（避免标识图在世界里显得过大/过小）
+        /// </summary>
+        private void ApplyCursorMarkerScale(SpriteRenderer marker)
+        {
+            if (marker == null || marker.sprite == null)
+            {
+                return;
+            }
+
+            float spriteHeight = marker.sprite.bounds.size.y;
+            if (spriteHeight <= 0f)
+            {
+                return;
+            }
+
+            float parentScale = marker.transform.parent != null ? marker.transform.parent.lossyScale.y : 1f;
+            if (parentScale <= 0f)
+            {
+                parentScale = 1f;
+            }
+            float uniformScale = cursorMarkerWorldSize / (spriteHeight * parentScale);
+            marker.transform.localScale = new Vector3(uniformScale, uniformScale, 1f);
         }
 
         /// <summary>隐藏光标玩家标记（阶段结束时调用）</summary>
