@@ -586,6 +586,22 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
+        /// 清零全部运动状态（传送门等瞬移后调用）：
+        /// 刚体速度 + 存活状态的速度/风力积分器一起清——只清刚体会被状态机下一帧写回
+        /// </summary>
+        public void ResetMotion()
+        {
+            if (Rb != null)
+            {
+                Rb.velocity = Vector2.zero;
+            }
+            if (_currentState is PlayerAliveState aliveState)
+            {
+                aliveState.ResetMotion();
+            }
+        }
+
+        /// <summary>
         /// 将当前状态同步到 LevelPlayerRegistry
         /// </summary>
         private void NotifyStateChanged()

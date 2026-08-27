@@ -156,7 +156,9 @@ namespace SuperQQ.Item
         }
 
         /// <summary>
-        /// 把玩家传送到出口位置（写 Rigidbody2D.position，物理步进内安全瞬移）
+        /// 把玩家传送到出口位置（写 Rigidbody2D.position，物理步进内安全瞬移）。
+        /// 出传送门清零速度（玩家从出口静止落下，不带着进门前速度飞出）；
+        /// 弹体（樱桃等）走 CherryProjectile.TeleportTo，保持速度不受影响
         /// </summary>
         private void Teleport(PlayerController player)
         {
@@ -169,6 +171,8 @@ namespace SuperQQ.Item
             {
                 player.transform.position = target;
             }
+            // 清零运动状态（刚体速度 + 状态机速度积分器），玩家静止留在出口
+            player.ResetMotion();
         }
 
         // ==================== 配对 ====================

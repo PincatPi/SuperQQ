@@ -73,6 +73,16 @@ namespace SuperQQ.Player
         public void Exit() { }
 
         /// <summary>
+        /// 清零运动积分器（传送等瞬移后调用）：
+        /// 水平速度/风力分量是状态内部累积量，仅清刚体速度会被下一帧 FixedUpdate 写回
+        /// </summary>
+        public void ResetMotion()
+        {
+            _currentHorizontalVelocity = 0f;
+            _windVelocity = 0f;
+        }
+
+        /// <summary>
         /// 每帧更新：地面检测、跳跃起跳、跳跃截断、提前放弃长按检测
         /// </summary>
         public void Update()
