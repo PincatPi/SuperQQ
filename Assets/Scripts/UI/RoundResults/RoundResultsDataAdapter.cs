@@ -30,12 +30,14 @@ namespace SuperQQ.UI.RoundResults
 
     public static class RoundResultsDataAdapter
     {
+        // 分段顺序与面板底部 Legend 一致：通关/第一名/独行/陷阱击败/翻盘/金币
         private static readonly ScoreType[] SegmentOrder =
         {
             ScoreType.Completion,
             ScoreType.FirstPlace,
             ScoreType.SoloClear,
             ScoreType.TrapKill,
+            ScoreType.SpecialEffect,
             ScoreType.ScoreItem
         };
 
@@ -73,16 +75,26 @@ namespace SuperQQ.UI.RoundResults
                     CumulativeTotal = round.CumulativeTotal
                 };
 
-                // 联机模式：总分以服务器结算为准（服务器统一算分），本地算分仅作分段明细展示
+                // 联机模式：总分与六个明细分均以服务器结算为准（服务器统一算分）；
+                // 服务器为旧版本（明细全 0）时回退本地算分明细
+                bool bServerBreakdown = false;
                 if (TryGetServerScore(playerName, out Network.NetGameFlowGate.ServerPlayerScore serverScore))
                 {
                     player.RoundTotal = serverScore.RoundScore;
                     player.CumulativeTotal = serverScore.TotalScore;
                     player.PreviousTotal = Mathf.Max(0, serverScore.TotalScore - serverScore.RoundScore);
+                    bServerBreakdown = serverScore.BHasBreakdown;
                 }
 
-                AddSegments(player, round);
-                bestRoundScore = Mathf.Max(bestRoundScore, round.RoundTotal);
+                if (bServerBreakdown)
+                {
+                    AddServerSegments(player, serverScore);
+                }
+                else
+                {
+                    AddSegments(player, round);
+                }
+                bestRoundScore = Mathf.Max(bestRoundScore, player.RoundTotal);
                 result.Add(player);
             }
 
@@ -128,9 +140,9 @@ namespace SuperQQ.UI.RoundResults
                 ScoreType.Completion => "通关",
                 ScoreType.FirstPlace => "第一名",
                 ScoreType.SoloClear => "独行",
-                ScoreType.TrapKill => "陷阱",
-                ScoreType.SpecialEffect => "特殊",
-                ScoreType.ScoreItem => "道具",
+                ScoreType.TrapKill => "陷阱击败",
+                ScoreType.SpecialEffect => "翻盘",
+                ScoreType.ScoreItem => "金币",
                 _ => scoreType.ToString()
             };
         }
@@ -146,6 +158,39 @@ namespace SuperQQ.UI.RoundResults
             {
                 ScoreType scoreType = SegmentOrder[i];
                 if (!round.ScoreBreakdown.TryGetValue(scoreType, out int points) || points <= 0)
+                {
+                    continue;
+                }
+
+                player.Segments.Add(new RoundResultScoreSegment
+                {
+                    ScoreType = scoreType,
+                    Label = GetSegmentLabel(scoreType),
+                    Points = points,
+                    Color = GetSegmentColor(scoreType)
+                });
+            }
+        }
+
+        /// <summary>按服务器下发的六个明细分构建分段（映射到 ScoreType 六类）</summary>
+        private static void AddServerSegments(
+            RoundResultPlayerData player,
+            Network.NetGameFlowGate.ServerPlayerScore serverScore)
+        {
+            for (int i = 0; i < SegmentOrder.Length; i++)
+            {
+                ScoreType scoreType = SegmentOrder[i];
+                int points = scoreType switch
+                {
+                    ScoreType.Completion => serverScore.FinishScore,
+                    ScoreType.FirstPlace => serverScore.FirstFinishScore,
+                    ScoreType.SoloClear => serverScore.SoloFinishScore,
+                    ScoreType.TrapKill => serverScore.TrapKillScore,
+                    ScoreType.SpecialEffect => serverScore.OvertakeScore,
+                    ScoreType.ScoreItem => serverScore.CoinScore,
+                    _ => 0
+                };
+                if (points <= 0)
                 {
                     continue;
                 }

@@ -165,10 +165,10 @@ namespace SuperQQ.UI.RoundResults
             _onContinue = onContinue;
             gameObject.SetActive(true);
 
-            _titleText.text = "ROUND RESULTS";
-            _subtitleText.text = roundIndex > 0 ? $"ROUND {roundIndex}" : "ROUND COMPLETE";
-            _victoryLineText.text = $"GOAL  {_victoryScore}";
-            _continueButtonText.text = "CONTINUE";
+            _titleText.text = "本轮结算";
+            _subtitleText.text = roundIndex > 0 ? $"轮次 {roundIndex}" : "结算";
+            _victoryLineText.text = $"胜利线 {_victoryScore}";
+            _continueButtonText.text = "继续";
             _continueButton.interactable = false;
 
             EnsureRowCount(orderedEntries.Count);
@@ -246,10 +246,10 @@ namespace SuperQQ.UI.RoundResults
         }
 
         /// <summary>
-        /// 实例化一行玩家记分 prefab 并挂载到 container 下，填充玩家名、icon 与当前总分数。
-        /// 返回生成的行视图；未配置工厂时返回 null。
+        /// 实例化一行玩家记分 prefab 并挂载到 container 下，按完整结算数据填充
+        /// （排名、头像、分段彩色条、累计分数）。返回生成的行视图；未配置工厂时返回 null。
         /// </summary>
-        public RoundResultRowView AddPlayerRow(string playerName, Sprite playerIcon, int totalScore)
+        public RoundResultRowView AddPlayerRow(RoundResultPlayerData data, int rank, int victoryScore)
         {
             if (_dynamicRowPrefab == null || _dynamicRowsContainer == null)
             {
@@ -260,7 +260,7 @@ namespace SuperQQ.UI.RoundResults
             RoundResultRowView row = Instantiate(_dynamicRowPrefab, _dynamicRowsContainer);
             row.name = $"PlayerScoreRow_{_dynamicRows.Count + 1:00}";
             row.gameObject.SetActive(true);
-            row.PopulateSummary(playerName, playerIcon, totalScore, _dynamicRows.Count + 1);
+            row.Populate(data, rank, victoryScore);
             _dynamicRows.Add(row);
             return row;
         }
@@ -302,8 +302,7 @@ namespace SuperQQ.UI.RoundResults
 
             for (int i = 0; i < entries.Count; i++)
             {
-                RoundResultPlayerData entry = entries[i];
-                RoundResultRowView row = AddPlayerRow(entry.PlayerName, entry.PlayerIcon, entry.CumulativeTotal);
+                RoundResultRowView row = AddPlayerRow(entries[i], i + 1, _victoryScore);
                 if (row != null)
                 {
                     row.CaptureLayoutPosition();

@@ -27,6 +27,7 @@ namespace SuperQQ.UI.RoundResults
         private readonly List<int> _segmentPoints = new();
         private Vector2 _restPosition;
         private int _previousTotal;
+        private float _previousRatio;
         private int _finalTotal;
         private int _victoryScore = 100;
         private float _revealedScore;
@@ -91,8 +92,12 @@ namespace SuperQQ.UI.RoundResults
             _restPosition = _rowRect.anchoredPosition;
             SetRank(rank);
             _playerNameText.text = string.IsNullOrWhiteSpace(data.PlayerName) ? "Player" : data.PlayerName;
-            _avatarBackground.color = data.PlayerColor;
-            _avatarInitial.text = GetInitial(data.PlayerName);
+            // 有 icon 时显示头像 sprite，否则回退首字母 + 玩家颜色块
+            ApplyAvatar(data.PlayerIcon, data.PlayerName);
+            if (data.PlayerIcon == null && _avatarBackground != null)
+            {
+                _avatarBackground.color = data.PlayerColor;
+            }
             _scoreText.text = $"{_previousTotal} / {safeVictoryScore}";
             _deltaText.text = data.RoundTotal > 0 ? $"+{data.RoundTotal}" : "+0";
             _deltaText.color = data.RoundTotal > 0
@@ -105,8 +110,17 @@ namespace SuperQQ.UI.RoundResults
 
             float cursor = Mathf.Clamp01(_previousTotal / (float)safeVictoryScore);
             float finalRatio = Mathf.Clamp01(data.CumulativeTotal / (float)safeVictoryScore);
+            _previousRatio = cursor;
             _previousFill.rectTransform.pivot = new Vector2(0f, 0.5f);
             SetAnchors(_previousFill.rectTransform, 0f, cursor);
+
+            // 最前面的默认斜线条：表示之前回合累计总分（0 → previousTotal 区间）
+            if (_previousHatch != null)
+            {
+                _previousHatch.rectTransform.pivot = new Vector2(0f, 0.5f);
+                SetAnchors(_previousHatch.rectTransform, 0f, cursor);
+                _previousHatch.gameObject.SetActive(cursor > 0f);
+            }
 
             for (int i = 0; i < data.Segments.Count; i++)
             {
@@ -120,7 +134,7 @@ namespace SuperQQ.UI.RoundResults
                 RectTransform rect = null;
                 if (next > cursor)
                 {
-                    rect = CreateHatchedSegment(
+                    rect = CreateColorSegment(
                         $"Segment_{segment.ScoreType}",
                         cursor,
                         next,
@@ -216,6 +230,12 @@ namespace SuperQQ.UI.RoundResults
             {
                 float previousProgress = EaseOutCubic(Mathf.Clamp01(stagePosition));
                 _previousFill.rectTransform.localScale = new Vector3(previousProgress, 1f, 1f);
+
+                // 默认斜线条同步揭示：用锚点推进而非缩放，避免 Tiled 斜线纹理被压缩
+                if (_previousHatch != null)
+                {
+                    SetAnchors(_previousHatch.rectTransform, 0f, _previousRatio * previousProgress);
+                }
             }
 
             float visibleScore = _previousTotal;
@@ -391,11 +411,15 @@ namespace SuperQQ.UI.RoundResults
             float clamped = Mathf.Clamp01(value);
             return 1f - Mathf.Pow(1f - clamped, 3f);
         }
-        private RectTransform CreateHatchedSegment(
+        /// <summary>
+        /// 创建手绘斜线纹理分段条：浅色纸底 + HandDrawnHatch 斜线纹理按得分类型换色，
+        /// 每种得分一段颜色（对应底部 Legend 颜色）。
+        /// </summary>
+        private RectTransform CreateColorSegment(
             string objectName,
             float minX,
             float maxX,
-            Color inkColor)
+            Color segmentColor)
         {
             GameObject segmentObject = new(
                 objectName,
@@ -410,15 +434,16 @@ namespace SuperQQ.UI.RoundResults
             rect.pivot = new Vector2(0f, 0.5f);
             SetAnchors(rect, minX, maxX);
 
+            // 纸色底：向分段颜色轻微靠拢，保持整体手绘纸面质感
             Image paper = segmentObject.GetComponent<Image>();
             paper.sprite = _previousFill.sprite;
             paper.type = _previousFill.type;
             paper.pixelsPerUnitMultiplier = _previousFill.pixelsPerUnitMultiplier;
-            paper.color = Color.Lerp(new Color32(245, 240, 214, 255), inkColor, 0.16f);
+            paper.color = Color.Lerp(new Color32(245, 240, 214, 255), segmentColor, 0.22f);
             paper.raycastTarget = false;
 
             Outline outline = segmentObject.GetComponent<Outline>();
-            outline.effectColor = new Color(inkColor.r, inkColor.g, inkColor.b, 0.94f);
+            outline.effectColor = new Color(segmentColor.r, segmentColor.g, segmentColor.b, 0.94f);
             outline.effectDistance = new Vector2(1.5f, -1.5f);
             outline.useGraphicAlpha = true;
 
@@ -437,7 +462,8 @@ namespace SuperQQ.UI.RoundResults
             Image hatch = hatchObject.GetComponent<Image>();
             hatch.sprite = _previousHatch.sprite;
             hatch.type = Image.Type.Tiled;
-            hatch.color = new Color(inkColor.r, inkColor.g, inkColor.b, 0.88f);
+            hatch.pixelsPerUnitMultiplier = _previousHatch.pixelsPerUnitMultiplier;
+            hatch.color = segmentColor;
             hatch.raycastTarget = false;
 
             return rect;
