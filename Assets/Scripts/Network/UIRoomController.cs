@@ -167,8 +167,15 @@ namespace SuperQQ.Network
                 if (ready) readyCount++;
 
                 string playerId = p.Player != null ? p.Player.PlayerId : "?";
-                string nickname = p.Player != null && !string.IsNullOrEmpty(p.Player.Nickname)
-                    ? p.Player.Nickname : playerId;
+                string serverNickname = p.Player?.Nickname;
+                // 昵称优先取服务端房间数据；服务端未填时，本地玩家回退到登录保存的账号昵称，远端玩家回退 playerId
+                string nickname = !string.IsNullOrEmpty(serverNickname)
+                    ? serverNickname
+                    : (playerId == _net.LocalPlayerId && !string.IsNullOrEmpty(_net.LocalNickname)
+                        ? _net.LocalNickname
+                        : playerId);
+                // 诊断日志：排查服务端房间数据是否下发了 nickname，验证后可删除
+                Debug.Log($"[Room] 槽位{i}: playerId={playerId} 服务端nickname='{serverNickname}' 显示='{nickname}'");
                 view.SetSlotPlayer(i, nickname, ready);
             }
             view.SetReadyProgress(readyCount, _room.Players.Count);

@@ -87,6 +87,10 @@ namespace SuperQQ.Player
         // ---------- 状态机 ----------
         private IPlayerState _currentState;
 
+        // ---------- 死亡信息（进入死亡时记录，供幽灵状态决定出生位置） ----------
+        private Vector2 _deathPosition;              // 死亡瞬间位置
+        private bool _ghostSpawnAtFixedPosition;     // 幽灵是否出生在固定初始位置（仅跌落下边界死亡为 true）
+
         // ---------- 外部速度修正（道具表面效果等，1=无影响） ----------
         private float _speedMultiplier = 1f;
 
@@ -149,6 +153,10 @@ namespace SuperQQ.Player
 
         // 死亡
         public float DeathDuration => deathDuration;
+        /// <summary>死亡瞬间位置（进入死亡过渡时记录）</summary>
+        public Vector2 DeathPosition => _deathPosition;
+        /// <summary>幽灵是否出生在固定初始位置：仅跌落下边界死亡为 true，其余死亡保持死亡位置</summary>
+        public bool GhostSpawnAtFixedPosition => _ghostSpawnAtFixedPosition;
 
         // 幽灵
         public float GhostMoveSpeed => ghostMoveSpeed;
@@ -614,7 +622,8 @@ namespace SuperQQ.Player
         /// 用于掉落出界等不可豁免的死亡场景（无敌金身等护盾不提供保护）
         /// </summary>
         /// <param name="playHitSfx">是否播放命中音效；坠落出界等非命中死亡传 false</param>
-        public void PlayerForceDie(bool playHitSfx = false)
+        /// <param name="fellOutOfBounds">是否跌落下边界死亡：true 时幽灵出生在固定初始位置，false 时保持死亡位置</param>
+        public void PlayerForceDie(bool playHitSfx = false, bool fellOutOfBounds = false)
         {
             if (BIsDead || BIsGhost)
             {
@@ -624,6 +633,9 @@ namespace SuperQQ.Player
             {
                 PlayHitSfx();
             }
+            // 记录死亡信息，供幽灵状态决定出生位置
+            _deathPosition = _rb != null ? _rb.position : (Vector2)transform.position;
+            _ghostSpawnAtFixedPosition = fellOutOfBounds;
             // 联机：上报死亡瞬间事件（远端播死亡表现），离线时为空操作
             SuperQQ.Network.NetEventSync.ReportEvent(
                 Minigame.Room.V1.PlayerEventType.Die, transform.position);
@@ -657,6 +669,10 @@ namespace SuperQQ.Player
                 BeginKnockbackStun();
                 return;
             }
+
+            // 记录死亡信息：击飞死亡保持死亡位置进入幽灵
+            _deathPosition = _rb != null ? _rb.position : (Vector2)transform.position;
+            _ghostSpawnAtFixedPosition = false;
 
             // 联机：受击+死亡事件（远端播受击闪色与死亡表现）
             SuperQQ.Network.NetEventSync.ReportEvent(

@@ -102,7 +102,7 @@ namespace SuperQQ.Player
             SuperQQ.Map.LevelBounds bounds = _ctx.LevelBounds;
             if (bounds != null && bounds.IsBelow(_ctx.Rb.position.y))
             {
-                _ctx.PlayerForceDie();
+                _ctx.PlayerForceDie(fellOutOfBounds: true);
             }
         }
 

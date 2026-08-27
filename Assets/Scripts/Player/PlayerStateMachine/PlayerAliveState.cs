@@ -204,9 +204,10 @@ namespace SuperQQ.Player
             }
 
             // 越过下边界：掉落死亡（不可豁免，无视无敌金身等无敌保护）
+            // fellOutOfBounds: true → 幽灵出生在固定初始位置（尸体已跌出地图，保持原位无意义）
             if (bounds.IsBelow(clamped.y))
             {
-                _ctx.PlayerForceDie();
+                _ctx.PlayerForceDie(fellOutOfBounds: true);
             }
         }
 

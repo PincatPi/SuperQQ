@@ -47,7 +47,8 @@ namespace SuperQQ.Player
         // ==================== 生命周期 ====================
 
         /// <summary>
-        /// 进入幽灵状态：禁用碰撞体、取消重力、半透明、重置速度、传送至初始位置
+        /// 进入幽灵状态：禁用碰撞体、取消重力、半透明、重置速度、确定出生位置
+        /// 出生位置：仅跌落下边界死亡传送至固定初始位置，其余死亡保持死亡位置
         /// </summary>
         public void Enter()
         {
@@ -64,8 +65,10 @@ namespace SuperQQ.Player
             _ctx.Rb.gravityScale = 0f;
             _ctx.Rb.velocity = Vector2.zero;
 
-            // 传送至幽灵初始位置
-            _ctx.Rb.position = _ctx.GhostSpawnPosition;
+            // 出生位置：仅跌落下边界死亡传送至固定初始位置，其余死亡保持死亡位置
+            _ctx.Rb.position = _ctx.GhostSpawnAtFixedPosition
+                ? (Vector2)_ctx.GhostSpawnPosition
+                : _ctx.DeathPosition;
 
             // 保存并设置半透明
             if (_ctx.Renderer != null)

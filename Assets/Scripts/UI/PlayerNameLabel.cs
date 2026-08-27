@@ -37,7 +37,7 @@ namespace SuperQQ.UI
             _canvasRect = canvasRect;
             _canvas = canvasRect.GetComponent<Canvas>();
             _playerController = player;
-            _text.text = player.PlayerName;
+            _text.text = ResolveDisplayName(player);
             _aliveColor = player.PlayerColor;
             _text.color = _aliveColor;
             _bWasGhost = false;
@@ -47,6 +47,23 @@ namespace SuperQQ.UI
         {
             _rectTransform = GetComponent<RectTransform>();
             _text = GetComponent<TextMeshProUGUI>();
+        }
+
+        /// <summary>
+        /// 解析显示名称：统一展示玩家账号昵称
+        /// 本地玩家的 PlayerName 是场景预置值（如 "P1"），需优先取登录时保存的账号昵称；
+        /// 远程玩家的 PlayerName 在注册档案时已是账号昵称，直接展示；
+        /// 昵称为空时回退到 PlayerName
+        /// </summary>
+        private static string ResolveDisplayName(PlayerController player)
+        {
+            if (player.BIsLocal
+                && SuperQQ.Network.NetworkManager.Instance != null
+                && !string.IsNullOrEmpty(SuperQQ.Network.NetworkManager.Instance.LocalNickname))
+            {
+                return SuperQQ.Network.NetworkManager.Instance.LocalNickname;
+            }
+            return player.PlayerName;
         }
 
         private void LateUpdate()
