@@ -37,7 +37,7 @@ namespace SuperQQ.Network
             {
                 if (deathTransitionDuration > 0f) return deathTransitionDuration;
                 PlayerController pc = GetComponent<PlayerController>();
-                return pc != null ? pc.DeathDuration : 0.6f;
+                return pc != null ? pc.DeathDuration : 2f;
             }
         }
 

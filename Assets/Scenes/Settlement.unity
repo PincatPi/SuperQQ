@@ -380,7 +380,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 256
-  deathDuration: 0.6
+  deathDuration: 2
   ghostMoveSpeed: 10
   ghostAcceleration: 80
   ghostDeceleration: 100
@@ -821,7 +821,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 256
-  deathDuration: 0.6
+  deathDuration: 2
   ghostMoveSpeed: 10
   ghostAcceleration: 80
   ghostDeceleration: 100

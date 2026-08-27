@@ -41,7 +41,7 @@ namespace SuperQQ.Player
         [SerializeField] private LayerMask groundLayer;                 // 地面Layer
 
         [Header("死亡设置")]
-        [SerializeField] private float deathDuration = 0.6f;           // 死亡过渡时长（秒），结束后自动进入幽灵状态
+        [SerializeField] private float deathDuration = 2f;             // 死亡过渡时长（秒），结束后自动进入幽灵状态
 
         [Header("音效")]
         [Tooltip("被命中音效：被伤害型道具/事件命中致死或击飞时在玩家位置 3D 播放（坠落出界不播放）；None 表示静默")]
@@ -482,9 +482,14 @@ namespace SuperQQ.Player
 
         /// <summary>
         /// 读取玩家操作输入（委托给当前输入源）
+        /// 输入源在 Start 初始化；晚生成的远端化身首帧 Update 可能先于 Start 执行，此时跳过
         /// </summary>
         private void ReadInput()
         {
+            if (_input == null)
+            {
+                return;
+            }
             _input.ReadInput();
             _horizontalInput = _input.Horizontal;
             _verticalInput = _input.Vertical;

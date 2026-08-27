@@ -112,7 +112,7 @@ namespace SuperQQ.GameFlow
         private void OnDisable()
         {
             UnityEngine.SceneManagement.SceneManager.sceneLoaded -= HandleSceneLoaded;
-            _currentPhase?.OnExit(_context);
+            ExitCurrentPhaseOnTeardown();
         }
 
         private void OnDestroy()
@@ -122,7 +122,20 @@ namespace SuperQQ.GameFlow
                 _instance = null;
             }
 
-            _currentPhase?.OnExit(_context);
+            ExitCurrentPhaseOnTeardown();
+        }
+
+        /// <summary>
+        /// 销毁/禁用时的阶段退出清理。
+        /// 流程未启动（_context 未创建，如联机模式等待服务器同步期间切场景）时无阶段绑定需要清理，直接跳过。
+        /// 注意 _currentPhase 是 ScriptableObject，必须用 Unity 判空（!= null）而非 ?.，避免对已销毁资产空调用。
+        /// </summary>
+        private void ExitCurrentPhaseOnTeardown()
+        {
+            if (_currentPhase != null && _context != null)
+            {
+                _currentPhase.OnExit(_context);
+            }
         }
 
         private void Start()

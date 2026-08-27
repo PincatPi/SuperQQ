@@ -268,7 +268,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 768
-  deathDuration: 0.35
+  deathDuration: 2
   hitSfx: 210
   ghostMoveSpeed: 10
   ghostAcceleration: 80

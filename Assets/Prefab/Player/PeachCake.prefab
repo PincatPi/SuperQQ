@@ -269,7 +269,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 768
-  deathDuration: 0.35
+  deathDuration: 2
   hitSfx: 210
   jumpSfx: 220
   landSfx: 221

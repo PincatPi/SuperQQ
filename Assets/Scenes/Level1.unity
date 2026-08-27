@@ -4479,7 +4479,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1530836126952925576, guid: 3f3d1a4b330cc40d7919b86105b7b1f2, type: 3}
       propertyPath: deathDuration
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1530836126952925576, guid: 3f3d1a4b330cc40d7919b86105b7b1f2, type: 3}
       propertyPath: selectionIconSprite

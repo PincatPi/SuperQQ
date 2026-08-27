@@ -53,6 +53,14 @@ namespace SuperQQ.GameFlow
 
         public override void OnExit(GamePhaseContext context)
         {
+            // 流程未启动（上下文未创建）时无场景绑定需要清理，仅重置内部标记
+            if (context == null)
+            {
+                _bPhaseStarted = false;
+                _selectCondition = null;
+                return;
+            }
+
             base.OnExit(context);
 
             PropSelectionDirector selectionDirector = context.SelectionDirector;
