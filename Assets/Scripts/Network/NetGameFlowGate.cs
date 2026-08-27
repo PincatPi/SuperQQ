@@ -310,14 +310,48 @@ namespace SuperQQ.Network
                 if (playerId == net.LocalPlayerId)
                 {
                     // 本地玩家档案补注册：未在场景预置本地玩家的关卡（Level2 等）档案缺失，
-                    // SpawnMissingPlayerAvatars 无档可生——整局没有一个角色
-                    if (!session.HasPlayerByIdentity(playerId))
+                    // SpawnMissingPlayerAvatars 无档可生——整局没有一个角色。
+                    // 注意去重：角色选择/场景预置等流程可能已按昵称注册过本地档案（无 PlayerId），
+                    // 再按 PlayerId 注册会产生两份本地档案——选择阶段出现两个本地图标
+                    string nickname = string.IsNullOrEmpty(p.Player?.Nickname) ? "P1" : p.Player.Nickname;
+                    bool exists = session.HasPlayerByIdentity(playerId);
+                    if (!exists)
+                    {
+                        foreach (SuperQQ.Player.PlayerProfile prof in session.Profiles)
+                        {
+                            if (prof.IsLocal && prof.PlayerName == nickname)
+                            {
+                                exists = true;
+                                // 合并：老档案补齐 PlayerId（联机身份上报/匹配需要）
+                                if (string.IsNullOrEmpty(prof.PlayerId))
+                                {
+                                    prof.PlayerId = playerId;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    // 场景预置了本地玩家对象（Level1 的 LocalPlayer）：对象已占坑，
+                    // 身份由 LocalPlayerNetSetup 写入，不能再注册档案——否则会多生成一个克隆体
+                    // （双本地玩家、缩放不一致、选择阶段双图标等一串问题）
+                    if (!exists && SuperQQ.Player.LevelPlayerRegistry.Instance != null)
+                    {
+                        foreach (SuperQQ.Player.PlayerController pc in SuperQQ.Player.LevelPlayerRegistry.Instance.Players)
+                        {
+                            if (pc != null && pc.BIsLocal)
+                            {
+                                exists = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!exists)
                     {
                         session.RegisterProfile(new SuperQQ.Player.PlayerProfile
                         {
                             PlayerId = playerId,
                             IsLocal = true,
-                            PlayerName = string.IsNullOrEmpty(p.Player?.Nickname) ? "P1" : p.Player.Nickname,
+                            PlayerName = nickname,
                             PlayerColor = PlayerColorPalette.Get(i)
                         });
                         localRegistered = true;
