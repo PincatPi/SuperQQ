@@ -2783,7 +2783,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _eventConfig: {fileID: 11400000, guid: 1fcad58204ad04342a9ea57dacabdd43, type: 2}
-  _bTempClientLocalTrigger: 1
+  _bTempClientLocalTrigger: 0
 --- !u!4 &1022101062
 Transform:
   m_ObjectHideFlags: 0
