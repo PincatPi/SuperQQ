@@ -30,6 +30,14 @@ namespace SuperQQ.Item
         [Tooltip("调试：运行即开始摆动（阶段系统接入后关闭，由 OnRunPhaseStart/OnBuildPhaseStart 控制）")]
         [SerializeField] private bool debugAutoSwing = true;
 
+        [Header("摆动帧动画")]
+        [Tooltip("摆锤帧动画序列（WreckingBall-ChainandBall.014~033），按摆动相位取帧——帧与锤头判定圈严格同步")]
+        [SerializeField] private Sprite[] swingFrames;
+        [Tooltip("帧动画渲染器（根节点下、不随摆臂旋转的子物体，帧自身已含摆动）")]
+        [SerializeField] private SpriteRenderer swingFrameRenderer;
+        [Tooltip("帧序列是否覆盖完整往返（true：014~033 = 整周期左→右→左；false：仅单程，按 PingPong 往复映射）")]
+        [SerializeField] private bool framesCoverFullCycle = true;
+
         /// <summary>命中效果参数：弹飞仅作死亡表现</summary>
         [Header("命中表现")]
         [Tooltip("命中后沿锤头运动方向的弹飞速度（仅死亡表现）")]
@@ -147,6 +155,10 @@ namespace SuperQQ.Item
                 s.x = mirrored ? -Mathf.Abs(s.x) : Mathf.Abs(s.x);
                 arm.localScale = s;
             }
+            if (swingFrameRenderer != null)
+            {
+                swingFrameRenderer.flipX = value;
+            }
         }
 
         // ==================== 阶段钩子 ====================
@@ -162,6 +174,7 @@ namespace SuperQQ.Item
             swinging = false;
             phaseTime = 0f;
             ApplySwingAngle(0f);
+            ApplySwingFrame(sweepDuration * 2f); // 复位到首帧
         }
 
         // ==================== 摆动驱动 ====================
@@ -185,6 +198,7 @@ namespace SuperQQ.Item
                 angle = -angle;
             }
             ApplySwingAngle(angle);
+            ApplySwingFrame(period);
 
             // 角速度方向（供命中弹飞表现）：t 递增段与递减段方向相反
             bool risingEdge = phaseTime < sweepDuration;
@@ -199,6 +213,32 @@ namespace SuperQQ.Item
             if (arm != null)
             {
                 arm.localRotation = Quaternion.Euler(0f, 0f, angle);
+            }
+        }
+
+        /// <summary>
+        /// 按摆动相位取帧：帧动画与锤头判定圈共用同一 phaseTime，严格同步。
+        /// framesCoverFullCycle=true：帧序列平铺整个往返周期；false：PingPong 往复映射（单程帧）
+        /// </summary>
+        private void ApplySwingFrame(float period)
+        {
+            if (swingFrames == null || swingFrames.Length == 0 || swingFrameRenderer == null)
+            {
+                return;
+            }
+            int idx;
+            if (framesCoverFullCycle)
+            {
+                idx = Mathf.Clamp(Mathf.FloorToInt(phaseTime / period * swingFrames.Length), 0, swingFrames.Length - 1);
+            }
+            else
+            {
+                float t = Mathf.PingPong(phaseTime, sweepDuration) / sweepDuration;
+                idx = Mathf.Clamp(Mathf.FloorToInt(t * swingFrames.Length), 0, swingFrames.Length - 1);
+            }
+            if (swingFrameRenderer.sprite != swingFrames[idx])
+            {
+                swingFrameRenderer.sprite = swingFrames[idx];
             }
         }
     }
