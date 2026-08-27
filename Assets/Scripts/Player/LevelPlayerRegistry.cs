@@ -295,11 +295,22 @@ namespace SuperQQ.Player
         /// <param name="spawnIndex">出生点索引</param>
         private Vector3 GetSpawnPosition(int spawnIndex)
         {
-            if (_spawnPoints != null && spawnIndex >= 0 && spawnIndex < _spawnPoints.Length)
+            if (_spawnPoints == null || _spawnPoints.Length == 0)
             {
-                if (_spawnPoints[spawnIndex] != null)
+                return transform.position;
+            }
+            // 精确匹配
+            if (spawnIndex >= 0 && spawnIndex < _spawnPoints.Length && _spawnPoints[spawnIndex] != null)
+            {
+                return _spawnPoints[spawnIndex].position;
+            }
+            // 兜底：索引越界（出生点数量少于玩家数）时用最后一个有效出生点，
+            // 而非回退到注册表自身位置（注册表可能在场景任意位置，会把玩家甩飞）
+            for (int i = _spawnPoints.Length - 1; i >= 0; i--)
+            {
+                if (_spawnPoints[i] != null)
                 {
-                    return _spawnPoints[spawnIndex].position;
+                    return _spawnPoints[i].position;
                 }
             }
             return transform.position;
