@@ -37,9 +37,32 @@ namespace SuperQQ.Map
         private Vector3 from1, from2, from3;
         private bool playing;
 
+        // 柱子的运动学刚体（Awake 时补挂）：用 MovePosition 步进移动，
+        // 让物理系统识别"平台移动"并正确顶起/托举站在上面的玩家（transform 直写会传送式移动，玩家穿模掉落）
+        private Rigidbody2D rb1, rb2, rb3;
+
         private void Awake()
         {
             CacheOrigins();
+            rb1 = EnsureKinematicBody(pillar1);
+            rb2 = EnsureKinematicBody(pillar2);
+            rb3 = EnsureKinematicBody(pillar3);
+        }
+
+        /// <summary>柱子挂 Kinematic Rigidbody2D（无则补挂）——MovePosition 移动物理正确</summary>
+        private static Rigidbody2D EnsureKinematicBody(Transform pillar)
+        {
+            if (pillar == null) return null;
+            Rigidbody2D rb = pillar.GetComponent<Rigidbody2D>();
+            if (rb == null)
+            {
+                rb = pillar.gameObject.AddComponent<Rigidbody2D>();
+            }
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.useFullKinematicContacts = true; // 让 kinematic 平台参与碰撞通知，玩家可站立
+            rb.interpolation = RigidbodyInterpolation2D.Interpolate; // 视觉平滑，与玩家插值节奏一致
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation | RigidbodyConstraints2D.FreezePositionX;
+            return rb;
         }
 
         private void OnEnable()
@@ -108,9 +131,22 @@ namespace SuperQQ.Map
 
         private void SnapToOrigins()
         {
-            if (pillar1 != null) pillar1.position = origin1;
-            if (pillar2 != null) pillar2.position = origin2;
-            if (pillar3 != null) pillar3.position = origin3;
+            SetPillar(rb1, pillar1, origin1);
+            SetPillar(rb2, pillar2, origin2);
+            SetPillar(rb3, pillar3, origin3);
+        }
+
+        /// <summary>移动柱子：优先 Rigidbody2D.MovePosition（物理正确、能载人），无刚体退回 transform</summary>
+        private static void SetPillar(Rigidbody2D rb, Transform t, Vector3 pos)
+        {
+            if (rb != null)
+            {
+                rb.MovePosition(pos);
+            }
+            else if (t != null)
+            {
+                t.position = pos;
+            }
         }
 
         private float CellSize => GridManager.Instance != null ? GridManager.Instance.PublicCellSize : 0.5f;
@@ -143,33 +179,33 @@ namespace SuperQQ.Map
             }
         }
 
-        private void Update()
+        // FixedUpdate 步进：Rigidbody2D.MovePosition 必须在物理帧调用，才能被物理系统识别为"平台移动"并托举玩家
+        private void FixedUpdate()
         {
             if (!playing)
             {
-                // 非 PLAYING：平滑恢复原位后停住
                 if (restoreDuration <= 0f)
                 {
                     SnapToOrigins();
                     return;
                 }
-                legTimer += Time.deltaTime;
+                legTimer += Time.fixedDeltaTime;
                 float rt = Mathf.Clamp01(legTimer / restoreDuration);
-                rt = rt * rt * (3f - 2f * rt); // smoothstep
-                if (pillar1 != null) pillar1.position = Vector3.Lerp(from1, origin1, rt);
-                if (pillar2 != null) pillar2.position = Vector3.Lerp(from2, origin2, rt);
-                if (pillar3 != null) pillar3.position = Vector3.Lerp(from3, origin3, rt);
+                rt = rt * rt * (3f - 2f * rt);
+                SetPillar(rb1, pillar1, Vector3.Lerp(from1, origin1, rt));
+                SetPillar(rb2, pillar2, Vector3.Lerp(from2, origin2, rt));
+                SetPillar(rb3, pillar3, Vector3.Lerp(from3, origin3, rt));
                 return;
             }
 
-            legTimer += Time.deltaTime;
+            legTimer += Time.fixedDeltaTime;
             float t = Mathf.Clamp01(legTimer / legDuration);
-            float eased = t * t * (3f - 2f * t); // smoothstep 起止缓动
+            float eased = t * t * (3f - 2f * t);
 
             GetLegTargets(out Vector3 t1, out Vector3 t2, out Vector3 t3);
-            if (pillar1 != null) pillar1.position = Vector3.Lerp(from1, t1, eased);
-            if (pillar2 != null) pillar2.position = Vector3.Lerp(from2, t2, eased);
-            if (pillar3 != null) pillar3.position = Vector3.Lerp(from3, t3, eased);
+            SetPillar(rb1, pillar1, Vector3.Lerp(from1, t1, eased));
+            SetPillar(rb2, pillar2, Vector3.Lerp(from2, t2, eased));
+            SetPillar(rb3, pillar3, Vector3.Lerp(from3, t3, eased));
 
             if (t >= 1f)
             {

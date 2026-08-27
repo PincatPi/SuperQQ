@@ -300,16 +300,15 @@ namespace SuperQQ.UI.RoundResults
             // 复用框架展示流程（标题/目标线/按钮），传空数据跳过内建行生成
             PrepareView(Array.Empty<RoundResultPlayerData>(), roundIndex, _victoryScore, onContinue);
 
+            // 先只创建行（不 Capture/SetReveal）——立刻 Capture 时 VerticalLayoutGroup 还没运行、
+            // anchoredPosition 都是 (0,0)，SetReveal 会用这个错误 restPosition 写死 anchoredPosition，
+            // 后续 LayoutRebuild 无法覆盖，rows 会全部叠在初始位置（观感："分数条卡在 UI 下方，边动画边上移"）
             for (int i = 0; i < entries.Count; i++)
             {
-                RoundResultRowView row = AddPlayerRow(entries[i], i + 1, _victoryScore);
-                if (row != null)
-                {
-                    row.CaptureLayoutPosition();
-                    row.SetReveal(0f);
-                }
+                AddPlayerRow(entries[i], i + 1, _victoryScore);
             }
 
+            // 强制 VerticalLayoutGroup 立即把 rows 摆到最终位置，再统一读取 restPosition + 起手隐藏
             Canvas.ForceUpdateCanvases();
             if (rowsContainer != null)
             {
