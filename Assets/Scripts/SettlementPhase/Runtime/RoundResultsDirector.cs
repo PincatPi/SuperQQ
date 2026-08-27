@@ -112,6 +112,22 @@ namespace SuperQQ.Settlement.Runtime
         }
 
         /// <summary>
+        /// 联机：服务器 Settlement 通常晚于面板弹出到达（面板由 GamePhaseSync{ROUND_SETTLEMENT}
+        /// 触发），到达时若面板正开着则用最新分数重建记分行（不重复弹窗动画），
+        /// 否则本次面板永远看不到服务器分数。面板未打开时为空操作。
+        /// </summary>
+        public void RefreshIfOpen()
+        {
+            if (!BIsActive || resultsPanel == null)
+            {
+                return;
+            }
+
+            resultsPanel.ShowCurrentRoundPlayerRows(rowPrefab, rowsContainer);
+            Debug.Log($"{LOG_TAG} 服务器结算到达，已按最新分数重建记分行");
+        }
+
+        /// <summary>
         /// 结束结算面板（幂等）：隐藏面板。
         /// </summary>
         public void EndPhase()

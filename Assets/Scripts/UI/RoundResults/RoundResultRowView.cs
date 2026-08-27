@@ -141,6 +141,11 @@ namespace SuperQQ.UI.RoundResults
         /// </summary>
         public void PopulateSummary(string playerName, Sprite playerIcon, int totalScore, int rank = 0)
         {
+            // SetReveal 每帧按 _previousTotal/_finalTotal 重写分数文本，
+            // 轻量行不设置会定格显示 "0 / victory"——补上：无分段概念，全程显示目标总分
+            _previousTotal = Mathf.Max(0, totalScore);
+            _finalTotal = _previousTotal;
+
             if (_rankText != null)
             {
                 _rankText.text = rank > 0 ? rank.ToString() : string.Empty;

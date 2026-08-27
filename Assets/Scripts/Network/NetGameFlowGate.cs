@@ -154,19 +154,28 @@ namespace SuperQQ.Network
             _serverScores.Clear();
             foreach (SettlementPlayerResult r in settlement.Results)
             {
-                _serverScores[r.PlayerId] = new ServerPlayerScore
+                // 服务器未实现算分时字段整体缺省（proto3 缺省=0），不能用 0 覆盖本地分——
+                // 只在接受非零分时纳入服务器权威，缺省则回退本地算分（规则一致，真实 0 分时两者相等）
+                if (r.RoundScore != 0 || r.TotalScore != 0)
                 {
-                    RoundScore = r.RoundScore,
-                    TotalScore = r.TotalScore
-                };
+                    _serverScores[r.PlayerId] = new ServerPlayerScore
+                    {
+                        RoundScore = r.RoundScore,
+                        TotalScore = r.TotalScore
+                    };
+                }
             }
 
             bool bFinal = !string.IsNullOrEmpty(settlement.WinnerPlayerId);
-            Debug.Log($"[NetWork] 收到服务器结算: round={settlement.Round} {(bFinal ? $"最终 胜者={settlement.WinnerPlayerId}" : "单轮")} 玩家数={settlement.Results.Count}");
+            Debug.Log($"[NetWork] 收到服务器结算: round={settlement.Round} {(bFinal ? $"最终 胜者={settlement.WinnerPlayerId}" : "单轮")} 玩家数={settlement.Results.Count} 有效分数={_serverScores.Count}");
             foreach (SettlementPlayerResult r in settlement.Results)
             {
                 Debug.Log($"[NetWork]   第{r.Rank}名 {r.PlayerId} 本轮={r.RoundScore} 累计={r.TotalScore} mmrΔ={r.MmrDelta} coinΔ={r.CoinDelta}");
             }
+
+            // Settlement 通常晚于结算面板弹出到达（面板由 GamePhaseSync{ROUND_SETTLEMENT} 触发），
+            // 若面板正开着则用最新分数重建一次，否则本次面板永远看不到服务器分数
+            SuperQQ.Settlement.Runtime.RoundResultsDirector.Instance?.RefreshIfOpen();
         }
 
         /// <summary>
@@ -356,6 +365,9 @@ namespace SuperQQ.Network
             switch (sync.Phase)
             {
                 case GamePhaseKind.PropSelection:
+                    // 本地记分簿跟随服务器轮次翻页（联机本地转移被屏蔽，
+                    // AdvanceToNextRound 不会触发，不推进则永远读第 1 轮旧数据）
+                    SuperQQ.Score.PlayerScoreManager.Instance?.SyncToServerRound(sync.Round);
                     // 新一轮开始即复活本地玩家并回出生点（而非等到 PLAYING）：
                     // 上一轮死亡的玩家在选择/摆放阶段（约 70s）一直是幽灵，会持续上报
                     // player_state=1（幽灵），若服务器参考该字段判定出局会误判秒切结算。
