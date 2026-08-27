@@ -36,7 +36,9 @@ namespace SuperQQ.UI.PlacementTest
     ///      清空按钮可绑定 ClearConfirmed
     ///
     /// 注意：拆除类道具（炸弹）确认后立即引爆、清除自身 footprint 覆盖格子内的道具并销毁，
-    /// 属其自身预期行为；叠放目标与免登记占据由 DemolitionItemBase 的策略属性自动声明，无需额外配置
+    /// 属其自身预期行为；叠放目标与免登记占据由 DemolitionItemBase 的策略属性自动声明，无需额外配置。
+    /// 联机下 OnPlaced 会挂起等待服务器仲裁（测试流程不上报服务器，结果不会到达），
+    /// 本控制器在确认后检测挂起并立即本地引爆，保证炸弹在联机测试时也能正常爆炸
     /// </summary>
     public class ItemPlacementTestController : MonoBehaviour
     {
@@ -256,6 +258,18 @@ namespace SuperQQ.UI.PlacementTest
             // 摆放交互能力随组件一并移除，已确认道具不可能再被移动/虚化/重新激活
             // （此前仅 enabled=false 软锁定，会被场景级调试热键等外部激活绕过）
             Destroy(currentPc);
+
+            // 拆除类道具（摔炮/黑炸弹/原子弹）联机兜底引爆：
+            // 联机下 DemolitionItemBase.OnPlaced 会把炸弹挂进 _pendingByAnchor 等待服务器
+            // ItemDemolishResult 统一引爆，而测试流程不上报服务器，该结果永远不会到达，
+            // 炸弹会永久哑火——在此取回挂起实例并立即本地引爆
+            // （Detonate 即基类"供调试直接触发"的官方入口，含消除范围内道具/特效/音效/自毁）。
+            // 单机下 OnPlaced 已自动走引信协程、不在挂起表中，本段自然跳过，不影响正常代码
+            if (currentItem is DemolitionItemBase && currentItem.Placed != null
+                && DemolitionItemBase.TryTakePending(currentItem.Placed.AnchorCell, out DemolitionItemBase bomb))
+            {
+                bomb.Detonate();
+            }
 
             confirmed.Add(current);
 
