@@ -78,6 +78,8 @@ namespace SuperQQ.Placement.Runtime
         [SerializeField] private Vector2 markerCornerInset = new Vector2(0.15f, 0f);
         [Tooltip("标记的 Sorting Order，需高于网格与虚线框（默认为 10）")]
         [SerializeField] private int cursorMarkerSortingOrder = 100;
+        [Tooltip("标记的 Sorting Layer（地图地形在 Map 层，标记必须在 Item 层才不会被地形遮挡）")]
+        [SerializeField] private string cursorMarkerSortingLayer = "Item";
 
         private SpriteRenderer cursorMarker;
 
@@ -678,6 +680,7 @@ namespace SuperQQ.Placement.Runtime
                 go.transform.SetParent(transform, false);
                 cursor = go.AddComponent<SpriteRenderer>();
                 cursor.sortingOrder = cursorMarkerSortingOrder;
+                cursor.sortingLayerName = cursorMarkerSortingLayer;
                 remoteCursors[playerId] = cursor;
             }
 
@@ -1448,6 +1451,7 @@ namespace SuperQQ.Placement.Runtime
                 go.transform.SetParent(transform, false);
                 cursorMarker = go.AddComponent<SpriteRenderer>();
                 cursorMarker.sortingOrder = cursorMarkerSortingOrder;
+                cursorMarker.sortingLayerName = cursorMarkerSortingLayer;
             }
 
             cursorMarker.sprite = sprite;
