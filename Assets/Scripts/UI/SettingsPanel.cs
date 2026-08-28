@@ -22,6 +22,8 @@ namespace SuperQQ.UI
         public static SettingsPanel Show(SettingsPanel prefab, Transform parent, Action onLogout, Action onClosed = null)
         {
             SettingsPanel panel = Instantiate(prefab, parent, false);
+            // 源对象可能在场景/prefab 中处于未激活状态，实例化后强制激活
+            panel.gameObject.SetActive(true);
             panel._onLogout = onLogout;
             panel._onClosed = onClosed;
             panel.BindButtons();

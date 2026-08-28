@@ -19,7 +19,7 @@ MonoBehaviour:
   _firstDetectDelay: 1
   _roundInterval: 2
   _warningDuration: 1.5
-  _volumeThreshold: 0
+  _volumeThreshold: 0.5
   _warningPrefab: {fileID: 1236643204216662, guid: 706333c6431ba8c4ea48f7fe578e3e37, type: 3}
   _lightningPrefab: {fileID: 1454807473737458, guid: 6108438f5e38d0b4b8fed06af6b74254, type: 3}
   _lightningLifetime: 1
@@ -28,4 +28,4 @@ MonoBehaviour:
   _detectVoiceTipText: "\u96F7\u7535\u6B63\u5728\u8046\u542C\u2014\u2014\u5927\u58F0\u8BF4\u8BDD\u4F1A\u5F15\u6765\u843D\u96F7\uFF01"
   _casterFxIdleTimeout: 1
   _bTestStrikeLocalPlayer: 0
-  _bTestAlwaysReportLoud: 1
+  _bTestAlwaysReportLoud: 0
