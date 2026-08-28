@@ -1330,15 +1330,26 @@ namespace SuperQQ.Placement.Runtime
             }
         }
 
-        /// <summary>远端传送门补配对：等一帧让同批到达的出口结果先完成自动配对，仍未配对才补建</summary>
+        /// <summary>
+        /// 远端传送门补配对：等待若干个快照周期，让真实的出口端先到达并自动配对。
+        /// 服务器不向其他端广播 ItemPlaceResult，远端道具靠 RoomSnapshot.placed_items 同步——
+        /// 快照是定频下发的，若只等一帧，兜底会抢在快照之前补建出位置错误的配对端
+        /// </summary>
         private System.Collections.IEnumerator EnsureRemotePortalLinkedNextFrame(SuperQQ.Item.Portal portal)
         {
-            yield return null;
+            float deadline = Time.unscaledTime + RemotePortalPairingGraceSeconds;
+            while (portal != null && !portal.IsLinked && Time.unscaledTime < deadline)
+            {
+                yield return null;
+            }
             if (portal != null && !portal.IsLinked)
             {
                 portal.LinkWithRemoteCounterpart();
             }
         }
+
+        /// <summary>远端传送门补配对等待窗口（秒）：应大于一个快照周期，让快照里的真实出口端先到位</summary>
+        private const float RemotePortalPairingGraceSeconds = 1.5f;
 
         private static void EnsureEventSystem()
         {

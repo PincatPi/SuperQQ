@@ -366,8 +366,20 @@ namespace SuperQQ.Item
             }
 
             // 补建端不重复走网格占据/网络上报：仅作为传送落点与触发端存在。
-            // 真正的出口结果到达时，OnPlaced 会与其自动配对（本端已是 Linked 则不再抢配对）
-            GameObject counterpart = Instantiate(prefab, transform.position, transform.rotation);
+            // 真正的出口结果到达时，OnPlaced 会与其自动配对（本端已是 Linked 则不再抢配对）。
+            // 放置位置必须与首段错开：补建端若生成在首段原地，两扇门重叠，
+            // 玩家走进去被瞬移到同一位置，表现为"传送门没效果"
+            Vector3 spawnPos = transform.position;
+            GridManager grid = GridManager.Instance;
+            if (grid != null)
+            {
+                float cellSize = grid.PublicCellSize;
+                spawnPos += new Vector3(
+                    exitSpawnCellOffset.x * cellSize,
+                    exitSpawnCellOffset.y * cellSize,
+                    0f);
+            }
+            GameObject counterpart = Instantiate(prefab, spawnPos, transform.rotation);
             counterpart.name = $"{gameObject.name}_Counterpart";
             var portal = counterpart.GetComponent<Portal>();
             if (portal == null)
@@ -400,7 +412,7 @@ namespace SuperQQ.Item
             portal.role = PortalRole.Exit;
             LinkTo(portal);
             portal.ApplyTint();
-            Debug.Log($"[Portal] 远端补建配对端完成: owner={Placed?.OwnerKey} anchor={Placed?.AnchorCell}");
+            Debug.Log($"[Portal] 远端补建配对端完成（兜底！真实出口结果未到达，两端位置可能与实际不符）: owner={Placed?.OwnerKey} 首段anchor={Placed?.AnchorCell} 补建端位置={spawnPos}");
         }
 
         /// <summary>
