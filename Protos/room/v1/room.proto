@@ -578,6 +578,27 @@ message ItemStateEventBroadcast {
   int64 server_time_ms = 5;
 }
 
+// 客户端 → 服务器：道具所有者节流上报运行期动态位置（声控浮桥等随放置者本地输入持续运动的道具），
+// 服务器原样广播。与 ItemPlaceState 的区别：ItemPlaceState 用于摆放阶段的拖拽预览，
+// 本消息用于 PLAYING 阶段已确认道具的运行期位置同步。
+// item_instance_id 约定："{itemId}_{anchorX}_{anchorY}"（与 ItemStateEvent 一致）。
+message ItemTransformSync {
+  minigame.common.v1.TraceContext trace = 1;
+  string room_id = 2;
+  string player_id = 3;             // 道具所有者（上报端）
+  string item_instance_id = 4;
+  Vector2 position = 5;             // 道具根节点世界坐标
+}
+
+// 服务器 → 全房间：透传道具运行期动态位置。
+message ItemTransformBroadcast {
+  string room_id = 1;
+  string player_id = 2;             // 道具所有者（上报端）
+  string item_instance_id = 3;
+  Vector2 position = 4;
+  int64 server_time_ms = 5;
+}
+
 // 客户端 → 服务器：本地玩家被其他玩家摆放的陷阱击杀时上报，服务器原样广播。
 // 计分归属用：各端收到后为 owner_player_id 记一次陷阱有效击杀（ScoreCalculator 每次+5、单轮上限2次）。
 // 自杀（owner == 受害者）与关卡原生陷阱（无归属）不上报。

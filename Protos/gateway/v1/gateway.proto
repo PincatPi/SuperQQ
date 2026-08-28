@@ -71,6 +71,8 @@ message ClientEnvelope {
     minigame.room.v1.ReportEvent3LoudPlayer report_event3_loud_player = 39;
     // 选关投票：等待阶段任意玩家投票/改票，同步应答 VoteLevelResponse，并广播 RoomUpdated(level_voted)。
     minigame.room.v1.VoteLevelRequest vote_level = 40;
+    // 道具运行期动态位置上报（声控浮桥等）：纯透传，无同步应答，广播 ItemTransformBroadcast 给其他端。
+    minigame.room.v1.ItemTransformSync item_transform_sync = 41;
   }
 }
 
@@ -116,6 +118,8 @@ message ServerEnvelope {
     minigame.room.v1.ToastSizeBroadcast toast_size_broadcast = 41;
     // 选关投票同步应答（VoteLevel 的回包）。
     minigame.room.v1.VoteLevelResponse vote_level = 42;
+    // 道具运行期动态位置透传广播。
+    minigame.room.v1.ItemTransformBroadcast item_transform_broadcast = 43;
     ErrorResponse error = 90;
   }
 }
