@@ -272,38 +272,16 @@ namespace SuperQQ.Network
                     itemBase.OnPlaced();
                 }
 
-                // 传送门：快照恢复出的首段若仍落单（出口未被快照带上/被时序丢弃），
-                // 原地补建配对端，否则断线重连端看到的传送门无法使用
-                if (itemBase is SuperQQ.Item.Portal restoredPortal)
+                // 传送门诊断：打印生成时的配对状态（两端各自出现在 placed_items 时会自动配对）
+                if (itemBase is SuperQQ.Item.Portal p)
                 {
-                    StartCoroutine(EnsureRestoredPortalLinkedNextFrame(restoredPortal));
+                    Debug.Log($"[Portal] 快照恢复传送门: owner={placed.PlayerId} anchor=({placed.AnchorCell.X},{placed.AnchorCell.Y}) linked={p.IsLinked} entrance={p.IsEntrance}");
                 }
 
                 _restoredItems.Add(key);
                 Debug.Log($"[NetWork] 快照恢复道具: {prefab.name}(itemId={placed.ItemId}) @ ({anchor.x},{anchor.y}) 摆放者={placed.PlayerId}");
             }
         }
-
-        /// <summary>
-        /// 快照恢复的传送门补配对：等待一段时间后仍落单才补建。
-        /// 快照内两端可能在同一次 placed_items 中，但也可能分处两个快照包（先到首段、后到出口），
-        /// 只等一帧会让兜底抢在出口端到达前补建出位置错误的配对端
-        /// </summary>
-        private System.Collections.IEnumerator EnsureRestoredPortalLinkedNextFrame(SuperQQ.Item.Portal portal)
-        {
-            float deadline = Time.unscaledTime + RestoredPortalPairingGraceSeconds;
-            while (portal != null && !portal.IsLinked && Time.unscaledTime < deadline)
-            {
-                yield return null;
-            }
-            if (portal != null && !portal.IsLinked)
-            {
-                portal.LinkWithRemoteCounterpart();
-            }
-        }
-
-        /// <summary>快照恢复传送门的补配对等待窗口（秒）</summary>
-        private const float RestoredPortalPairingGraceSeconds = 1.5f;
 
         /// <summary>按 itemId 查道具 prefab：目录数字代号优先，名字兜底，最后走选择阶段发牌解析映射</summary>
         private static ItemBase FindItemPrefab(string itemId)

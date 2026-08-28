@@ -1320,36 +1320,15 @@ namespace SuperQQ.Placement.Runtime
             }
             Debug.Log($"{LOG_TAG} 远端道具生成完成: {item.name} 位置=({worldPos.x},{worldPos.y})");
 
-            // 传送门：远端玩家的首段（入口）摆好后，其出口由该玩家自己衔接摆放，
-            // 第二条 ItemPlaceResult 到达时会各自 OnPlaced 自动配对。等一帧确认没配上
-            // （出口结果被时序/阶段边界丢弃、或只恢复出首段），再原地补建配对端，
-            // 否则对方的传送门在本端永远是落单状态：自己用不了、道具也过不去
-            if (itemBase is SuperQQ.Item.Portal remotePortal && !remotePortal.IsLinked)
+            // 传送门诊断：远端生成时打印配对状态。协议要求两端各自出现在 placed_items 里，
+            // 各端本地按 OnPlaced 自动配对（首段成入口，末段配对成出口）。
+            // 若这里 IsLinked=false，说明第二扇门的快照还没到；后续到达时会自动补配对，
+            // 若长时间保持 false —— 后端 placed_items 没带上出口端（后端 bug）
+            if (itemBase is SuperQQ.Item.Portal p)
             {
-                StartCoroutine(EnsureRemotePortalLinkedNextFrame(remotePortal));
+                Debug.Log($"[Portal] 远端传送门生成: owner={result.PlayerId} anchor=({result.AnchorCell.X},{result.AnchorCell.Y}) linked={p.IsLinked} entrance={p.IsEntrance}");
             }
         }
-
-        /// <summary>
-        /// 远端传送门补配对：等待若干个快照周期，让真实的出口端先到达并自动配对。
-        /// 服务器不向其他端广播 ItemPlaceResult，远端道具靠 RoomSnapshot.placed_items 同步——
-        /// 快照是定频下发的，若只等一帧，兜底会抢在快照之前补建出位置错误的配对端
-        /// </summary>
-        private System.Collections.IEnumerator EnsureRemotePortalLinkedNextFrame(SuperQQ.Item.Portal portal)
-        {
-            float deadline = Time.unscaledTime + RemotePortalPairingGraceSeconds;
-            while (portal != null && !portal.IsLinked && Time.unscaledTime < deadline)
-            {
-                yield return null;
-            }
-            if (portal != null && !portal.IsLinked)
-            {
-                portal.LinkWithRemoteCounterpart();
-            }
-        }
-
-        /// <summary>远端传送门补配对等待窗口（秒）：应大于一个快照周期，让快照里的真实出口端先到位</summary>
-        private const float RemotePortalPairingGraceSeconds = 1.5f;
 
         private static void EnsureEventSystem()
         {
