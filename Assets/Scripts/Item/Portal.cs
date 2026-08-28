@@ -115,14 +115,16 @@ namespace SuperQQ.Item
         }
 
         /// <summary>
-        /// 免疫清理兜底：逐物理帧按实际重叠校验，玩家已离开触发区即解除免疫。
-        /// 不能只依赖 OnTriggerExit2D——传送落点经 exitOffset 偏移后常在触发区之外，
-        /// 玩家落地时从未进入过落点触发器，Exit 事件永远不会来，免疫将一直残留
-        /// （表现：传送后第一次走回落点门不触发，走出再走进才触发）
+        /// 免疫清理兜底：逐物理帧按实际重叠校验，玩家【两端触发区都不接触】才解除免疫。
+        /// 1) 不能只依赖 OnTriggerExit2D——传送落点经 exitOffset 偏移后常在触发区之外，
+        ///    玩家落地时从未进入过落点触发器，Exit 事件永远不会来，免疫将一直残留；
+        /// 2) 也不能只看本端——落点偏移量不足以脱离目标门触发区时（跳入门体等场景），
+        ///    玩家落岸仍压着目标门，若本端免疫先解除而人还压在另一端内，
+        ///    残留的 Enter/时序竞争会形成两端互传死循环（无限传送）
         /// </summary>
         private void FixedUpdate()
         {
-            if (_immunePlayers.Count == 0 || _triggerCollider == null)
+            if (_immunePlayers.Count == 0)
             {
                 return;
             }
@@ -130,7 +132,7 @@ namespace SuperQQ.Item
             _expiredImmunity.Clear();
             foreach (PlayerController player in _immunePlayers)
             {
-                if (player == null || player.Collider == null || !_triggerCollider.IsTouching(player.Collider))
+                if (player == null || !IsPlayerTouching(player, this) && !IsPlayerTouching(player, linkedPortal))
                 {
                     _expiredImmunity.Add(player);
                 }
@@ -210,12 +212,23 @@ namespace SuperQQ.Item
 
         private void OnTriggerExit2D(Collider2D other)
         {
-            // 走出传送区后解除免疫，允许再次传送（含走回落点门触发反向传送）
+            // 走出本端且不再接触配对另一端时才解除免疫（与 FixedUpdate 兜底同口径，
+            // 防止"压在一端内又走出另一端"时免疫被提前解除形成往返互传）
             PlayerController player = other.GetComponentInParent<PlayerController>();
-            if (player != null)
+            if (player != null && !IsPlayerTouching(player, linkedPortal))
             {
                 _immunePlayers.Remove(player);
             }
+        }
+
+        /// <summary>玩家碰撞体是否正与指定门的触发区重叠</summary>
+        private static bool IsPlayerTouching(PlayerController player, Portal portal)
+        {
+            return portal != null
+                && portal._triggerCollider != null
+                && player != null
+                && player.Collider != null
+                && portal._triggerCollider.IsTouching(player.Collider);
         }
 
         /// <summary>
