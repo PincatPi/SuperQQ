@@ -259,7 +259,11 @@ namespace SuperQQ.Item
         // ==================== 配对 ====================
 
         /// <summary>
-        /// 查找场上等待配对的入口（优先同一放置者，其次最早放置的）
+        /// 查找场上等待配对的入口（优先同一放置者，其次最早放置的）。
+        /// 只统计【已确认摆放】的实例（Placed != null）——联机下 B 端会为 A 端的拖拽状态
+        /// 创建 role=Entrance/IsLinked=false 的虚影 Portal（HandleRemotePlaceState），
+        /// 若把虚影算作待配对入口，真实实体会 LinkTo 虚影，虚影销毁后配对断裂，
+        /// 表现为"对方的传送门自己用不了、道具也过不去"
         /// </summary>
         private Portal FindPendingEntrance()
         {
@@ -267,7 +271,10 @@ namespace SuperQQ.Item
             Portal fallback = null;
             foreach (Portal portal in FindObjectsOfType<Portal>())
             {
-                if (portal == this || !portal.IsEntrance || portal.IsLinked)
+                if (portal == this
+                    || portal.Placed == null   // 拖拽虚影（HandleRemotePlaceState 创建）不算合法入口
+                    || !portal.IsEntrance
+                    || portal.IsLinked)
                 {
                     continue;
                 }
@@ -438,8 +445,11 @@ namespace SuperQQ.Item
                 {
                     continue;
                 }
+                if (portal.Placed == null)   // 跳过拖拽虚影（未确认摆放，由摆放流程自己管理生命周期）
+                {
+                    continue;
+                }
                 if (ownerKey != null
-                    && portal.Placed != null
                     && !string.IsNullOrEmpty(portal.Placed.OwnerKey)
                     && portal.Placed.OwnerKey != ownerKey)
                 {
