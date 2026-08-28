@@ -762,6 +762,16 @@ MonoBehaviour:
   _showDebugHud: 0
   _hudFontSize: 48
   _hudResultDuration: 10
+--- !u!224 &173069033 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7586542419205124781, guid: 92ccdf5d2850f4e68902114b749b095d, type: 3}
+  m_PrefabInstance: {fileID: 622156924}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &173069034 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9123252112632102140, guid: 92ccdf5d2850f4e68902114b749b095d, type: 3}
+  m_PrefabInstance: {fileID: 622156924}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &184376319
 GameObject:
   m_ObjectHideFlags: 0
@@ -4599,8 +4609,8 @@ MonoBehaviour:
   - {fileID: 839135317541055250, guid: 8f5adef84209e3c40ba0bc62bc90556b, type: 3}
   - {fileID: 3034160081127589053, guid: 9fba583fc775cdd468ae8f087a384dc0, type: 3}
   offerCount: 6
-  selectionPanel: {fileID: 0}
-  slotsContainer: {fileID: 0}
+  selectionPanel: {fileID: 173069034}
+  slotsContainer: {fileID: 173069033}
   slotViewPrefab: {fileID: -935308359846703297, guid: 3c4abb3e139464c0c9d0a61d83566b86, type: 3}
   confirmCheckButtonPrefab: {fileID: 3741916390764766324, guid: 889e84104d5d343e1a94c1caf0ef96b0, type: 3}
   countdownText: {fileID: 107628561}

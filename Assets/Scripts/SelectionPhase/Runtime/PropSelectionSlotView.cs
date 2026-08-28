@@ -13,10 +13,15 @@ namespace SuperQQ.Selection.Runtime
     ///   ClaimMarker  （Image，认领者颜色标记，未认领时自动隐藏）
     ///   SizeBadge    （TextMeshProUGUI，旋转吐司尺寸角标"1x1/2x2/3x3"，
     ///                 建议锚定图标右下角；非吐司道具或尺寸未决定时自动隐藏）
+    ///   SelectedIcon （被认领后激活显示的选中图标，未认领时隐藏）
     /// 点击入口取本物体上的 Button。
     /// </summary>
     public class PropSelectionSlotView : MonoBehaviour
     {
+        [Header("认领表现")]
+        [Tooltip("槽位被认领后激活显示的图标；留空时按 SelectedIcon 子物体命名约定自动识别")]
+        [SerializeField] private GameObject selectedIcon;
+
         private Button button;
         private Image iconImage;
         private Image claimMarker;
@@ -43,6 +48,10 @@ namespace SuperQQ.Selection.Runtime
             if (sizeBadge != null)
             {
                 sizeBadge.gameObject.SetActive(false);
+            }
+            if (selectedIcon != null)
+            {
+                selectedIcon.SetActive(false);
             }
         }
 
@@ -103,7 +112,7 @@ namespace SuperQQ.Selection.Runtime
             return box != null ? box.Footprint : Vector2Int.zero;
         }
 
-        /// <summary>标记该槽位已被认领：显示认领者颜色、关闭点击</summary>
+        /// <summary>标记该槽位已被认领：显示认领者颜色标记与选中图标、关闭点击</summary>
         /// <param name="claimerColor">认领者的玩家颜色</param>
         public void SetClaimed(Color claimerColor)
         {
@@ -111,6 +120,10 @@ namespace SuperQQ.Selection.Runtime
             {
                 claimMarker.color = claimerColor;
                 claimMarker.gameObject.SetActive(true);
+            }
+            if (selectedIcon != null)
+            {
+                selectedIcon.SetActive(true);
             }
             if (button != null)
             {
@@ -150,6 +163,16 @@ namespace SuperQQ.Selection.Runtime
 
             claimMarker = FindChildComponent<Image>("ClaimMarker");
             sizeBadge = FindChildComponent<TMPro.TextMeshProUGUI>("SizeBadge");
+
+            // SelectedIcon 未手动拖拽时按命名约定兜底识别
+            if (selectedIcon == null)
+            {
+                Transform icon = FindDeepChild(transform, "SelectedIcon");
+                if (icon != null)
+                {
+                    selectedIcon = icon.gameObject;
+                }
+            }
         }
 
         /// <summary>在子层级中按名字递归查找物体并取其组件；未找到返回 null</summary>

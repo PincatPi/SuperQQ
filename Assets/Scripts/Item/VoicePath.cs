@@ -12,8 +12,10 @@ namespace SuperQQ.Item
     /// 在 PlayingPhase 阶段随本地麦克风实时分贝上下平移（仅 PlayingPhase 开麦，见 PlayingPhase/MicVolumeManager）；
     /// 其它玩家放置的浮桥在本端不响应（本端采集不到其分贝，各端只驱动自己放置的浮桥）。
     ///
-    /// 平移规则：放置者归一化音量（0~1，当前分贝占总分贝的百分比）超过 riseThreshold 时向上限升起，
-    /// 未达到时向下限落下；上下限（maxUpCells / maxDownCells，单位格）均可配置。
+    /// 平移规则：放置者归一化音量（0~1，当前分贝占总分贝的百分比）超过 riseThreshold 时沿本地 up 升至上限，
+    /// 未达到时沿本地 down 落至下限；上下限（maxUpCells / maxDownCells，单位格）均可配置。
+    /// 平移方向为自身本地坐标系的上下（摆放旋转档决定：0°=世界上 90°=世界左 180°=世界下 270°=世界右），
+    /// 故旋转 90° 摆放后平台在左右方向移动。
     ///
     /// 生命周期：OnRunPhaseStart 开始响应，OnBuildPhaseStart 停止并复位到放置位置。
     /// 移动经 Kinematic Rigidbody2D.MovePosition（沿用 PillarElevatorController 的做法），
@@ -63,6 +65,7 @@ namespace SuperQQ.Item
 
         private Rigidbody2D body;
         private Vector3 basePosition;   // 放置位置（平移基准）
+        private Vector3 baseUp = Vector3.up; // 放置时的本地 up 方向（随摆放旋转档变化：0°=世界上 90°=世界左 180°=世界下 270°=世界右）
         private bool responding;        // PlayingPhase 中且本端为放置者时置真
 
         // 联机同步：放置者端节流上报位置；其它端记录远端目标位置并平滑跟随
@@ -81,6 +84,7 @@ namespace SuperQQ.Item
         private void Awake()
         {
             basePosition = transform.position;
+            baseUp = transform.up;
             body = EnsureKinematicBody();
         }
 
@@ -95,7 +99,9 @@ namespace SuperQQ.Item
             rb.bodyType = RigidbodyType2D.Kinematic;
             rb.useFullKinematicContacts = true; // 让 kinematic 平台参与碰撞通知，玩家可站立
             rb.interpolation = RigidbodyInterpolation2D.Interpolate; // 视觉平滑，与玩家插值节奏一致
-            rb.constraints = RigidbodyConstraints2D.FreezeRotation | RigidbodyConstraints2D.FreezePositionX;
+            // 只冻结旋转：位置由 FixedUpdate 的 MovePosition 全权驱动；
+            // 平台沿本地 up 平移，旋转 90° 后移动方向是世界 X，冻结任何位置轴都会挡住移动
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
             return rb;
         }
 
@@ -131,8 +137,9 @@ namespace SuperQQ.Item
         public override void OnPlaced()
         {
             base.OnPlaced();
-            // 放置完成后的位置才是平移基准（Awake 时记录的可能是 prefab 预览位置）
+            // 放置完成后的位置与朝向才是平移基准（Awake 时记录的可能是 prefab 预览姿态）
             basePosition = transform.position;
+            baseUp = transform.up;
             // 联机远端生成/快照恢复可能发生在 PlayingPhase 进行中，补一次启动判定
             if (GameFlow.GamePhaseManager.Instance != null
                 && GameFlow.GamePhaseManager.Instance.CurrentPhaseAsset is GameFlow.PlayingPhase)
@@ -211,10 +218,11 @@ namespace SuperQQ.Item
                 MicVolumeManager mic = MicVolumeManager.Instance;
                 float volume = mic != null && mic.IsRunning ? Mathf.Clamp01(mic.Volume) : 0f;
 
-                // 阈值判定：超过阈值向上限升起，未达阈值向下限落下（麦克风未采集时音量为 0，自然下落）
-                float targetOffsetY = (volume > riseThreshold ? maxUpCells : -maxDownCells) * CellSize;
+                // 阈值判定：超过阈值沿本地 up 升起，未达阈值沿本地 down 落下（麦克风未采集时音量为 0，自然下落）
+                // 本地坐标系：旋转 90° 时"上"是世界左/右，180° 时"上"是世界下
+                float targetOffset = (volume > riseThreshold ? maxUpCells : -maxDownCells) * CellSize;
 
-                Vector2 target = new Vector2(basePosition.x, basePosition.y + targetOffsetY);
+                Vector2 target = basePosition + baseUp * targetOffset;
                 float maxStep = moveSpeedCells * CellSize * Time.fixedDeltaTime;
                 body.MovePosition(Vector2.MoveTowards(body.position, target, maxStep));
                 ReportPositionThrottled();
