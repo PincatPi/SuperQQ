@@ -223,25 +223,11 @@ namespace SuperQQ.Network
             SceneManager.LoadScene(roomSceneName);
         }
 
-        /// <summary>返回主界面：通知服务端注销 token（fire-and-forget），同时清空本地登录态并切场景</summary>
+        /// <summary>返回主界面：发登出包（fire-and-forget）、清本地登录态并切场景</summary>
         private void OnBackClicked()
         {
             Debug.Log("[NetWork] 退出登录，返回主界面");
-
-            if (_net != null)
-            {
-                // 已登录才需要通知服务端注销；token 字段由服务端以连接绑定为准，无需填写。
-                // 不等回包：登出是幂等的，即使请求失败也不阻塞返回主界面。
-                if (!string.IsNullOrEmpty(_net.LocalPlayerId))
-                {
-                    _net.Send(new LogoutRequest());
-                }
-
-                _net.LocalPlayerId = "";
-                _net.LocalNickname = "";
-                _net.Token = "";
-            }
-
+            _net?.Logout();
             SceneManager.LoadScene(homeSceneName);
         }
 

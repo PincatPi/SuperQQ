@@ -312,6 +312,21 @@ namespace SuperQQ.Network
             }
         }
 
+        /// <summary>退出登录：通知服务端注销 token（fire-and-forget，幂等），并清空本地登录态</summary>
+        public void Logout()
+        {
+            // 已登录才需要通知服务端注销；token 字段由服务端以连接绑定为准，无需填写。
+            // 不等回包：登出是幂等的，即使请求失败也不阻塞业务流程。
+            if (!string.IsNullOrEmpty(LocalPlayerId))
+            {
+                Send(new LogoutRequest());
+            }
+
+            LocalPlayerId = "";
+            LocalNickname = "";
+            Token = "";
+        }
+
         /// <summary>主动断开连接（不触发自动重连）</summary>
         public void Disconnect()
         {
