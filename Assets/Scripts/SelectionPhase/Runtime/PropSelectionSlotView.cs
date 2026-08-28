@@ -67,10 +67,9 @@ namespace SuperQQ.Selection.Runtime
         }
 
         /// <summary>
-        /// 占地格数角标：仅【消除类道具】和【旋转吐司】在图标右下角展示格数 "宽x高"，
-        /// 其余道具一律隐藏。
-        /// 旋转吐司展示本轮已决定的尺寸（联机=服务器轮次种子，单机=进入阶段时本地随机；
-        /// 各端一致且随轮变化），尺寸尚未决定的异常时序下回退 prefab 配置格数
+        /// 占地格数角标：仅【旋转吐司】在图标右下角展示本轮已决定的尺寸 "NxN"
+        /// （联机=服务器轮次种子，单机=进入阶段时本地随机；各端一致且随轮变化），
+        /// 尺寸尚未决定的异常时序下回退 prefab 配置格数；其余道具一律隐藏
         /// </summary>
         private void UpdateSizeBadge(ItemBase item)
         {
@@ -79,8 +78,7 @@ namespace SuperQQ.Selection.Runtime
                 return;
             }
 
-            bool bNeedsBadge = item is RotatingToast || item is DemolitionItemBase;
-            Vector2Int gridSize = bNeedsBadge ? ResolveGridSize(item) : Vector2Int.zero;
+            Vector2Int gridSize = item is RotatingToast ? ResolveGridSize(item) : Vector2Int.zero;
             if (gridSize.x > 0 && gridSize.y > 0)
             {
                 sizeBadge.text = $"{gridSize.x}x{gridSize.y}";

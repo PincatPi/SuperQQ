@@ -308,7 +308,23 @@ namespace SuperQQ.UI.RoundResults
                 AddPlayerRow(entries[i], i + 1, _victoryScore);
             }
 
-            // 强制 VerticalLayoutGroup 立即把 rows 摆到最终位置，再统一读取 restPosition + 起手隐藏
+            // 行先起手隐藏（Populate 内已 SetReveal(0f)，alpha=0 不可见），
+            // 布局锚点延迟到下一帧捕获：嵌套布局（容器 ContentSizeFitter 二次拟合、
+            // 父级布局对容器的再定位）常需下一帧的第二次布局才最终就位，
+            // 同帧捕获会拿到位移前的旧 restPosition——揭示期间 SetReveal 每帧把行钉在
+            // 该旧位置，动画结束布局接管才把行拉回顶部（"先偏下、结束才到顶上"）
+            if (_animation != null)
+            {
+                StopCoroutine(_animation);
+            }
+            _animation = StartCoroutine(CaptureLayoutAndRevealNextFrame(rowsContainer));
+            return true;
+        }
+
+        private System.Collections.IEnumerator CaptureLayoutAndRevealNextFrame(RectTransform rowsContainer)
+        {
+            yield return null;
+
             Canvas.ForceUpdateCanvases();
             if (rowsContainer != null)
             {
@@ -316,16 +332,15 @@ namespace SuperQQ.UI.RoundResults
             }
             for (int i = 0; i < _dynamicRows.Count; i++)
             {
-                _dynamicRows[i].CaptureLayoutPosition();
-                _dynamicRows[i].SetReveal(0f);
+                if (_dynamicRows[i] != null)
+                {
+                    _dynamicRows[i].CaptureLayoutPosition();
+                    _dynamicRows[i].SetReveal(0f);
+                }
             }
 
-            if (_animation != null)
-            {
-                StopCoroutine(_animation);
-            }
-            _animation = StartCoroutine(PlayRevealAnimation(_dynamicRows.Count, _dynamicRows));
-            return true;
+            yield return PlayRevealAnimation(_dynamicRows.Count, _dynamicRows);
+            _animation = null;
         }
 
         private void EnsureRowCount(int count)
