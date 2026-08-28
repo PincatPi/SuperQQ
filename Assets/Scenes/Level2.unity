@@ -4803,7 +4803,7 @@ Transform:
   m_GameObject: {fileID: 956895467}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.21, y: 6.7, z: -10}
+  m_LocalPosition: {x: 2.55, y: 7.34, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -7388,9 +7388,9 @@ MonoBehaviour:
   placementCamera: {fileID: 956895468}
   placementCameraPriority: 20
   cursorMarkerOffset: {x: -1, y: -1}
-  markerCornerInset: {x: 0.15, y: 0}
+  markerCornerInset: {x: 1.5, y: -1.5}
   cursorMarkerSortingOrder: 100
-  cursorMarkerWorldSize: 1
+  cursorMarkerWorldSize: 3
   cursorMarkerSortingLayer: Item
   placeStateReportRate: 10
   confirmPlaceButtonPrefab: {fileID: 3741916390764766324, guid: 889e84104d5d343e1a94c1caf0ef96b0, type: 3}
