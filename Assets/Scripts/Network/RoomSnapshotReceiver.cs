@@ -93,7 +93,7 @@ namespace SuperQQ.Network
             }
 
             // 恢复已摆放道具：断连/迟到时 ItemPlaceResult 已错过，靠快照里的 placed_items 补齐
-            RestorePlacedItems(snapshot, net.LocalPlayerId);
+            RestorePlacedItems(snapshot);
 
             // 随机事件触发翻牌：快照全量重复下发，Announcer 内部按轮去重；
             // 触发时刻以服务器时钟为锚点，两端对齐引爆，迟到/断线重连立即补爆
@@ -170,10 +170,17 @@ namespace SuperQQ.Network
         private readonly HashSet<string> _restoredItems = new();
 
         /// <summary>
-        /// 按快照恢复房间内已摆放的道具：本地还没有的（错过实时广播）就实例化并登记占用。
-        /// 只恢复【远端玩家】摆放的道具；本地玩家自己摆的本地已有实体。
+        /// 新一轮开始（进入道具选择阶段）时清空已恢复记录：
+        /// 本组件跨场景存活，不清空会导致新一轮同 itemId 同锚点的道具被误判"已恢复"而永远补不出来
         /// </summary>
-        private void RestorePlacedItems(RoomSnapshot snapshot, string localPlayerId)
+        public void ClearRestoredItems() => _restoredItems.Clear();
+
+        /// <summary>
+        /// 按快照恢复房间内已摆放的道具：本地还没有的（错过实时广播 / 阶段边界迟到被丢弃 /
+        /// 本地确认后实体异常丢失）就实例化并登记占用。本地玩家自己的道具同样补放——
+        /// 判重逻辑（占据物归属+类型 / 附着物类型）已能识别"本地已有实体"的正常情况。
+        /// </summary>
+        private void RestorePlacedItems(RoomSnapshot snapshot)
         {
             if (snapshot.PlacedItems == null || snapshot.PlacedItems.Count == 0) return;
             if (GridManager.Instance == null) return;
@@ -181,9 +188,6 @@ namespace SuperQQ.Network
             foreach (PlacedItemState placed in snapshot.PlacedItems)
             {
                 if (placed.AnchorCell == null) continue;
-
-                // 本地玩家自己摆的，本地已有实体，跳过
-                if (placed.PlayerId == localPlayerId) continue;
 
                 string key = $"{placed.ItemId}_{placed.AnchorCell.X}_{placed.AnchorCell.Y}";
                 if (_restoredItems.Contains(key)) continue;
@@ -195,14 +199,24 @@ namespace SuperQQ.Network
                     continue;
                 }
 
-                // 判重：该锚点格已被占用（实时 ItemPlaceResult 已生成过），跳过避免重复实例化。
+                // 判重：锚点格被占用时，只有确认占据物就是这条快照道具（同摆放者+同类型，
+                // 即实时 ItemPlaceResult 已生成过）才标记已恢复；被其他道具占用时不标记，
+                // 后续快照继续重试，防止把迟到广播里的真实道具永久误杀。
                 // 附着类道具不占格子，改查附着物注册表判重（同锚点可能合法存在承载物占据）
                 var anchorCell = new Vector2Int(placed.AnchorCell.X, placed.AnchorCell.Y);
                 if (prefab.RegistersOccupancy)
                 {
-                    if (GridManager.Instance.GetItemAt(anchorCell) != null)
+                    PlacedItem occupant = GridManager.Instance.GetItemAt(anchorCell);
+                    if (occupant != null)
                     {
-                        _restoredItems.Add(key);
+                        ItemBase occupantItem = occupant.GetComponent<ItemBase>();
+                        bool bSameItem = occupant.OwnerKey == placed.PlayerId
+                            && occupantItem != null
+                            && occupantItem.GetType() == prefab.GetType();
+                        if (bSameItem)
+                        {
+                            _restoredItems.Add(key);
+                        }
                         continue;
                     }
                 }
@@ -252,6 +266,7 @@ namespace SuperQQ.Network
                 ItemBase itemBase = item.GetComponent<ItemBase>();
                 if (itemBase != null)
                 {
+                    itemBase.NetItemId = placed.ItemId; // ItemLifecycleSync 实例键与所有者端一致
                     itemBase.InitPlaced(placedItem, placed.Rotation);
                     itemBase.SetMirrored(placed.Mirrored); // 镜像朝向同步（樱桃发射器/流星锤等）
                     itemBase.OnPlaced();
@@ -262,12 +277,19 @@ namespace SuperQQ.Network
             }
         }
 
-        /// <summary>按 itemId 查道具 prefab：目录数字代号优先，名字兜底</summary>
+        /// <summary>按 itemId 查道具 prefab：目录数字代号优先，名字兜底，最后走选择阶段发牌解析映射</summary>
         private static ItemBase FindItemPrefab(string itemId)
         {
-            if (ItemCatalog.Instance == null) return null;
-            ItemBase byId = ItemCatalog.Instance.Find(itemId);
-            return byId != null ? byId : ItemCatalog.Instance.FindByPrefabName(itemId);
+            if (ItemCatalog.Instance != null)
+            {
+                ItemBase byId = ItemCatalog.Instance.Find(itemId);
+                if (byId != null) return byId;
+                ItemBase byName = ItemCatalog.Instance.FindByPrefabName(itemId);
+                if (byName != null) return byName;
+            }
+            // 与实时摆放路径（PropPlacementDirector.FindPoolItem）同级兜底：
+            // 传送门等未登记 ItemCatalog 的道具，选择阶段已按 offer.ItemId 解析出 prefab
+            return SuperQQ.Selection.Runtime.PropSelectionDirector.ResolveOfferPrefab(itemId);
         }
 
         /// <summary>

@@ -20,18 +20,45 @@ namespace SuperQQ.Network
         /// <summary>由锚点格子生成道具实例ID（与摆放仲裁结果对应，各端一致）</summary>
         public static string MakeInstanceId(string itemId, Vector2Int anchorCell) => $"{itemId}_{anchorCell.x}_{anchorCell.y}";
 
+        /// <summary>
+        /// 解析道具的网络 itemId：优先读摆放路径写入的 NetItemId（各端一致）；
+        /// 未写入时回退 GameObject 名去 "(Clone)" 后缀后再经目录反查数字 ID，
+        /// 保证所有者端上报的实例键与远端登记键一致（远端实体名带 "RemotePlaced_" 等前缀）
+        /// </summary>
+        private static string ResolveItemId(ItemBase item)
+        {
+            if (item == null) return string.Empty;
+            if (!string.IsNullOrEmpty(item.NetItemId)) return item.NetItemId;
+
+            string n = item.name;
+            int cloneIdx = n.IndexOf("(Clone)", System.StringComparison.Ordinal);
+            if (cloneIdx > 0)
+            {
+                n = n.Substring(0, cloneIdx).TrimEnd();
+            }
+            if (ItemCatalog.Instance != null)
+            {
+                ItemBase prefab = ItemCatalog.Instance.FindByPrefabName(n);
+                if (prefab != null)
+                {
+                    return ItemCatalog.Instance.GetItemId(prefab) ?? n;
+                }
+            }
+            return n;
+        }
+
         /// <summary>登记一个已确认摆放的道具（本地确认与远端摆放两条路径都调用）</summary>
         public static void Register(ItemBase item)
         {
             if (item?.Placed == null) return;
-            _items[MakeInstanceId(item.name, item.Placed.AnchorCell)] = item;
+            _items[MakeInstanceId(ResolveItemId(item), item.Placed.AnchorCell)] = item;
         }
 
         /// <summary>注销（道具自身销毁路径调用，幂等）</summary>
         public static void Unregister(ItemBase item)
         {
             if (item?.Placed == null) return;
-            string id = MakeInstanceId(item.name, item.Placed.AnchorCell);
+            string id = MakeInstanceId(ResolveItemId(item), item.Placed.AnchorCell);
             if (_items.TryGetValue(id, out ItemBase existing) && existing == item)
             {
                 _items.Remove(id);
@@ -42,13 +69,13 @@ namespace SuperQQ.Network
         public static void ReportTriggered(ItemBase item)
         {
             if (item?.Placed == null) return;
-            NetEventSync.ReportItemState(MakeInstanceId(item.name, item.Placed.AnchorCell), ItemStateType.Triggered);
+            NetEventSync.ReportItemState(MakeInstanceId(ResolveItemId(item), item.Placed.AnchorCell), ItemStateType.Triggered);
         }
 
         public static void ReportDestroyed(ItemBase item)
         {
             if (item?.Placed == null) return;
-            NetEventSync.ReportItemState(MakeInstanceId(item.name, item.Placed.AnchorCell), ItemStateType.Destroyed);
+            NetEventSync.ReportItemState(MakeInstanceId(ResolveItemId(item), item.Placed.AnchorCell), ItemStateType.Destroyed);
         }
 
         /// <summary>远端广播到达：对本地对应实例应用状态（非所有者端的表现同步）</summary>

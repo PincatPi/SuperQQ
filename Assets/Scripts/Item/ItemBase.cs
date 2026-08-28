@@ -42,6 +42,13 @@ namespace SuperQQ.Item
         /// <summary>放置信息（锚点格子、旋转、放置者），由 GridManager.Place 注入</summary>
         public PlacedItem Placed { get; private set; }
 
+        /// <summary>
+        /// 网络道具ID（与服务器发牌代号一致），由各摆放路径在实例化后写入
+        /// （本地确认/远端生成/快照恢复/远端炸弹）。ItemLifecycleSync 以此作为实例键，
+        /// 不依赖 GameObject 名（各端命名规则不同：本地 "(Clone)"、远端 "RemotePlaced_..."）
+        /// </summary>
+        public string NetItemId { get; set; }
+
         /// <summary>当前朝向档位（0~3，每档90度）</summary>
         public int Facing { get; private set; }
 
