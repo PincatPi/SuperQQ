@@ -47,6 +47,40 @@ namespace SuperQQ.Network
             return n;
         }
 
+        /// <summary>
+        /// 求道具的 prefab 名（ItemPositionSync 协议的 item_id）：优先取 Placed.Def.Prefab 名（各端一致），
+        /// 回退 GameObject 名去 "(Clone)" 后缀（远端实体名带 "RemotePlaced_" 前缀时无法可靠解析，故 Def 优先）
+        /// </summary>
+        public static string ResolvePrefabName(ItemBase item)
+        {
+            if (item == null) return string.Empty;
+            if (item.Placed?.Def != null && item.Placed.Def.Prefab != null)
+            {
+                return item.Placed.Def.Prefab.name;
+            }
+            string n = item.name;
+            int cloneIdx = n.IndexOf("(Clone)", System.StringComparison.Ordinal);
+            return cloneIdx > 0 ? n.Substring(0, cloneIdx).TrimEnd() : n;
+        }
+
+        /// <summary>
+        /// 按放置者 + prefab 名查找场上已登记道具（ItemPositionSync 广播按 player_id + item_id 寻址）；
+        /// 未命中或已销毁返回 null
+        /// </summary>
+        public static ItemBase FindByOwnerAndPrefab(string ownerKey, string prefabName)
+        {
+            if (string.IsNullOrEmpty(ownerKey) || string.IsNullOrEmpty(prefabName)) return null;
+            foreach (ItemBase item in _items.Values)
+            {
+                if (item == null || item.Placed == null) continue;
+                if (item.Placed.OwnerKey == ownerKey && ResolvePrefabName(item) == prefabName)
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
+
         /// <summary>登记一个已确认摆放的道具（本地确认与远端摆放两条路径都调用）</summary>
         public static void Register(ItemBase item)
         {

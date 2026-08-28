@@ -16,6 +16,8 @@ namespace SuperQQ.Player
         [SerializeField, Min(0f)] private float behindDistance = 0.7f;
         [Tooltip("换侧平滑时长（秒）")]
         [SerializeField, Min(0.01f)] private float flipDuration = 0.25f;
+        [Tooltip("反转锚点所在侧：开启后朝右时锚点在 +X 侧，朝左时在 -X 侧")]
+        [SerializeField] private bool invertSide;
 
         private PlayerController player;
         private float lastFacingSign = 1f;
@@ -58,10 +60,11 @@ namespace SuperQQ.Player
             return player == null || player.FacingDir >= 0f ? 1f : -1f;
         }
 
-        /// <summary>目标本地 X：始终落在玩家面朝的反方向（身后）</summary>
+        /// <summary>目标本地 X：默认落在玩家面朝的反方向（身后）；invertSide 开启时取反</summary>
         private float TargetLocalX()
         {
-            return -lastFacingSign * behindDistance;
+            float x = -lastFacingSign * behindDistance;
+            return invertSide ? -x : x;
         }
     }
 }

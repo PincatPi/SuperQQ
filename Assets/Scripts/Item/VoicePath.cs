@@ -18,6 +18,10 @@ namespace SuperQQ.Item
     /// 生命周期：OnRunPhaseStart 开始响应，OnBuildPhaseStart 停止并复位到放置位置。
     /// 移动经 Kinematic Rigidbody2D.MovePosition（沿用 PillarElevatorController 的做法），
     /// 保证站在桥上的玩家被物理系统正确托举（transform 直写会导致穿模掉落）。
+    ///
+    /// 联机同步：放置者端按 positionReportRate 节流上报位置（NetEventSync.ReportItemPosition
+    /// → ItemPositionSync，服务器透传 ItemPositionSyncBroadcast），其它端按广播位置平滑跟随；
+    /// 阶段切换复位由各端本地阶段钩子完成，不走网络。
     /// </summary>
     public class VoicePath : ItemBase
     {
@@ -34,6 +38,14 @@ namespace SuperQQ.Item
         [Header("跟随")]
         [Tooltip("朝目标高度移动的速度（格/秒），越大越跟手")]
         [SerializeField, Min(0.1f)] private float moveSpeedCells = 4f;
+
+        [Header("联机同步")]
+        [Tooltip("位置上报频率（次/秒）：放置者端按此频率把浮桥位置经服务器广播给其它端")]
+        [SerializeField, Range(5f, 30f)] private float positionReportRate = 10f;
+        [Tooltip("远端跟随平滑速度：其它端收到位置广播后向目标位置的收敛速度（越大越跟手）")]
+        [SerializeField, Min(1f)] private float remoteFollowSpeed = 12f;
+        [Tooltip("远端偏差超过该距离（格）直接瞬移（防长时间追不上）")]
+        [SerializeField, Min(0.5f)] private float remoteTeleportCells = 5f;
 
         [Header("调试")]
         [Tooltip("忽略放置者校验，直接响应本端麦克风（单机测试场景用）")]
@@ -52,6 +64,17 @@ namespace SuperQQ.Item
         private Rigidbody2D body;
         private Vector3 basePosition;   // 放置位置（平移基准）
         private bool responding;        // PlayingPhase 中且本端为放置者时置真
+
+        // 联机同步：放置者端节流上报位置；其它端记录远端目标位置并平滑跟随
+        private float reportTimer;
+        private bool hasRemoteTarget;
+        private Vector2 remoteTarget;
+
+        /// <summary>是否处于联机房间中（联机下放置者端上报位置、其它端跟随远端位置）</summary>
+        private static bool BNetRoom =>
+            NetworkManager.Instance != null
+            && NetworkManager.Instance.IsConnected
+            && !string.IsNullOrEmpty(NetworkManager.Instance.RoomId);
 
         private float CellSize => GridManager.Instance != null ? GridManager.Instance.PublicCellSize : 0.5f;
 
@@ -124,10 +147,12 @@ namespace SuperQQ.Item
             responding = IsPlacedByLocalPlayer();
         }
 
-        /// <summary>建造阶段开始：停止响应并复位到放置位置</summary>
+        /// <summary>建造阶段开始：停止响应并复位到放置位置（各端本地复位，无需网络同步）</summary>
         public override void OnBuildPhaseStart()
         {
             responding = false;
+            hasRemoteTarget = false;
+            reportTimer = 0f;
             if (body != null)
             {
                 body.position = basePosition;
@@ -135,27 +160,81 @@ namespace SuperQQ.Item
             transform.position = basePosition;
         }
 
+        // ==================== 联机位置同步 ====================
+
+        /// <summary>
+        /// 远端位置广播到达（由 NetEventSync 按 player_id + item_id 路由，仅非放置者端收到）：
+        /// 记录远端目标位置，FixedUpdate 中平滑跟随
+        /// </summary>
+        public void ApplyRemotePosition(Vector2 position)
+        {
+            if (responding)
+            {
+                return; // 放置者端由本地麦克风驱动，不应用远端位置
+            }
+            remoteTarget = position;
+            hasRemoteTarget = true;
+        }
+
+        /// <summary>放置者端：节流上报当前位置（ItemPositionSync，服务器透传给其它端），离线为空操作</summary>
+        private void ReportPositionThrottled()
+        {
+            if (!BNetRoom)
+            {
+                return;
+            }
+            reportTimer += Time.fixedDeltaTime;
+            if (reportTimer < 1f / positionReportRate)
+            {
+                return;
+            }
+            reportTimer = 0f;
+            NetEventSync.ReportItemPosition(
+                ItemLifecycleSync.ResolvePrefabName(this), body.position, Facing, Mirrored);
+        }
+
         // ==================== 声控平移 ====================
 
         // FixedUpdate 步进：Rigidbody2D.MovePosition 必须在物理帧调用，才能被物理系统识别为"平台移动"并托举玩家
-        // 仅在 responding（PlayingPhase 且本端为放置者）时驱动移动——
-        // 摆放阶段的幽灵拖拽走 transform，若此时把刚体拉回基准位，道具会自己漂移
+        // 放置者端（responding）由本地麦克风驱动并节流上报位置；其它端平滑跟随远端位置；
+        // 非 PlayingPhase（摆放阶段等）完全不驱动移动——摆放阶段的幽灵拖拽走 transform，
+        // 若此时把刚体拉回基准位，道具会自己漂移
         private void FixedUpdate()
         {
-            if (!responding || body == null)
+            if (body == null)
             {
                 return;
             }
 
-            MicVolumeManager mic = MicVolumeManager.Instance;
-            float volume = mic != null && mic.IsRunning ? Mathf.Clamp01(mic.Volume) : 0f;
+            if (responding)
+            {
+                MicVolumeManager mic = MicVolumeManager.Instance;
+                float volume = mic != null && mic.IsRunning ? Mathf.Clamp01(mic.Volume) : 0f;
 
-            // 阈值判定：超过阈值向上限升起，未达阈值向下限落下（麦克风未采集时音量为 0，自然下落）
-            float targetOffsetY = (volume > riseThreshold ? maxUpCells : -maxDownCells) * CellSize;
+                // 阈值判定：超过阈值向上限升起，未达阈值向下限落下（麦克风未采集时音量为 0，自然下落）
+                float targetOffsetY = (volume > riseThreshold ? maxUpCells : -maxDownCells) * CellSize;
 
-            Vector2 target = new Vector2(basePosition.x, basePosition.y + targetOffsetY);
-            float maxStep = moveSpeedCells * CellSize * Time.fixedDeltaTime;
-            body.MovePosition(Vector2.MoveTowards(body.position, target, maxStep));
+                Vector2 target = new Vector2(basePosition.x, basePosition.y + targetOffsetY);
+                float maxStep = moveSpeedCells * CellSize * Time.fixedDeltaTime;
+                body.MovePosition(Vector2.MoveTowards(body.position, target, maxStep));
+                ReportPositionThrottled();
+                return;
+            }
+
+            // 非放置者端：跟随放置者端广播的位置（指数平滑收敛；偏差过大直接瞬移）
+            if (hasRemoteTarget)
+            {
+                Vector2 current = body.position;
+                if (Vector2.Distance(current, remoteTarget) > remoteTeleportCells * CellSize)
+                {
+                    body.MovePosition(remoteTarget);
+                }
+                else
+                {
+                    float t = 1f - Mathf.Exp(-remoteFollowSpeed * Time.fixedDeltaTime);
+                    body.MovePosition(Vector2.Lerp(current, remoteTarget, t));
+                }
+            }
         }
     }
 }

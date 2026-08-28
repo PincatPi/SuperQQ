@@ -223,74 +223,83 @@ namespace Minigame.Room.V1 {
             "Cgdyb29tX2lkGAEgASgJEhEKCXBsYXllcl9pZBgCIAEoCRIYChBpdGVtX2lu",
             "c3RhbmNlX2lkGAMgASgJEjMKCnN0YXRlX3R5cGUYBCABKA4yHy5taW5pZ2Ft",
             "ZS5yb29tLnYxLkl0ZW1TdGF0ZVR5cGUSFgoOc2VydmVyX3RpbWVfbXMYBSAB",
-            "KAMifQoNVHJhcEtpbGxFdmVudBIvCgV0cmFjZRgBIAEoCzIgLm1pbmlnYW1l",
-            "LmNvbW1vbi52MS5UcmFjZUNvbnRleHQSDwoHcm9vbV9pZBgCIAEoCRIRCglw",
-            "bGF5ZXJfaWQYAyABKAkSFwoPb3duZXJfcGxheWVyX2lkGAQgASgJImgKEVRy",
-            "YXBLaWxsQnJvYWRjYXN0Eg8KB3Jvb21faWQYASABKAkSEQoJcGxheWVyX2lk",
-            "GAIgASgJEhcKD293bmVyX3BsYXllcl9pZBgDIAEoCRIWCg5zZXJ2ZXJfdGlt",
-            "ZV9tcxgEIAEoAyKRAQoKR21TZXRQaGFzZRIvCgV0cmFjZRgBIAEoCzIgLm1p",
-            "bmlnYW1lLmNvbW1vbi52MS5UcmFjZUNvbnRleHQSDwoHcm9vbV9pZBgCIAEo",
-            "CRIRCglwbGF5ZXJfaWQYAyABKAkSLgoFcGhhc2UYBCABKA4yHy5taW5pZ2Ft",
-            "ZS5yb29tLnYxLkdhbWVQaGFzZUtpbmQihgEKEEdtQ29tbWFuZFJlcXVlc3QS",
-            "LwoFdHJhY2UYASABKAsyIC5taW5pZ2FtZS5jb21tb24udjEuVHJhY2VDb250",
-            "ZXh0Eg8KB3Jvb21faWQYAiABKAkSEQoJcGxheWVyX2lkGAMgASgJEg8KB2Nv",
-            "bW1hbmQYBCABKAkSDAoEYXJncxgFIAMoCSJYChFHbUNvbW1hbmRSZXNwb25z",
-            "ZRIyCgZzdGF0dXMYASABKAsyIi5taW5pZ2FtZS5jb21tb24udjEuUmVzcG9u",
-            "c2VTdGF0dXMSDwoHbWVzc2FnZRgCIAEoCSJxCg1HbUNvbW1hbmRQdXNoEg8K",
-            "B3Jvb21faWQYASABKAkSDwoHY29tbWFuZBgCIAEoCRIMCgRhcmdzGAMgAygJ",
-            "EhgKEHRhcmdldF9wbGF5ZXJfaWQYBCABKAkSFgoOc2VydmVyX3RpbWVfbXMY",
-            "BSABKAMirQEKEVJhbmRvbUV2ZW50UGFyYW1zEg0KBWNvdW50GAEgASgFEjQK",
-            "EWluaXRpYWxfcG9zaXRpb25zGAIgAygLMhkubWluaWdhbWUucm9vbS52MS5W",
-            "ZWN0b3IyEjQKEWN1cnJlbnRfcG9zaXRpb25zGAMgAygLMhkubWluaWdhbWUu",
-            "cm9vbS52MS5WZWN0b3IyEg4KBmFuZ2xlcxgEIAMoAhINCgVzcGVlZBgFIAEo",
-            "AiImChJSYW5kb21FdmVudFBhcmFtczISEAoIdW5mcmVlemUYASABKAgiewoT",
-            "UmVwb3J0RXZlbnQzU3VidHlwZRIvCgV0cmFjZRgBIAEoCzIgLm1pbmlnYW1l",
-            "LmNvbW1vbi52MS5UcmFjZUNvbnRleHQSDwoHcm9vbV9pZBgCIAEoCRIRCglw",
-            "bGF5ZXJfaWQYAyABKAkSDwoHc3VidHlwZRgEIAEoBSJtChZSZXBvcnRFdmVu",
-            "dDNMb3VkUGxheWVyEi8KBXRyYWNlGAEgASgLMiAubWluaWdhbWUuY29tbW9u",
+            "KAMiyQEKEEl0ZW1Qb3NpdGlvblN5bmMSLwoFdHJhY2UYASABKAsyIC5taW5p",
+            "Z2FtZS5jb21tb24udjEuVHJhY2VDb250ZXh0Eg8KB3Jvb21faWQYAiABKAkS",
+            "EQoJcGxheWVyX2lkGAMgASgJEg8KB2l0ZW1faWQYBCABKAkSKwoIcG9zaXRp",
+            "b24YBSABKAsyGS5taW5pZ2FtZS5yb29tLnYxLlZlY3RvcjISEAoIcm90YXRp",
+            "b24YBiABKAUSEAoIbWlycm9yZWQYByABKAgiuQEKGUl0ZW1Qb3NpdGlvblN5",
+            "bmNCcm9hZGNhc3QSDwoHcm9vbV9pZBgBIAEoCRIRCglwbGF5ZXJfaWQYAiAB",
+            "KAkSDwoHaXRlbV9pZBgDIAEoCRIrCghwb3NpdGlvbhgEIAEoCzIZLm1pbmln",
+            "YW1lLnJvb20udjEuVmVjdG9yMhIQCghyb3RhdGlvbhgFIAEoBRIQCghtaXJy",
+            "b3JlZBgGIAEoCBIWCg5zZXJ2ZXJfdGltZV9tcxgHIAEoAyJ9Cg1UcmFwS2ls",
+            "bEV2ZW50Ei8KBXRyYWNlGAEgASgLMiAubWluaWdhbWUuY29tbW9uLnYxLlRy",
+            "YWNlQ29udGV4dBIPCgdyb29tX2lkGAIgASgJEhEKCXBsYXllcl9pZBgDIAEo",
+            "CRIXCg9vd25lcl9wbGF5ZXJfaWQYBCABKAkiaAoRVHJhcEtpbGxCcm9hZGNh",
+            "c3QSDwoHcm9vbV9pZBgBIAEoCRIRCglwbGF5ZXJfaWQYAiABKAkSFwoPb3du",
+            "ZXJfcGxheWVyX2lkGAMgASgJEhYKDnNlcnZlcl90aW1lX21zGAQgASgDIpEB",
+            "CgpHbVNldFBoYXNlEi8KBXRyYWNlGAEgASgLMiAubWluaWdhbWUuY29tbW9u",
             "LnYxLlRyYWNlQ29udGV4dBIPCgdyb29tX2lkGAIgASgJEhEKCXBsYXllcl9p",
-            "ZBgDIAEoCSJ2ChFFdmVudDNQbGF5ZXJTdGF0ZRIPCgdzdWJ0eXBlGAEgASgF",
-            "EhQKDHJlbWFpbmluZ19tcxgCIAEoAxIUCgxkZXRlY3Rfdm9pY2UYAyABKAgS",
-            "DgoGc3RyaWtlGAQgASgIEhQKDGxvdWRfcGxheWVycxgFIAMoCSrhAQoNR2Ft",
-            "ZVBoYXNlS2luZBIfChtHQU1FX1BIQVNFX0tJTkRfVU5TUEVDSUZJRUQQABIi",
-            "Ch5HQU1FX1BIQVNFX0tJTkRfUFJPUF9TRUxFQ1RJT04QARIiCh5HQU1FX1BI",
-            "QVNFX0tJTkRfUFJPUF9QTEFDRU1FTlQQAhIbChdHQU1FX1BIQVNFX0tJTkRf",
-            "UExBWUlORxADEiQKIEdBTUVfUEhBU0VfS0lORF9ST1VORF9TRVRUTEVNRU5U",
-            "EAQSJAogR0FNRV9QSEFTRV9LSU5EX0ZJTkFMX1NFVFRMRU1FTlQQBSpoCg1Q",
-            "bGF5ZXJPdXRUeXBlEh8KG1BMQVlFUl9PVVRfVFlQRV9VTlNQRUNJRklFRBAA",
-            "EhwKGFBMQVlFUl9PVVRfVFlQRV9GSU5JU0hFRBABEhgKFFBMQVlFUl9PVVRf",
-            "VFlQRV9ERUFEEAIqpAEKD1BsYXllckV2ZW50VHlwZRIhCh1QTEFZRVJfRVZF",
-            "TlRfVFlQRV9VTlNQRUNJRklFRBAAEhoKFlBMQVlFUl9FVkVOVF9UWVBFX0pV",
-            "TVAQARIZChVQTEFZRVJfRVZFTlRfVFlQRV9ISVQQAhIcChhQTEFZRVJfRVZF",
-            "TlRfVFlQRV9QSUNLVVAQAxIZChVQTEFZRVJfRVZFTlRfVFlQRV9ESUUQBCpu",
-            "Cg1JdGVtU3RhdGVUeXBlEh8KG0lURU1fU1RBVEVfVFlQRV9VTlNQRUNJRklF",
-            "RBAAEh0KGUlURU1fU1RBVEVfVFlQRV9UUklHR0VSRUQQARIdChlJVEVNX1NU",
-            "QVRFX1RZUEVfREVTVFJPWUVEEAIyyQgKC1Jvb21TZXJ2aWNlElcKCkNyZWF0",
-            "ZVJvb20SIy5taW5pZ2FtZS5yb29tLnYxLkNyZWF0ZVJvb21SZXF1ZXN0GiQu",
-            "bWluaWdhbWUucm9vbS52MS5DcmVhdGVSb29tUmVzcG9uc2USUQoISm9pblJv",
-            "b20SIS5taW5pZ2FtZS5yb29tLnYxLkpvaW5Sb29tUmVxdWVzdBoiLm1pbmln",
-            "YW1lLnJvb20udjEuSm9pblJvb21SZXNwb25zZRJOCgdHZXRSb29tEiAubWlu",
-            "aWdhbWUucm9vbS52MS5HZXRSb29tUmVxdWVzdBohLm1pbmlnYW1lLnJvb20u",
-            "djEuR2V0Um9vbVJlc3BvbnNlElEKCFNldFJlYWR5EiEubWluaWdhbWUucm9v",
-            "bS52MS5TZXRSZWFkeVJlcXVlc3QaIi5taW5pZ2FtZS5yb29tLnYxLlNldFJl",
-            "YWR5UmVzcG9uc2USXQoMU2V0Um9vbUxldmVsEiUubWluaWdhbWUucm9vbS52",
-            "MS5TZXRSb29tTGV2ZWxSZXF1ZXN0GiYubWluaWdhbWUucm9vbS52MS5TZXRS",
-            "b29tTGV2ZWxSZXNwb25zZRJUCglWb3RlTGV2ZWwSIi5taW5pZ2FtZS5yb29t",
-            "LnYxLlZvdGVMZXZlbFJlcXVlc3QaIy5taW5pZ2FtZS5yb29tLnYxLlZvdGVM",
-            "ZXZlbFJlc3BvbnNlElQKCVN0YXJ0R2FtZRIiLm1pbmlnYW1lLnJvb20udjEu",
-            "U3RhcnRHYW1lUmVxdWVzdBojLm1pbmlnYW1lLnJvb20udjEuU3RhcnRHYW1l",
-            "UmVzcG9uc2USbAoRU3VibWl0UGxheWVySW5wdXQSKi5taW5pZ2FtZS5yb29t",
-            "LnYxLlN1Ym1pdFBsYXllcklucHV0UmVxdWVzdBorLm1pbmlnYW1lLnJvb20u",
-            "djEuU3VibWl0UGxheWVySW5wdXRSZXNwb25zZRJmCg9TeW5jUGxheWVyU3Rh",
-            "dGUSKC5taW5pZ2FtZS5yb29tLnYxLlN5bmNQbGF5ZXJTdGF0ZVJlcXVlc3Qa",
-            "KS5taW5pZ2FtZS5yb29tLnYxLlN5bmNQbGF5ZXJTdGF0ZVJlc3BvbnNlElkK",
-            "DVN1YnNjcmliZVJvb20SJi5taW5pZ2FtZS5yb29tLnYxLlN1YnNjcmliZVJv",
-            "b21SZXF1ZXN0Gh4ubWluaWdhbWUucm9vbS52MS5Sb29tU25hcHNob3QwARJY",
-            "Cg9TZW5kQ2xhaW1JbnRlbnQSIS5taW5pZ2FtZS5yb29tLnYxLkl0ZW1DbGFp",
-            "bUludGVudBoiLm1pbmlnYW1lLmNvbW1vbi52MS5SZXNwb25zZVN0YXR1cxJV",
-            "CgxDb25maXJtQ2xhaW0SIi5taW5pZ2FtZS5yb29tLnYxLkl0ZW1DbGFpbUNv",
-            "bmZpcm0aIS5taW5pZ2FtZS5yb29tLnYxLkl0ZW1DbGFpbVJlc3VsdEIgWh5t",
-            "aW5pZ2FtZS9nZW4vZ28vcm9vbS92MTtyb29tdjFiBnByb3RvMw=="));
+            "ZBgDIAEoCRIuCgVwaGFzZRgEIAEoDjIfLm1pbmlnYW1lLnJvb20udjEuR2Ft",
+            "ZVBoYXNlS2luZCKGAQoQR21Db21tYW5kUmVxdWVzdBIvCgV0cmFjZRgBIAEo",
+            "CzIgLm1pbmlnYW1lLmNvbW1vbi52MS5UcmFjZUNvbnRleHQSDwoHcm9vbV9p",
+            "ZBgCIAEoCRIRCglwbGF5ZXJfaWQYAyABKAkSDwoHY29tbWFuZBgEIAEoCRIM",
+            "CgRhcmdzGAUgAygJIlgKEUdtQ29tbWFuZFJlc3BvbnNlEjIKBnN0YXR1cxgB",
+            "IAEoCzIiLm1pbmlnYW1lLmNvbW1vbi52MS5SZXNwb25zZVN0YXR1cxIPCgdt",
+            "ZXNzYWdlGAIgASgJInEKDUdtQ29tbWFuZFB1c2gSDwoHcm9vbV9pZBgBIAEo",
+            "CRIPCgdjb21tYW5kGAIgASgJEgwKBGFyZ3MYAyADKAkSGAoQdGFyZ2V0X3Bs",
+            "YXllcl9pZBgEIAEoCRIWCg5zZXJ2ZXJfdGltZV9tcxgFIAEoAyKtAQoRUmFu",
+            "ZG9tRXZlbnRQYXJhbXMSDQoFY291bnQYASABKAUSNAoRaW5pdGlhbF9wb3Np",
+            "dGlvbnMYAiADKAsyGS5taW5pZ2FtZS5yb29tLnYxLlZlY3RvcjISNAoRY3Vy",
+            "cmVudF9wb3NpdGlvbnMYAyADKAsyGS5taW5pZ2FtZS5yb29tLnYxLlZlY3Rv",
+            "cjISDgoGYW5nbGVzGAQgAygCEg0KBXNwZWVkGAUgASgCIiYKElJhbmRvbUV2",
+            "ZW50UGFyYW1zMhIQCgh1bmZyZWV6ZRgBIAEoCCJ7ChNSZXBvcnRFdmVudDNT",
+            "dWJ0eXBlEi8KBXRyYWNlGAEgASgLMiAubWluaWdhbWUuY29tbW9uLnYxLlRy",
+            "YWNlQ29udGV4dBIPCgdyb29tX2lkGAIgASgJEhEKCXBsYXllcl9pZBgDIAEo",
+            "CRIPCgdzdWJ0eXBlGAQgASgFIm0KFlJlcG9ydEV2ZW50M0xvdWRQbGF5ZXIS",
+            "LwoFdHJhY2UYASABKAsyIC5taW5pZ2FtZS5jb21tb24udjEuVHJhY2VDb250",
+            "ZXh0Eg8KB3Jvb21faWQYAiABKAkSEQoJcGxheWVyX2lkGAMgASgJInYKEUV2",
+            "ZW50M1BsYXllclN0YXRlEg8KB3N1YnR5cGUYASABKAUSFAoMcmVtYWluaW5n",
+            "X21zGAIgASgDEhQKDGRldGVjdF92b2ljZRgDIAEoCBIOCgZzdHJpa2UYBCAB",
+            "KAgSFAoMbG91ZF9wbGF5ZXJzGAUgAygJKuEBCg1HYW1lUGhhc2VLaW5kEh8K",
+            "G0dBTUVfUEhBU0VfS0lORF9VTlNQRUNJRklFRBAAEiIKHkdBTUVfUEhBU0Vf",
+            "S0lORF9QUk9QX1NFTEVDVElPThABEiIKHkdBTUVfUEhBU0VfS0lORF9QUk9Q",
+            "X1BMQUNFTUVOVBACEhsKF0dBTUVfUEhBU0VfS0lORF9QTEFZSU5HEAMSJAog",
+            "R0FNRV9QSEFTRV9LSU5EX1JPVU5EX1NFVFRMRU1FTlQQBBIkCiBHQU1FX1BI",
+            "QVNFX0tJTkRfRklOQUxfU0VUVExFTUVOVBAFKmgKDVBsYXllck91dFR5cGUS",
+            "HwobUExBWUVSX09VVF9UWVBFX1VOU1BFQ0lGSUVEEAASHAoYUExBWUVSX09V",
+            "VF9UWVBFX0ZJTklTSEVEEAESGAoUUExBWUVSX09VVF9UWVBFX0RFQUQQAiqk",
+            "AQoPUGxheWVyRXZlbnRUeXBlEiEKHVBMQVlFUl9FVkVOVF9UWVBFX1VOU1BF",
+            "Q0lGSUVEEAASGgoWUExBWUVSX0VWRU5UX1RZUEVfSlVNUBABEhkKFVBMQVlF",
+            "Ul9FVkVOVF9UWVBFX0hJVBACEhwKGFBMQVlFUl9FVkVOVF9UWVBFX1BJQ0tV",
+            "UBADEhkKFVBMQVlFUl9FVkVOVF9UWVBFX0RJRRAEKm4KDUl0ZW1TdGF0ZVR5",
+            "cGUSHwobSVRFTV9TVEFURV9UWVBFX1VOU1BFQ0lGSUVEEAASHQoZSVRFTV9T",
+            "VEFURV9UWVBFX1RSSUdHRVJFRBABEh0KGUlURU1fU1RBVEVfVFlQRV9ERVNU",
+            "Uk9ZRUQQAjLJCAoLUm9vbVNlcnZpY2USVwoKQ3JlYXRlUm9vbRIjLm1pbmln",
+            "YW1lLnJvb20udjEuQ3JlYXRlUm9vbVJlcXVlc3QaJC5taW5pZ2FtZS5yb29t",
+            "LnYxLkNyZWF0ZVJvb21SZXNwb25zZRJRCghKb2luUm9vbRIhLm1pbmlnYW1l",
+            "LnJvb20udjEuSm9pblJvb21SZXF1ZXN0GiIubWluaWdhbWUucm9vbS52MS5K",
+            "b2luUm9vbVJlc3BvbnNlEk4KB0dldFJvb20SIC5taW5pZ2FtZS5yb29tLnYx",
+            "LkdldFJvb21SZXF1ZXN0GiEubWluaWdhbWUucm9vbS52MS5HZXRSb29tUmVz",
+            "cG9uc2USUQoIU2V0UmVhZHkSIS5taW5pZ2FtZS5yb29tLnYxLlNldFJlYWR5",
+            "UmVxdWVzdBoiLm1pbmlnYW1lLnJvb20udjEuU2V0UmVhZHlSZXNwb25zZRJd",
+            "CgxTZXRSb29tTGV2ZWwSJS5taW5pZ2FtZS5yb29tLnYxLlNldFJvb21MZXZl",
+            "bFJlcXVlc3QaJi5taW5pZ2FtZS5yb29tLnYxLlNldFJvb21MZXZlbFJlc3Bv",
+            "bnNlElQKCVZvdGVMZXZlbBIiLm1pbmlnYW1lLnJvb20udjEuVm90ZUxldmVs",
+            "UmVxdWVzdBojLm1pbmlnYW1lLnJvb20udjEuVm90ZUxldmVsUmVzcG9uc2US",
+            "VAoJU3RhcnRHYW1lEiIubWluaWdhbWUucm9vbS52MS5TdGFydEdhbWVSZXF1",
+            "ZXN0GiMubWluaWdhbWUucm9vbS52MS5TdGFydEdhbWVSZXNwb25zZRJsChFT",
+            "dWJtaXRQbGF5ZXJJbnB1dBIqLm1pbmlnYW1lLnJvb20udjEuU3VibWl0UGxh",
+            "eWVySW5wdXRSZXF1ZXN0GisubWluaWdhbWUucm9vbS52MS5TdWJtaXRQbGF5",
+            "ZXJJbnB1dFJlc3BvbnNlEmYKD1N5bmNQbGF5ZXJTdGF0ZRIoLm1pbmlnYW1l",
+            "LnJvb20udjEuU3luY1BsYXllclN0YXRlUmVxdWVzdBopLm1pbmlnYW1lLnJv",
+            "b20udjEuU3luY1BsYXllclN0YXRlUmVzcG9uc2USWQoNU3Vic2NyaWJlUm9v",
+            "bRImLm1pbmlnYW1lLnJvb20udjEuU3Vic2NyaWJlUm9vbVJlcXVlc3QaHi5t",
+            "aW5pZ2FtZS5yb29tLnYxLlJvb21TbmFwc2hvdDABElgKD1NlbmRDbGFpbUlu",
+            "dGVudBIhLm1pbmlnYW1lLnJvb20udjEuSXRlbUNsYWltSW50ZW50GiIubWlu",
+            "aWdhbWUuY29tbW9uLnYxLlJlc3BvbnNlU3RhdHVzElUKDENvbmZpcm1DbGFp",
+            "bRIiLm1pbmlnYW1lLnJvb20udjEuSXRlbUNsYWltQ29uZmlybRohLm1pbmln",
+            "YW1lLnJvb20udjEuSXRlbUNsYWltUmVzdWx0QiBaHm1pbmlnYW1lL2dlbi9n",
+            "by9yb29tL3YxO3Jvb212MWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Minigame.Common.V1.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Minigame.Room.V1.GamePhaseKind), typeof(global::Minigame.Room.V1.PlayerOutType), typeof(global::Minigame.Room.V1.PlayerEventType), typeof(global::Minigame.Room.V1.ItemStateType), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -350,6 +359,8 @@ namespace Minigame.Room.V1 {
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.PickupClaimBroadcast), global::Minigame.Room.V1.PickupClaimBroadcast.Parser, new[]{ "RoomId", "PlayerId", "PickupId", "ServerTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.ItemStateEvent), global::Minigame.Room.V1.ItemStateEvent.Parser, new[]{ "Trace", "RoomId", "PlayerId", "ItemInstanceId", "StateType" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.ItemStateEventBroadcast), global::Minigame.Room.V1.ItemStateEventBroadcast.Parser, new[]{ "RoomId", "PlayerId", "ItemInstanceId", "StateType", "ServerTimeMs" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.ItemPositionSync), global::Minigame.Room.V1.ItemPositionSync.Parser, new[]{ "Trace", "RoomId", "PlayerId", "ItemId", "Position", "Rotation", "Mirrored" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.ItemPositionSyncBroadcast), global::Minigame.Room.V1.ItemPositionSyncBroadcast.Parser, new[]{ "RoomId", "PlayerId", "ItemId", "Position", "Rotation", "Mirrored", "ServerTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.TrapKillEvent), global::Minigame.Room.V1.TrapKillEvent.Parser, new[]{ "Trace", "RoomId", "PlayerId", "OwnerPlayerId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.TrapKillBroadcast), global::Minigame.Room.V1.TrapKillBroadcast.Parser, new[]{ "RoomId", "PlayerId", "OwnerPlayerId", "ServerTimeMs" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Minigame.Room.V1.GmSetPhase), global::Minigame.Room.V1.GmSetPhase.Parser, new[]{ "Trace", "RoomId", "PlayerId", "Phase" }, null, null, null, null),
@@ -20348,6 +20359,897 @@ namespace Minigame.Room.V1 {
   }
 
   /// <summary>
+  /// 客户端 → 服务器：对局中道具位置上报（声控浮桥等随放置者本地输入持续运动的道具），
+  /// 由道具所有者节流上报，服务器原样广播。与 ItemPlaceState 的区别：ItemPlaceState 用于
+  /// 摆放阶段的拖拽预览，本消息用于 PLAYING 阶段已确认道具的运行期位置同步。
+  /// 按 player_id + item_id 寻址（一名玩家同轮只持有一个同类运动道具）。
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class ItemPositionSync : pb::IMessage<ItemPositionSync>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<ItemPositionSync> _parser = new pb::MessageParser<ItemPositionSync>(() => new ItemPositionSync());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<ItemPositionSync> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[56]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ItemPositionSync() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ItemPositionSync(ItemPositionSync other) : this() {
+      trace_ = other.trace_ != null ? other.trace_.Clone() : null;
+      roomId_ = other.roomId_;
+      playerId_ = other.playerId_;
+      itemId_ = other.itemId_;
+      position_ = other.position_ != null ? other.position_.Clone() : null;
+      rotation_ = other.rotation_;
+      mirrored_ = other.mirrored_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ItemPositionSync Clone() {
+      return new ItemPositionSync(this);
+    }
+
+    /// <summary>Field number for the "trace" field.</summary>
+    public const int TraceFieldNumber = 1;
+    private global::Minigame.Common.V1.TraceContext trace_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Common.V1.TraceContext Trace {
+      get { return trace_; }
+      set {
+        trace_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "room_id" field.</summary>
+    public const int RoomIdFieldNumber = 2;
+    private string roomId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string RoomId {
+      get { return roomId_; }
+      set {
+        roomId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "player_id" field.</summary>
+    public const int PlayerIdFieldNumber = 3;
+    private string playerId_ = "";
+    /// <summary>
+    /// 网关自动补全，客户端可留空
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string PlayerId {
+      get { return playerId_; }
+      set {
+        playerId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "item_id" field.</summary>
+    public const int ItemIdFieldNumber = 4;
+    private string itemId_ = "";
+    /// <summary>
+    /// 道具ID（= prefab 名称）
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string ItemId {
+      get { return itemId_; }
+      set {
+        itemId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "position" field.</summary>
+    public const int PositionFieldNumber = 5;
+    private global::Minigame.Room.V1.Vector2 position_;
+    /// <summary>
+    /// 世界坐标 {x, y}
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.Vector2 Position {
+      get { return position_; }
+      set {
+        position_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "rotation" field.</summary>
+    public const int RotationFieldNumber = 6;
+    private int rotation_;
+    /// <summary>
+    /// 旋转档 0/1/2/3
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Rotation {
+      get { return rotation_; }
+      set {
+        rotation_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "mirrored" field.</summary>
+    public const int MirroredFieldNumber = 7;
+    private bool mirrored_;
+    /// <summary>
+    /// 左右镜像
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Mirrored {
+      get { return mirrored_; }
+      set {
+        mirrored_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as ItemPositionSync);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(ItemPositionSync other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(Trace, other.Trace)) return false;
+      if (RoomId != other.RoomId) return false;
+      if (PlayerId != other.PlayerId) return false;
+      if (ItemId != other.ItemId) return false;
+      if (!object.Equals(Position, other.Position)) return false;
+      if (Rotation != other.Rotation) return false;
+      if (Mirrored != other.Mirrored) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (trace_ != null) hash ^= Trace.GetHashCode();
+      if (RoomId.Length != 0) hash ^= RoomId.GetHashCode();
+      if (PlayerId.Length != 0) hash ^= PlayerId.GetHashCode();
+      if (ItemId.Length != 0) hash ^= ItemId.GetHashCode();
+      if (position_ != null) hash ^= Position.GetHashCode();
+      if (Rotation != 0) hash ^= Rotation.GetHashCode();
+      if (Mirrored != false) hash ^= Mirrored.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (trace_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Trace);
+      }
+      if (RoomId.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(RoomId);
+      }
+      if (PlayerId.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(PlayerId);
+      }
+      if (ItemId.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(ItemId);
+      }
+      if (position_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(Position);
+      }
+      if (Rotation != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Rotation);
+      }
+      if (Mirrored != false) {
+        output.WriteRawTag(56);
+        output.WriteBool(Mirrored);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (trace_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Trace);
+      }
+      if (RoomId.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(RoomId);
+      }
+      if (PlayerId.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(PlayerId);
+      }
+      if (ItemId.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(ItemId);
+      }
+      if (position_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(Position);
+      }
+      if (Rotation != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Rotation);
+      }
+      if (Mirrored != false) {
+        output.WriteRawTag(56);
+        output.WriteBool(Mirrored);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (trace_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Trace);
+      }
+      if (RoomId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(RoomId);
+      }
+      if (PlayerId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerId);
+      }
+      if (ItemId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(ItemId);
+      }
+      if (position_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
+      }
+      if (Rotation != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Rotation);
+      }
+      if (Mirrored != false) {
+        size += 1 + 1;
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(ItemPositionSync other) {
+      if (other == null) {
+        return;
+      }
+      if (other.trace_ != null) {
+        if (trace_ == null) {
+          Trace = new global::Minigame.Common.V1.TraceContext();
+        }
+        Trace.MergeFrom(other.Trace);
+      }
+      if (other.RoomId.Length != 0) {
+        RoomId = other.RoomId;
+      }
+      if (other.PlayerId.Length != 0) {
+        PlayerId = other.PlayerId;
+      }
+      if (other.ItemId.Length != 0) {
+        ItemId = other.ItemId;
+      }
+      if (other.position_ != null) {
+        if (position_ == null) {
+          Position = new global::Minigame.Room.V1.Vector2();
+        }
+        Position.MergeFrom(other.Position);
+      }
+      if (other.Rotation != 0) {
+        Rotation = other.Rotation;
+      }
+      if (other.Mirrored != false) {
+        Mirrored = other.Mirrored;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (trace_ == null) {
+              Trace = new global::Minigame.Common.V1.TraceContext();
+            }
+            input.ReadMessage(Trace);
+            break;
+          }
+          case 18: {
+            RoomId = input.ReadString();
+            break;
+          }
+          case 26: {
+            PlayerId = input.ReadString();
+            break;
+          }
+          case 34: {
+            ItemId = input.ReadString();
+            break;
+          }
+          case 42: {
+            if (position_ == null) {
+              Position = new global::Minigame.Room.V1.Vector2();
+            }
+            input.ReadMessage(Position);
+            break;
+          }
+          case 48: {
+            Rotation = input.ReadInt32();
+            break;
+          }
+          case 56: {
+            Mirrored = input.ReadBool();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (trace_ == null) {
+              Trace = new global::Minigame.Common.V1.TraceContext();
+            }
+            input.ReadMessage(Trace);
+            break;
+          }
+          case 18: {
+            RoomId = input.ReadString();
+            break;
+          }
+          case 26: {
+            PlayerId = input.ReadString();
+            break;
+          }
+          case 34: {
+            ItemId = input.ReadString();
+            break;
+          }
+          case 42: {
+            if (position_ == null) {
+              Position = new global::Minigame.Room.V1.Vector2();
+            }
+            input.ReadMessage(Position);
+            break;
+          }
+          case 48: {
+            Rotation = input.ReadInt32();
+            break;
+          }
+          case 56: {
+            Mirrored = input.ReadBool();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// 服务器 → 全房间：透传对局中道具位置。
+  /// </summary>
+  [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
+  public sealed partial class ItemPositionSyncBroadcast : pb::IMessage<ItemPositionSyncBroadcast>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<ItemPositionSyncBroadcast> _parser = new pb::MessageParser<ItemPositionSyncBroadcast>(() => new ItemPositionSyncBroadcast());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<ItemPositionSyncBroadcast> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[57]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ItemPositionSyncBroadcast() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ItemPositionSyncBroadcast(ItemPositionSyncBroadcast other) : this() {
+      roomId_ = other.roomId_;
+      playerId_ = other.playerId_;
+      itemId_ = other.itemId_;
+      position_ = other.position_ != null ? other.position_.Clone() : null;
+      rotation_ = other.rotation_;
+      mirrored_ = other.mirrored_;
+      serverTimeMs_ = other.serverTimeMs_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ItemPositionSyncBroadcast Clone() {
+      return new ItemPositionSyncBroadcast(this);
+    }
+
+    /// <summary>Field number for the "room_id" field.</summary>
+    public const int RoomIdFieldNumber = 1;
+    private string roomId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string RoomId {
+      get { return roomId_; }
+      set {
+        roomId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "player_id" field.</summary>
+    public const int PlayerIdFieldNumber = 2;
+    private string playerId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string PlayerId {
+      get { return playerId_; }
+      set {
+        playerId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "item_id" field.</summary>
+    public const int ItemIdFieldNumber = 3;
+    private string itemId_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string ItemId {
+      get { return itemId_; }
+      set {
+        itemId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "position" field.</summary>
+    public const int PositionFieldNumber = 4;
+    private global::Minigame.Room.V1.Vector2 position_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Minigame.Room.V1.Vector2 Position {
+      get { return position_; }
+      set {
+        position_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "rotation" field.</summary>
+    public const int RotationFieldNumber = 5;
+    private int rotation_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Rotation {
+      get { return rotation_; }
+      set {
+        rotation_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "mirrored" field.</summary>
+    public const int MirroredFieldNumber = 6;
+    private bool mirrored_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Mirrored {
+      get { return mirrored_; }
+      set {
+        mirrored_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "server_time_ms" field.</summary>
+    public const int ServerTimeMsFieldNumber = 7;
+    private long serverTimeMs_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public long ServerTimeMs {
+      get { return serverTimeMs_; }
+      set {
+        serverTimeMs_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as ItemPositionSyncBroadcast);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(ItemPositionSyncBroadcast other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (RoomId != other.RoomId) return false;
+      if (PlayerId != other.PlayerId) return false;
+      if (ItemId != other.ItemId) return false;
+      if (!object.Equals(Position, other.Position)) return false;
+      if (Rotation != other.Rotation) return false;
+      if (Mirrored != other.Mirrored) return false;
+      if (ServerTimeMs != other.ServerTimeMs) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (RoomId.Length != 0) hash ^= RoomId.GetHashCode();
+      if (PlayerId.Length != 0) hash ^= PlayerId.GetHashCode();
+      if (ItemId.Length != 0) hash ^= ItemId.GetHashCode();
+      if (position_ != null) hash ^= Position.GetHashCode();
+      if (Rotation != 0) hash ^= Rotation.GetHashCode();
+      if (Mirrored != false) hash ^= Mirrored.GetHashCode();
+      if (ServerTimeMs != 0L) hash ^= ServerTimeMs.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (RoomId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(RoomId);
+      }
+      if (PlayerId.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(PlayerId);
+      }
+      if (ItemId.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(ItemId);
+      }
+      if (position_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(Position);
+      }
+      if (Rotation != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(Rotation);
+      }
+      if (Mirrored != false) {
+        output.WriteRawTag(48);
+        output.WriteBool(Mirrored);
+      }
+      if (ServerTimeMs != 0L) {
+        output.WriteRawTag(56);
+        output.WriteInt64(ServerTimeMs);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (RoomId.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(RoomId);
+      }
+      if (PlayerId.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(PlayerId);
+      }
+      if (ItemId.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(ItemId);
+      }
+      if (position_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(Position);
+      }
+      if (Rotation != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(Rotation);
+      }
+      if (Mirrored != false) {
+        output.WriteRawTag(48);
+        output.WriteBool(Mirrored);
+      }
+      if (ServerTimeMs != 0L) {
+        output.WriteRawTag(56);
+        output.WriteInt64(ServerTimeMs);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (RoomId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(RoomId);
+      }
+      if (PlayerId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayerId);
+      }
+      if (ItemId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(ItemId);
+      }
+      if (position_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Position);
+      }
+      if (Rotation != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Rotation);
+      }
+      if (Mirrored != false) {
+        size += 1 + 1;
+      }
+      if (ServerTimeMs != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(ServerTimeMs);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(ItemPositionSyncBroadcast other) {
+      if (other == null) {
+        return;
+      }
+      if (other.RoomId.Length != 0) {
+        RoomId = other.RoomId;
+      }
+      if (other.PlayerId.Length != 0) {
+        PlayerId = other.PlayerId;
+      }
+      if (other.ItemId.Length != 0) {
+        ItemId = other.ItemId;
+      }
+      if (other.position_ != null) {
+        if (position_ == null) {
+          Position = new global::Minigame.Room.V1.Vector2();
+        }
+        Position.MergeFrom(other.Position);
+      }
+      if (other.Rotation != 0) {
+        Rotation = other.Rotation;
+      }
+      if (other.Mirrored != false) {
+        Mirrored = other.Mirrored;
+      }
+      if (other.ServerTimeMs != 0L) {
+        ServerTimeMs = other.ServerTimeMs;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            RoomId = input.ReadString();
+            break;
+          }
+          case 18: {
+            PlayerId = input.ReadString();
+            break;
+          }
+          case 26: {
+            ItemId = input.ReadString();
+            break;
+          }
+          case 34: {
+            if (position_ == null) {
+              Position = new global::Minigame.Room.V1.Vector2();
+            }
+            input.ReadMessage(Position);
+            break;
+          }
+          case 40: {
+            Rotation = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            Mirrored = input.ReadBool();
+            break;
+          }
+          case 56: {
+            ServerTimeMs = input.ReadInt64();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+      if ((tag & 7) == 4) {
+        // Abort on any end group tag.
+        return;
+      }
+      switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            RoomId = input.ReadString();
+            break;
+          }
+          case 18: {
+            PlayerId = input.ReadString();
+            break;
+          }
+          case 26: {
+            ItemId = input.ReadString();
+            break;
+          }
+          case 34: {
+            if (position_ == null) {
+              Position = new global::Minigame.Room.V1.Vector2();
+            }
+            input.ReadMessage(Position);
+            break;
+          }
+          case 40: {
+            Rotation = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            Mirrored = input.ReadBool();
+            break;
+          }
+          case 56: {
+            ServerTimeMs = input.ReadInt64();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
   /// 客户端 → 服务器：本地玩家被其他玩家摆放的陷阱击杀时上报，服务器原样广播。
   /// 计分归属用：各端收到后为 owner_player_id 记一次陷阱有效击杀（ScoreCalculator 每次+5、单轮上限2次）。
   /// 自杀（owner == 受害者）与关卡原生陷阱（无归属）不上报。
@@ -20367,7 +21269,7 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[56]; }
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[58]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20694,7 +21596,7 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[57]; }
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[59]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21013,7 +21915,7 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[58]; }
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[60]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21343,7 +22245,7 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[59]; }
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[61]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21690,7 +22592,7 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[60]; }
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[62]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21937,7 +22839,7 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[61]; }
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[63]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22280,7 +23182,7 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[62]; }
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[64]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22613,7 +23515,7 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[63]; }
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[65]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22817,7 +23719,7 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[64]; }
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[66]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23144,7 +24046,7 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[65]; }
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[67]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -23431,7 +24333,7 @@ namespace Minigame.Room.V1 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[66]; }
+      get { return global::Minigame.Room.V1.RoomReflection.Descriptor.MessageTypes[68]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

@@ -45,6 +45,7 @@ namespace SuperQQ.Network
             net.Register<PlayerEventBroadcast>(OnPlayerEvent);
             net.Register<PickupClaimBroadcast>(OnPickupClaim);
             net.Register<ItemStateEventBroadcast>(OnItemStateEvent);
+            net.Register<ItemPositionSyncBroadcast>(OnItemPositionSync);
             net.Register<TrapKillBroadcast>(OnTrapKill);
             net.Register<ToastSizeBroadcast>(OnToastSize);
 
@@ -60,6 +61,7 @@ namespace SuperQQ.Network
             NetworkManager.Instance.Unregister<PlayerEventBroadcast>();
             NetworkManager.Instance.Unregister<PickupClaimBroadcast>();
             NetworkManager.Instance.Unregister<ItemStateEventBroadcast>();
+            NetworkManager.Instance.Unregister<ItemPositionSyncBroadcast>();
             NetworkManager.Instance.Unregister<TrapKillBroadcast>();
             NetworkManager.Instance.Unregister<ToastSizeBroadcast>();
         }
@@ -146,6 +148,25 @@ namespace SuperQQ.Network
             });
         }
 
+        /// <summary>
+        /// 上报对局中道具位置（声控浮桥等随放置者本地输入持续运动的道具），由道具所有者端节流调用。
+        /// player_id 由网关自动补全；服务器原样广播 ItemPositionSyncBroadcast；离线为空操作
+        /// </summary>
+        /// <param name="itemId">道具ID（= prefab 名称）</param>
+        public static void ReportItemPosition(string itemId, Vector2 position, int rotation, bool mirrored)
+        {
+            if (!BReady || string.IsNullOrEmpty(itemId)) return;
+            NetworkManager net = NetworkManager.Instance;
+            net.Send(new ItemPositionSync
+            {
+                RoomId = net.RoomId,
+                ItemId = itemId,
+                Position = new Minigame.Room.V1.Vector2 { X = position.x, Y = position.y },
+                Rotation = rotation,
+                Mirrored = mirrored
+            });
+        }
+
         /// <summary>上报陷阱击杀（受害者本地端调用；ownerPlayerId 为陷阱放置者），离线为空操作</summary>
         public static void ReportTrapKill(string ownerPlayerId)
         {
@@ -224,6 +245,19 @@ namespace SuperQQ.Network
             if (net == null || msg.PlayerId == net.LocalPlayerId) return; // 所有者端本地已表现
 
             ItemLifecycleSync.ApplyRemote(msg.ItemInstanceId, msg.StateType);
+        }
+
+        /// <summary>远端对局中道具位置广播到达：按 player_id + item_id 寻址应用到本端实例（当前仅声控浮桥响应）</summary>
+        private void OnItemPositionSync(ItemPositionSyncBroadcast msg)
+        {
+            NetworkManager net = NetworkManager.Instance;
+            if (net == null || msg.PlayerId == net.LocalPlayerId) return; // 所有者端本地已驱动
+            if (msg.Position == null) return;
+
+            if (ItemLifecycleSync.FindByOwnerAndPrefab(msg.PlayerId, msg.ItemId) is VoicePath voicePath)
+            {
+                voicePath.ApplyRemotePosition(new Vector2(msg.Position.X, msg.Position.Y));
+            }
         }
 
         private void OnTrapKill(TrapKillBroadcast msg)
