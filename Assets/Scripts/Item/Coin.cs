@@ -132,9 +132,15 @@ namespace SuperQQ.Item
             {
                 var follow = gameObject.AddComponent<RemoteCoinFollow>();
                 follow.Init(remote.transform, followDelay, followOffset);
+
+                // 关闭本地跟随逻辑：本路径 follower 未赋值，Coin.Update 会判定
+                // "跟随对象丢失"走 Vanish 把金币销毁（远端认领后跟随表现闪没的根因）；
+                // 远端跟随由 RemoteCoinFollow 接管，出局/通关销毁也由它判定
+                enabled = false;
             }
             else
             {
+                Debug.LogWarning($"[Coin] 远端认领者 {claimerPlayerId} 的化身未找到（身份键不匹配？），金币直接销毁");
                 Destroy(gameObject);
             }
         }

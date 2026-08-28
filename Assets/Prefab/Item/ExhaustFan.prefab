@@ -454,7 +454,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: 
   icon: {fileID: 21300000, guid: 5c9d0de39a64c69428843bc7577d21b9, type: 3}
-  iconScale: 0.7
+  iconScale: 0.55
   placeSfx: 202
 --- !u!114 &768216225951300669
 MonoBehaviour:

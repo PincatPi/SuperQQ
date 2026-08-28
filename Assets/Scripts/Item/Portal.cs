@@ -6,8 +6,10 @@ namespace SuperQQ.Item
 {
     /// <summary>
     /// 传送门 — 控制类道具
-    /// 1x2 格占位，可旋转（绕中心点）；入口与出口分开摆放，先放入口再放出口
-    /// 玩家从入口进入后从出口出来（单向传送，出口不反向传送）
+    /// 1x2 格占位，可旋转（绕中心点）；两端分开摆放，先放首段再放次段
+    /// 双向传送：玩家走入任一端即从另一端出来（角色 role 仅决定摆放顺序/配对，不再限制传送方向）。
+    /// 防乒乓：传送后玩家在两端触发区内免疫，走出触发区（OnTriggerExit2D）后解除，
+    /// 停留在落点门内不会触发回传，走出再走入可再次传送
     ///
     /// 角色判定（OnPlaced 时自动完成，无需手动配置）：
     /// - 场上不存在未配对的入口 → 本实例成为入口；摆放流程随后通过 SpawnChainedItem
@@ -51,14 +53,32 @@ namespace SuperQQ.Item
         [Tooltip("出口初始位置相对入口的格子偏移（错开入口，避免出生时占位冲突）")]
         [SerializeField] private Vector2Int exitSpawnCellOffset = new Vector2Int(3, 0);
 
-        [Header("调试表现")]
-        [Tooltip("按角色给贴图染色（入口/出口不同色），正式美术素材就位后关闭")]
-        [SerializeField] private bool tintByRole = true;
-        [SerializeField] private Color entranceColor = new Color(0.3f, 0.8f, 1f, 1f);
-        [SerializeField] private Color exitColor = new Color(1f, 0.6f, 0.2f, 1f);
+        [Header("配对配色")]
+        [Tooltip("按配对给整对传送门染同一浅色（每对不同色，便于玩家辨认哪两端是一对）；正式美术素材就位后关闭")]
+        [SerializeField] private bool tintByPair = true;
+        [Tooltip("配对配色板（浅色，循环取用）")]
+        [SerializeField] private Color[] pairColors =
+        {
+            new Color(0.55f, 0.85f, 1.00f),   // 浅蓝
+            new Color(1.00f, 0.72f, 0.78f),   // 浅粉
+            new Color(0.62f, 0.92f, 0.68f),   // 浅绿
+            new Color(1.00f, 0.90f, 0.60f),   // 浅黄
+            new Color(0.82f, 0.72f, 1.00f),   // 浅紫
+            new Color(0.60f, 0.92f, 0.88f),   // 浅青
+        };
 
         private PortalRole role = PortalRole.Entrance;
         private Portal linkedPortal;
+
+        /// <summary>本对配色的调色板序号（首段放置时从全局序列取号，次段配对时继承首段）</summary>
+        private int pairColorIndex;
+        /// <summary>全局配对取号序列：各端按相同顺序回放摆放结果，取号序列天然一致，联机下同色</summary>
+        private static int _nextPairColorIndex;
+
+        /// <summary>传送免疫中的玩家（刚被本对门传送过）：离开触发区前不再触发传送，防两端往返乒乓</summary>
+        private readonly System.Collections.Generic.HashSet<PlayerController> _immunePlayers = new();
+        private readonly System.Collections.Generic.List<PlayerController> _expiredImmunity = new();
+        private Collider2D _triggerCollider;
 
         /// <summary>控制：改变玩家移动/状态</summary>
         public override ItemCategory Category => ItemCategory.Control;
@@ -87,10 +107,39 @@ namespace SuperQQ.Item
 
         private void Awake()
         {
-            Collider2D col = GetComponent<Collider2D>();
-            if (!col.isTrigger)
+            _triggerCollider = GetComponent<Collider2D>();
+            if (!_triggerCollider.isTrigger)
             {
                 Debug.LogWarning("[Portal] 所在碰撞体应为 Trigger，否则玩家无法走入触发传送", this);
+            }
+        }
+
+        /// <summary>
+        /// 免疫清理兜底：逐物理帧按实际重叠校验，玩家【两端触发区都不接触】才解除免疫。
+        /// 1) 不能只依赖 OnTriggerExit2D——传送落点经 exitOffset 偏移后常在触发区之外，
+        ///    玩家落地时从未进入过落点触发器，Exit 事件永远不会来，免疫将一直残留；
+        /// 2) 也不能只看本端——落点偏移量不足以脱离目标门触发区时（跳入门体等场景），
+        ///    玩家落岸仍压着目标门，若本端免疫先解除而人还压在另一端内，
+        ///    残留的 Enter/时序竞争会形成两端互传死循环（无限传送）
+        /// </summary>
+        private void FixedUpdate()
+        {
+            if (_immunePlayers.Count == 0)
+            {
+                return;
+            }
+
+            _expiredImmunity.Clear();
+            foreach (PlayerController player in _immunePlayers)
+            {
+                if (player == null || !IsPlayerTouching(player, this) && !IsPlayerTouching(player, linkedPortal))
+                {
+                    _expiredImmunity.Add(player);
+                }
+            }
+            foreach (PlayerController player in _expiredImmunity)
+            {
+                _immunePlayers.Remove(player);
             }
         }
 
@@ -104,12 +153,14 @@ namespace SuperQQ.Item
             Portal pendingEntrance = FindPendingEntrance();
             if (pendingEntrance == null)
             {
-                // 先放置的一端：成为入口；出口实例由摆放流程通过 SpawnChainedItem 取回并继续摆放
+                // 先放置的一端：成为入口；出口实例由摆放流程通过 SpawnChainedItem 取回并继续摆放。
+                // 同时从全局序列取本对配色号（各端摆放回放顺序一致，取号结果一致）
                 role = PortalRole.Entrance;
+                pairColorIndex = _nextPairColorIndex++;
             }
             else
             {
-                // 后放置的一端：成为出口并与等待中的入口配对
+                // 后放置的一端：成为出口并与等待中的入口配对（LinkTo 内继承首段配色）
                 role = PortalRole.Exit;
                 LinkTo(pendingEntrance);
             }
@@ -134,19 +185,23 @@ namespace SuperQQ.Item
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            // 仅入口触发传送，且必须已配对出口
-            if (role != PortalRole.Entrance || linkedPortal == null)
+            // 双向传送：任一端都可触发，落点为配对另一端（role 仅用于摆放顺序与配对）。
+            // 免疫中的玩家（刚被本对门传送、还停在落点触发区内）跳过
+            if (linkedPortal == null)
             {
                 return;
             }
             PlayerController player = other.GetComponentInParent<PlayerController>();
-            if (player != null && player.BAffectedByItems)   // 死亡过渡/幽灵不被传送
+            if (player != null)
             {
-                Teleport(player);
+                if (player.BAffectedByItems && !_immunePlayers.Contains(player))   // 死亡过渡/幽灵不被传送
+                {
+                    Teleport(player);
+                }
                 return;
             }
 
-            // 可传送弹体（樱桃等）：保持速度向量从出口继续飞。
+            // 可传送弹体（樱桃等）：保持速度向量从另一端继续飞（其自身带传送冷却防乒乓）。
             // 各端本地确定性模拟同一轨迹，必在同一时机碰门，本地传送即各端同步
             CherryProjectile projectile = other.GetComponentInParent<CherryProjectile>();
             if (projectile != null && !projectile.BTeleportCoolingDown)
@@ -155,13 +210,39 @@ namespace SuperQQ.Item
             }
         }
 
+        private void OnTriggerExit2D(Collider2D other)
+        {
+            // 走出本端且不再接触配对另一端时才解除免疫（与 FixedUpdate 兜底同口径，
+            // 防止"压在一端内又走出另一端"时免疫被提前解除形成往返互传）
+            PlayerController player = other.GetComponentInParent<PlayerController>();
+            if (player != null && !IsPlayerTouching(player, linkedPortal))
+            {
+                _immunePlayers.Remove(player);
+            }
+        }
+
+        /// <summary>玩家碰撞体是否正与指定门的触发区重叠</summary>
+        private static bool IsPlayerTouching(PlayerController player, Portal portal)
+        {
+            return portal != null
+                && portal._triggerCollider != null
+                && player != null
+                && player.Collider != null
+                && portal._triggerCollider.IsTouching(player.Collider);
+        }
+
         /// <summary>
-        /// 把玩家传送到出口位置（写 Rigidbody2D.position，物理步进内安全瞬移）。
-        /// 出传送门清零速度（玩家从出口静止落下，不带着进门前速度飞出）；
+        /// 把玩家传送到配对另一端位置（写 Rigidbody2D.position，物理步进内安全瞬移）。
+        /// 传送后在两端都加免疫：玩家出现在落点触发区内会再触发一次 OnTriggerEnter2D，
+        /// 不加免疫会被立刻传回，两端无限往返；免疫随走出触发区（OnTriggerExit2D）解除。
+        /// 出传送门清零速度（玩家从落点静止落下，不带着进门前速度飞出）；
         /// 弹体（樱桃等）走 CherryProjectile.TeleportTo，保持速度不受影响
         /// </summary>
         private void Teleport(PlayerController player)
         {
+            _immunePlayers.Add(player);
+            linkedPortal._immunePlayers.Add(player);
+
             Vector2 target = (Vector2)linkedPortal.transform.position + linkedPortal.exitOffset;
             if (player.Rb != null)
             {
@@ -202,12 +283,13 @@ namespace SuperQQ.Item
             return fallback;
         }
 
-        /// <summary>与另一端建立双向配对</summary>
+        /// <summary>与另一端建立双向配对（次段继承首段配色，整对同色）</summary>
         private void LinkTo(Portal other)
         {
             linkedPortal = other;
             other.linkedPortal = this;
-            other.ApplyTint();    // 入口配对完成后可刷新表现（如从"待配对"色变为正常色）
+            pairColorIndex = other.pairColorIndex;
+            other.ApplyTint();    // 配对完成后两端刷新表现（确保同色号）
         }
 
         /// <summary>解除双向配对（本端被移除时调用）</summary>
@@ -335,14 +417,14 @@ namespace SuperQQ.Item
             return chained;
         }
 
-        /// <summary>按角色染色（调试用，正式素材就位后关闭 tintByRole）</summary>
+        /// <summary>按配对染色：整对传送门同一浅色（正式素材就位后关闭 tintByPair）</summary>
         private void ApplyTint()
         {
-            if (!tintByRole)
+            if (!tintByPair || pairColors == null || pairColors.Length == 0)
             {
                 return;
             }
-            Color color = role == PortalRole.Entrance ? entranceColor : exitColor;
+            Color color = pairColors[pairColorIndex % pairColors.Length];
             foreach (SpriteRenderer sr in GetComponentsInChildren<SpriteRenderer>(true))
             {
                 sr.color = color;
