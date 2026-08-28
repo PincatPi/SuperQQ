@@ -134,13 +134,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "\u4F20\u9001\u95E8"
   icon: {fileID: 0}
+  iconScale: 1
   placeSfx: 202
-  exitOffset: {x: 2, y: 0}
+  exitOffset: {x: 0.5, y: 0}
   exitPortalPrefab: {fileID: 8282279829162158160}
   exitSpawnCellOffset: {x: 3, y: 0}
-  tintByRole: 1
-  entranceColor: {r: 0.3, g: 0.8, b: 1, a: 1}
-  exitColor: {r: 1, g: 0.6, b: 0.2, a: 1}
+  tintByPair: 1
+  pairColors:
+  - {r: 0.55, g: 0.85, b: 1, a: 1}
+  - {r: 1, g: 0.72, b: 0.78, a: 1}
+  - {r: 0.62, g: 0.92, b: 0.68, a: 1}
+  - {r: 1, g: 0.9, b: 0.6, a: 1}
+  - {r: 0.82, g: 0.72, b: 1, a: 1}
+  - {r: 0.6, g: 0.92, b: 0.88, a: 1}
 --- !u!114 &1984925405770070557
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,6 +171,7 @@ MonoBehaviour:
   gapPixels: 6
   pixelsPerUnit: 100
   sortingOrder: 10
+  sortingLayerName: Item
 --- !u!61 &4417217294888894350
 BoxCollider2D:
   m_ObjectHideFlags: 0
