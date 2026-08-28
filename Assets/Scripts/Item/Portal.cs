@@ -99,7 +99,7 @@ namespace SuperQQ.Item
         /// </summary>
         public override void OnPlaced()
         {
-            PlayPlaceSfx();   // 放置确认音效（基类 OnPlaced 的其余职责为联机登记，Portal 行为特殊不补调）
+            base.OnPlaced();   // 音效 + 联机生命周期登记（孤门清剿的销毁上报依赖该登记）+ 昼夜色调注册
 
             Portal pendingEntrance = FindPendingEntrance();
             if (pendingEntrance == null)
@@ -237,6 +237,17 @@ namespace SuperQQ.Item
                 return;
             }
 
+            // 联机：所有者端清剿落单者（取消出口/阶段结束未摆出口）时上报销毁，
+            // 远端按 ItemStateEvent{DESTROYED} 同步移除——否则远端残留永远无法配对的
+            // 幽灵入口，还会被 FindPendingEntrance 兜底抢走后续出口的配对。
+            // 仅所有者上报：爆破级联在各端本地已各自执行，非所有者上报会造成重复广播
+            if (Placed != null
+                && SuperQQ.Network.NetworkManager.Instance != null
+                && Placed.OwnerKey == SuperQQ.Network.NetworkManager.Instance.LocalPlayerId)
+            {
+                ReportNetDestroyed();
+            }
+
             GridManager grid = GridManager.Instance;
             if (Placed != null && grid != null && grid.GetItemAt(Placed.AnchorCell) == Placed)
             {
@@ -250,17 +261,36 @@ namespace SuperQQ.Item
         }
 
         /// <summary>
-        /// 清剿全场未配对的传送门：逐个校验并销毁落单者
-        /// 由摆放流程在放置阶段结束/摆放取消时调用（如 Esc 取消出口摆放后，入口需一并清除）
+        /// 清剿全场未配对的传送门：逐个校验并销毁落单者（单机/测试用，联机请用按归属过滤的重载）
         /// </summary>
         public static void DestroyAllUnpaired()
         {
+            DestroyAllUnpaired(null);
+        }
+
+        /// <summary>
+        /// 按归属清剿未配对的传送门：只销毁【本地指定放置者】的落单者。
+        /// 联机下远端玩家的入口可能正合法地等待其出口摆放结果到达（出口确认由该玩家
+        /// 自行决定时机），本地取消/阶段结束绝不可越权清剿——否则远端入口被本地误删，
+        /// 随后到达的出口找不到配对入口，表现为"传送门没有同步过来"。
+        /// </summary>
+        /// <param name="ownerKey">放置者标识（PlacementSession 的 playerKey）；null 表示不过滤（单机/测试）</param>
+        public static void DestroyAllUnpaired(string ownerKey)
+        {
             foreach (Portal portal in FindObjectsOfType<Portal>())
             {
-                if (portal != null)   // 跳过本次清剿中已被级联销毁的
+                if (portal == null)   // 跳过本次清剿中已被级联销毁的
                 {
-                    portal.DestroyIfUnpaired();
+                    continue;
                 }
+                if (ownerKey != null
+                    && portal.Placed != null
+                    && !string.IsNullOrEmpty(portal.Placed.OwnerKey)
+                    && portal.Placed.OwnerKey != ownerKey)
+                {
+                    continue;   // 他人摆放的传送门：配对时机由摆放者端决定，本地不清剿
+                }
+                portal.DestroyIfUnpaired();
             }
         }
 

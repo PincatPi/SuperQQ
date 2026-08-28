@@ -306,6 +306,14 @@ namespace SuperQQ.Selection.Runtime
             localSelectedItem = null;
             phaseElapsed = 0f;
 
+            // 旋转吐司尺寸须在选择阶段即确定（槽位角标要展示 1x1/2x2/3x3）：
+            // 联机已由 NetGameFlowGate 按服务器轮次种子决定（先于本阶段进入）；
+            // 单机无种子来源，此处本地随机（OnUploadSize 未挂钩时仅本地生效）
+            if (!netMode && SuperQQ.Item.RotatingToastSizeSync.CurrentSize == 0)
+            {
+                SuperQQ.Item.RotatingToastSizeSync.DecideSizeLocally();
+            }
+
             BuildPanel();
             if (!netMode)
             {
@@ -1143,6 +1151,23 @@ namespace SuperQQ.Selection.Runtime
             markerRect.sizeDelta = new Vector2(32f, 32f);
             Image marker = markerGo.GetComponent<Image>();
             marker.raycastTarget = false;
+
+            // 旋转吐司尺寸角标（图标右下角，非吐司道具时由视图自动隐藏）
+            var badgeGo = new GameObject("SizeBadge", typeof(RectTransform), typeof(TextMeshProUGUI));
+            badgeGo.transform.SetParent(slotGo.transform, false);
+            var badgeRect = (RectTransform)badgeGo.transform;
+            badgeRect.anchorMin = new Vector2(0.5f, 0.24f);
+            badgeRect.anchorMax = new Vector2(0.96f, 0.44f);
+            badgeRect.offsetMin = Vector2.zero;
+            badgeRect.offsetMax = Vector2.zero;
+            var badge = badgeGo.GetComponent<TextMeshProUGUI>();
+            badge.alignment = TextAlignmentOptions.Right;
+            badge.fontSize = 18f;
+            badge.fontStyle = FontStyles.Bold;
+            badge.color = new Color(0.15f, 0.15f, 0.15f, 0.65f); // 半透明，弱化对图标的遮挡
+            badge.outlineWidth = 0.12f;
+            badge.outlineColor = new Color32(255, 255, 255, 115);
+            badge.raycastTarget = false;
 
             // AddComponent 触发 Awake，此时子物体已齐备，视图按命名约定自动识别引用
             return slotGo.AddComponent<PropSelectionSlotView>();

@@ -494,10 +494,22 @@ namespace SuperQQ.Network
                     // player_state=1（幽灵），若服务器参考该字段判定出局会误判秒切结算。
                     // 首轮玩家本就存活，Revive 为空操作，可安全调用。
                     SuperQQ.Player.LevelPlayerRegistry.Instance?.ReviveLocalPlayersForNewRound();
+                    // 新一轮开始：清空快照道具恢复记录（RoomSnapshotReceiver 跨场景存活，
+                    // 不清空会让本轮同 itemId 同锚点的道具被误判"已恢复"而永远补不出来）
+                    UnityEngine.Object.FindFirstObjectByType<RoomSnapshotReceiver>()?.ClearRestoredItems();
+                    // 旋转吐司尺寸：用服务器轮次种子确定性决定（各端结果天然一致）。
+                    // 旧方案"放置者本地随机+广播"存在竞态：多名玩家同时持吐司时各端各自随机，
+                    // 再互相应用对方广播，最终尺寸取决于收包顺序，两端可能不一致
+                    SuperQQ.Item.RotatingToastSizeSync.DecideSizeBySeed(sync.RandomSeed);
                     // 选择阶段：道具列表由 ItemOfferList 下发，此处只负责切阶段
                     flow.EnterPhaseByType<PropSelectionPhase>(reason);
                     break;
                 case GamePhaseKind.PropPlacement:
+                    // 吐司尺寸兜底：选择阶段未处理到（迟到/断线重连直接进入摆放）时按种子补决定
+                    if (SuperQQ.Item.RotatingToastSizeSync.CurrentSize == 0)
+                    {
+                        SuperQQ.Item.RotatingToastSizeSync.DecideSizeBySeed(sync.RandomSeed);
+                    }
                     flow.EnterPhaseByType<PropPlacementPhase>(reason);
                     break;
                 case GamePhaseKind.Playing:

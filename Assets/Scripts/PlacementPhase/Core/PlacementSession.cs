@@ -140,6 +140,11 @@ namespace SuperQQ.Placement.Core
                 ? ItemCatalog.Instance.GetItemId(currentPrefab) ?? currentPrefab.name
                 : currentPrefab.name;
             Adopt(UnityEngine.Object.Instantiate(currentPrefab.gameObject, worldPos, Quaternion.identity));
+            // 写入网络 itemId：ItemLifecycleSync 实例键与远端登记键以此为准（各端一致）
+            if (current.TryGetComponent(out ItemBase placedItem))
+            {
+                placedItem.NetItemId = currentItemId;
+            }
             UpdatePointer(worldPos);
             return true;
         }
@@ -226,6 +231,10 @@ namespace SuperQQ.Placement.Core
                 // 保持 currentItemId 不变（链生段与首段同一道具 id；
                 // 实例名带 "(Clone)" 后缀，覆盖后服务器/远端/快照都无法解析 prefab）
                 Adopt(chained);
+                if (chained.TryGetComponent(out ItemBase chainedItem))
+                {
+                    chainedItem.NetItemId = currentItemId;
+                }
                 return true;
             }
 
@@ -389,8 +398,10 @@ namespace SuperQQ.Placement.Core
                 ClearCurrentRefs();
             }
 
-            // 配对强制约束：取消/丢弃出口摆放后，落单的入口一并清除（对已配对的传送门无影响）
-            Portal.DestroyAllUnpaired();
+            // 配对强制约束：取消/丢弃出口摆放后，落单的入口一并清除（对已配对的传送门无影响）。
+            // 联机下只清剿【本会话玩家】的落单传送门：远端玩家正在摆出口的入口属合法瞬时状态，
+            // 无差别清剿会把远端入口在本地误删，导致随后到达的出口配对失败（"传送门没同步"）
+            Portal.DestroyAllUnpaired(playerKey);
         }
 
         private void ClearCurrentRefs()

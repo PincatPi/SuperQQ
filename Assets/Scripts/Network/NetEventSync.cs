@@ -80,10 +80,19 @@ namespace SuperQQ.Network
             });
         }
 
-        /// <summary>服务器透传的尺寸广播：应用到本端（含场上已存在实例与后续实例化）</summary>
+        /// <summary>
+        /// 服务器透传的尺寸广播：应用到本端（含场上已存在实例与后续实例化）。
+        /// 注意：联机尺寸主通道已改为服务器轮次种子确定性决定（NetGameFlowGate），
+        /// 本广播仅作种子缺失时的兜底——加轮次守卫，迟到的旧轮广播不得覆盖当前轮尺寸
+        /// </summary>
         private void OnToastSize(ToastSizeBroadcast msg)
         {
             if (NetworkManager.Instance != null && msg.PlayerId == NetworkManager.Instance.LocalPlayerId) return; // 本端已应用
+            if (NetGameFlowGate.CurrentServerRound > 0 && msg.Round != NetGameFlowGate.CurrentServerRound)
+            {
+                Debug.LogWarning($"[NetWork] 忽略过期吐司尺寸广播: playerId={msg.PlayerId} round={msg.Round}（当前轮 {NetGameFlowGate.CurrentServerRound}）size={msg.Size}");
+                return;
+            }
             SuperQQ.Item.RotatingToastSizeSync.ApplySyncedSize(msg.Size);
             Debug.Log($"[NetWork] 吐司尺寸同步: playerId={msg.PlayerId} round={msg.Round} size={msg.Size}");
         }

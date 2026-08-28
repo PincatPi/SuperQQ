@@ -11,6 +11,8 @@ namespace SuperQQ.Selection.Runtime
     /// 无需在 Inspector 拖拽任何引用，Awake 按以下子物体命名约定自动识别（均可选）：
     ///   ItemIcon     （Image，道具图标；缺失时兜底取第一个非根物体上的 Image）
     ///   ClaimMarker  （Image，认领者颜色标记，未认领时自动隐藏）
+    ///   SizeBadge    （TextMeshProUGUI，旋转吐司尺寸角标"1x1/2x2/3x3"，
+    ///                 建议锚定图标右下角；非吐司道具或尺寸未决定时自动隐藏）
     /// 点击入口取本物体上的 Button。
     /// </summary>
     public class PropSelectionSlotView : MonoBehaviour
@@ -18,6 +20,7 @@ namespace SuperQQ.Selection.Runtime
         private Button button;
         private Image iconImage;
         private Image claimMarker;
+        private TMPro.TextMeshProUGUI sizeBadge;
 
         private PropSelectionDirector owner;
         private int slotIndex = -1;
@@ -37,6 +40,10 @@ namespace SuperQQ.Selection.Runtime
             {
                 claimMarker.gameObject.SetActive(false);
             }
+            if (sizeBadge != null)
+            {
+                sizeBadge.gameObject.SetActive(false);
+            }
         }
 
         /// <summary>绑定槽位数据与点击归属（由 Director 在生成槽位时调用）；图标直接取自 ItemBase</summary>
@@ -55,6 +62,45 @@ namespace SuperQQ.Selection.Runtime
                 float iconScale = item != null ? item.IconScale : 1f;
                 iconImage.rectTransform.localScale = new Vector3(iconScale, iconScale, 1f);
             }
+
+            UpdateSizeBadge(item);
+        }
+
+        /// <summary>
+        /// 占地格数角标：仅【旋转吐司】在图标右下角展示本轮已决定的尺寸 "NxN"
+        /// （联机=服务器轮次种子，单机=进入阶段时本地随机；各端一致且随轮变化），
+        /// 尺寸尚未决定的异常时序下回退 prefab 配置格数；其余道具一律隐藏
+        /// </summary>
+        private void UpdateSizeBadge(ItemBase item)
+        {
+            if (sizeBadge == null)
+            {
+                return;
+            }
+
+            Vector2Int gridSize = item is RotatingToast ? ResolveGridSize(item) : Vector2Int.zero;
+            if (gridSize.x > 0 && gridSize.y > 0)
+            {
+                sizeBadge.text = $"{gridSize.x}x{gridSize.y}";
+                sizeBadge.gameObject.SetActive(true);
+            }
+            else
+            {
+                sizeBadge.gameObject.SetActive(false);
+            }
+        }
+
+        /// <summary>解析道具的占地格数：吐司取本轮尺寸（正方形），其余取 FootprintBoxView 配置</summary>
+        private static Vector2Int ResolveGridSize(ItemBase item)
+        {
+            if (item is RotatingToast && RotatingToastSizeSync.CurrentSize > 0)
+            {
+                int size = RotatingToastSizeSync.CurrentSize;
+                return new Vector2Int(size, size);
+            }
+
+            SuperQQ.Grid.FootprintBoxView box = item.GetComponent<SuperQQ.Grid.FootprintBoxView>();
+            return box != null ? box.Footprint : Vector2Int.zero;
         }
 
         /// <summary>标记该槽位已被认领：显示认领者颜色、关闭点击</summary>
@@ -103,6 +149,7 @@ namespace SuperQQ.Selection.Runtime
             }
 
             claimMarker = FindChildComponent<Image>("ClaimMarker");
+            sizeBadge = FindChildComponent<TMPro.TextMeshProUGUI>("SizeBadge");
         }
 
         /// <summary>在子层级中按名字递归查找物体并取其组件；未找到返回 null</summary>

@@ -1050,25 +1050,30 @@ namespace SuperQQ.Placement.Runtime
             bool isMine = result.PlayerId == net.LocalPlayerId;
             Debug.Log($"{LOG_TAG} 收到摆放结果: playerId={result.PlayerId} itemId={result.ItemId} success={result.Success} isMine={isMine} BIsActive={BIsActive} anchor=({result.AnchorCell.X},{result.AnchorCell.Y})");
 
-            if (!BIsActive)
-            {
-                return;
-            }
-
             if (!result.Success)
             {
                 if (isMine)
                 {
                     awaitingPlaceResult = false;
-                    Debug.LogWarning($"{LOG_TAG} 摆放失败：落点格子已被他人占用，请调整位置。");
+                    if (BIsActive)
+                    {
+                        Debug.LogWarning($"{LOG_TAG} 摆放失败：落点格子已被他人占用，请调整位置。");
+                    }
                 }
                 return;
             }
 
             if (isMine)
             {
-                // 服务器已批准：本地执行确认（登记占据、锁定道具；传送门等衔接摆放由会话内部处理）
                 awaitingPlaceResult = false;
+                if (!BIsActive || localSession == null)
+                {
+                    // 迟到的仲裁（阶段边界确认）：本地会话已结束、道具被 EndPhase 丢弃，
+                    // 由 RoomSnapshotReceiver 按快照 placed_items 补回实体，不再整条丢弃
+                    Debug.LogWarning($"{LOG_TAG} 阶段已结束才收到本地摆放结果: {result.ItemId} @ ({result.AnchorCell.X},{result.AnchorCell.Y})，等待快照补放");
+                    return;
+                }
+                // 服务器已批准：本地执行确认（登记占据、锁定道具；传送门等衔接摆放由会话内部处理）
                 localSession.Confirm();
                 Debug.Log($"{LOG_TAG} 摆放已确认: {result.ItemId} @ ({result.AnchorCell.X},{result.AnchorCell.Y})");
 
@@ -1097,13 +1102,10 @@ namespace SuperQQ.Placement.Runtime
         {
             NetworkManager net = NetworkManager.Instance;
             bool isMine = net != null && result.PlayerId == net.LocalPlayerId;
-            Debug.Log($"{LOG_TAG} 收到拆除结果: playerId={result.PlayerId} itemId={result.ItemId} removed={result.RemovedItems.Count} isMine={isMine}");
+            Debug.Log($"{LOG_TAG} 收到拆除结果: playerId={result.PlayerId} itemId={result.ItemId} removed={result.RemovedItems.Count} isMine={isMine} BIsActive={BIsActive}");
 
-            if (!BIsActive)
-            {
-                return;
-            }
-
+            // 阶段边界迟到的拆除结果也要执行：移除集合以服务器裁定为准，
+            // 丢弃会导致各端场上道具集合不一致（本地分支不依赖会话，可安全执行）
             Vector2Int anchor = new Vector2Int(result.AnchorCell.X, result.AnchorCell.Y);
 
             // 汇总被拆道具锚点（去重）。removed_items 非空时严格按服务器裁定（各端一致）；
@@ -1176,6 +1178,7 @@ namespace SuperQQ.Placement.Runtime
             SuperQQ.Item.DemolitionItemBase bomb = item.GetComponent<SuperQQ.Item.DemolitionItemBase>();
             if (bomb != null)
             {
+                bomb.NetItemId = result.ItemId; // ItemLifecycleSync 实例键与所有者端一致
                 bomb.InitPlaced(placed, result.Rotation);
                 bomb.DetonateSynced(removedAnchors);
             }
@@ -1297,6 +1300,7 @@ namespace SuperQQ.Placement.Runtime
             ItemBase itemBase = item.GetComponent<ItemBase>();
             if (itemBase != null)
             {
+                itemBase.NetItemId = result.ItemId; // ItemLifecycleSync 实例键与所有者端一致
                 itemBase.InitPlaced(placed, result.Rotation);
                 itemBase.SetMirrored(result.Mirrored); // 镜像朝向同步（樱桃发射器/流星锤等）
                 itemBase.OnPlaced();
