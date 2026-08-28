@@ -1,0 +1,4 @@
+repository "失控茶话会测试版@tj_tiaotiaobear@cloud.cn"
+  path "/"
+    br "/main"
+    co "/main"
