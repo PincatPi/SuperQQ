@@ -5,26 +5,20 @@ using UnityEngine.Video;
 namespace SuperQQ.Selection.Runtime
 {
     /// <summary>
-    /// 槽位介绍视频气泡 — 玩家图标到达道具槽位时在屏幕右上方弹出气泡，循环播放该道具的介绍 mp4。
-    /// 纯本地表现，不联网。
+    /// 槽位介绍视频面板 — 玩家图标到达道具槽位时在【屏幕右上角】弹出，循环播放该道具的介绍 mp4。
+    /// 纯本地表现，不联网。无气泡装饰：视频直接铺满面板（按视频宽高比居中等比适配）。
     ///
     /// 视频文件约定：Assets/Resources/Videos/Items/{itemId}.mp4（itemId 为 ItemCatalog 数字代号，如 11.mp4）；
-    /// 无对应视频时气泡自动隐藏（静默降级）。
+    /// 无对应视频时面板自动隐藏（静默降级）。
     /// 也可在 Inspector 的 fallbackClips 表中直接拖 VideoClip 指定（itemId -> clip），优先级高于约定路径。
     /// </summary>
     public class SlotIntroVideoPlayer : MonoBehaviour
     {
-        [Header("气泡外观")]
-        [Tooltip("气泡尺寸（像素），与背景图 video_bg 同宽高比（3:2）")]
-        [SerializeField] private Vector2 bubbleSize = new Vector2(480f, 320f);
-        [Tooltip("气泡背景图（Resources 相对路径，不带扩展名）；加载失败则退回纯色背景")]
-        [SerializeField] private string bubbleSpritePath = "UI/video_bg";
-        [Tooltip("无背景图时的气泡背景色")]
-        [SerializeField] private Color bubbleColor = new Color(1f, 1f, 1f, 0.95f);
-        [Tooltip("气泡相对槽位右上角的偏移（像素）：气泡左下角（尾巴处）锚在槽位右上角")]
-        [SerializeField] private Vector2 bubbleOffset = new Vector2(12f, 12f);
-        [Tooltip("视频区相对气泡的内边距（左/右/下/上，占气泡宽高比例），适配背景图白色内圈")]
-        [SerializeField] private Vector4 videoPaddingPercent = new Vector4(0.15f, 0.15f, 0.20f, 0.16f);
+        [Header("面板外观")]
+        [Tooltip("视频面板尺寸（像素），16:9 以内等比适配")]
+        [SerializeField] private Vector2 panelSize = new Vector2(480f, 320f);
+        [Tooltip("面板相对屏幕右上角的边距（像素）")]
+        [SerializeField] private Vector2 screenMargin = new Vector2(24f, 24f);
         [Tooltip("关闭按钮尺寸（像素）")]
         [SerializeField] private float closeButtonSize = 32f;
 
@@ -84,7 +78,7 @@ namespace SuperQQ.Selection.Runtime
         // ==================== 对外接口 ====================
 
         /// <summary>
-        /// 显示气泡并循环播放指定道具的介绍视频（气泡锚定在屏幕右上角，无槽位参照时用此重载）。
+        /// 显示面板并循环播放指定道具的介绍视频（固定锚定在屏幕右上角）。
         /// 无视频文件时静默隐藏（返回 false）。
         /// </summary>
         /// <param name="itemId">ItemCatalog 数字代号（如 "11"）</param>
@@ -94,19 +88,13 @@ namespace SuperQQ.Selection.Runtime
         }
 
         /// <summary>
-        /// 显示气泡并循环播放指定道具的介绍视频，气泡贴在槽位右上角（聊天气泡样式，尾巴指向槽位）。
+        /// 显示面板并循环播放指定道具的介绍视频（位置固定屏幕右上角，
+        /// slotAnchor 参数仅为兼容旧调用保留，不再跟随槽位）。
         /// 无视频文件时静默隐藏（返回 false）。
         /// </summary>
-        /// <param name="itemId">ItemCatalog 数字代号</param>
-        /// <param name="slotAnchor">槽位的 RectTransform（气泡左下角锚在其右上角）</param>
         public static bool Show(string itemId, RectTransform slotAnchor)
         {
-            bool shown = Instance.ShowInternal(itemId);
-            if (shown)
-            {
-                Instance.PositionBubbleAt(slotAnchor);
-            }
-            return shown;
+            return Instance.ShowInternal(itemId);
         }
 
         /// <summary>隐藏气泡并停止播放（含关闭按钮点击）</summary>
@@ -207,34 +195,6 @@ namespace SuperQQ.Selection.Runtime
 
         // ==================== UI 搭建 ====================
 
-        /// <summary>把气泡贴到槽位右上角（左下角锚定槽位右上角，尾巴指向槽位）</summary>
-        private void PositionBubbleAt(RectTransform slotAnchor)
-        {
-            if (slotAnchor == null)
-            {
-                // 无槽位参照：退回屏幕右上角
-                RectTransform canvasRectFallback = (RectTransform)canvas.transform;
-                bubbleRoot.anchoredPosition = new Vector2(
-                    canvasRectFallback.rect.width * 0.5f - bubbleMarginFallback.x,
-                    canvasRectFallback.rect.height * 0.5f - bubbleMarginFallback.y);
-                return;
-            }
-
-            // 槽位世界角（corners[2] = 右上角）→ 屏幕像素 → 本气泡 Canvas 局部坐标
-            var corners = new Vector3[4];
-            slotAnchor.GetWorldCorners(corners);
-            Canvas slotCanvas = slotAnchor.GetComponentInParent<Canvas>();
-            Camera cam = slotCanvas != null && slotCanvas.renderMode != RenderMode.ScreenSpaceOverlay
-                ? slotCanvas.worldCamera : null;
-            Vector2 screen = RectTransformUtility.WorldToScreenPoint(cam, corners[2]);
-
-            RectTransform canvasRect = (RectTransform)canvas.transform;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screen, null, out Vector2 local);
-            bubbleRoot.anchoredPosition = local + bubbleOffset;
-        }
-
-        private static readonly Vector2 bubbleMarginFallback = new Vector2(24f, 24f);
-
         private void BuildUi()
         {
             // 独立 Canvas（置顶）
@@ -248,30 +208,15 @@ namespace SuperQQ.Selection.Runtime
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 1f; // 横屏统一匹配高度，与场景 Canvas 策略一致
 
-            // 气泡根：锚定 Canvas 中心，pivot 左下角（定位时 anchoredPosition = 槽位右上角局部坐标）
-            var bubbleGo = new GameObject("Bubble", typeof(RectTransform), typeof(Image));
-            bubbleGo.transform.SetParent(canvasGo.transform, false);
-            bubbleRoot = (RectTransform)bubbleGo.transform;
-            bubbleRoot.anchorMin = new Vector2(0.5f, 0.5f);
-            bubbleRoot.anchorMax = new Vector2(0.5f, 0.5f);
-            bubbleRoot.pivot = new Vector2(0f, 0f);
-            bubbleRoot.sizeDelta = bubbleSize;
-            Image bg = bubbleGo.GetComponent<Image>();
-            bg.raycastTarget = false; // 不挡槽位点击
-            // 气泡背景：video_bg 云朵气泡（自带左下角尾巴，固定造型用 Simple 整图拉伸，不能用 Sliced）
-            Sprite bgSprite = string.IsNullOrEmpty(bubbleSpritePath) ? null : Resources.Load<Sprite>(bubbleSpritePath);
-            if (bgSprite != null)
-            {
-                bg.sprite = bgSprite;
-                bg.type = Image.Type.Simple;
-                bg.preserveAspect = true;
-                bg.color = Color.white;
-            }
-            else
-            {
-                Debug.LogWarning($"[SlotIntroVideoPlayer] 气泡背景图加载失败（Resources/{bubbleSpritePath}），退回纯色背景", this);
-                bg.color = bubbleColor;
-            }
+            // 面板根：固定锚定屏幕右上角（无气泡装饰，视频直接铺满）
+            var panelGo = new GameObject("VideoPanel", typeof(RectTransform));
+            panelGo.transform.SetParent(canvasGo.transform, false);
+            bubbleRoot = (RectTransform)panelGo.transform;
+            bubbleRoot.anchorMin = new Vector2(1f, 1f);
+            bubbleRoot.anchorMax = new Vector2(1f, 1f);
+            bubbleRoot.pivot = new Vector2(1f, 1f);
+            bubbleRoot.sizeDelta = panelSize;
+            bubbleRoot.anchoredPosition = new Vector2(-screenMargin.x, -screenMargin.y);
 
             // 关闭按钮（气泡右上角外侧）
             var closeGo = new GameObject("CloseButton", typeof(RectTransform), typeof(Image), typeof(Button));
@@ -305,22 +250,9 @@ namespace SuperQQ.Selection.Runtime
             label.color = Color.white;
             label.raycastTarget = false;
 
-            // 内圈容器：按 videoPaddingPercent 缩在气泡白色内圈里（避开云朵描边与尾巴）
-            var interiorGo = new GameObject("Interior", typeof(RectTransform));
-            interiorGo.transform.SetParent(bubbleRoot, false);
-            var interiorRect = (RectTransform)interiorGo.transform;
-            interiorRect.anchorMin = Vector2.zero;
-            interiorRect.anchorMax = Vector2.one;
-            interiorRect.offsetMin = new Vector2(
-                bubbleSize.x * videoPaddingPercent.x,
-                bubbleSize.y * videoPaddingPercent.z);
-            interiorRect.offsetMax = new Vector2(
-                -bubbleSize.x * videoPaddingPercent.y,
-                -bubbleSize.y * videoPaddingPercent.w);
-
-            // 视频显示区：AspectRatioFitter 在内圈容器内按视频宽高比居中等比适配（不超边、不留大白边）
+            // 视频显示区：直接铺满面板，AspectRatioFitter 按视频宽高比居中等比适配（不超边、不留白边）
             var imageGo = new GameObject("Video", typeof(RectTransform), typeof(RawImage), typeof(AspectRatioFitter));
-            imageGo.transform.SetParent(interiorRect, false);
+            imageGo.transform.SetParent(bubbleRoot, false);
             var imageRect = (RectTransform)imageGo.transform;
             imageRect.anchorMin = new Vector2(0.5f, 0.5f);
             imageRect.anchorMax = new Vector2(0.5f, 0.5f);
