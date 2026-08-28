@@ -254,9 +254,14 @@ namespace SuperQQ.Network
             if (net == null || msg.PlayerId == net.LocalPlayerId) return; // 所有者端本地已驱动
             if (msg.Position == null) return;
 
-            if (ItemLifecycleSync.FindByOwnerAndPrefab(msg.PlayerId, msg.ItemId) is VoicePath voicePath)
+            ItemBase item = ItemLifecycleSync.FindByOwnerAndPrefab(msg.PlayerId, msg.ItemId);
+            if (item is VoicePath voicePath)
             {
                 voicePath.ApplyRemotePosition(new Vector2(msg.Position.X, msg.Position.Y));
+            }
+            else if (item == null)
+            {
+                Debug.LogWarning($"[NetWork] 道具位置同步未命中: player={msg.PlayerId} itemId={msg.ItemId}（本端无对应已登记道具）");
             }
         }
 

@@ -327,7 +327,16 @@ namespace SuperQQ.Event
         {
             instance.OnEnded -= HandleSpellEffectEnded;
 
-            if (_bDeactivating || HasActiveSpellEffect())
+            if (_bDeactivating)
+            {
+                return;
+            }
+
+            // 已结束的实例移出列表，避免同轮多次施法时列表无限增长
+            // （Deactivate 统一清理走 _bDeactivating 分支跳过，随后整体 Clear，不在此移除）
+            _activeEffects.Remove(instance);
+
+            if (HasActiveSpellEffect())
             {
                 return;
             }

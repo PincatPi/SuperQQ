@@ -609,7 +609,20 @@ namespace SuperQQ.Event
                         continue;
                     }
 
-                    if (state.DetectVoice || state.Strike)
+                    bool bActivity = state.DetectVoice || state.Strike;
+
+                    // 重新施法判定（必须先于活动时刻记录，用旧活动时刻判断空闲间隔）：
+                    // 已超时截止的施法者，其条目【空闲超过宽限后】重新出现活动，视为同一轮内再次施法，重新计时。
+                    // 若服务端从未停止循环（活动无空闲间隔）则不会误判
+                    if (state.Subtype == THUNDER_SUBTYPE && bActivity && IsCasterTimedOut(pair.Key)
+                        && (!_casterLastActivity.TryGetValue(pair.Key, out float lastActivity)
+                            || Time.time - lastActivity > _config._casterFxIdleTimeout))
+                    {
+                        Debug.Log($"[ThunderSpellEffect] 施法者 {pair.Key} 的条目空闲后重新出现活动，判定为重新施法，重新计时。");
+                        _casterStartTime[pair.Key] = Time.time;
+                    }
+
+                    if (bActivity)
                     {
                         _lastAnyActivity = Time.time;
                         _bSeenAnyActivity = true;

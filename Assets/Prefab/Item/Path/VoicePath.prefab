@@ -54,7 +54,11 @@ MonoBehaviour:
   placeSfx: 202
   maxUpCells: 4
   maxDownCells: 4
+  riseThreshold: 0.65
   moveSpeedCells: 4
+  positionReportRate: 30
+  remoteFollowSpeed: 12
+  remoteTeleportCells: 5
   debugIgnoreOwner: 0
 --- !u!114 &1168639760056798479
 MonoBehaviour:

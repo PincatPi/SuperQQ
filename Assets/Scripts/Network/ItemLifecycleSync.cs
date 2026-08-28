@@ -48,8 +48,9 @@ namespace SuperQQ.Network
         }
 
         /// <summary>
-        /// 求道具的 prefab 名（ItemPositionSync 协议的 item_id）：优先取 Placed.Def.Prefab 名（各端一致），
-        /// 回退 GameObject 名去 "(Clone)" 后缀（远端实体名带 "RemotePlaced_" 前缀时无法可靠解析，故 Def 优先）
+        /// 求道具的 prefab 名（ItemPositionSync 协议的 item_id）：优先取 Placed.Def.Prefab 名（各端一致）。
+        /// 远端生成/快照恢复的实例 Def 为 null（两条路径均 Init(null, ...)），回退 GameObject 名解析：
+        /// 去 "(Clone)" 后缀，并按 OwnerKey 剥掉 "RemotePlaced_{owner}_" / "Restored_{owner}_" 前缀
         /// </summary>
         public static string ResolvePrefabName(ItemBase item)
         {
@@ -58,22 +59,61 @@ namespace SuperQQ.Network
             {
                 return item.Placed.Def.Prefab.name;
             }
+
             string n = item.name;
             int cloneIdx = n.IndexOf("(Clone)", System.StringComparison.Ordinal);
-            return cloneIdx > 0 ? n.Substring(0, cloneIdx).TrimEnd() : n;
+            if (cloneIdx > 0)
+            {
+                n = n.Substring(0, cloneIdx).TrimEnd();
+            }
+
+            string ownerKey = item.Placed != null ? item.Placed.OwnerKey : null;
+            if (!string.IsNullOrEmpty(ownerKey))
+            {
+                // PropPlacementDirector: RemotePlaced_{playerId}_{itemId}；RoomSnapshotReceiver: Restored_{playerId}_{prefabName}
+                foreach (string head in new[] { "RemotePlaced_", "Restored_" })
+                {
+                    string prefix = head + ownerKey + "_";
+                    if (n.StartsWith(prefix, System.StringComparison.Ordinal) && n.Length > prefix.Length)
+                    {
+                        return n.Substring(prefix.Length);
+                    }
+                }
+            }
+            return n;
         }
 
         /// <summary>
-        /// 按放置者 + prefab 名查找场上已登记道具（ItemPositionSync 广播按 player_id + item_id 寻址）；
+        /// 按放置者 + prefab 名查找场上已登记道具（ItemPositionSync 广播按 player_id + item_id 寻址）。
+        /// 匹配键：prefab 名（ResolvePrefabName）或 NetItemId——远端实例的 NetItemId 可能是目录数字ID
+        /// （PlacementSession 优先用数字ID上报），故同时用 ItemCatalog 反查数字ID 做等价比较。
         /// 未命中或已销毁返回 null
         /// </summary>
         public static ItemBase FindByOwnerAndPrefab(string ownerKey, string prefabName)
         {
             if (string.IsNullOrEmpty(ownerKey) || string.IsNullOrEmpty(prefabName)) return null;
+
+            // 反查 prefab 名的目录数字ID（目录未配置该道具时为 null）
+            string catalogId = null;
+            if (ItemCatalog.Instance != null)
+            {
+                ItemBase prefab = ItemCatalog.Instance.FindByPrefabName(prefabName);
+                if (prefab != null)
+                {
+                    catalogId = ItemCatalog.Instance.GetItemId(prefab);
+                }
+            }
+
             foreach (ItemBase item in _items.Values)
             {
                 if (item == null || item.Placed == null) continue;
-                if (item.Placed.OwnerKey == ownerKey && ResolvePrefabName(item) == prefabName)
+                if (item.Placed.OwnerKey != ownerKey) continue;
+                if (ResolvePrefabName(item) == prefabName)
+                {
+                    return item;
+                }
+                if (!string.IsNullOrEmpty(item.NetItemId)
+                    && (item.NetItemId == prefabName || (catalogId != null && item.NetItemId == catalogId)))
                 {
                     return item;
                 }
