@@ -13,7 +13,7 @@ namespace SuperQQ.UI
     ///   popup.SetStatus("房间不存在", true);
     ///   popup.ClosePopup();
     /// </summary>
-    public class JoinRoomPopup : MonoBehaviour
+    public class JoinRoomPopup : MonoBehaviour, IJoinRoomUI
     {
         private InputField _roomCodeInput;
         private Button _confirmButton;

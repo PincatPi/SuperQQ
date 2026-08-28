@@ -46,6 +46,7 @@ namespace SuperQQ.Network
         [Header("UI 引用（可选：拖入场景现成按钮，全部留空则动态构建测试 UI）")]
         [SerializeField] private Button createButton;
         [SerializeField] private Button joinButton;
+        [SerializeField] private JoinRoomPanel joinRoomPanel;
         [SerializeField] private Button backButton;
         [SerializeField] private Text statusText;
         [SerializeField] private TMP_Text statusLabel;
@@ -56,7 +57,7 @@ namespace SuperQQ.Network
         private Text _playerInfoText;
         private Button _createButton;
         private Button _joinButton;
-        private JoinRoomPopup _activePopup;
+        private IJoinRoomUI _activePopup;
 
         // 创建房间流程状态：创建成功后需要再进房
         private string _pendingRoomId = "";
@@ -169,10 +170,29 @@ namespace SuperQQ.Network
             if (string.IsNullOrEmpty(_net.LocalPlayerId)) return;
             if (_activePopup != null) return;
 
-            Canvas canvas = FindFirstObjectByType<Canvas>();
-            if (canvas == null) return;
+            // 优先使用配置的美术面板；未配置则退回代码动态构建的弹窗
+            if (joinRoomPanel != null)
+            {
+                if (joinRoomPanel.gameObject.scene.IsValid())
+                {
+                    // 绑定的是场景中的面板对象：直接激活显示
+                    _activePopup = joinRoomPanel;
+                    joinRoomPanel.Open(OnJoinConfirm, () => _activePopup = null);
+                }
+                else
+                {
+                    // 绑定的是 prefab 资产：在 Canvas 下实例化
+                    Canvas canvas = FindFirstObjectByType<Canvas>();
+                    if (canvas == null) return;
+                    _activePopup = JoinRoomPanel.Show(joinRoomPanel, canvas.transform, OnJoinConfirm, () => _activePopup = null);
+                }
+                return;
+            }
 
-            _activePopup = JoinRoomPopup.Show(canvas.transform, OnJoinConfirm, () => _activePopup = null);
+            Canvas fallbackCanvas = FindFirstObjectByType<Canvas>();
+            if (fallbackCanvas == null) return;
+
+            _activePopup = JoinRoomPopup.Show(fallbackCanvas.transform, OnJoinConfirm, () => _activePopup = null);
         }
 
         private void OnJoinConfirm(string roomCode)
