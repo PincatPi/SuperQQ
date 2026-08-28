@@ -234,13 +234,21 @@ namespace SuperQQ.Placement.Runtime
                 ShowConfirmPlaceButton();
             }
 
-            // 旋转吐司：摆放阶段开始即决定本轮尺寸（在道具实例生成/拖拽占格判定之前），
-            // 放置者端本地随机并上传广播，远端经 ToastSizeBroadcast 同步；
-            // 道具 Awake 读取 CurrentSize 设置 footprint，保证拖拽时的占格判定按真实尺寸
+            // 旋转吐司：摆放阶段开始即决定本轮尺寸（在道具实例生成/拖拽占格判定之前）。
+            // 联机尺寸由服务器轮次种子决定（NetGameFlowGate 进选择/摆放阶段时），各端一致；
+            // 联机下绝不允许本地随机兜底——各端各随机必不一致，同锚点不同 footprint
+            // 表现为两端吐司格子位置不同。单机/测试场景才本地随机。
             if (item is SuperQQ.Item.RotatingToast && SuperQQ.Item.RotatingToastSizeSync.CurrentSize == 0)
             {
-                int size = SuperQQ.Item.RotatingToastSizeSync.DecideSizeLocally();
-                Debug.Log($"{LOG_TAG} 摆放阶段开始，本地随机吐司尺寸: {size}（已上传）");
+                if (!BNetMode)
+                {
+                    int size = SuperQQ.Item.RotatingToastSizeSync.DecideSizeLocally();
+                    Debug.Log($"{LOG_TAG} 摆放阶段开始，本地随机吐司尺寸: {size}");
+                }
+                else
+                {
+                    Debug.LogError($"{LOG_TAG} 联机摆放阶段吐司尺寸未决定（选择阶段种子未生效），本端吐司将用 prefab 默认尺寸，可能与远端不一致！");
+                }
             }
 
             // 发牌后立即开始跟随鼠标（等下一帧 Update 会晚一拍）
@@ -1077,13 +1085,12 @@ namespace SuperQQ.Placement.Runtime
                 localSession.Confirm();
                 Debug.Log($"{LOG_TAG} 摆放已确认: {result.ItemId} @ ({result.AnchorCell.X},{result.AnchorCell.Y})");
 
-                // 旋转吐司：放置者端本地随机本轮尺寸并上传广播（各端尺寸一致）
+                // 旋转吐司尺寸诊断：确认时打印尺寸与锚点（联机排查两端位置不一致用）。
+                // 尺寸决策统一在选择/摆放阶段切换时按服务器种子完成，此处不再本地随机
                 ItemBase confirmedPrefab = FindPoolItem(result.ItemId);
-                if (confirmedPrefab is SuperQQ.Item.RotatingToast
-                    && SuperQQ.Item.RotatingToastSizeSync.CurrentSize == 0)
+                if (confirmedPrefab is SuperQQ.Item.RotatingToast)
                 {
-                    int size = SuperQQ.Item.RotatingToastSizeSync.DecideSizeLocally();
-                    Debug.Log($"{LOG_TAG} 本地随机吐司尺寸: {size}（已上传）");
+                    Debug.Log($"{LOG_TAG} 吐司确认: size={SuperQQ.Item.RotatingToastSizeSync.CurrentSize} anchor=({result.AnchorCell.X},{result.AnchorCell.Y}) round={SuperQQ.Network.NetGameFlowGate.CurrentServerRound} seed={SuperQQ.Network.NetGameFlowGate.CurrentRoundSeed}");
                 }
             }
             else
@@ -1280,6 +1287,12 @@ namespace SuperQQ.Placement.Runtime
                 GridManager.GetRotationQuaternion(result.Rotation));
             item.name = $"RemotePlaced_{result.PlayerId}_{result.ItemId}";
 
+            // 吐司诊断：远端生成时打印尺寸/footprint/锚点（两端对日志即可定位是哪一侧不一致）
+            if (prefab is SuperQQ.Item.RotatingToast)
+            {
+                Debug.Log($"{LOG_TAG} 远端吐司生成: 本端size={SuperQQ.Item.RotatingToastSizeSync.CurrentSize} footprint={footprint} anchor=({anchor.x},{anchor.y}) world=({worldPos.x:F2},{worldPos.y:F2}) round={SuperQQ.Network.NetGameFlowGate.CurrentServerRound} seed={SuperQQ.Network.NetGameFlowGate.CurrentRoundSeed}");
+            }
+
             // 登记占用：占据格子对所有人生效，本地落点合法性检查自动包含这些格子。
             // 附着类道具（RegistersOccupancy=false，如黄油块）不登记占据——与本地端口径一致
             var placed = item.AddComponent<PlacedItem>();
@@ -1306,6 +1319,25 @@ namespace SuperQQ.Placement.Runtime
                 itemBase.OnPlaced();
             }
             Debug.Log($"{LOG_TAG} 远端道具生成完成: {item.name} 位置=({worldPos.x},{worldPos.y})");
+
+            // 传送门：远端玩家的首段（入口）摆好后，其出口由该玩家自己衔接摆放，
+            // 第二条 ItemPlaceResult 到达时会各自 OnPlaced 自动配对。等一帧确认没配上
+            // （出口结果被时序/阶段边界丢弃、或只恢复出首段），再原地补建配对端，
+            // 否则对方的传送门在本端永远是落单状态：自己用不了、道具也过不去
+            if (itemBase is SuperQQ.Item.Portal remotePortal && !remotePortal.IsLinked)
+            {
+                StartCoroutine(EnsureRemotePortalLinkedNextFrame(remotePortal));
+            }
+        }
+
+        /// <summary>远端传送门补配对：等一帧让同批到达的出口结果先完成自动配对，仍未配对才补建</summary>
+        private System.Collections.IEnumerator EnsureRemotePortalLinkedNextFrame(SuperQQ.Item.Portal portal)
+        {
+            yield return null;
+            if (portal != null && !portal.IsLinked)
+            {
+                portal.LinkWithRemoteCounterpart();
+            }
         }
 
         private static void EnsureEventSystem()

@@ -272,8 +272,25 @@ namespace SuperQQ.Network
                     itemBase.OnPlaced();
                 }
 
+                // 传送门：快照恢复出的首段若仍落单（出口未被快照带上/被时序丢弃），
+                // 原地补建配对端，否则断线重连端看到的传送门无法使用
+                if (itemBase is SuperQQ.Item.Portal restoredPortal)
+                {
+                    StartCoroutine(EnsureRestoredPortalLinkedNextFrame(restoredPortal));
+                }
+
                 _restoredItems.Add(key);
                 Debug.Log($"[NetWork] 快照恢复道具: {prefab.name}(itemId={placed.ItemId}) @ ({anchor.x},{anchor.y}) 摆放者={placed.PlayerId}");
+            }
+        }
+
+        /// <summary>快照恢复的传送门补配对：等一帧让同批恢复项先互相配对，仍落单才补建配对端</summary>
+        private System.Collections.IEnumerator EnsureRestoredPortalLinkedNextFrame(SuperQQ.Item.Portal portal)
+        {
+            yield return null;
+            if (portal != null && !portal.IsLinked)
+            {
+                portal.LinkWithRemoteCounterpart();
             }
         }
 

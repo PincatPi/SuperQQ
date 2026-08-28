@@ -78,11 +78,47 @@ namespace SuperQQ.Item
         // 攻击区读同一 transform，锁定后始终指向水平朝向侧，与身体姿态一致
         private Quaternion baseWorldRotation;
 
+        // 黏住钉点：接触点（拳王底部中心）在黄油局部坐标系下的位置 + pivot→接触点的世界偏移。
+        // 纯父子跟随只保证 pivot 绕黄油 pivot 公转，pivot 不在底部中心时（本道具 pivot 在腰部），
+        // 黄油随承载物旋转后底部接触面错位（底部不再贴黄油）；改为每帧把底部中心钉回接触点
+        private Transform stuckButter;
+        private Vector3 stuckContactLocalOnButter;
+        private Vector2 pivotToContactOffset;
+
+        /// <summary>
+        /// 被黄油黏住：记录"拳王底部中心 ↔ 黄油黏性面接触点"的局部坐标关系。
+        /// 身体保持竖直（LateUpdate 锁朝向），pivot→底部中心的偏移恒定，可安全钉点
+        /// </summary>
+        public override void OnStuckTo(Transform butter, Vector2Int stickyCell)
+        {
+            stuckButter = butter;
+            Collider2D col = GetComponentInChildren<Collider2D>();
+            Vector2 contactWorld = col != null
+                ? new Vector2(col.bounds.center.x, col.bounds.min.y)   // 底部中心（视觉底边中点）
+                : (Vector2)transform.position;
+            pivotToContactOffset = contactWorld - (Vector2)transform.position;
+            stuckContactLocalOnButter = butter.InverseTransformPoint(contactWorld);
+        }
+
+        public override void OnUnstuck()
+        {
+            stuckButter = null;
+        }
+
         private void LateUpdate()
         {
             if (transform.parent != null)
             {
                 transform.rotation = baseWorldRotation;
+
+                // 钉住底部接触点：黄油随承载物（旋转吐司）转动后，底部中心始终贴回黏性面接触点，
+                // 抵消 pivot 公转带来的接触面错位（身体竖直，pivot→接触点偏移恒定）
+                if (stuckButter != null)
+                {
+                    Vector2 contactTarget = stuckButter.TransformPoint(stuckContactLocalOnButter);
+                    Vector2 pivot = contactTarget - pivotToContactOffset;
+                    transform.position = new Vector3(pivot.x, pivot.y, transform.position.z);
+                }
             }
             else
             {

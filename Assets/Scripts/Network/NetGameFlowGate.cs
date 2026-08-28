@@ -457,6 +457,12 @@ namespace SuperQQ.Network
         /// </summary>
         public static int CurrentServerRound { get; private set; }
 
+        /// <summary>
+        /// 本轮随机种子（仅 PROP_SELECTION 的 GamePhaseSync 携带，见 proto 注释；其余阶段为 0）。
+        /// 吐司尺寸/事件推演等跨阶段用途必须读缓存值，不能读后续阶段消息里的 RandomSeed（恒 0）
+        /// </summary>
+        public static int CurrentRoundSeed { get; private set; } = -1;
+
         private void OnGamePhaseSync(GamePhaseSync sync)
         {
             GamePhaseManager flow = GamePhaseManager.Instance;
@@ -500,15 +506,20 @@ namespace SuperQQ.Network
                     // 旋转吐司尺寸：用服务器轮次种子确定性决定（各端结果天然一致）。
                     // 旧方案"放置者本地随机+广播"存在竞态：多名玩家同时持吐司时各端各自随机，
                     // 再互相应用对方广播，最终尺寸取决于收包顺序，两端可能不一致
+                    CurrentRoundSeed = sync.RandomSeed;   // 缓存本轮种子：仅本阶段消息携带，后续阶段恒 0
                     SuperQQ.Item.RotatingToastSizeSync.DecideSizeBySeed(sync.RandomSeed);
                     // 选择阶段：道具列表由 ItemOfferList 下发，此处只负责切阶段
                     flow.EnterPhaseByType<PropSelectionPhase>(reason);
                     break;
                 case GamePhaseKind.PropPlacement:
-                    // 吐司尺寸兜底：选择阶段未处理到（迟到/断线重连直接进入摆放）时按种子补决定
+                    // 吐司尺寸兜底：选择阶段未处理到（迟到/断线重连直接进入摆放）时按种子补决定。
+                    // 必须用缓存的选择阶段种子：本阶段的 GamePhaseSync.RandomSeed 恒为 0，
+                    // 直接用会得到与其他端不同的尺寸——同锚点不同 footprint，两端吐司格子位置不一致
                     if (SuperQQ.Item.RotatingToastSizeSync.CurrentSize == 0)
                     {
-                        SuperQQ.Item.RotatingToastSizeSync.DecideSizeBySeed(sync.RandomSeed);
+                        int fallbackSeed = CurrentRoundSeed >= 0 ? CurrentRoundSeed : sync.RandomSeed;
+                        Debug.LogWarning($"[NetWork] 选择阶段种子未生效，摆放阶段兜底决定吐司尺寸: seed={fallbackSeed}");
+                        SuperQQ.Item.RotatingToastSizeSync.DecideSizeBySeed(fallbackSeed);
                     }
                     flow.EnterPhaseByType<PropPlacementPhase>(reason);
                     break;

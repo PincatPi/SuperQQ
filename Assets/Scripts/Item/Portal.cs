@@ -343,6 +343,67 @@ namespace SuperQQ.Item
         }
 
         /// <summary>
+        /// 联机远端补配对：远端玩家摆放首段（入口）后，其出口是【该玩家自己】衔接摆放的，
+        /// 第二条 ItemPlaceResult 到达时会各自走 OnPlaced 自动配对——但当出口结果因时序/
+        /// 阶段边界被本端丢弃、或快照只恢复出首段时，远端首段会永远停在未配对状态
+        /// （表现：对方放的传送门自己用不了、道具也过不去）。
+        /// 此处按首段已确认的事实，在远端原地补出配对端（不占新格子、不重复上报）
+        /// </summary>
+        public void LinkWithRemoteCounterpart()
+        {
+            if (IsLinked)
+            {
+                return;
+            }
+
+            GameObject prefab = exitPortalPrefab != null
+                ? exitPortalPrefab
+                : (Placed != null && Placed.Def != null ? Placed.Def.Prefab : null);
+            if (prefab == null)
+            {
+                Debug.LogWarning("[Portal] 无法补建配对端：未配置 exitPortalPrefab 且 Def 无 Prefab", this);
+                return;
+            }
+
+            // 补建端不重复走网格占据/网络上报：仅作为传送落点与触发端存在。
+            // 真正的出口结果到达时，OnPlaced 会与其自动配对（本端已是 Linked 则不再抢配对）
+            GameObject counterpart = Instantiate(prefab, transform.position, transform.rotation);
+            counterpart.name = $"{gameObject.name}_Counterpart";
+            var portal = counterpart.GetComponent<Portal>();
+            if (portal == null)
+            {
+                Destroy(counterpart);
+                return;
+            }
+
+            // 占位/交互组件：补建端不参与摆放与占据
+            PlacementController pc = counterpart.GetComponent<PlacementController>();
+            if (pc != null)
+            {
+                pc.DebugHotkeys = false;
+                pc.enabled = false;
+            }
+            var box = counterpart.GetComponent<SuperQQ.Grid.FootprintBoxView>();
+            if (box != null)
+            {
+                box.Hide();
+            }
+            Collider2D col = counterpart.GetComponent<Collider2D>();
+            if (col != null)
+            {
+                col.enabled = true;   // 保留触发区：双向传送需要它作为另一端触发点
+            }
+
+            portal.MarkAsChainedSpawn();   // 视为链生段（出口语义），不占用配色取号
+            portal.NetItemId = NetItemId;
+            role = PortalRole.Entrance;
+            portal.role = PortalRole.Exit;
+            LinkTo(portal);
+            portal.ApplyTint();
+            Debug.Log($"[Portal] 远端补建配对端完成: owner={Placed?.OwnerKey} anchor={Placed?.AnchorCell}");
+        }
+
+        /// <summary>
         /// 清剿全场未配对的传送门：逐个校验并销毁落单者（单机/测试用，联机请用按归属过滤的重载）
         /// </summary>
         public static void DestroyAllUnpaired()
