@@ -19,7 +19,7 @@ MonoBehaviour:
   _firstDetectDelay: 1
   _roundInterval: 2
   _warningDuration: 1.5
-  _volumeThreshold: 0.65
+  _volumeThreshold: 0.3
   _warningPrefab: {fileID: 1236643204216662, guid: 706333c6431ba8c4ea48f7fe578e3e37, type: 3}
   _lightningPrefab: {fileID: 1454807473737458, guid: 6108438f5e38d0b4b8fed06af6b74254, type: 3}
   _lightningLifetime: 1
