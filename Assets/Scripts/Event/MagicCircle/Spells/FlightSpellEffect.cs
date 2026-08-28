@@ -45,6 +45,36 @@ namespace SuperQQ.Event
         [Tooltip("松开跳跃键（或效果结束）后音效淡出时长（秒）")]
         [SerializeField, Min(0.05f)] private float _sfxFadeOutTime = 0.5f;
 
+        // 与服务端 Event3 子类型约定：中国人能飞 = 1（SpellDefinition_FlyChinese 资产同步配置 _subtype=1）
+        private const int FLIGHT_SUBTYPE = 1;
+
+        // 服务端驱动的远端特效同步（非序列化）：联机时为远端施法者挂载/移除飞行特效
+        private RemoteSpellFxSync _remoteFxSync;
+
+        /// <summary>
+        /// 联机：应用服务端下发的事件3玩家状态——为 subtype 匹配的远端玩家同步飞行特效
+        /// （本地玩家的飞行特效由本地实例管理；快照全量重复下发，RemoteSpellFxSync 内部幂等）
+        /// </summary>
+        public override void ApplyServerEvent3States(
+            System.Collections.Generic.IDictionary<string, Minigame.Room.V1.Event3PlayerState> states,
+            LevelEventContext eventContext)
+        {
+            if (states == null)
+            {
+                return;
+            }
+
+            _remoteFxSync ??= new RemoteSpellFxSync(_flightPrefab, _flightOffset, FLIGHT_SUBTYPE, _duration);
+            _remoteFxSync.Apply(states);
+        }
+
+        /// <summary>联机：事件结束，清理远端同步的飞行特效</summary>
+        public override void EndServerDrivenEffects()
+        {
+            _remoteFxSync?.Clear();
+            _remoteFxSync = null;
+        }
+
         /// <summary>
         /// 激活飞行效果：在目标玩家身上挂载特效并启动计时
         /// </summary>

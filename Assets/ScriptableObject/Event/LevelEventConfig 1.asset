@@ -27,8 +27,8 @@ MonoBehaviour:
     Modifier: {fileID: 11400000, guid: 5d96c51a890d41bd989c085e173349ca, type: 2}
   - EventType: 3
     DisplayName: "\u8A00\u51FA\u6CD5\u968F"
-    IntroPopup: 3
-    BIsFixed: 0
+    IntroPopup: 0
+    BIsFixed: 1
     Weight: 1
     Modifier: {fileID: 11400000, guid: 94fb0ea6ffaf8fd45a85a261ffe43d79, type: 2}
   - EventType: 4

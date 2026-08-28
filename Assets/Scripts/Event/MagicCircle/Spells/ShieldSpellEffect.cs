@@ -28,6 +28,36 @@ namespace SuperQQ.Event
         [Tooltip("效果生效时播放的 Tips 文本内容（经 PopupManager 播放，留空则不播放）")]
         [SerializeField] private string _activateTipText = "无敌金身！";
 
+        // 与服务端 Event3 子类型约定：无敌金身 = 2（SpellDefinition_Invincible 资产同步配置 _subtype=2）
+        private const int SHIELD_SUBTYPE = 2;
+
+        // 服务端驱动的远端特效同步（非序列化）：联机时为远端施法者挂载/移除护盾特效
+        private RemoteSpellFxSync _remoteFxSync;
+
+        /// <summary>
+        /// 联机：应用服务端下发的事件3玩家状态——为 subtype 匹配的远端玩家同步护盾特效
+        /// （本地玩家的护盾由本地实例管理；快照全量重复下发，RemoteSpellFxSync 内部幂等）
+        /// </summary>
+        public override void ApplyServerEvent3States(
+            System.Collections.Generic.IDictionary<string, Minigame.Room.V1.Event3PlayerState> states,
+            LevelEventContext eventContext)
+        {
+            if (states == null)
+            {
+                return;
+            }
+
+            _remoteFxSync ??= new RemoteSpellFxSync(_shieldPrefab, _shieldOffset, SHIELD_SUBTYPE, _duration);
+            _remoteFxSync.Apply(states);
+        }
+
+        /// <summary>联机：事件结束，清理远端同步的护盾特效</summary>
+        public override void EndServerDrivenEffects()
+        {
+            _remoteFxSync?.Clear();
+            _remoteFxSync = null;
+        }
+
         /// <summary>
         /// 激活护盾效果：在目标玩家身上挂载特效并启动计时
         /// </summary>

@@ -65,5 +65,178 @@ namespace SuperQQ.Event
         public virtual void EndServerDrivenEffects()
         {
         }
+
+        /// <summary>
+        /// 服务端驱动的远端咒语特效同步器（言出法随联机用）：
+        /// 为 event3_states 中 subtype 匹配的【远端】玩家挂载特效（本地玩家的特效由本地实例管理，跳过）；
+        /// 条目消失 / subtype 被服务端重置 / 剩余时间归 0 / 超本地配置时长（兜底）时移除销毁。
+        /// 快照全量重复下发，内部幂等（重复 Apply 不重复挂载）
+        /// </summary>
+        protected sealed class RemoteSpellFxSync
+        {
+            private readonly GameObject _prefab;
+            private readonly UnityEngine.Vector2 _offset;
+            private readonly int _subtype;
+            private readonly float _maxDuration;
+
+            // playerId -> 已挂载的特效 / 挂载时刻
+            private readonly System.Collections.Generic.Dictionary<string, GameObject> _fxByPlayer = new();
+            private readonly System.Collections.Generic.Dictionary<string, float> _attachTimeByPlayer = new();
+
+            // 见过正剩余时间的 playerId：remaining_ms 归 0 后恒 0，须见过正值才能以"归 0"判定效果结束（防起始瞬间误判）
+            private readonly System.Collections.Generic.HashSet<string> _seenPositiveRemaining = new();
+
+            // 移除用的临时缓存（避免遍历时修改集合）
+            private readonly System.Collections.Generic.List<string> _removeCache = new();
+
+            public RemoteSpellFxSync(GameObject prefab, UnityEngine.Vector2 offset, int subtype, float maxDuration)
+            {
+                _prefab = prefab;
+                _offset = offset;
+                _subtype = subtype;
+                _maxDuration = maxDuration;
+            }
+
+            public void Apply(System.Collections.Generic.IDictionary<string, Minigame.Room.V1.Event3PlayerState> states)
+            {
+                // 清理不再匹配本咒语的残留记录（条目消失/subtype 重置后，重新施法按新效果重新判定）
+                if (_seenPositiveRemaining.Count > 0)
+                {
+                    _removeCache.Clear();
+                    foreach (string id in _seenPositiveRemaining)
+                    {
+                        if (!states.TryGetValue(id, out Minigame.Room.V1.Event3PlayerState s)
+                            || s == null || s.Subtype != _subtype)
+                        {
+                            _removeCache.Add(id);
+                        }
+                    }
+                    for (int i = 0; i < _removeCache.Count; i++)
+                    {
+                        _seenPositiveRemaining.Remove(_removeCache[i]);
+                    }
+                }
+
+                // 记录正的剩余时间
+                foreach (System.Collections.Generic.KeyValuePair<string, Minigame.Room.V1.Event3PlayerState> pair in states)
+                {
+                    Minigame.Room.V1.Event3PlayerState state = pair.Value;
+                    if (state != null && state.Subtype == _subtype && state.RemainingMs > 0)
+                    {
+                        _seenPositiveRemaining.Add(pair.Key);
+                    }
+                }
+
+                // 移除：条目消失 / subtype 重置 / 剩余时间归 0 / 超本地时长兜底
+                if (_fxByPlayer.Count > 0)
+                {
+                    _removeCache.Clear();
+                    foreach (System.Collections.Generic.KeyValuePair<string, GameObject> pair in _fxByPlayer)
+                    {
+                        bool bRemove;
+                        if (!states.TryGetValue(pair.Key, out Minigame.Room.V1.Event3PlayerState state)
+                            || state == null || state.Subtype != _subtype)
+                        {
+                            bRemove = true; // 条目消失或服务端重置 subtype（效果结束）
+                        }
+                        else if (_seenPositiveRemaining.Contains(pair.Key) && state.RemainingMs <= 0)
+                        {
+                            bRemove = true; // 剩余时间归 0（服务端计时结束）
+                        }
+                        else
+                        {
+                            bRemove = Time.time - _attachTimeByPlayer[pair.Key] > _maxDuration + 1f; // 本地时长兜底（+1s 宽限）
+                        }
+
+                        if (bRemove)
+                        {
+                            _removeCache.Add(pair.Key);
+                        }
+                    }
+                    for (int i = 0; i < _removeCache.Count; i++)
+                    {
+                        string id = _removeCache[i];
+                        if (_fxByPlayer[id] != null)
+                        {
+                            Object.Destroy(_fxByPlayer[id]);
+                        }
+                        _fxByPlayer.Remove(id);
+                        _attachTimeByPlayer.Remove(id);
+                        _seenPositiveRemaining.Remove(id);
+                    }
+                }
+
+                if (_prefab == null)
+                {
+                    return;
+                }
+
+                SuperQQ.Network.NetworkManager net = SuperQQ.Network.NetworkManager.Instance;
+                string localPlayerId = net != null ? net.LocalPlayerId : null;
+                SuperQQ.Player.LevelPlayerRegistry registry = SuperQQ.Player.LevelPlayerRegistry.Instance;
+                if (registry == null)
+                {
+                    return;
+                }
+
+                // 挂载：subtype 匹配的远端玩家（本地玩家由本地实例管理；剩余时间已归 0 的结束条目不挂；
+                // 化身尚未生成时本帧跳过，下一帧快照重试）
+                foreach (System.Collections.Generic.KeyValuePair<string, Minigame.Room.V1.Event3PlayerState> pair in states)
+                {
+                    Minigame.Room.V1.Event3PlayerState state = pair.Value;
+                    if (state == null || state.Subtype != _subtype || _fxByPlayer.ContainsKey(pair.Key))
+                    {
+                        continue;
+                    }
+                    if (pair.Key == localPlayerId)
+                    {
+                        continue;
+                    }
+                    if (_seenPositiveRemaining.Contains(pair.Key) && state.RemainingMs <= 0)
+                    {
+                        continue;
+                    }
+
+                    SuperQQ.Player.PlayerController player = FindPlayerById(registry, pair.Key);
+                    if (player == null)
+                    {
+                        continue;
+                    }
+
+                    GameObject fx = Object.Instantiate(_prefab, player.transform);
+                    fx.transform.localPosition = _offset;
+                    _fxByPlayer.Add(pair.Key, fx);
+                    _attachTimeByPlayer.Add(pair.Key, Time.time);
+                }
+            }
+
+            /// <summary>清理全部远端特效（事件 Deactivate 时调用）</summary>
+            public void Clear()
+            {
+                foreach (System.Collections.Generic.KeyValuePair<string, GameObject> pair in _fxByPlayer)
+                {
+                    if (pair.Value != null)
+                    {
+                        Object.Destroy(pair.Value);
+                    }
+                }
+                _fxByPlayer.Clear();
+                _attachTimeByPlayer.Clear();
+                _seenPositiveRemaining.Clear();
+            }
+
+            private static SuperQQ.Player.PlayerController FindPlayerById(SuperQQ.Player.LevelPlayerRegistry registry, string playerId)
+            {
+                System.Collections.Generic.IReadOnlyList<SuperQQ.Player.PlayerController> players = registry.Players;
+                for (int i = 0; i < players.Count; i++)
+                {
+                    if (players[i] != null && players[i].PlayerId == playerId)
+                    {
+                        return players[i];
+                    }
+                }
+                return null;
+            }
+        }
     }
 }
