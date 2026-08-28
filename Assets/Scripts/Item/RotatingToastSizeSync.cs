@@ -83,7 +83,10 @@ namespace SuperQQ.Item
 
         /// <summary>
         /// 应用同步后的尺寸（远端广播到达 / 种子计算完成后调用）：
-        /// 更新 CurrentSize，并同步场上所有已存在的旋转吐司实例；
+        /// 更新 CurrentSize，并同步场上【尚未确认摆放】的旋转吐司实例（拖拽虚影/待摆放的实例，
+        /// 需要按本轮尺寸展示占位框与拖拽预览）。
+        /// 已确认摆放（Placed != null）的实例保持原尺寸——本轮尺寸只影响本轮新摆放的道具，
+        /// 已放置的旧吐司不应被后续轮次的新种子改变大小/占格；
         /// 之后实例化的实例在 Awake 自动读取 CurrentSize
         /// </summary>
         public static void ApplySyncedSize(int size)
@@ -91,12 +94,17 @@ namespace SuperQQ.Item
             CurrentSize = Mathf.Clamp(size, 1, 3);
             for (int i = _instances.Count - 1; i >= 0; i--)
             {
-                if (_instances[i] == null)
+                RotatingToast toast = _instances[i];
+                if (toast == null)
                 {
                     _instances.RemoveAt(i);
                     continue;
                 }
-                _instances[i].SetSize(CurrentSize);
+                if (toast.Placed != null)
+                {
+                    continue;   // 已确认摆放的实例：尺寸锁定，不受后续轮次种子影响
+                }
+                toast.SetSize(CurrentSize);
             }
         }
 

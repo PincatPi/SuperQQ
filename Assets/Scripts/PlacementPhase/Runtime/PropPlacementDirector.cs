@@ -1115,25 +1115,31 @@ namespace SuperQQ.Placement.Runtime
             // 丢弃会导致各端场上道具集合不一致（本地分支不依赖会话，可安全执行）
             Vector2Int anchor = new Vector2Int(result.AnchorCell.X, result.AnchorCell.Y);
 
-            // 汇总被拆道具锚点（去重）。removed_items 非空时严格按服务器裁定（各端一致）；
-            // 为空时本地按炸弹爆破范围与占据表交集计算兜底——服务器 placedItems 未维护
-            // /跨轮清空的场景下仲裁结果恒空，会导致炸弹炸了个寂寞
-            HashSet<Vector2Int> removedAnchors;
-            if (result.RemovedItems.Count > 0)
+            // 汇总被拆道具锚点（去重）：服务器裁定的 removed_items + 本地爆破范围兜底的并集。
+            // 服务器可能不理解多格道具的 footprint（例如传送门 1x2 的第二格落在爆破范围内、
+            // 锚点在范围外时，服务器只按锚点匹配就会漏掉），本地按占据表兜底能补齐。
+            // 两端计算口径一致（同一份占据表），并集结果各端一致，不会引入分叉
+            HashSet<Vector2Int> removedAnchors = new HashSet<Vector2Int>();
+            foreach (PlacedItemState removed in result.RemovedItems)
             {
-                removedAnchors = new HashSet<Vector2Int>();
-                foreach (PlacedItemState removed in result.RemovedItems)
+                removedAnchors.Add(new Vector2Int(removed.AnchorCell.X, removed.AnchorCell.Y));
+            }
+            HashSet<Vector2Int> localTargets = CollectDemolishTargetsLocally(result);
+            int localExtra = 0;
+            foreach (Vector2Int a in localTargets)
+            {
+                if (removedAnchors.Add(a))
                 {
-                    removedAnchors.Add(new Vector2Int(removed.AnchorCell.X, removed.AnchorCell.Y));
+                    localExtra++;
                 }
             }
-            else
+            if (result.RemovedItems.Count == 0 && localTargets.Count > 0)
             {
-                removedAnchors = CollectDemolishTargetsLocally(result);
-                if (removedAnchors.Count > 0)
-                {
-                    Debug.LogWarning($"{LOG_TAG} 服务器 removed_items 为空，本地按爆破范围兜底拆除 {removedAnchors.Count} 个道具（各端计算口径一致时结果相同）");
-                }
+                Debug.LogWarning($"{LOG_TAG} 服务器 removed_items 为空，本地按爆破范围兜底拆除 {localTargets.Count} 个道具（各端计算口径一致时结果相同）");
+            }
+            else if (localExtra > 0)
+            {
+                Debug.LogWarning($"{LOG_TAG} 服务器裁定漏掉 {localExtra} 个目标（可能是多格道具的非锚点格），本地兜底补齐");
             }
 
             if (isMine)
