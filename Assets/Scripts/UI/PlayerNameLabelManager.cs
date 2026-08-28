@@ -15,6 +15,7 @@ namespace SuperQQ.UI
         public static PlayerNameLabelManager Instance { get; private set; }
 
         [Header("标签样式")]
+        [SerializeField] private TMP_FontAsset _fontAsset;                             // 名称字体（不设置则用 TMP 默认字体）
         [SerializeField] private float _fontSize = 18f;                                // 名称字号
         [SerializeField] private Vector2 _labelSize = new Vector2(120f, 30f);          // 标签尺寸
         [SerializeField] private float _outlineWidth = 0.1f;                           // 描边宽度（0~1）
@@ -98,6 +99,10 @@ namespace SuperQQ.UI
 
             // 配置 TextMeshProUGUI
             TextMeshProUGUI tmp = obj.AddComponent<TextMeshProUGUI>();
+            if (_fontAsset != null)
+            {
+                tmp.font = _fontAsset;
+            }
             tmp.fontSize = _fontSize;
             tmp.alignment = TextAlignmentOptions.Center;
             tmp.raycastTarget = false; // 不接收射线检测，节省开销

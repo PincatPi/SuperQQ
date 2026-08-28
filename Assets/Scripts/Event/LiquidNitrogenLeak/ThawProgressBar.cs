@@ -14,6 +14,15 @@ namespace SuperQQ.Event
         [Tooltip("填充图像（Image Type 需设为 Filled），按解冻进度更新 fillAmount")]
         [SerializeField] private Image _fillImage;
 
+        [Tooltip("距画布底部的距离（像素）：显示时进度条强制归位到画布正下方居中，与 Prefab 锚点配置解耦")]
+        [Min(0f)]
+        [SerializeField] private float _bottomOffset = 40f;
+
+        private void Awake()
+        {
+            SnapToBottomCenter();
+        }
+
         /// <summary>
         /// 设置解冻进度（0~1，自动夹紧）
         /// </summary>
@@ -23,6 +32,26 @@ namespace SuperQQ.Event
             {
                 _fillImage.fillAmount = Mathf.Clamp01(progress);
             }
+        }
+
+        /// <summary>
+        /// 将进度条强制归位到画布正下方居中：
+        /// PopupManager 实例化弹窗时保留 Prefab 原始 RectTransform 设置（不做定位），
+        /// 位置统一在此修正——无论 Prefab 锚点如何配置都保证出现在画布正下方，且保持 Prefab 原始尺寸
+        /// </summary>
+        private void SnapToBottomCenter()
+        {
+            if (transform is not RectTransform rect)
+            {
+                return;
+            }
+
+            Vector2 size = rect.rect.size; // 先取当前渲染尺寸，防止锚点修改后变形
+            rect.anchorMin = new Vector2(0.5f, 0f);
+            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.sizeDelta = size;
+            rect.anchoredPosition = new Vector2(0f, _bottomOffset);
         }
     }
 }

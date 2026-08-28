@@ -1,3 +1,4 @@
+using SuperQQ.GameFlow;
 using SuperQQ.Microphone;
 using SuperQQ.Network;
 using SuperQQ.Player;
@@ -9,7 +10,9 @@ namespace SuperQQ.UI
 {
     /// <summary>
     /// 玩家信息面板 — 关卡内 PlayerInfoPanel 的 UI 总控脚本，挂载在 PlayerInfoPanel 上
-    /// 面板在 Level1 场景中常驻显示，不做阶段显隐控制。
+    /// 阶段显隐：仅 PlayingPhase（游玩阶段）显示，PropSelection / PropPlacement /
+    /// RoundSettlement / FinalSettlement 等其余阶段隐藏（经 GamePhaseManager.OnPhaseChanged 驱动，
+    /// 用 CanvasGroup 隐藏而非 SetActive，保证隐藏期间仍能收到阶段事件）。
     ///
     /// 职责规划：
     ///   - VolumeBar：绑定 MicVolumeManager 实时分贝，驱动 Slider Handle 在固定背景条上移动（已实现）
@@ -40,6 +43,8 @@ namespace SuperQQ.UI
         private float _volumeDisplayValue;
         private bool _playerNameResolved;                               // 名称是否已解析显示（未成功时每帧重试）
         private bool _playerIconResolved;                               // 头像是否已解析显示（未成功时每帧重试）
+        private CanvasGroup _canvasGroup;                               // 阶段显隐控制（隐藏时仍接收阶段事件）
+        private bool _bPanelVisible;                                    // 当前是否处于 PlayingPhase 显示状态
 
         private void Awake()
         {
@@ -51,10 +56,72 @@ namespace SuperQQ.UI
                 _volumeSlider.maxValue = 1f;
                 _volumeSlider.wholeNumbers = false;
             }
+
+            _canvasGroup = GetComponent<CanvasGroup>();
+            if (_canvasGroup == null)
+            {
+                _canvasGroup = gameObject.AddComponent<CanvasGroup>();
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (GamePhaseManager.Instance != null)
+            {
+                GamePhaseManager.Instance.OnPhaseChanged += HandlePhaseChanged;
+            }
+        }
+
+        private void Start()
+        {
+            // Awake/OnEnable 可能早于 Manager 单例就绪，Start 兜底补订阅并同步初始显隐
+            if (GamePhaseManager.Instance != null)
+            {
+                GamePhaseManager.Instance.OnPhaseChanged -= HandlePhaseChanged;
+                GamePhaseManager.Instance.OnPhaseChanged += HandlePhaseChanged;
+            }
+            SetPanelVisible(GamePhaseManager.Instance != null
+                && GamePhaseManager.Instance.CurrentPhaseAsset is PlayingPhase);
+        }
+
+        private void OnDisable()
+        {
+            if (GamePhaseManager.Instance != null)
+            {
+                GamePhaseManager.Instance.OnPhaseChanged -= HandlePhaseChanged;
+            }
+        }
+
+        /// <summary>
+        /// 阶段切换回调：进入 PlayingPhase 显示面板，离开即隐藏
+        /// </summary>
+        private void HandlePhaseChanged(GamePhaseBase previousPhase, GamePhaseBase nextPhase)
+        {
+            SetPanelVisible(nextPhase is PlayingPhase);
+        }
+
+        /// <summary>
+        /// 经 CanvasGroup 切换面板显隐：不用 SetActive，保证隐藏期间脚本仍运行、能收到阶段事件
+        /// </summary>
+        private void SetPanelVisible(bool visible)
+        {
+            _bPanelVisible = visible;
+            if (_canvasGroup != null)
+            {
+                _canvasGroup.alpha = visible ? 1f : 0f;
+                _canvasGroup.interactable = visible;
+                _canvasGroup.blocksRaycasts = visible;
+            }
         }
 
         private void Update()
         {
+            // 隐藏期间跳过所有展示逻辑
+            if (!_bPanelVisible)
+            {
+                return;
+            }
+
             UpdateVolumeBar();
 
             // 名称/头像未解析成功时每帧重试（等待联机数据/本地化身就绪），成功后不再轮询
