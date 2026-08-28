@@ -24,6 +24,9 @@ namespace SuperQQ.Event
         /// <summary>效果是否仍在生效（End 后为 false）</summary>
         public bool BIsActive { get; private set; } = true;
 
+        /// <summary>效果结束事件：End() 时触发一次（幂等，不会重复触发），供冷却计时等外部逻辑监听</summary>
+        public event System.Action<SpellEffectInstance> OnEnded;
+
         // 内置 Tick 驱动器（构造时创建，End 时销毁）
         private TickDriver _tickDriver;
 
@@ -61,6 +64,7 @@ namespace SuperQQ.Event
 
             BIsActive = false;
             OnEnd();
+            OnEnded?.Invoke(this);
 
             // 销毁 Tick 驱动器
             if (_tickDriver != null)

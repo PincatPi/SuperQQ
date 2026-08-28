@@ -16,6 +16,8 @@ namespace SuperQQ.Event
     /// 吟唱提示 Text 框显示在法阵旁的固定位置；范围内无存活玩家时提示隐藏
     /// 本地玩家进阵开启语音识别，识别结果与咒语列表（SpellDefinition）逐条做覆盖率匹配；
     /// 命中咒语且其配置了效果时，对触发玩家执行该咒语效果（如"无敌金身"护盾）
+    /// 吟唱冷却：玩家身上存在生效中的咒语效果时不触发语音识别；效果全部结束后开始冷却倒计时
+    /// （时长可配置），冷却期间进阵同样不触发；冷却各端本地计算，无需同步
     /// 提示框为屏幕空间 UI，实例化到主 Canvas 下，位置 = 法阵位置 + 可配置偏移（随相机实时换算）
     /// 在 Project 窗口选中本资产时，Scene 视图会标注法阵位置与提示框偏移（均可拖拽调节）
     /// 所有策划参数均在本资产上配置；运行时状态（法阵实例、提示框实例）不序列化
@@ -34,8 +36,17 @@ namespace SuperQQ.Event
         [Tooltip("吟唱提示 Text 框 Prefab（屏幕空间 UI，根节点需挂 ChantPrompt，运行时实例化到主 Canvas 下）；留空则无提示 UI")]
         [SerializeField] private ChantPrompt _chantPromptPrefab;
 
-        [Tooltip("提示文字内容（未配置咒语时的兜底显示）")]
+        [Tooltip("提示文字内容（法阵可用时进阵显示）")]
         [SerializeField] private string _promptText = "请吟唱";
+
+        [Tooltip("冷却提示文本：法阵对本地玩家处于冷却（咒语效果生效中/冷却倒计时中）时，进阵显示该文本")]
+        [SerializeField] private string _cooldownText = "冷却中…";
+
+        [Tooltip("施法成功文本：语音识别命中咒语时显示")]
+        [SerializeField] private string _castSuccessText = "施法成功";
+
+        [Tooltip("吟唱失败文本：语音识别未命中咒语时显示")]
+        [SerializeField] private string _chantFailedText = "吟唱失败";
 
         [Tooltip("提示框相对法阵的世界坐标偏移（Scene 视图中可拖拽调节）")]
         [SerializeField] private Vector2 _promptOffset = new Vector2(0f, 1.5f);
@@ -54,6 +65,10 @@ namespace SuperQQ.Event
         [Tooltip("咒语匹配阈值（0~1）：咒语中占比超过该值的字符能在识别结果中找到即视为匹配，如 0.75 表示 75%")]
         [Range(0f, 1f)]
         [SerializeField] private float _spellMatchThreshold = 0.75f;
+
+        [Tooltip("咒语效果结束后的吟唱冷却时长（秒）：玩家身上存在生效中的咒语效果、或处于效果结束后的冷却倒计时中时，进入法阵不会触发语音识别；各端本地计算，无需同步；0 表示无冷却")]
+        [Min(0f)]
+        [SerializeField] private float _cooldownSeconds = 10f;
 
         // ==================== 运行时状态（非序列化，Activate 初始化 / Deactivate 清空） ====================
 
@@ -86,6 +101,15 @@ namespace SuperQQ.Event
 
         // 当前生效中的咒语效果实例（Deactivate 时统一结束清理）
         private readonly List<SpellEffectInstance> _activeEffects = new();
+
+        // 吟唱冷却截止时刻（Time.time）：本地玩家身上咒语效果全部结束时按 _cooldownSeconds 设置
+        private float _cooldownEndTime;
+
+        // Deactivate 清理中标记：阻止效果 End 回调误启动冷却倒计时
+        private bool _bDeactivating;
+
+        // 冷却到期后刷新提示文本的协程（CD 结束时把"冷却中"恢复为"请吟唱"）
+        private Coroutine _cooldownRefreshCoroutine;
 
         // GUI 匹配结果的展示截止时刻（Time.unscaledTime）
         private float _matchHudExpireTime;
@@ -168,11 +192,14 @@ namespace SuperQQ.Event
             }
 
             // 统一结束所有生效中的咒语效果（计时/订阅/特效/驱动器由各实例自行清理）
+            // 清理期间标记 _bDeactivating：阻止效果 End 回调误启动冷却倒计时
+            _bDeactivating = true;
             for (int i = 0; i < _activeEffects.Count; i++)
             {
                 _activeEffects[i]?.End();
             }
             _activeEffects.Clear();
+            _bDeactivating = false;
 
             // 清理服务端同步驱动的咒语表现（如雷公助我的施法者雷光）
             if (_spells != null)
@@ -195,6 +222,8 @@ namespace SuperQQ.Event
             _lastRecognizedText = "";
             _lastMatchedSpell = null;
             _matchHudExpireTime = 0f;
+            _cooldownEndTime = 0f;
+            _cooldownRefreshCoroutine = null;
         }
 
         // ==================== 事件响应 ====================
@@ -212,11 +241,104 @@ namespace SuperQQ.Event
             _playersInside.Add(player);
             RefreshPromptVisibility();
 
-            // 语音吟唱：仅本地玩家触发；成功开启识别时记录触发玩家（识别进行中重复进入会被忽略且不覆盖记录）
-            if (_bEnableVoiceChant && player.BIsLocal
-                && VoiceChantRecognizer.EnsureExists().StartChantCapture(_chantDurationSeconds))
+            // 提示文本：法阵冷却中显示冷却文本，可用时恢复"请吟唱"（同时覆盖上一次的成功/失败结果）
+            if (player.BIsLocal)
             {
-                _chantingPlayer = player;
+                RefreshPromptText();
+            }
+
+            // 语音吟唱：仅本地玩家触发；成功开启识别时记录触发玩家（识别进行中重复进入会被忽略且不覆盖记录）
+            // 冷却拦截：身上存在生效中的咒语效果、或处于效果结束后的冷却倒计时中时，不触发语音识别
+            if (_bEnableVoiceChant && player.BIsLocal)
+            {
+                if (BVoiceChantBlocked)
+                {
+                    float cdRemain = _cooldownEndTime - Time.time;
+                    Debug.Log($"[MagicCircleModifier] {(HasActiveSpellEffect() ? "咒语效果生效中" : $"吟唱冷却中（剩余 {cdRemain:F1}s）")}，进入法阵不触发语音识别。");
+                }
+                else if (VoiceChantRecognizer.EnsureExists().StartChantCapture(_chantDurationSeconds))
+                {
+                    _chantingPlayer = player;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 是否禁止触发语音识别：身上存在生效中的咒语效果，或处于效果结束后的冷却倒计时中
+        /// </summary>
+        private bool BVoiceChantBlocked => HasActiveSpellEffect() || Time.time < _cooldownEndTime;
+
+        /// <summary>
+        /// 刷新吟唱提示文本：冷却中显示冷却文本，法阵可用时显示"请吟唱"
+        /// </summary>
+        private void RefreshPromptText()
+        {
+            if (_promptInstance == null)
+            {
+                return;
+            }
+
+            _promptInstance.SetText(BVoiceChantBlocked ? _cooldownText : _promptText);
+        }
+
+        /// <summary>
+        /// 冷却到期后刷新提示文本（把"冷却中"恢复为"请吟唱"）；无协程宿主或无提示框时跳过
+        /// </summary>
+        private void StartCooldownTextRefresh(float delay)
+        {
+            MonoBehaviour runner = _eventContext != null ? _eventContext.CoroutineRunner : null;
+            if (runner == null || _promptInstance == null)
+            {
+                return;
+            }
+
+            if (_cooldownRefreshCoroutine != null)
+            {
+                runner.StopCoroutine(_cooldownRefreshCoroutine);
+            }
+            _cooldownRefreshCoroutine = runner.StartCoroutine(RefreshPromptTextAfterCooldown(delay));
+        }
+
+        private IEnumerator RefreshPromptTextAfterCooldown(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            _cooldownRefreshCoroutine = null;
+            RefreshPromptText();
+        }
+
+        /// <summary>本地玩家身上是否存在仍在生效的咒语效果</summary>
+        private bool HasActiveSpellEffect()
+        {
+            for (int i = 0; i < _activeEffects.Count; i++)
+            {
+                if (_activeEffects[i] != null && _activeEffects[i].BIsActive)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 咒语效果结束回调（SpellEffectInstance.OnEnded）：
+        /// 玩家身上已无任何生效中的效果时，开始冷却倒计时（Deactivate 清理期间不启动）
+        /// </summary>
+        private void HandleSpellEffectEnded(SpellEffectInstance instance)
+        {
+            instance.OnEnded -= HandleSpellEffectEnded;
+
+            if (_bDeactivating || HasActiveSpellEffect())
+            {
+                return;
+            }
+
+            if (_cooldownSeconds > 0f)
+            {
+                _cooldownEndTime = Time.time + _cooldownSeconds;
+                Debug.Log($"[MagicCircleModifier] 咒语效果已结束，进入吟唱冷却（{_cooldownSeconds:F1}s）。");
+                // 冷却期间提示框若显示应切换为冷却文本，CD 到期自动恢复"请吟唱"
+                RefreshPromptText();
+                StartCooldownTextRefresh(_cooldownSeconds);
             }
         }
 
@@ -230,6 +352,12 @@ namespace SuperQQ.Event
 
             _lastMatchedSpell = FindBestMatchedSpell(_lastRecognizedText, out float bestCoverage);
             _matchHudExpireTime = Time.unscaledTime + MATCH_HUD_DURATION;
+
+            // 提示框展示识别结果：命中显示"施法成功"，未命中显示"吟唱失败"（下次进阵时恢复）
+            if (_promptInstance != null)
+            {
+                _promptInstance.SetText(_lastMatchedSpell != null ? _castSuccessText : _chantFailedText);
+            }
 
             if (_lastMatchedSpell != null)
             {
@@ -284,6 +412,7 @@ namespace SuperQQ.Event
             SpellEffectInstance instance = spell.Effect.Activate(context);
             if (instance != null)
             {
+                instance.OnEnded += HandleSpellEffectEnded;
                 _activeEffects.Add(instance);
             }
         }
