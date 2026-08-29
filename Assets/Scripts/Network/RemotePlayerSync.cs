@@ -71,6 +71,7 @@ namespace SuperQQ.Network
         private static readonly int VelocityYHash = Animator.StringToHash("VelocityY");
         private static readonly int IsDeadHash = Animator.StringToHash("bIsDead");
         private static readonly int IsJumpingHash = Animator.StringToHash("bIsJumping");
+        private static readonly int IsVictoryHash = Animator.StringToHash("bIsVictory");
 
         private void Awake()
         {
@@ -234,6 +235,8 @@ namespace SuperQQ.Network
                 _animator.SetFloat(VelocityYHash, point.Vel.y);
                 _animator.SetBool(IsDeadHash, playingDeath);
                 _animator.SetBool(IsJumpingHash, point.IsJumping);
+                // 通关表现与本地一致：player_state=2 时循环播放胜利动画（通关端速度为 0，无须屏蔽移动动画）
+                _animator.SetBool(IsVictoryHash, point.PlayerState == 2);
             }
 
             // 冻结状态视觉（液氮事件）：快照 player_state=3 时挂载冰封特效，解除后消散。

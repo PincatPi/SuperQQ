@@ -20,7 +20,27 @@ namespace SuperQQ.Event
 
         private void Awake()
         {
+            NormalizeFillImage();
             SnapToBottomCenter();
+        }
+
+        /// <summary>
+        /// 归一化填充图：SetProgress 的驱动契约是 fillAmount（0~1），
+        /// 要求 Image 为 Filled/Horizontal/Left 且初始为空。
+        /// Prefab 误配（如 Sliced/Tiled，或 FillMethod 为 Radial）时 fillAmount 不生效、
+        /// 进度条静止不动，此处强制纠正——任何替换的 UI Prefab 只要绑定了填充图即可正常工作
+        /// </summary>
+        private void NormalizeFillImage()
+        {
+            if (_fillImage == null)
+            {
+                return;
+            }
+
+            _fillImage.type = Image.Type.Filled;
+            _fillImage.fillMethod = Image.FillMethod.Horizontal;
+            _fillImage.fillOrigin = (int)Image.OriginHorizontal.Left;
+            _fillImage.fillAmount = 0f;
         }
 
         /// <summary>

@@ -12,6 +12,7 @@ namespace SuperQQ.Player
     ///   VelocityY (Float)— 竖直速度（带符号，上升为正），Jump BlendTree 的混合输入
     ///   bIsDead (Bool)  — 死亡过渡标记，配合 Any State → Die 转换（进入幽灵后置回 false）
     ///   bIsJumping (Bool)— 滞空标记，离地（跳跃或自然坠落）为 true、落地为 false，驱动跳跃动画进出
+    ///   bIsVictory (Bool)— 通关标记，配合 Any State → Victory 转换（循环播放胜利动画，复活回到存活后自动置回 false）
     /// </summary>
     [RequireComponent(typeof(PlayerController))]
     public class PlayerAnimationController : MonoBehaviour
@@ -30,6 +31,7 @@ namespace SuperQQ.Player
         private static readonly int VelocityYHash = Animator.StringToHash("VelocityY");
         private static readonly int IsDeadHash = Animator.StringToHash("bIsDead");
         private static readonly int IsJumpingHash = Animator.StringToHash("bIsJumping");
+        private static readonly int IsVictoryHash = Animator.StringToHash("bIsVictory");
 
         // ---------- 组件缓存 ----------
         private PlayerController _player;
@@ -59,6 +61,7 @@ namespace SuperQQ.Player
             UpdateLocomotion();
             UpdateDie();
             UpdateJump();
+            UpdateVictory();
             UpdateFacing();
         }
 
@@ -98,6 +101,18 @@ namespace SuperQQ.Player
         private void UpdateJump()
         {
             animator.SetBool(IsJumpingHash, _player.BIsJumpAirborne);
+        }
+
+        // ==================== 通关胜利动画 ====================
+
+        /// <summary>
+        /// 将逻辑层 BIsFinished 写入 Animator Bool 参数，配合 Any State → Victory 转换
+        /// 通关期间为 true 循环播放胜利动画，复活回到存活状态后自动置回 false
+        /// 每帧幂等写入，无需额外的触发标记
+        /// </summary>
+        private void UpdateVictory()
+        {
+            animator.SetBool(IsVictoryHash, _player.BIsFinished);
         }
 
         // ==================== 朝向翻转 ====================

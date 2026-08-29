@@ -50,6 +50,9 @@ namespace SuperQQ.Event
         // 弹窗依次播放的协程引用
         private Coroutine _popupPlaybackCoroutine;
 
+        // 需播放弹窗的事件条目缓存（过滤 IntroPopup=None 后的事件列表，避免每次分配）
+        private readonly List<LevelEventEntry> _popupEntriesCache = new();
+
         // 运行时上下文，在事件激活时创建，传递给各 LevelEventModifier
         private LevelEventContext _eventContext;
 
@@ -645,15 +648,27 @@ namespace SuperQQ.Event
         /// 依次播放本关所有选中事件的说明弹窗
         /// 每个弹窗持续 POPUP_AUTO_CLOSE_DURATION 秒后自动关闭，
         /// 再等待 POPUP_INTERVAL 秒后播放下一个，避免视觉叠加
+        /// 未配置弹窗（IntroPopup=None）的事件不占播放位、不产生间隔等待
         /// </summary>
         private IEnumerator ShowEventPopupsSequentially()
         {
+            // 先过滤出配置了说明弹窗的事件：None 事件若占位，其告警跳过后协程仍会空等
+            // POPUP_AUTO_CLOSE_DURATION + POPUP_INTERVAL，导致后续事件的弹窗被无故推迟
+            _popupEntriesCache.Clear();
             for (int i = 0; i < _selectedEntries.Count; i++)
             {
-                ShowEventPopup(_selectedEntries[i]);
+                if (_selectedEntries[i].IntroPopup != PopupType.None)
+                {
+                    _popupEntriesCache.Add(_selectedEntries[i]);
+                }
+            }
+
+            for (int i = 0; i < _popupEntriesCache.Count; i++)
+            {
+                ShowEventPopup(_popupEntriesCache[i]);
 
                 // 最后一个事件无需等待
-                if (i < _selectedEntries.Count - 1)
+                if (i < _popupEntriesCache.Count - 1)
                 {
                     yield return new WaitForSeconds(POPUP_AUTO_CLOSE_DURATION + POPUP_INTERVAL);
                 }
