@@ -52,6 +52,32 @@ namespace SuperQQ.Network
                 Debug.Log($"[NetWork] 本地玩家已接入联机（大厅流程）: playerId={net.LocalPlayerId} name={local.PlayerName}");
             }
 
+            // 同步写入会话档案：结算面板按 playerId 查询服务器分数依赖档案身份。
+            // 场景预置玩家的档案按局内名注册、PlayerId 为空，而 EnsureRemotePlayersReady 的合并
+            // 按服务器昵称匹配（昵称≠局内名时合并不上），必须在这里兜底写入。
+            PlayerSessionManager session = PlayerSessionManager.Instance;
+            if (session != null)
+            {
+                PlayerProfile sessionProfile = session.GetProfile(local.PlayerName);
+                if (sessionProfile == null)
+                {
+                    // 按名找不到时兜底取第一个无 PlayerId 的本地档案（改名等边缘场景）
+                    System.Collections.Generic.IReadOnlyList<PlayerProfile> all = session.Profiles;
+                    for (int i = 0; i < all.Count; i++)
+                    {
+                        if (all[i] != null && all[i].IsLocal && string.IsNullOrEmpty(all[i].PlayerId))
+                        {
+                            sessionProfile = all[i];
+                            break;
+                        }
+                    }
+                }
+                if (sessionProfile != null && string.IsNullOrEmpty(sessionProfile.PlayerId))
+                {
+                    sessionProfile.PlayerId = net.LocalPlayerId;
+                }
+            }
+
             if (local.GetComponent<InputReporter>() == null)
             {
                 local.gameObject.AddComponent<InputReporter>();

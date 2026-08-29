@@ -236,13 +236,37 @@ namespace SuperQQ.UI.RoundResults
         private static bool TryGetServerScore(string playerName, out Network.NetGameFlowGate.ServerPlayerScore score)
         {
             score = default;
-            if (!Network.NetGameFlowGate.BHasServerScores || PlayerSessionManager.Instance == null)
+            if (!Network.NetGameFlowGate.BHasServerScores)
             {
                 return false;
             }
 
-            PlayerProfile profile = PlayerSessionManager.Instance.GetProfile(playerName);
-            return profile != null && Network.NetGameFlowGate.TryGetServerScore(profile.PlayerId, out score);
+            string playerId = null;
+            PlayerProfile profile = PlayerSessionManager.Instance != null
+                ? PlayerSessionManager.Instance.GetProfile(playerName)
+                : null;
+            if (profile != null && !string.IsNullOrEmpty(profile.PlayerId))
+            {
+                playerId = profile.PlayerId;
+            }
+
+            // 档案未写入 PlayerId 时回退用化身的网络身份（LocalPlayerNetSetup 已写入化身），
+            // 避免档案身份缺失导致服务器分数永远查不到
+            if (playerId == null && LevelPlayerRegistry.Instance != null)
+            {
+                IReadOnlyList<PlayerController> players = LevelPlayerRegistry.Instance.Players;
+                for (int i = 0; i < players.Count; i++)
+                {
+                    if (players[i] != null && players[i].PlayerName == playerName &&
+                        !string.IsNullOrEmpty(players[i].PlayerId))
+                    {
+                        playerId = players[i].PlayerId;
+                        break;
+                    }
+                }
+            }
+
+            return playerId != null && Network.NetGameFlowGate.TryGetServerScore(playerId, out score);
         }
 
         private static List<string> GetOrderedNames(PlayerScoreManager scoreManager)

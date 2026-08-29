@@ -68,6 +68,9 @@ namespace SuperQQ.Player
                 return;
             }
             _instance = this;
+            // 场景内可能被放在父节点下（管理器分组），DontDestroyOnLoad 仅对根对象生效，
+            // 先脱离父级确保持久化真正生效（否则切场景时档案中心被随场景销毁）
+            transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
         }
 

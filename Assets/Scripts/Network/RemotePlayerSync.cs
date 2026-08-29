@@ -72,6 +72,7 @@ namespace SuperQQ.Network
         private static readonly int IsDeadHash = Animator.StringToHash("bIsDead");
         private static readonly int IsJumpingHash = Animator.StringToHash("bIsJumping");
         private static readonly int IsVictoryHash = Animator.StringToHash("bIsVictory");
+        private static readonly int IsGhostHash = Animator.StringToHash("bIsGhost");
 
         private void Awake()
         {
@@ -212,7 +213,7 @@ namespace SuperQQ.Network
 
             // 动画：按快照数据直接驱动远端 Animator（与本地 PlayerAnimationController 参数约定一致）。
             // 死亡表现与本地一致：收到 player_state=1 后先播死亡动画（躺），过渡时长后退出死亡动画
-            // 进入幽灵表现（半透明站立漂浮），避免 bIsDead 恒 true 导致死亡动画卡在最后一帧。
+            // 进入幽灵表现（半透明 + 幽灵动画），避免 bIsDead 恒 true 导致死亡动画卡在最后一帧。
             bool isGhost = point.PlayerState == 1;
             if (isGhost && !_wasGhost)
             {
@@ -237,6 +238,8 @@ namespace SuperQQ.Network
                 _animator.SetBool(IsJumpingHash, point.IsJumping);
                 // 通关表现与本地一致：player_state=2 时循环播放胜利动画（通关端速度为 0，无须屏蔽移动动画）
                 _animator.SetBool(IsVictoryHash, point.PlayerState == 2);
+                // 幽灵动画与本地时序一致：死亡过渡（bIsDead）结束后才进入幽灵动画，复活后自动置回 false
+                _animator.SetBool(IsGhostHash, isGhost && !playingDeath);
             }
 
             // 冻结状态视觉（液氮事件）：快照 player_state=3 时挂载冰封特效，解除后消散。

@@ -13,6 +13,7 @@ namespace SuperQQ.Player
     ///   bIsDead (Bool)  — 死亡过渡标记，配合 Any State → Die 转换（进入幽灵后置回 false）
     ///   bIsJumping (Bool)— 滞空标记，离地（跳跃或自然坠落）为 true、落地为 false，驱动跳跃动画进出
     ///   bIsVictory (Bool)— 通关标记，配合 Any State → Victory 转换（循环播放胜利动画，复活回到存活后自动置回 false）
+    ///   bIsGhost (Bool) — 幽灵标记，配合 Ghost 动画转换（进入幽灵后循环播放幽灵动画，复活回到存活后自动置回 false）
     /// </summary>
     [RequireComponent(typeof(PlayerController))]
     public class PlayerAnimationController : MonoBehaviour
@@ -32,6 +33,7 @@ namespace SuperQQ.Player
         private static readonly int IsDeadHash = Animator.StringToHash("bIsDead");
         private static readonly int IsJumpingHash = Animator.StringToHash("bIsJumping");
         private static readonly int IsVictoryHash = Animator.StringToHash("bIsVictory");
+        private static readonly int IsGhostHash = Animator.StringToHash("bIsGhost");
 
         // ---------- 组件缓存 ----------
         private PlayerController _player;
@@ -62,6 +64,7 @@ namespace SuperQQ.Player
             UpdateDie();
             UpdateJump();
             UpdateVictory();
+            UpdateGhost();
             UpdateFacing();
         }
 
@@ -113,6 +116,18 @@ namespace SuperQQ.Player
         private void UpdateVictory()
         {
             animator.SetBool(IsVictoryHash, _player.BIsFinished);
+        }
+
+        // ==================== 幽灵动画 ====================
+
+        /// <summary>
+        /// 将逻辑层 BIsGhost 写入 Animator Bool 参数，配合 Ghost 动画转换
+        /// 死亡过渡（Dying）期间为 false 先播死亡动画，进入幽灵状态后为 true 循环播放幽灵动画，
+        /// 复活回到存活状态后自动置回 false 回到 Idle。每帧幂等写入，无需额外的触发标记
+        /// </summary>
+        private void UpdateGhost()
+        {
+            animator.SetBool(IsGhostHash, _player.BIsGhost);
         }
 
         // ==================== 朝向翻转 ====================

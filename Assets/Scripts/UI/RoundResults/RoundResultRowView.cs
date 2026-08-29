@@ -23,6 +23,10 @@ namespace SuperQQ.UI.RoundResults
         [SerializeField] private GameObject _winnerBadge;
         [SerializeField] private TMP_Text _winnerText;
 
+        [Header("分数条比例")]
+        [Tooltip("得分栏分段条的满分刻度：各细分得分按此值计算宽度占比（只影响条的比例，胜利线判定与分数文本仍用 Populate 传入的 victoryScore）")]
+        [SerializeField, Min(1)] private int _barMaxScore = 125;
+
         private readonly List<RectTransform> _segmentRects = new();
         private readonly List<int> _segmentPoints = new();
         private Vector2 _restPosition;
@@ -108,8 +112,10 @@ namespace SuperQQ.UI.RoundResults
 
             ClearDynamicSegments();
 
-            float cursor = Mathf.Clamp01(_previousTotal / (float)safeVictoryScore);
-            float finalRatio = Mathf.Clamp01(data.CumulativeTotal / (float)safeVictoryScore);
+            // 分段条宽度占比按 _barMaxScore 刻度计算（默认 120 > 胜利线 100，细分占比相应缩小）
+            float barMax = Mathf.Max(1, _barMaxScore);
+            float cursor = Mathf.Clamp01(_previousTotal / barMax);
+            float finalRatio = Mathf.Clamp01(data.CumulativeTotal / barMax);
             _previousRatio = cursor;
             _previousFill.rectTransform.pivot = new Vector2(0f, 0.5f);
             SetAnchors(_previousFill.rectTransform, 0f, cursor);
@@ -130,7 +136,7 @@ namespace SuperQQ.UI.RoundResults
                     continue;
                 }
 
-                float next = Mathf.Min(finalRatio, cursor + segment.Points / (float)safeVictoryScore);
+                float next = Mathf.Min(finalRatio, cursor + segment.Points / barMax);
                 RectTransform rect = null;
                 if (next > cursor)
                 {

@@ -103,22 +103,45 @@ namespace SuperQQ.Settlement
             CreateTracksRoot();
         }
 
+        // 已订阅阶段事件的 GamePhaseManager（其单例随关卡场景更换，需按实例跟踪订阅）
+        private GamePhaseManager _subscribedPhaseManager;
+
         private void OnEnable()
         {
             SceneManager.sceneLoaded += HandleSceneLoaded;
-            if (GamePhaseManager.Instance != null)
-            {
-                GamePhaseManager.Instance.OnPhaseChanged += HandlePhaseChanged;
-            }
+            TrySubscribePhaseManager();
         }
 
         private void OnDisable()
         {
             SceneManager.sceneLoaded -= HandleSceneLoaded;
-            if (GamePhaseManager.Instance != null)
+            if (_subscribedPhaseManager != null)
             {
-                GamePhaseManager.Instance.OnPhaseChanged -= HandlePhaseChanged;
+                _subscribedPhaseManager.OnPhaseChanged -= HandlePhaseChanged;
+                _subscribedPhaseManager = null;
             }
+        }
+
+        /// <summary>
+        /// 订阅当前关卡 GamePhaseManager 的阶段事件（幂等）。
+        /// 本控制器在启动场景就被 AutoSpawn 创建（此时 GamePhaseManager 尚不存在，OnEnable
+        /// 订阅会落空且 DontDestroyOnLoad 后不再重试），因此每次场景加载都要补订阅，
+        /// 否则联机流程（Lobby→Room→Level1）下阶段切换事件永远收不到、记分柱动画不触发。
+        /// </summary>
+        private void TrySubscribePhaseManager()
+        {
+            GamePhaseManager flow = GamePhaseManager.Instance;
+            if (flow == null || ReferenceEquals(flow, _subscribedPhaseManager))
+            {
+                return;
+            }
+
+            if (_subscribedPhaseManager != null)
+            {
+                _subscribedPhaseManager.OnPhaseChanged -= HandlePhaseChanged;
+            }
+            flow.OnPhaseChanged += HandlePhaseChanged;
+            _subscribedPhaseManager = flow;
         }
 
         /// <summary>
@@ -135,8 +158,27 @@ namespace SuperQQ.Settlement
             }
             else if (prev is RoundSettlementPhase)
             {
+                // 联机下阶段可能被服务器提前切走：停掉未跑完的动画/流程协程，
+                // 避免隐藏期间协程跑完后 NotifyCurrentPhaseEvent 误推进新阶段
+                StopSettlementCoroutines();
                 _tracksRoot.gameObject.SetActive(false);
                 _debugFlowText = "";
+            }
+        }
+
+        /// <summary>停止批次动画与结算流程协程（中断旧动画/离开结算阶段时调用）</summary>
+        private void StopSettlementCoroutines()
+        {
+            if (_animationCoroutine != null)
+            {
+                StopCoroutine(_animationCoroutine);
+                _animationCoroutine = null;
+            }
+
+            if (_settlementFlowCoroutine != null)
+            {
+                StopCoroutine(_settlementFlowCoroutine);
+                _settlementFlowCoroutine = null;
             }
         }
 
@@ -204,6 +246,9 @@ namespace SuperQQ.Settlement
         /// <param name="mode">加载模式</param>
         private void HandleSceneLoaded(UnityEngine.SceneManagement.Scene scene, LoadSceneMode mode)
         {
+            // 关卡场景加载完成后 GamePhaseManager 才存在，补订阅阶段事件（启动场景创建时订阅会落空）
+            TrySubscribePhaseManager();
+
             bool bIsRoundSettlementPhase = GamePhaseManager.Instance != null &&
                                            GamePhaseManager.Instance.CurrentPhaseAsset is RoundSettlementPhase;
 
@@ -221,6 +266,21 @@ namespace SuperQQ.Settlement
         }
 
         // ==================== 结算刷新 ====================
+
+        /// <summary>
+        /// 联机：服务器 Settlement 晚于结算阶段进入到达时调用。
+        /// 仅结算展示期间（轨道根已激活）按最新记分簿重建柱体；未进入结算阶段时为空操作
+        /// （分数已写入记分簿，进入阶段时 HandlePhaseChanged 自会按最新数据刷新）。
+        /// </summary>
+        public void RefreshSettlementIfShowing()
+        {
+            if (_tracksRoot == null || !_tracksRoot.gameObject.activeSelf)
+            {
+                return;
+            }
+
+            RefreshSettlement();
+        }
 
         /// <summary>
         /// 刷新结算显示
@@ -242,17 +302,7 @@ namespace SuperQQ.Settlement
             }
 
             // 停止正在进行的动画和流程协程
-            if (_animationCoroutine != null)
-            {
-                StopCoroutine(_animationCoroutine);
-                _animationCoroutine = null;
-            }
-
-            if (_settlementFlowCoroutine != null)
-            {
-                StopCoroutine(_settlementFlowCoroutine);
-                _settlementFlowCoroutine = null;
-            }
+            StopSettlementCoroutines();
 
             // 场景内覆盖层：轨道根对齐当前相机中心（Level1 相机跟随玩家，需归位才能看到结算）
             if (Camera.main != null)
@@ -573,6 +623,14 @@ namespace SuperQQ.Settlement
             if (delay > 0f)
             {
                 yield return new WaitForSeconds(delay);
+            }
+
+            // 动画中断（服务器结算到达触发重建 / 阶段被服务器提前切走）后，
+            // 本协程不受 StopCoroutine(_animationCoroutine) 管控仍在跑：
+            // 旧柱体已被 Destroy 或随轨道根隐藏，启动协程会报 "game object is inactive"
+            if (pillar == null || !pillar.gameObject.activeInHierarchy)
+            {
+                yield break;
             }
             pillar.StartPopAnimation(_config.PopDuration, _config.PopCurve);
         }

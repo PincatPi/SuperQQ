@@ -96,6 +96,9 @@ namespace SuperQQ.Score
                 return;
             }
             _instance = this;
+            // 场景内可能被放在父节点下（管理器分组），DontDestroyOnLoad 仅对根对象生效，
+            // 先脱离父级确保持久化真正生效（否则切到最终结算场景时本管理器被随场景销毁）
+            transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
         }
 
@@ -421,6 +424,59 @@ namespace SuperQQ.Score
             });
 
             OnGameFinished?.Invoke(winners);
+        }
+
+        /// <summary>
+        /// 联机：把服务器下发的本轮得分写入本地记分簿（服务器权威，覆盖本地算分）。
+        /// 结算柱动画、最终结算、结算面板的本地回退路径都读本地簿，统一在此对齐；
+        /// 本地算分在联机下不可靠（玩家状态/注册表口径与服务器不同步）时保证展示正确。
+        /// </summary>
+        /// <param name="playerName">玩家名称（本地记分簿键）</param>
+        /// <param name="roundIndex">轮次索引（从1开始）</param>
+        /// <param name="roundScore">本轮总得分</param>
+        /// <param name="totalScore">截至本轮累计总分</param>
+        /// <param name="breakdown">六个明细分（键为 ScoreType），可为 null</param>
+        public void ApplyServerRoundScore(
+            string playerName, int roundIndex, int roundScore, int totalScore,
+            IReadOnlyDictionary<ScoreType, int> breakdown)
+        {
+            if (string.IsNullOrEmpty(playerName) || roundIndex <= 0)
+            {
+                return;
+            }
+
+            RegisterScoreRecord(playerName);
+            PlayerScoreRecord record = _scoreRecords[playerName];
+
+            RoundScoreData data = null;
+            for (int i = 0; i < record.RoundHistory.Count; i++)
+            {
+                if (record.RoundHistory[i].RoundIndex == roundIndex)
+                {
+                    data = record.RoundHistory[i];
+                    break;
+                }
+            }
+            if (data == null)
+            {
+                data = new RoundScoreData { RoundIndex = roundIndex };
+                record.RoundHistory.Add(data);
+            }
+
+            data.ScoreBreakdown.Clear();
+            if (breakdown != null)
+            {
+                foreach (KeyValuePair<ScoreType, int> pair in breakdown)
+                {
+                    if (pair.Value > 0)
+                    {
+                        data.ScoreBreakdown[pair.Key] = pair.Value;
+                    }
+                }
+            }
+            data.RoundTotal = roundScore;
+            data.CumulativeTotal = totalScore;
+            record.TotalScore = totalScore;
         }
 
         // ==================== 中间数据记录（供其他系统调用） ====================

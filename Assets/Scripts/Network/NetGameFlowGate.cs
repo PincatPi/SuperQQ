@@ -240,9 +240,57 @@ namespace SuperQQ.Network
                 Debug.Log($"[NetWork]   第{r.Rank}名 {r.PlayerId} 本轮={r.RoundScore} 累计={r.TotalScore} mmrΔ={r.MmrDelta} coinΔ={r.CoinDelta}");
             }
 
+            // 服务器权威分数写回本地记分簿：结算柱动画/最终结算/面板本地回退都读本地簿，
+            // 本地算分在联机下不可靠（状态口径与服务器不同步），统一以服务器为准
+            ApplyServerScoresToLocalBook(settlement);
+
             // Settlement 通常晚于结算面板弹出到达（面板由 GamePhaseSync{ROUND_SETTLEMENT} 触发），
             // 若面板正开着则用最新分数重建一次，否则本次面板永远看不到服务器分数
             SuperQQ.Settlement.Runtime.RoundResultsDirector.Instance?.RefreshIfOpen();
+
+            // 记分柱动画同理：阶段进入时按本地分数建的柱，服务器分数到达后按权威分数重建
+            SuperQQ.Settlement.SettlementController.Instance?.RefreshSettlementIfShowing();
+        }
+
+        /// <summary>
+        /// 把 Settlement 中各玩家的服务器权威分数写入本地记分簿（playerId → 玩家名映射后落账）。
+        /// 仅处理服务器实际给了分数的玩家（与 _serverScores 的纳入口径一致）。
+        /// </summary>
+        private void ApplyServerScoresToLocalBook(global::Minigame.Room.V1.Settlement settlement)
+        {
+            SuperQQ.Score.PlayerScoreManager scoreManager = SuperQQ.Score.PlayerScoreManager.Instance;
+            SuperQQ.Player.PlayerSessionManager session = SuperQQ.Player.PlayerSessionManager.Instance;
+            if (scoreManager == null || session == null)
+            {
+                return;
+            }
+
+            foreach (SettlementPlayerResult r in settlement.Results)
+            {
+                if (r.RoundScore == 0 && r.TotalScore == 0)
+                {
+                    continue; // 与 _serverScores 纳入口径一致：全 0 视为服务器未实现算分，保留本地数据
+                }
+
+                SuperQQ.Player.PlayerProfile profile = session.GetProfileByIdentity(r.PlayerId);
+                if (profile == null)
+                {
+                    Debug.LogWarning($"[NetWork] 服务器结算玩家 {r.PlayerId} 无本地档案，分数未写回记分簿");
+                    continue;
+                }
+
+                Dictionary<SuperQQ.Score.ScoreType, int> breakdown = new()
+                {
+                    { SuperQQ.Score.ScoreType.Completion, r.FinishScore },
+                    { SuperQQ.Score.ScoreType.FirstPlace, r.FirstFinishScore },
+                    { SuperQQ.Score.ScoreType.SoloClear, r.SoloFinishScore },
+                    { SuperQQ.Score.ScoreType.TrapKill, r.TrapKillScore },
+                    { SuperQQ.Score.ScoreType.SpecialEffect, r.OvertakeScore },
+                    { SuperQQ.Score.ScoreType.ScoreItem, r.CoinScore }
+                };
+                scoreManager.ApplyServerRoundScore(
+                    profile.PlayerName, settlement.Round, r.RoundScore, r.TotalScore, breakdown);
+            }
         }
 
         /// <summary>
@@ -336,7 +384,9 @@ namespace SuperQQ.Network
                     {
                         foreach (SuperQQ.Player.PlayerProfile prof in session.Profiles)
                         {
-                            if (prof.IsLocal && prof.PlayerName == nickname)
+                            // 匹配本地档案：昵称相同，或 PlayerId 为空的本地档案（局内名与服务器
+                            // 昵称不一致时按名匹配会漏，PlayerId 为空的本地档案就是待合并对象）
+                            if (prof.IsLocal && (prof.PlayerName == nickname || string.IsNullOrEmpty(prof.PlayerId)))
                             {
                                 exists = true;
                                 // 合并：老档案补齐 PlayerId（联机身份上报/匹配需要）
