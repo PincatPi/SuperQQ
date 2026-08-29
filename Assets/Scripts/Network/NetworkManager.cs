@@ -193,6 +193,9 @@ namespace SuperQQ.Network
         [Header("心跳间隔（秒）")]
         [SerializeField] private float heartbeatInterval = 5f;
 
+        [Header("连接超时（秒）：网络不可达时快速失败，避免无限挂起")]
+        [SerializeField] private float connectTimeoutSeconds = 10f;
+
         [Header("断线重连")]
         [Tooltip("断线后自动重连的总时长上限（秒），与服务器房间保留期一致；仅对已登录玩家生效")]
         [SerializeField] private float reconnectMaxDuration = 120f;
@@ -264,11 +267,18 @@ namespace SuperQQ.Network
 
             Debug.Log($"[NetWork] 正在连接服务器: {url}");
 
+            // 捕获本次连接的局部引用，防止连接过程中被再次 Connect/Dispose 后操作错对象
+            ClientWebSocket localSocket = socket;
+            CancellationTokenSource localCts = cts;
+            // 超时保护：服务器不可达时 TCP 默认重传要等很久，给业务一个明确的失败
+            var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(localCts.Token);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(connectTimeoutSeconds));
+
             Task.Run(async () =>
             {
                 try
                 {
-                    await socket.ConnectAsync(new Uri(url), cts.Token);
+                    await localSocket.ConnectAsync(new Uri(url), timeoutCts.Token);
                     Debug.Log("[NetWork] WebSocket 握手成功，连接已建立");
                     connEvents.Enqueue(true);
                     StartHeartbeatLoop();
@@ -276,7 +286,19 @@ namespace SuperQQ.Network
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning($"[NetWork] 连接/接收异常: {e}");
+                    // 区分"超时（网络不通）"和"其他异常"，方便真机排查
+                    if (!localCts.IsCancellationRequested && timeoutCts.IsCancellationRequested)
+                    {
+                        Debug.LogWarning($"[NetWork] 连接超时（{connectTimeoutSeconds:F0}s 无响应）: {url}，请检查设备与服务器是否网络互通");
+                    }
+                    else if (!localCts.IsCancellationRequested)
+                    {
+                        Debug.LogWarning($"[NetWork] 连接/接收异常: {e}");
+                    }
+                }
+                finally
+                {
+                    timeoutCts.Dispose();
                 }
                 connEvents.Enqueue(false);
             });
@@ -678,7 +700,11 @@ namespace SuperQQ.Network
 
         private void OnDestroy()
         {
-            if (Instance == this) Instance = null;
+            // 只有单例本身被销毁才断开连接。场景里重复放置的 NetworkManager
+            // 会在 Awake 阶段被 Destroy，同样触发 OnDestroy，绝不能误杀
+            // 单例正在使用的连接（切场景时会导致连接被无辜掐断）。
+            if (Instance != this) return;
+            Instance = null;
             Disconnect();
         }
 
