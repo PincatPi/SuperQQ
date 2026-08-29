@@ -14,6 +14,7 @@ namespace SuperQQ.Selection.Runtime
     ///   SizeBadge    （TextMeshProUGUI，旋转吐司尺寸角标"1x1/2x2/3x3"，
     ///                 建议锚定图标右下角；非吐司道具或尺寸未决定时自动隐藏）
     ///   SelectedIcon （被认领后激活显示的选中图标，未认领时隐藏）
+    ///   ClaimerIcon  （Image，认领该槽位玩家的 PlayerIcon，未认领时隐藏）
     /// 点击入口取本物体上的 Button。
     /// </summary>
     public class PropSelectionSlotView : MonoBehaviour
@@ -21,6 +22,8 @@ namespace SuperQQ.Selection.Runtime
         [Header("认领表现")]
         [Tooltip("槽位被认领后激活显示的图标；留空时按 SelectedIcon 子物体命名约定自动识别")]
         [SerializeField] private GameObject selectedIcon;
+        [Tooltip("显示认领该槽位玩家头像的 Image；留空时按 ClaimerIcon 子物体命名约定自动识别")]
+        [SerializeField] private Image claimerIconImage;
 
         private Button button;
         private Image iconImage;
@@ -52,6 +55,10 @@ namespace SuperQQ.Selection.Runtime
             if (selectedIcon != null)
             {
                 selectedIcon.SetActive(false);
+            }
+            if (claimerIconImage != null)
+            {
+                claimerIconImage.gameObject.SetActive(false);
             }
         }
 
@@ -112,9 +119,10 @@ namespace SuperQQ.Selection.Runtime
             return box != null ? box.Footprint : Vector2Int.zero;
         }
 
-        /// <summary>标记该槽位已被认领：显示认领者颜色标记与选中图标、关闭点击</summary>
+        /// <summary>标记该槽位已被认领：显示认领者颜色标记与选中图标、认领者头像，关闭点击</summary>
         /// <param name="claimerColor">认领者的玩家颜色</param>
-        public void SetClaimed(Color claimerColor)
+        /// <param name="claimerIcon">认领者的 PlayerIcon（选择阶段标识图），可为 null</param>
+        public void SetClaimed(Color claimerColor, Sprite claimerIcon = null)
         {
             if (claimMarker != null)
             {
@@ -124,6 +132,13 @@ namespace SuperQQ.Selection.Runtime
             if (selectedIcon != null)
             {
                 selectedIcon.SetActive(true);
+            }
+            if (claimerIconImage != null)
+            {
+                claimerIconImage.sprite = claimerIcon;
+                claimerIconImage.color = claimerColor;
+                claimerIconImage.preserveAspect = true;
+                claimerIconImage.gameObject.SetActive(true);
             }
             if (button != null)
             {
@@ -172,6 +187,12 @@ namespace SuperQQ.Selection.Runtime
                 {
                     selectedIcon = icon.gameObject;
                 }
+            }
+
+            // ClaimerIcon 未手动拖拽时按命名约定兜底识别
+            if (claimerIconImage == null)
+            {
+                claimerIconImage = FindChildComponent<Image>("ClaimerIcon");
             }
         }
 

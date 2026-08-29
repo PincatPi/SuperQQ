@@ -79,6 +79,14 @@ namespace SuperQQ.Item
             && NetworkManager.Instance.IsConnected
             && !string.IsNullOrEmpty(NetworkManager.Instance.RoomId);
 
+        /// <summary>
+        /// 当前是否可响应麦克风（仅 PlayingPhase 开麦并上报位置；PlayingPhase 直接转入结算阶段时
+        /// 阶段钩子不派发，需实时判定）。无阶段系统的调试场景视为可响应，保证 debugIgnoreOwner 可玩
+        /// </summary>
+        private static bool BInPlayingPhase =>
+            GameFlow.GamePhaseManager.Instance == null
+            || GameFlow.GamePhaseManager.Instance.CurrentPhaseAsset is GameFlow.PlayingPhase;
+
         private float CellSize => GridManager.Instance != null ? GridManager.Instance.PublicCellSize : 0.5f;
 
         private void Awake()
@@ -213,7 +221,9 @@ namespace SuperQQ.Item
                 return;
             }
 
-            if (responding)
+            // 仅在 PlayingPhase 驱动与上报：离开 PlayingPhase（含直接进结算、钩子未派发的路径）
+            // 停止麦克风驱动与位置上报，平台保持当前位置直到建造阶段本地复位
+            if (responding && BInPlayingPhase)
             {
                 MicVolumeManager mic = MicVolumeManager.Instance;
                 float volume = mic != null && mic.IsRunning ? Mathf.Clamp01(mic.Volume) : 0f;

@@ -442,7 +442,7 @@ namespace SuperQQ.Selection.Runtime
             PropSelectionSlotView view = FindSlotView(result.SlotIndex);
             if (view != null)
             {
-                view.SetClaimed(ResolvePlayerColor(result.PlayerKey));
+                view.SetClaimed(ResolvePlayerColor(result.PlayerKey), ResolvePlayerIcon(result.PlayerKey));
             }
 
             // 图标归位：本地点击路径下图标已飞抵槽位（认领以到达为准），此处为空操作；
@@ -1611,6 +1611,24 @@ namespace SuperQQ.Selection.Runtime
                 }
             }
             return Color.white;
+        }
+
+        /// <summary>按认领者标识解析玩家 PlayerIcon（选择阶段标识图）；未找到时返回 null</summary>
+        private static Sprite ResolvePlayerIcon(string playerKey)
+        {
+            LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
+            if (registry != null)
+            {
+                IReadOnlyList<PlayerController> players = registry.Players;
+                for (int i = 0; i < players.Count; i++)
+                {
+                    if (players[i] != null && players[i].IdentityKey == playerKey)
+                    {
+                        return players[i].SelectionIconSprite;
+                    }
+                }
+            }
+            return null;
         }
 
         /// <summary>解析本地玩家角色；未找到时返回 null，不阻断选择流程</summary>

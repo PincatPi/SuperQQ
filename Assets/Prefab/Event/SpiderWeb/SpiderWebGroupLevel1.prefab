@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1414160683497886768}
   m_Layer: 0
-  m_Name: SpiderWebGroup
+  m_Name: SpiderWebGroupLevel1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

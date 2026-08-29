@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4830634eb7eb4c7fbccd43aa99986bee, type: 3}
-  m_Name: MagicCircleModifier
+  m_Name: MagicCircleModifierLevel2
   m_EditorClassIdentifier: 
   _circlePrefab: {fileID: 834475662113966909, guid: d6ef7596d4c874484a037464da232faa, type: 3}
-  _circlePosition: {x: 5.656745, y: 1.7069302}
+  _circlePosition: {x: 2.5376728, y: 8.65848}
   _chantPromptPrefab: {fileID: 1547929648626745103, guid: 631660be41b5c4ba39f179502d273c83, type: 3}
   _promptText: "\u8BF7\u541F\u5531"
   _promptOffset: {x: 0, y: 2}

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 215043930a474fdabc88b4ad25154eaf, type: 3}
-  m_Name: SpiderWebModifier
+  m_Name: SpiderWebModifierLevel1
   m_EditorClassIdentifier: 
   _webFieldPrefab: {fileID: 6981192916707139219, guid: 72d4592a3cb484efcaf9cf353a09544d, type: 3}
   _webFieldPosition: {x: 0, y: 0}
