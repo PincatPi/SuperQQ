@@ -17,7 +17,7 @@ namespace SuperQQ.UI
     /// 职责规划：
     ///   - VolumeBar：绑定 MicVolumeManager 实时分贝，驱动 Slider Handle 在固定背景条上移动（已实现）
     ///   - PlayerName：本地玩家名称显示（已实现：联机取账户昵称，单机退回场景配置名）
-    ///   - PlayerIcon：玩家头像显示（已实现：取本地化身 SelectionIconSprite，按玩家色着色）
+    ///   - PlayerIcon：玩家头像显示（已实现：取本地化身 SelectionIconSprite，不染座位色）
     ///
     /// VolumeBar 绑定方式：在 Inspector 中将 VolumeBar 的 Slider 拖入 Volume Slider 字段
     ///   - Slider 仅作展示：Awake 中自动设为不可交互，并固定 min=0 / max=1
@@ -38,7 +38,7 @@ namespace SuperQQ.UI
 
         [Header("玩家信息")]
         [SerializeField] private TextMeshProUGUI _playerNameText;       // 玩家名称文本（联机显示账户昵称）
-        [SerializeField] private Image _playerIconImage;                // 玩家头像（本地化身 SelectionIconSprite + 玩家色）
+        [SerializeField] private Image _playerIconImage;                // 玩家头像（本地化身 SelectionIconSprite，原始配色）
 
         private float _volumeDisplayValue;
         private bool _playerNameResolved;                               // 名称是否已解析显示（未成功时每帧重试）
@@ -197,7 +197,7 @@ namespace SuperQQ.UI
         /// <summary>
         /// 解析并显示本地玩家头像：
         /// 取 LevelPlayerRegistry 中本地化身的 SelectionIconSprite（未配置时回退光标标识图 → 角色本体 Sprite），
-        /// 并按玩家色着色（与选择阶段/结算面板的表现一致）；化身未就绪时每帧重试
+        /// 不染座位色（与选择阶段/结算面板的表现一致）；化身未就绪时每帧重试
         /// </summary>
         private void TryResolvePlayerIcon()
         {
@@ -219,7 +219,7 @@ namespace SuperQQ.UI
                 if (players[i] != null && players[i].BIsLocal)
                 {
                     _playerIconImage.sprite = players[i].SelectionIconSprite;
-                    _playerIconImage.color = players[i].PlayerColor;
+                    _playerIconImage.color = Color.white;   // 头像不染座位色，保留角色图标原始配色
                     _playerIconImage.preserveAspect = true;
                     // 无可用 Sprite 时隐藏 Image，避免显示纯色块
                     _playerIconImage.enabled = _playerIconImage.sprite != null;

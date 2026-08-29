@@ -674,7 +674,7 @@ namespace SuperQQ.Placement.Runtime
             ShowRemoteCursor(msg.PlayerId, new Vector2(msg.Position.X, msg.Position.Y));
         }
 
-        /// <summary>显示/更新远端玩家的光标标记（Sprite 取自该玩家化身的 CursorMarkerSprite，颜色用其玩家色）</summary>
+        /// <summary>显示/更新远端玩家的光标标记（Sprite 取自该玩家化身的 CursorMarkerSprite，不染座位色，保留原始配色）</summary>
         private void ShowRemoteCursor(string playerId, Vector2 itemPos)
         {
             PlayerController remote = FindPlayerByIdentity(playerId);
@@ -695,7 +695,7 @@ namespace SuperQQ.Placement.Runtime
             }
 
             cursor.sprite = sprite;
-            cursor.color = remote.PlayerColor;
+            cursor.color = Color.white; // 不染座位色：保留角色标识图原始配色
             ApplyCursorMarkerScale(cursor);
             // 贴远端虚影道具的包围盒左边中点（与本地标记行为一致）；虚影缺失时退回根位置偏移
             Vector2 markerPos = itemPos + cursorMarkerOffset;
@@ -1498,7 +1498,7 @@ namespace SuperQQ.Placement.Runtime
             }
 
             cursorMarker.sprite = sprite;
-            cursorMarker.color = localPlayer != null ? localPlayer.PlayerColor : Color.white;
+            cursorMarker.color = Color.white; // 不染座位色：保留角色标识图原始配色
             ApplyCursorMarkerScale(cursorMarker);
             cursorMarker.enabled = true;
         }

@@ -12,6 +12,8 @@ namespace SuperQQ.UI.RoundResults
         [SerializeField] private RectTransform _rowRect;
         [SerializeField] private TMP_Text _rankText;
         [SerializeField] private Image _avatarBackground;
+        [Tooltip("玩家头像图标（PlayerIcon）：有 icon 时原色显示，无 icon 时隐藏，回退首字母 + 背景色块")]
+        [SerializeField] private Image _avatarIcon;
         [SerializeField] private TMP_Text _avatarInitial;
         [SerializeField] private TMP_Text _playerNameText;
         [SerializeField] private TMP_Text _scoreText;
@@ -193,11 +195,19 @@ namespace SuperQQ.UI.RoundResults
         }
 
         /// <summary>
-        /// 应用头像：有 icon 时显示 icon sprite（隐藏首字母），否则回退为首字母 + 背景色块。
+        /// 应用头像：配置了 AvatarIcon 时由其显示 PlayerIcon（原色显示，不染色）；
+        /// 未配置时有 icon 则显示在背景图上（隐藏首字母），无 icon 回退为首字母 + 背景色块。
         /// </summary>
         private void ApplyAvatar(Sprite playerIcon, string playerName)
         {
-            if (_avatarBackground != null && playerIcon != null)
+            if (_avatarIcon != null)
+            {
+                _avatarIcon.sprite = playerIcon;
+                _avatarIcon.color = Color.white;
+                _avatarIcon.preserveAspect = true;
+                _avatarIcon.gameObject.SetActive(playerIcon != null);
+            }
+            else if (_avatarBackground != null && playerIcon != null)
             {
                 _avatarBackground.sprite = playerIcon;
                 _avatarBackground.color = Color.white;

@@ -515,7 +515,7 @@ namespace SuperQQ.Selection.Runtime
         // ==================== 玩家图标 ====================
 
         /// <summary>
-        /// 为关卡内每名玩家生成面板图标：Sprite 取自玩家配置的标识图、染玩家颜色，
+        /// 为关卡内每名玩家生成面板图标：Sprite 取自玩家配置的标识图、不染座位色（保留角色原始配色），
         /// 按注册顺序依次使用前 N 个出现位（3 名玩家固定用前 3 个位置；玩家数多于出现位时循环复用）。
         /// 图标层与自动生成的出现位整体挂在面板根下，EndPhase 时一并销毁。
         /// </summary>
@@ -791,7 +791,7 @@ namespace SuperQQ.Selection.Runtime
                 Debug.LogWarning($"{LOG_TAG} 玩家 {player.PlayerName} 未配置选择阶段图标（Selection Icon Sprite），图标将显示为纯色块。", player);
             }
             image.sprite = sprite;
-            image.color = player.PlayerColor;
+            image.color = Color.white;  // 不染座位色：保留角色图标原始配色（玩家身份由角色形象区分）
             image.preserveAspect = true;
             image.raycastTarget = false;    // 图标仅作表现，不拦截槽位点击
 

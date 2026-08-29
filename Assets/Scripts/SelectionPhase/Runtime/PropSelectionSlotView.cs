@@ -136,7 +136,7 @@ namespace SuperQQ.Selection.Runtime
             if (claimerIconImage != null)
             {
                 claimerIconImage.sprite = claimerIcon;
-                claimerIconImage.color = claimerColor;
+                claimerIconImage.color = Color.white;   // 头像不染座位色，保留原始配色（claimMarker 色块仍标座位色）
                 claimerIconImage.preserveAspect = true;
                 claimerIconImage.gameObject.SetActive(true);
             }

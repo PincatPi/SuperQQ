@@ -13,9 +13,12 @@ MonoBehaviour:
   m_Name: MagicCircleModifierLevel1
   m_EditorClassIdentifier: 
   _circlePrefab: {fileID: 834475662113966909, guid: d6ef7596d4c874484a037464da232faa, type: 3}
-  _circlePosition: {x: 5.656745, y: 1.7069302}
+  _circlePosition: {x: -7.6890326, y: 2.9269044}
   _chantPromptPrefab: {fileID: 1547929648626745103, guid: 631660be41b5c4ba39f179502d273c83, type: 3}
   _promptText: "\u8BF7\u541F\u5531"
+  _cooldownText: "\u51B7\u5374\u4E2D\u2026"
+  _castSuccessText: "\u65BD\u6CD5\u6210\u529F"
+  _chantFailedText: "\u541F\u5531\u5931\u8D25"
   _promptOffset: {x: 0, y: 2}
   _bEnableVoiceChant: 1
   _chantDurationSeconds: 3.5
@@ -24,3 +27,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 69df8c3909ba427db66b2880ca4db96f, type: 2}
   - {fileID: 11400000, guid: 88a3891958d049669b28a549d8f18043, type: 2}
   _spellMatchThreshold: 0.75
+  _cooldownSeconds: 10

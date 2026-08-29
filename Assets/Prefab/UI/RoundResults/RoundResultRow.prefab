@@ -1106,6 +1106,7 @@ MonoBehaviour:
   _rowRect: {fileID: 3630848401111561334}
   _rankText: {fileID: 4042987902663194382}
   _avatarBackground: {fileID: 0}
+  _avatarIcon: {fileID: 8555980357693151708}
   _avatarInitial: {fileID: 0}
   _playerNameText: {fileID: 4890548719659252626}
   _scoreText: {fileID: 8529276034031782696}
@@ -1116,6 +1117,7 @@ MonoBehaviour:
   _segmentRoot: {fileID: 2037553666663654210}
   _winnerBadge: {fileID: 4257939460371384734}
   _winnerText: {fileID: 4360982680853505150}
+  _barMaxScore: 125
 --- !u!1 &7239911709681770932
 GameObject:
   m_ObjectHideFlags: 0
@@ -1360,3 +1362,14 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5561187393388832890, guid: 8a070b60fed0740b3808ef9eac7504a4, type: 3}
   m_PrefabInstance: {fileID: 8692793481303621448}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8555980357693151708 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1017799568473712276, guid: 8a070b60fed0740b3808ef9eac7504a4, type: 3}
+  m_PrefabInstance: {fileID: 8692793481303621448}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
