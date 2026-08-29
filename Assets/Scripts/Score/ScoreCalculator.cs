@@ -46,8 +46,10 @@ namespace SuperQQ.Score
 
         /// <summary>
         /// 计算一轮中所有参与玩家的得分明细
-        /// 规则参考策划案的结算系统
-        /// 无人通关时本轮五项全部为0；有人通关时按顺序追加五类得分
+        /// 规则参考策划案的结算系统（三条全局覆盖规则）：
+        ///   1. 无人通关：所有玩家六类得分全部为 0；
+        ///   2. 全员通关：只结算成功带回的金币，其余五类全部为 0；
+        ///   3. 部分玩家通关：执行完整计分公式，陷阱拥有者本人未通关也可获得有效击杀分。
         /// </summary>
         /// <param name="roundIndex">当前轮次索引（从1开始）</param>
         /// <param name="allPlayerNames">所有参与玩家名称列表</param>
@@ -63,6 +65,8 @@ namespace SuperQQ.Score
             Dictionary<string, RoundScoreData> results = new();
 
             bool bHasAnyFinish = input.FinishedPlayerNames.Count > 0;
+            bool bAllFinished = bHasAnyFinish
+                && input.FinishedPlayerNames.Count == allPlayerNames.Count;
             bool bIsSoloClear = input.FinishedPlayerNames.Count == 1;
             string firstPlayerName = bHasAnyFinish ? input.FinishedPlayerNames[0] : null;
 
@@ -75,8 +79,18 @@ namespace SuperQQ.Score
                     ScoreBreakdown = new Dictionary<ScoreType, int>()
                 };
 
-                if (bHasAnyFinish)
+                if (bAllFinished)
                 {
+                    // 规则2 全员通关：只结算金币，其余五类全部为0
+                    data.ScoreBreakdown[ScoreType.Completion] = 0;
+                    data.ScoreBreakdown[ScoreType.FirstPlace] = 0;
+                    data.ScoreBreakdown[ScoreType.SoloClear] = 0;
+                    data.ScoreBreakdown[ScoreType.TrapKill] = 0;
+                    data.ScoreBreakdown[ScoreType.ScoreItem] = GetBonusScore(input, playerName);
+                }
+                else if (bHasAnyFinish)
+                {
+                    // 规则3 部分玩家通关：完整计分公式
                     // 1. 本次得分：通关+20，未通关0
                     bool bIsFinished = IsPlayerFinished(input, playerName);
                     data.ScoreBreakdown[ScoreType.Completion] = bIsFinished ? COMPLETION_SCORE : 0;
@@ -88,25 +102,26 @@ namespace SuperQQ.Score
                     // 3. 独行积分：仅一人通关且该玩家通关时+15
                     data.ScoreBreakdown[ScoreType.SoloClear] =
                         (bIsSoloClear && bIsFinished) ? SOLO_CLEAR_SCORE : 0;
+
+                    // 4. 陷阱得分：每次有效击杀+5，最多计2次；
+                    //    陷阱拥有者本人未通关也可获得有效击杀分
+                    int trapKills = GetTrapKillCount(input, playerName);
+                    int cappedKills = System.Math.Min(trapKills, MAX_TRAP_KILL_COUNT);
+                    data.ScoreBreakdown[ScoreType.TrapKill] = cappedKills * TRAP_KILL_SCORE_PER;
+
+                    // 5. 得分道具得分：金币等得分道具的额外加分，单独成项；
+                    //    金币仅在跟随角色通关时提交，天然满足"通关才加分"
+                    data.ScoreBreakdown[ScoreType.ScoreItem] = GetBonusScore(input, playerName);
                 }
                 else
                 {
-                    // 无人通关时五项全部为0
+                    // 规则1 无人通关：六类全部为0
                     data.ScoreBreakdown[ScoreType.Completion] = 0;
                     data.ScoreBreakdown[ScoreType.FirstPlace] = 0;
                     data.ScoreBreakdown[ScoreType.SoloClear] = 0;
+                    data.ScoreBreakdown[ScoreType.TrapKill] = 0;
+                    data.ScoreBreakdown[ScoreType.ScoreItem] = 0;
                 }
-
-                // 4. 陷阱得分：每次有效击杀+5，最多计2次；无人通关时为0
-                int trapKills = GetTrapKillCount(input, playerName);
-                int cappedKills = System.Math.Min(trapKills, MAX_TRAP_KILL_COUNT);
-                data.ScoreBreakdown[ScoreType.TrapKill] =
-                    bHasAnyFinish ? cappedKills * TRAP_KILL_SCORE_PER : 0;
-
-                // 5. 得分道具得分：金币等得分道具的额外加分，单独成项；
-                //    金币仅在跟随角色通关时提交，天然满足"通关才加分"；无人通关时为0
-                data.ScoreBreakdown[ScoreType.ScoreItem] =
-                    bHasAnyFinish ? GetBonusScore(input, playerName) : 0;
 
                 // 汇总本轮总得分
                 data.RoundTotal = SumBreakdown(data.ScoreBreakdown);

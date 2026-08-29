@@ -4,25 +4,30 @@ using UnityEngine;
 namespace SuperQQ.UI
 {
     /// <summary>
-    /// 触屏输入面板：挂在触屏按钮面板的根节点上。
+    /// 触屏输入面板：挂在触屏输入面板的根节点上。
     /// 运行时判断平台：
-    ///   移动端（或 Editor 勾选强制开关）→ 显示面板，并将本地玩家的输入源替换为 TouchPlayerInput；
+    ///   移动端（或 Editor 勾选强制开关）→ 显示面板，并将本地玩家的输入源替换为 JoystickPlayerInput；
     ///   PC → 隐藏整个面板，保持键盘输入。
+    /// 移动由虚拟摇杆（VirtualJoystick）控制：存活状态仅左右 + 独立跳跃键，幽灵状态四向移动。
     /// 只绑定 BIsLocal == true 的本地玩家，联机远程玩家不受影响。
     /// </summary>
     public class MobileInputPanel : MonoBehaviour
     {
-        [Header("触屏按钮引用")]
-        [SerializeField] private TouchInputButton leftButton;
-        [SerializeField] private TouchInputButton rightButton;
-        [SerializeField] private TouchInputButton jumpButton;
-        [SerializeField] private TouchInputButton downButton;
+        [Header("触屏输入引用")]
+        [SerializeField, Tooltip("移动摇杆（background 上挂 VirtualJoystick，center 为可拖动把手）")]
+        private VirtualJoystick moveJoystick;
+        [SerializeField, Tooltip("独立跳跃按钮（存活状态的唯一向上手段）")]
+        private TouchInputButton jumpButton;
+
+        [Header("摇杆参数")]
+        [SerializeField, Range(0.05f, 1f), Tooltip("摇杆轴向触发阈值：偏移比例达到该值视为按下对应方向键")]
+        private float axisThreshold = 0.3f;
 
         [Header("调试")]
         [SerializeField, Tooltip("在 PC/编辑器中也强制启用触屏输入，便于用鼠标模拟测试")]
         private bool forceTouchInEditor = false;
 
-        private TouchPlayerInput _touchInput;
+        private JoystickPlayerInput _touchInput;
         private PlayerController _localPlayer;
 
         private bool TouchModeEnabled => Application.isMobilePlatform || forceTouchInEditor;
@@ -35,7 +40,7 @@ namespace SuperQQ.UI
                 gameObject.SetActive(false);
                 return;
             }
-            _touchInput = new TouchPlayerInput(leftButton, rightButton, jumpButton, downButton);
+            _touchInput = new JoystickPlayerInput(moveJoystick, jumpButton, axisThreshold);
             TryBindLocalPlayer();
         }
 
@@ -58,6 +63,9 @@ namespace SuperQQ.UI
                 _localPlayer.SetInputSource(_touchInput);
                 Debug.Log($"[MobileInputPanel] 本地玩家 {_localPlayer.PlayerName} 已切换为触屏输入");
             }
+
+            // 按当前状态切换摇杆模式：幽灵四向移动，存活仅左右 + 独立跳跃键
+            _touchInput.FourWayMode = _localPlayer.BIsGhost;
         }
 
         private void TryBindLocalPlayer()

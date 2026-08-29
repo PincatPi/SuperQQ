@@ -20,8 +20,12 @@ namespace SuperQQ.UI.RoundResults
         [SerializeField] private RoundResultRowView _rowPrefab;
         [SerializeField] private Button _continueButton;
         [SerializeField] private TMP_Text _continueButtonText;
+        [Tooltip("无人通关提示文本；仅本轮无人通关时显示")]
+        [SerializeField] private TMP_Text _noFinishNoticeText;
 
         [Header("Behaviour")]
+        [Tooltip("无人通关时显示的提示文案")]
+        [SerializeField] private string _noFinishNotice = "本轮无人通关，全员不加分";
         [SerializeField, Min(1)] private int _victoryScore = 100;
         [SerializeField] private bool _notifyGameFlowOnContinue;
         [SerializeField, Min(0.05f)] private float _panelRevealDuration = 0.28f;
@@ -41,6 +45,7 @@ namespace SuperQQ.UI.RoundResults
         private RoundResultRowView _dynamicRowPrefab;
         private RectTransform _dynamicRowsContainer;
         private readonly List<RoundResultRowView> _dynamicRows = new();
+        private bool _bNoPlayerFinished;                                    // 本轮是否无人通关（由数据适配层判定）
 
         public int VictoryScore
         {
@@ -94,7 +99,7 @@ namespace SuperQQ.UI.RoundResults
 
         public bool ShowCurrentRound(Action onContinue = null)
         {
-            List<RoundResultPlayerData> entries = RoundResultsDataAdapter.BuildCurrentRound(out int roundIndex);
+            List<RoundResultPlayerData> entries = RoundResultsDataAdapter.BuildCurrentRound(out int roundIndex, out _bNoPlayerFinished);
             if (entries.Count == 0)
             {
                 Debug.LogWarning("[RoundResultsPanel] 当前轮没有可显示的结算数据。");
@@ -201,7 +206,19 @@ namespace SuperQQ.UI.RoundResults
                 _rankSlots.Add(row.LayoutPosition);
             }
 
+            UpdateNoFinishNotice();
             return orderedEntries.Count;
+        }
+
+        /// <summary>无人通关提示：仅本轮无人通关时显示（文案可在 Inspector 配置）</summary>
+        private void UpdateNoFinishNotice()
+        {
+            if (_noFinishNoticeText == null)
+            {
+                return;
+            }
+            _noFinishNoticeText.text = _noFinishNotice;
+            _noFinishNoticeText.gameObject.SetActive(_bNoPlayerFinished);
         }
         public void HideImmediate()
         {
@@ -213,6 +230,11 @@ namespace SuperQQ.UI.RoundResults
 
             ClearPlayerRows();
             _onContinue = null;
+            _bNoPlayerFinished = false;
+            if (_noFinishNoticeText != null)
+            {
+                _noFinishNoticeText.gameObject.SetActive(false);
+            }
             if (_canvasGroup != null)
             {
                 _canvasGroup.alpha = 0f;
@@ -287,7 +309,7 @@ namespace SuperQQ.UI.RoundResults
         /// </summary>
         public bool ShowCurrentRoundPlayerRows(RoundResultRowView rowPrefab, RectTransform rowsContainer, Action onContinue = null)
         {
-            List<RoundResultPlayerData> entries = RoundResultsDataAdapter.BuildCurrentRound(out int roundIndex);
+            List<RoundResultPlayerData> entries = RoundResultsDataAdapter.BuildCurrentRound(out int roundIndex, out _bNoPlayerFinished);
             if (entries.Count == 0)
             {
                 Debug.LogWarning("[RoundResultsPanel] 当前轮没有可显示的结算数据。");

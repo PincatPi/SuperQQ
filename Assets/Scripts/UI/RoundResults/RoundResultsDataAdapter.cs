@@ -41,7 +41,8 @@ namespace SuperQQ.UI.RoundResults
             ScoreType.ScoreItem
         };
 
-        public static List<RoundResultPlayerData> BuildCurrentRound(out int roundIndex)
+        /// <param name="bNoPlayerFinished">本轮是否无人通关（全员不加分，供结算面板提示）</param>
+        public static List<RoundResultPlayerData> BuildCurrentRound(out int roundIndex, out bool bNoPlayerFinished)
         {
             PlayerScoreManager scoreManager = PlayerScoreManager.Instance;
             roundIndex = scoreManager != null ? scoreManager.CurrentRoundIndex : 0;
@@ -50,6 +51,7 @@ namespace SuperQQ.UI.RoundResults
             if (scoreManager == null)
             {
                 Debug.LogWarning("[RoundResultsDataAdapter] PlayerScoreManager 不存在。");
+                bNoPlayerFinished = false;
                 return result;
             }
 
@@ -116,7 +118,32 @@ namespace SuperQQ.UI.RoundResults
                                           result[i].RoundTotal == bestRoundScore;
             }
 
+            bNoPlayerFinished = ResolveNoPlayerFinished(result);
             return result;
+        }
+
+        /// <summary>
+        /// 判定本轮是否无人通关：以玩家注册表中的 Finished 状态为准（结算阶段玩家尚未复活，
+        /// 状态仍有效；联机端远端状态由快照/出局广播同步到本地化身）。
+        /// 注册表不可用时回退为"全员本轮 0 分"推断——只要有人通关，通关者至少获得通关分，
+        /// 全员 0 分只在无人通关（或全员通关但零金币的极端情况）下出现。
+        /// </summary>
+        private static bool ResolveNoPlayerFinished(List<RoundResultPlayerData> entries)
+        {
+            if (LevelPlayerRegistry.Instance != null)
+            {
+                return LevelPlayerRegistry.Instance
+                    .GetPlayersByState(PlayerStateType.Finished).Count == 0;
+            }
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                if (entries[i].RoundTotal > 0)
+                {
+                    return false;
+                }
+            }
+            return entries.Count > 0;
         }
 
         public static Color GetSegmentColor(ScoreType scoreType)
