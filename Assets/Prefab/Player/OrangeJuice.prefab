@@ -283,13 +283,14 @@ MonoBehaviour:
   isLocal: 1
   playerName: Player1
   playerColor: {r: 0.5730121, g: 1, b: 0, a: 1}
-  cursorMarkerSprite: {fileID: 21300000, guid: 2988ca3d3287944008d1f9a7c0ca5c50, type: 3}
-  selectionIconSprite: {fileID: 21300000, guid: d30f6a1d2edbd4ef99c3a9df3eb0f84c, type: 3}
+  cursorMarkerSprite: {fileID: 21300000, guid: 617e9f46c14b94db3a6da9cb66ebc4aa, type: 3}
+  selectionIconSprite: {fileID: 21300000, guid: 881ab80628a7043388408e44c1f6d879, type: 3}
   leftKey: 97
   rightKey: 100
   jumpKey: 32
   jumpKeyAlt: 119
   downKey: 115
+  tauntKey: 115
   _knockbackStunDuration: 0.6
 --- !u!114 &7027497864802993098
 MonoBehaviour:
