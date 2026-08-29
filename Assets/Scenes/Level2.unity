@@ -8577,13 +8577,13 @@ MonoBehaviour:
     Prefab: {fileID: 9218222533047241839, guid: fa1f9840c5ef14c018da57542f6dfa82, type: 3}
     DefaultDuration: 3
   - Type: 2
-    Prefab: {fileID: 8951677371387435975, guid: 7ed50d8ea220b4ac8851f7c33df8f4d7, type: 3}
+    Prefab: {fileID: 9218222533047241839, guid: 57c2d44b9526b46fda653adbbe1e1a89, type: 3}
     DefaultDuration: 3
   - Type: 3
     Prefab: {fileID: 6993257778526718000, guid: 74eb832ad8df64950959b2d12aa72b7d, type: 3}
     DefaultDuration: 3
   - Type: 5
-    Prefab: {fileID: 4313469324709259989, guid: 02457c99e5e8b4014a3c8637cd7dcd0b, type: 3}
+    Prefab: {fileID: 9218222533047241839, guid: c26512aa6436d42c384ac19d9e6024b9, type: 3}
     DefaultDuration: 3
   - Type: 12
     Prefab: {fileID: 3128525747150584807, guid: a08b8c63ebe1a49f88eb598428152a02, type: 3}

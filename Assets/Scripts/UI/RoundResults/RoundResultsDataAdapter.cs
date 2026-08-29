@@ -151,11 +151,11 @@ namespace SuperQQ.UI.RoundResults
             return scoreType switch
             {
                 ScoreType.Completion => new Color32(41, 185, 172, 255),
-                ScoreType.FirstPlace => new Color32(245, 174, 54, 255),
-                ScoreType.SoloClear => new Color32(235, 95, 91, 255),
-                ScoreType.TrapKill => new Color32(226, 73, 110, 255),
-                ScoreType.SpecialEffect => new Color32(145, 103, 214, 255),
-                ScoreType.ScoreItem => new Color32(87, 190, 105, 255),
+                ScoreType.FirstPlace => new Color32(88, 190, 105, 255),
+                ScoreType.SoloClear => new Color32(38, 167, 231, 255),
+                ScoreType.TrapKill => new Color32(244, 126, 178, 255),
+                ScoreType.SpecialEffect => new Color32(166, 138, 229, 255),
+                ScoreType.ScoreItem => new Color32(254, 210, 108, 255),
                 _ => Color.white
             };
         }
