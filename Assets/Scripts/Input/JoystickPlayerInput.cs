@@ -17,6 +17,9 @@ namespace SuperQQ.Player
         public bool JumpPressed { get; private set; }
         public bool JumpHeld { get; private set; }
 
+        /// <summary>移动端嘲讽不走输入抽象层，由 MobileInputPanel 的嘲讽按钮直接触发 PlayTaunt，此处恒为 false</summary>
+        public bool TauntPressed => false;
+
         /// <summary>
         /// 四向移动模式（幽灵状态）开关：true 时竖直方向由摇杆上下输出；
         /// false 时竖直恒为 0，仅水平移动 + 独立跳跃键。由 MobileInputPanel 按本地玩家状态每帧同步

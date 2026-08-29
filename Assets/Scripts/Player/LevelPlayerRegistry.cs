@@ -33,12 +33,6 @@ namespace SuperQQ.Player
         [Header("出生点")]
         [SerializeField] private Transform[] _spawnPoints;                 // 玩家出生点列表，按索引对应玩家序号
 
-        // 仅剩一名存活玩家时触发的提示标记，防止重复弹出
-        private bool _bIsLastPlayerStandingTriggered;
-
-        // 提前结束长按时长（秒），对应策划文档：长按蹲/秀键 1.6 秒放弃
-        private const float EARLY_QUIT_HOLD_DURATION = 1.6f;
-
         // ==================== 公开事件 ====================
 
         /// <summary>
@@ -88,17 +82,6 @@ namespace SuperQQ.Player
         /// 本关玩家数量
         /// </summary>
         public int PlayerCount => _players.Count;
-
-        /// <summary>
-        /// 是否只剩一名存活玩家
-        /// 满足条件时存活玩家可长按 Down Key 提前放弃
-        /// </summary>
-        public bool BIsLastPlayerStanding => _bIsLastPlayerStandingTriggered;
-
-        /// <summary>
-        /// 提前结束长按时长（秒）
-        /// </summary>
-        public float EarlyQuitHoldDuration => EARLY_QUIT_HOLD_DURATION;
 
         // ==================== 生命周期 ====================
 
@@ -409,8 +392,6 @@ namespace SuperQQ.Player
 
             // 检查是否所有玩家都已出局
             CheckAllPlayersOut();
-            // 检查是否只剩一名存活玩家，若是则弹出提前结束提示
-            CheckLastPlayerStanding();
         }
 
         // ==================== 查询接口 ====================
@@ -495,63 +476,6 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
-        /// 获取当前唯一的在场玩家（存活或冻结）
-        /// 仅在 BIsLastPlayerStanding 为 true 时有效
-        /// 用于提前放弃长按检测时确认当前存活玩家身份
-        /// </summary>
-        /// <returns>唯一在场玩家的 PlayerController，无在场玩家或多人在场时返回 null</returns>
-        public PlayerController GetLastAlivePlayer()
-        {
-            PlayerController lastAlive = null;
-            for (int i = 0; i < _players.Count; i++)
-            {
-                PlayerController player = _players[i];
-                if (player == null)
-                {
-                    continue;
-                }
-
-                if (_playerStates.TryGetValue(player, out PlayerStateType state) && IsInPlay(state))
-                {
-                    if (lastAlive != null)
-                    {
-                        // 多于一名在场玩家，返回 null
-                        return null;
-                    }
-                    lastAlive = player;
-                }
-            }
-            return lastAlive;
-        }
-
-        /// <summary>
-        /// 提前放弃：由最后一名存活玩家长按 Down Key 触发
-        /// 该玩家立即死亡（变幽灵），随后由 CheckAllPlayersOut 检测到全员出局并触发结算
-        /// </summary>
-        /// <param name="player">发起放弃的玩家</param>
-        public void TriggerEarlyQuit(PlayerController player)
-        {
-            if (player == null)
-            {
-                return;
-            }
-
-            if (!_bIsLastPlayerStandingTriggered)
-            {
-                return;
-            }
-
-            // 确认该玩家仍是存活状态
-            if (!_playerStates.TryGetValue(player, out PlayerStateType state) || state != PlayerStateType.Alive)
-            {
-                return;
-            }
-
-            Debug.Log($"[LevelPlayerRegistry] 玩家 {player.PlayerName} 长按放弃，提前结束本关。");
-            player.PlayerDie();
-        }
-
-        /// <summary>
         /// 获取玩家颜色
         /// 优先从 PlayerController 读取，失败时回退到 PlayerSessionManager 的 Profile
         /// 用于结算页等需要在玩家化身销毁后仍能取色的场景
@@ -624,66 +548,6 @@ namespace SuperQQ.Player
 
             // 所有玩家都已通关或死亡，触发出局事件
             OnAllPlayersOut?.Invoke();
-        }
-
-        // ==================== 提前结束检测 ====================
-
-        /// <summary>
-        /// 检查本关是否只剩一名存活玩家
-        /// 满足条件时通过 PopupManager 弹出 EndEarlyPopup，3 秒后自动关闭
-        /// 仅触发一次，避免重复弹出
-        /// </summary>
-        private void CheckLastPlayerStanding()
-        {
-            if (_bIsLastPlayerStandingTriggered)
-            {
-                return;
-            }
-
-            if (_players.Count < 2)
-            {
-                return;
-            }
-
-            int aliveCount = 0;
-            for (int i = 0; i < _players.Count; i++)
-            {
-                PlayerController player = _players[i];
-                if (player == null)
-                {
-                    continue;
-                }
-
-                if (_playerStates.TryGetValue(player, out PlayerStateType state) && IsInPlay(state))
-                {
-                    aliveCount++;
-                    if (aliveCount > 1)
-                    {
-                        return;
-                    }
-                }
-            }
-
-            if (aliveCount == 1)
-            {
-                _bIsLastPlayerStandingTriggered = true;
-                ShowEndEarlyPopup();
-            }
-        }
-
-        /// <summary>
-        /// 通过 PopupManager 弹出 EndEarly 弹窗，3 秒后自动关闭并销毁
-        /// PopupManager 内部负责实例的创建与销毁
-        /// </summary>
-        private void ShowEndEarlyPopup()
-        {
-            if (PopupManager.Instance == null)
-            {
-                Debug.LogWarning("[LevelPlayerRegistry] PopupManager 不存在，无法弹出提前结束提示。");
-                return;
-            }
-
-            PopupManager.Instance.ShowPopup(PopupType.EndEarly, PopupArgs.WithDuration(3f));
         }
 
     }

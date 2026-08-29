@@ -22,6 +22,9 @@ namespace SuperQQ.Player
         /// <summary>跳跃键是否持续按住（用于长按跳高）</summary>
         bool JumpHeld { get; }
 
+        /// <summary>本帧是否按下嘲讽（沿触发，仅一帧为 true）</summary>
+        bool TauntPressed { get; }
+
         /// <summary>每帧刷新输入状态，由 PlayerController.Update 调用</summary>
         void ReadInput();
     }
@@ -37,26 +40,29 @@ namespace SuperQQ.Player
         public float Vertical { get; private set; }
         public bool JumpPressed { get; private set; }
         public bool JumpHeld { get; private set; }
+        public bool TauntPressed { get; private set; }
 
         private KeyCode leftKey;
         private KeyCode rightKey;
         private KeyCode jumpKey;
         private KeyCode jumpKeyAlt;
         private KeyCode downKey;
+        private KeyCode tauntKey;
 
-        public LocalPlayerInput(KeyCode left, KeyCode right, KeyCode jump, KeyCode jumpAlt, KeyCode down)
+        public LocalPlayerInput(KeyCode left, KeyCode right, KeyCode jump, KeyCode jumpAlt, KeyCode down, KeyCode taunt)
         {
-            SetKeys(left, right, jump, jumpAlt, down);
+            SetKeys(left, right, jump, jumpAlt, down, taunt);
         }
 
         /// <summary>更新键位配置（应用玩家档案时调用）</summary>
-        public void SetKeys(KeyCode left, KeyCode right, KeyCode jump, KeyCode jumpAlt, KeyCode down)
+        public void SetKeys(KeyCode left, KeyCode right, KeyCode jump, KeyCode jumpAlt, KeyCode down, KeyCode taunt)
         {
             leftKey = left;
             rightKey = right;
             jumpKey = jump;
             jumpKeyAlt = jumpAlt;
             downKey = down;
+            tauntKey = taunt;
         }
 
         public void ReadInput()
@@ -73,6 +79,7 @@ namespace SuperQQ.Player
             Vertical = v;
             JumpPressed = Input.GetKeyDown(jumpKey) || Input.GetKeyDown(jumpKeyAlt);
             JumpHeld = Input.GetKey(jumpKey) || Input.GetKey(jumpKeyAlt);
+            TauntPressed = Input.GetKeyDown(tauntKey);
         }
     }
 
@@ -90,6 +97,7 @@ namespace SuperQQ.Player
         public float Vertical => 0f;
         public bool JumpPressed => false;
         public bool JumpHeld => false;
+        public bool TauntPressed => false;
 
         public void ReadInput()
         {

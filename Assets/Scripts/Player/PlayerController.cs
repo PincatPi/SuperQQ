@@ -78,6 +78,7 @@ namespace SuperQQ.Player
         [SerializeField] private KeyCode jumpKey = KeyCode.Space;
         [SerializeField] private KeyCode jumpKeyAlt = KeyCode.W;         // 备用跳跃键（存活状态）
         [SerializeField] private KeyCode downKey = KeyCode.S;            // 下蹲/幽灵下移键
+        [SerializeField] private KeyCode tauntKey = KeyCode.S;           // 嘲讽键（PC 端，触发嘲讽表情）
 
         // ---------- 组件缓存 ----------
         private Rigidbody2D _rb;
@@ -110,6 +111,7 @@ namespace SuperQQ.Player
         private float _verticalInput;
         private bool _jumpPressed;
         private bool _jumpHeld;
+        private bool _tauntPressed;
 
         // ==================== 公开访问器（供状态使用） ====================
 
@@ -195,6 +197,8 @@ namespace SuperQQ.Player
         public float VerticalInput => _verticalInput;
         public bool JumpPressed => _jumpPressed;
         public bool JumpHeld => _jumpHeld;
+        // 本帧是否按下嘲讽键（沿触发，仅本地键盘输入源有效，供动画层触发嘲讽表情）
+        public bool TauntPressed => _tauntPressed;
 
         // ==================== 公开状态查询 ====================
 
@@ -341,7 +345,7 @@ namespace SuperQQ.Player
             }
 
             // 默认使用本地键盘输入；联机模式下由外部通过 SetInputSource 替换为远程输入
-            _input = new LocalPlayerInput(leftKey, rightKey, jumpKey, jumpKeyAlt, downKey);
+            _input = new LocalPlayerInput(leftKey, rightKey, jumpKey, jumpKeyAlt, downKey, tauntKey);
 
             _currentState = new PlayerAliveState(this);
             _currentState.Enter();
@@ -403,11 +407,12 @@ namespace SuperQQ.Player
             if (profile.JumpKey != KeyCode.None) jumpKey = profile.JumpKey;
             if (profile.JumpKeyAlt != KeyCode.None) jumpKeyAlt = profile.JumpKeyAlt;
             if (profile.DownKey != KeyCode.None) downKey = profile.DownKey;
+            if (profile.TauntKey != KeyCode.None) tauntKey = profile.TauntKey;
 
             // 同步键位到本地输入源
             if (_input is LocalPlayerInput localInput)
             {
-                localInput.SetKeys(leftKey, rightKey, jumpKey, jumpKeyAlt, downKey);
+                localInput.SetKeys(leftKey, rightKey, jumpKey, jumpKeyAlt, downKey, tauntKey);
             }
 
             // 立即刷新精灵颜色（Awake 已缓存 _spriteRenderer）
@@ -452,7 +457,8 @@ namespace SuperQQ.Player
                 RightKey = rightKey,
                 JumpKey = jumpKey,
                 JumpKeyAlt = jumpKeyAlt,
-                DownKey = downKey
+                DownKey = downKey,
+                TauntKey = tauntKey
             };
         }
 
@@ -495,6 +501,7 @@ namespace SuperQQ.Player
             _verticalInput = _input.Vertical;
             _jumpPressed = _input.JumpPressed;
             _jumpHeld = _input.JumpHeld;
+            _tauntPressed = _input.TauntPressed;
         }
 
         // ==================== 外部速度修正 ====================

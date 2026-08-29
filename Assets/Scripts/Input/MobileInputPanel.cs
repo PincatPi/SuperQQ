@@ -10,6 +10,8 @@ namespace SuperQQ.UI
     ///   PC → 隐藏整个面板，保持键盘输入。
     /// 移动由虚拟摇杆（VirtualJoystick）控制：存活状态仅左右 + 独立跳跃键，幽灵状态四向移动。
     /// 只绑定 BIsLocal == true 的本地玩家，联机远程玩家不受影响。
+    /// 嘲讽按键（tauntButton，面板上的 DownBtn）：按下沿触发本地玩家 PlayerAnimationController.PlayTaunt，
+    /// 打断逻辑由 Animator 过渡实现（移动/跳跃条件过渡 + Taunt 自过渡）
     /// </summary>
     public class MobileInputPanel : MonoBehaviour
     {
@@ -18,6 +20,8 @@ namespace SuperQQ.UI
         private VirtualJoystick moveJoystick;
         [SerializeField, Tooltip("独立跳跃按钮（存活状态的唯一向上手段）")]
         private TouchInputButton jumpButton;
+        [SerializeField, Tooltip("嘲讽按钮（面板上的 DownBtn，按下播放嘲讽表情）")]
+        private TouchInputButton tauntButton;
 
         [Header("摇杆参数")]
         [SerializeField, Range(0.05f, 1f), Tooltip("摇杆轴向触发阈值：偏移比例达到该值视为按下对应方向键")]
@@ -29,6 +33,8 @@ namespace SuperQQ.UI
 
         private JoystickPlayerInput _touchInput;
         private PlayerController _localPlayer;
+        private PlayerAnimationController _tauntAnimCtrl;   // 本地玩家的动画驱动器（嘲讽目标）
+        private bool _tauntButtonHeld;                      // 上帧嘲讽按键按压状态（按下沿检测用）
 
         private bool TouchModeEnabled => Application.isMobilePlatform || forceTouchInEditor;
 
@@ -66,6 +72,25 @@ namespace SuperQQ.UI
 
             // 按当前状态切换摇杆模式：幽灵四向移动，存活仅左右 + 独立跳跃键
             _touchInput.FourWayMode = _localPlayer.BIsGhost;
+
+            UpdateTauntInput();
+        }
+
+        /// <summary>
+        /// 读取嘲讽按键并触发本地玩家嘲讽动画：
+        /// 按下沿触发（本帧按住且上帧未按住，与 JoystickPlayerInput 的 JumpPressed 语义一致），
+        /// 按住不连发、松开后可再次触发；嘲讽播放中再次按下可重新触发（打断自身）
+        /// </summary>
+        private void UpdateTauntInput()
+        {
+            if (tauntButton == null) return;
+
+            bool pressed = tauntButton.IsPressed;
+            if (pressed && !_tauntButtonHeld && _tauntAnimCtrl != null)
+            {
+                _tauntAnimCtrl.PlayTaunt();
+            }
+            _tauntButtonHeld = pressed;
         }
 
         private void TryBindLocalPlayer()
@@ -80,6 +105,7 @@ namespace SuperQQ.UI
                 if (player == null || !player.BIsLocal) continue;
 
                 _localPlayer = player;
+                _tauntAnimCtrl = player.GetComponent<PlayerAnimationController>();
                 player.SetInputSource(_touchInput);
                 Debug.Log($"[MobileInputPanel] 本地玩家 {player.PlayerName} 已切换为触屏输入");
                 return;

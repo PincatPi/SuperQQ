@@ -59,6 +59,11 @@ namespace SuperQQ.Player
         public KeyCode DownKey;
 
         /// <summary>
+        /// 嘲讽按键（PC 端，触发嘲讽表情）
+        /// </summary>
+        public KeyCode TauntKey;
+
+        /// <summary>
         /// 身份主键：联机模式为 PlayerId，单机模式回退为 PlayerName
         /// 需要按身份查找/去重时统一使用此属性
         /// </summary>

@@ -159,20 +159,12 @@ PlayerProfile profile = PlayerSessionManager.Instance.GetProfile("Player1");
 | `Instance` | `static LevelPlayerRegistry` | 当前场景全局唯一实例 |
 | `Players` | `IReadOnlyList<PlayerController>` | 本关所有玩家（按注册顺序，只读） |
 | `PlayerCount` | `int` | 本关玩家数量 |
-| `BIsLastPlayerStanding` | `bool` | 是否只剩一名存活玩家 |
-| `EarlyQuitHoldDuration` | `float` | 提前放弃长按时长（1.6 秒） |
 | `RegisterPlayer` | `void RegisterPlayer(PlayerController player)` | 注册玩家（由 `PlayerController.Start` 自动调用） |
 | `UnregisterPlayer` | `void UnregisterPlayer(PlayerController player)` | 注销玩家（由 `PlayerController.OnDestroy` 自动调用） |
 | `UpdatePlayerState` | `void UpdatePlayerState(PlayerController player, PlayerStateType stateType)` | 更新玩家状态记录（由 `PlayerController` 状态切换时调用） |
 | `GetPlayersByState` | `List<PlayerController> GetPlayersByState(PlayerStateType stateType)` | 按状态筛选玩家（结算时获取通关顺序） |
 | `FindPlayerByName` | `PlayerController FindPlayerByName(string playerName)` | 按名称查找玩家 |
-| `GetLastAlivePlayer` | `PlayerController GetLastAlivePlayer()` | 获取唯一存活玩家，多人或无人存活返回 `null` |
-| `TriggerEarlyQuit` | `void TriggerEarlyQuit(PlayerController player)` | 触发提前放弃，该玩家立即死亡 |
 | `GetPlayerColor` | `Color GetPlayerColor(string playerName)` | 获取玩家颜色，化身销毁后回退到 Profile |
-
-#### 提前结束机制
-
-当场上玩家数 ≥ 2 且只剩 1 名存活玩家时，`CheckLastPlayerStanding` 通过 `PopupManager.ShowPopup` 弹出 `EndEarlyPopup`（3 秒自动关闭）。最后一名存活玩家长按 `DownKey` 1.6 秒触发 `TriggerEarlyQuit`，该玩家死亡后由 `CheckAllPlayersOut` 检测到全员出局并触发结算。
 
 #### Inspector 配置字段
 
@@ -180,7 +172,6 @@ PlayerProfile profile = PlayerSessionManager.Instance.GetProfile("Player1");
 |------|------|------|
 | `_playerPrefab` | `PlayerController` | 玩家预制体，为空则创建空 GameObject 挂载组件 |
 | `_spawnPoints` | `Transform[]` | 出生点列表，按索引对应玩家序号 |
-| `_endEarlyPopupPrefab` | `GameObject` | 提前结束弹窗 Prefab |
 
 #### 使用示例
 
@@ -272,7 +263,7 @@ stateDiagram-v2
 
 #### PlayerAliveState
 
-存活状态：左右移动（平滑插值）、可变高度跳跃（长按追加向上速度）、下落手感优化（下落加重力、松手短跳）、土狼时间（coyote time）。边界约束：左右夹紧、掉落下边界死亡。包含提前放弃长按检测（仅最后一名存活玩家生效）。
+存活状态：左右移动（平滑插值）、可变高度跳跃（长按追加向上速度）、下落手感优化（下落加重力、松手短跳）、土狼时间（coyote time）。边界约束：左右夹紧、掉落下边界死亡。
 
 #### PlayerGhostState
 

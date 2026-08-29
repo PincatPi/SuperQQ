@@ -55,6 +55,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveJoystick: {fileID: 1132004232495602444}
   jumpButton: {fileID: 562210949447578373}
+  tauntButton: {fileID: 8616980111777449569}
   axisThreshold: 0.3
   forceTouchInEditor: 0
 --- !u!1001 &469567325921334592
@@ -197,11 +198,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4068327559469381735, guid: ad7dd4b418ade5146828f33b85d325c2, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 100
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 4068327559469381735, guid: ad7dd4b418ade5146828f33b85d325c2, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 100
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 4068327559469381735, guid: ad7dd4b418ade5146828f33b85d325c2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -257,7 +258,7 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: e2ae23d69e79c4fa6910bc6820acd6db, type: 3}
     - target: {fileID: 8453025908185511886, guid: ad7dd4b418ade5146828f33b85d325c2, type: 3}
       propertyPath: m_Name
-      value: DownBtn
+      value: TauntBtn
       objectReference: {fileID: 0}
     - target: {fileID: 8453025908185511886, guid: ad7dd4b418ade5146828f33b85d325c2, type: 3}
       propertyPath: m_IsActive
@@ -273,6 +274,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4068327559469381735, guid: ad7dd4b418ade5146828f33b85d325c2, type: 3}
   m_PrefabInstance: {fileID: 4151360513161365133}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8616980111777449569 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5623080197013684460, guid: ad7dd4b418ade5146828f33b85d325c2, type: 3}
+  m_PrefabInstance: {fileID: 4151360513161365133}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e91d685b408d464da82e393d4217fe0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &4509624534176947382
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -413,11 +425,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4068327559469381735, guid: ad7dd4b418ade5146828f33b85d325c2, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 100
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 4068327559469381735, guid: ad7dd4b418ade5146828f33b85d325c2, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 100
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 4068327559469381735, guid: ad7dd4b418ade5146828f33b85d325c2, type: 3}
       propertyPath: m_LocalScale.z

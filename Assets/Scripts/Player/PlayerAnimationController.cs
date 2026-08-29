@@ -14,6 +14,10 @@ namespace SuperQQ.Player
     ///   bIsJumping (Bool)— 滞空标记，离地（跳跃或自然坠落）为 true、落地为 false，驱动跳跃动画进出
     ///   bIsVictory (Bool)— 通关标记，配合 Any State → Victory 转换（循环播放胜利动画，复活回到存活后自动置回 false）
     ///   bIsGhost (Bool) — 幽灵标记，配合 Ghost 动画转换（进入幽灵后循环播放幽灵动画，复活回到存活后自动置回 false）
+    ///   Taunt (Trigger) — 嘲讽表情触发标记：PC 端由本地键盘嘲讽键（PlayerController.TauntPressed）驱动，
+    ///                     移动端由 MobileInputPanel 嘲讽按钮直接调用 PlayTaunt()；
+    ///                     打断由 Animator 过渡实现：Taunt 状态配自身过渡（可被再次嘲讽打断），
+    ///                     移动/跳跃经 VelocityX/bIsJumping 条件过渡打断
     /// </summary>
     [RequireComponent(typeof(PlayerController))]
     public class PlayerAnimationController : MonoBehaviour
@@ -34,6 +38,7 @@ namespace SuperQQ.Player
         private static readonly int IsJumpingHash = Animator.StringToHash("bIsJumping");
         private static readonly int IsVictoryHash = Animator.StringToHash("bIsVictory");
         private static readonly int IsGhostHash = Animator.StringToHash("bIsGhost");
+        private static readonly int TauntHash = Animator.StringToHash("Taunt");
 
         // ---------- 组件缓存 ----------
         private PlayerController _player;
@@ -65,6 +70,7 @@ namespace SuperQQ.Player
             UpdateJump();
             UpdateVictory();
             UpdateGhost();
+            UpdateTaunt();
             UpdateFacing();
         }
 
@@ -128,6 +134,34 @@ namespace SuperQQ.Player
         private void UpdateGhost()
         {
             animator.SetBool(IsGhostHash, _player.BIsGhost);
+        }
+
+        // ==================== 嘲讽表情 ====================
+
+        /// <summary>
+        /// PC 端键盘嘲讽：读取逻辑层 TauntPressed（沿触发，仅本地键盘输入源有效），按下即播放嘲讽
+        /// 远程玩家/输入屏蔽期间（NullPlayerInput/JoystickPlayerInput）恒为 false，不会误触发
+        /// </summary>
+        private void UpdateTaunt()
+        {
+            if (_player.TauntPressed)
+            {
+                PlayTaunt();
+            }
+        }
+
+        /// <summary>
+        /// 播放嘲讽表情：向 Animator 写入 Taunt Trigger（沿触发，由 PC 嘲讽键或 UI 嘲讽按键调用）。
+        /// Trigger 可重复写入：嘲讽播放中再次触发会重启动作（需 Animator 配置 Taunt 自过渡）；
+        /// 移动/跳跃打断由 Animator 中 Taunt → Idle/Run/Jump 的条件过渡实现，代码侧无需处理
+        /// </summary>
+        public void PlayTaunt()
+        {
+            if (animator == null)
+            {
+                return;
+            }
+            animator.SetTrigger(TauntHash);
         }
 
         // ==================== 朝向翻转 ====================

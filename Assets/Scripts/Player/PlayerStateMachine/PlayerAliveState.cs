@@ -9,7 +9,6 @@ namespace SuperQQ.Player
     /// 边界行为：左右夹紧不允许水平越界；上方开放可跳出地图顶部；
     /// 下方不做位置夹紧，y 越过下边界时触发死亡（PlayerDie）
     /// 所有运行时数据（土狼计时、跳跃保持计时等）归本状态私有
-    /// 提前放弃：当场上只剩一名存活玩家时，长按 Down Key 1.6 秒可提前结束关卡
     /// </summary>
     public class PlayerAliveState : IPlayerState
     {
@@ -21,12 +20,6 @@ namespace SuperQQ.Player
         private float _jumpHoldTimer;
         private float _coyoteTimer;
         private float _currentHorizontalVelocity;
-
-        // 提前放弃长按计时器（秒）
-        private float _earlyQuitHoldTimer;
-
-        // 是否正在长按放弃中（用于进度显示）
-        private bool _bIsEarlyQuitHolding;
 
         public PlayerAliveState(PlayerController ctx) => _ctx = ctx;
 
@@ -63,8 +56,6 @@ namespace SuperQQ.Player
             _bIsJumping = false;
             _jumpHoldTimer = 0f;
             _coyoteTimer = 0f;
-            _earlyQuitHoldTimer = 0f;
-            _bIsEarlyQuitHolding = false;
         }
 
         /// <summary>
@@ -83,7 +74,7 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
-        /// 每帧更新：地面检测、跳跃起跳、跳跃截断、提前放弃长按检测
+        /// 每帧更新：地面检测、跳跃起跳、跳跃截断
         /// </summary>
         public void Update()
         {
@@ -96,7 +87,6 @@ namespace SuperQQ.Player
                 HandleJumpStart();
                 HandleJumpCut();
             }
-            HandleEarlyQuit();
         }
 
         /// <summary>
@@ -401,65 +391,6 @@ namespace SuperQQ.Player
             }
 
             _ctx.Rb.velocity = vel;
-        }
-
-        // ==================== 提前放弃长按检测 ====================
-
-        /// <summary>
-        /// 检测提前放弃操作
-        /// 当场上只剩一名存活玩家时，长按 Down Key 达到指定时长后触发放弃
-        /// 松手或条件不满足时重置计时器，进度不可累积到无限生命
-        /// </summary>
-        private void HandleEarlyQuit()
-        {
-            LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
-            if (registry == null)
-            {
-                return;
-            }
-
-            // 只有最后一名存活玩家才能触发提前放弃
-            if (!registry.BIsLastPlayerStanding)
-            {
-                if (_bIsEarlyQuitHolding)
-                {
-                    // 条件不再满足（中途又有其他人变回存活等），重置进度
-                    _earlyQuitHoldTimer = 0f;
-                    _bIsEarlyQuitHolding = false;
-                }
-                return;
-            }
-
-            // 确认自己是最后一名存活玩家
-            PlayerController lastAlive = registry.GetLastAlivePlayer();
-            if (lastAlive != _ctx)
-            {
-                return;
-            }
-
-            // 检测"下"输入是否被持续按住（走输入抽象层，键盘/触屏通用）
-            if (_ctx.VerticalInput < -0.5f)
-            {
-                _bIsEarlyQuitHolding = true;
-                _earlyQuitHoldTimer += Time.deltaTime;
-
-                if (_earlyQuitHoldTimer >= registry.EarlyQuitHoldDuration)
-                {
-                    // 长按达标，触发提前放弃
-                    _earlyQuitHoldTimer = 0f;
-                    _bIsEarlyQuitHolding = false;
-                    registry.TriggerEarlyQuit(_ctx);
-                }
-            }
-            else
-            {
-                // 松手则重置计时器，进度不保留
-                if (_bIsEarlyQuitHolding)
-                {
-                    _earlyQuitHoldTimer = 0f;
-                    _bIsEarlyQuitHolding = false;
-                }
-            }
         }
     }
 }
