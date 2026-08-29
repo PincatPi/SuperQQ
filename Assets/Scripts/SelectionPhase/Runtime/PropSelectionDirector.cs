@@ -445,9 +445,14 @@ namespace SuperQQ.Selection.Runtime
                 view.SetClaimed(ResolvePlayerColor(result.PlayerKey), ResolvePlayerIcon(result.PlayerKey));
             }
 
-            // 图标归位：本地点击路径下图标已飞抵槽位（认领以到达为准），此处为空操作；
-            // 远端/直接认领路径（ApplyRemoteSelection 等）由认领事件驱动图标飞过去
-            MovePlayerIconToSlot(result.PlayerKey, result.SlotIndex);
+            // 认领生效：隐藏该玩家飞行的 SelectionIconSprite 图标，
+            // 此后该玩家的选择表现由槽位上的认领者头像（ClaimerIcon）与选中图标（SelectedIcon）接管
+            if (playerIcons.TryGetValue(result.PlayerKey, out PropSelectionPlayerIcon claimedIcon)
+                && claimedIcon != null)
+            {
+                claimedIcon.Stop();
+                claimedIcon.gameObject.SetActive(false);
+            }
 
             // 判断是否本地玩家：联机模式下 result.PlayerKey 是服务器 playerId，
             // 与 localPlayerKey（角色名）不同源，需用 NetworkManager.LocalPlayerId 对比
