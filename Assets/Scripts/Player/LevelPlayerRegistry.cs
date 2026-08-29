@@ -28,7 +28,11 @@ namespace SuperQQ.Player
         private readonly Dictionary<PlayerController, Vector3> _initialSpawnPositions = new();
 
         [Header("玩家预制体")]
-        [SerializeField] private PlayerController _playerPrefab;           // 玩家预制体，若为空则创建空 GameObject 挂载 PlayerController
+        [SerializeField] private PlayerController _playerPrefab;           // 默认玩家预制体，若为空则创建空 GameObject 挂载 PlayerController
+
+        [Header("角色预制体（下标=角色索引，联机按进房顺序分配，互斥）")]
+        [Tooltip("四名角色各配一个预制体；角色索引越界时循环复用，条目为空或未配置时回退默认玩家预制体")]
+        [SerializeField] private PlayerController[] _characterPrefabs;     // 角色预制体列表，下标即 PlayerProfile.CharacterIndex
 
         [Header("出生点")]
         [SerializeField] private Transform[] _spawnPoints;                 // 玩家出生点列表，按索引对应玩家序号
@@ -199,9 +203,27 @@ namespace SuperQQ.Player
                 // 本地档案且场景中已有本地玩家对象（预置玩家）：跳过生成。
                 // 联机下档案注册可能先于场景加载（昵称大小写/命名不一致时按名去重会失效），
                 // 不拦这道会在预置玩家之外多生成一个克隆体（双本地玩家、缩放不一致）
-                if (profile.IsLocal && FindLocalPlayerObject() != null)
+                if (profile.IsLocal)
                 {
-                    continue;
+                    PlayerController existingLocal = FindLocalPlayerObject();
+                    if (existingLocal != null && existingLocal.gameObject.activeInHierarchy)
+                    {
+                        continue;
+                    }
+                    if (existingLocal != null)
+                    {
+                        // 命中的是未激活的预置残留：注册表只收激活对象，它永远不会注册、
+                        // 也没有流程会激活它，留着只会把化身生成永远挡掉
+                        // （FindLocalPlayerObject 的兜底扫描含未激活对象）——清掉后按档案正常生成
+                        foreach (PlayerController stale in FindObjectsByType<PlayerController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                        {
+                            if (stale != null && stale.BIsLocal && !stale.gameObject.activeInHierarchy)
+                            {
+                                Debug.LogWarning($"[LevelPlayerRegistry] 场景中未激活的本地玩家残留 {stale.name} 会阻挡化身生成，已销毁并改按档案生成。", stale);
+                                Destroy(stale.gameObject);
+                            }
+                        }
+                    }
                 }
 
                 PlayerController player = CreatePlayerAvatar(profile, i);
@@ -223,9 +245,10 @@ namespace SuperQQ.Player
             Quaternion spawnRotation = Quaternion.identity;
 
             PlayerController player;
-            if (_playerPrefab != null)
+            PlayerController prefab = GetCharacterPrefab(profile.CharacterIndex);
+            if (prefab != null)
             {
-                player = Instantiate(_playerPrefab, spawnPosition, spawnRotation);
+                player = Instantiate(prefab, spawnPosition, spawnRotation);
             }
             else
             {
@@ -268,6 +291,73 @@ namespace SuperQQ.Player
                 PlayerNameLabelManager.Instance?.RegisterPlayer(player);
             }
 
+            return player;
+        }
+
+        /// <summary>
+        /// 按角色索引取角色预制体：索引有效且列表已配置时循环取模返回对应条目，
+        /// 未指定（-1）/未配置/条目为空时回退默认玩家预制体
+        /// </summary>
+        public PlayerController GetCharacterPrefab(int characterIndex)
+        {
+            if (_characterPrefabs != null && _characterPrefabs.Length > 0 && characterIndex >= 0)
+            {
+                PlayerController prefab = _characterPrefabs[characterIndex % _characterPrefabs.Length];
+                if (prefab != null)
+                {
+                    return prefab;
+                }
+            }
+            return _playerPrefab;
+        }
+
+        /// <summary>
+        /// 用角色预制体整体替换已有玩家化身（场景预置的本地玩家无法在生成时选预制体，
+        /// 联机分配角色索引后走此路径：新实例继承位置/初始出生点/档案，旧实例销毁）。
+        /// 已是目标角色（索引一致）或预制体缺失时返回 null，调用方应继续沿用旧化身
+        /// </summary>
+        /// <param name="oldPlayer">待替换的现有化身</param>
+        /// <param name="profile">含目标角色索引的完整档案（键位/身份等会被应用到新化身）</param>
+        /// <returns>替换后的新化身；未发生替换返回 null</returns>
+        public PlayerController ReplacePlayerAvatar(PlayerController oldPlayer, PlayerProfile profile)
+        {
+            if (oldPlayer == null || profile == null)
+            {
+                return null;
+            }
+
+            // 幂等：已是目标角色则不重复替换（EnsureRemotePlayersReady 每轮都会调用）
+            if (oldPlayer.CharacterIndex == profile.CharacterIndex)
+            {
+                return null;
+            }
+
+            // 仅在角色预制体列表确实配置了该索引的条目时才替换；
+            // 未配置列表时回退默认预制体的替换没有意义（与旧化身同款），应沿用旧化身仅着色
+            if (_characterPrefabs == null || _characterPrefabs.Length == 0 || profile.CharacterIndex < 0)
+            {
+                return null;
+            }
+            PlayerController prefab = _characterPrefabs[profile.CharacterIndex % _characterPrefabs.Length];
+            if (prefab == null)
+            {
+                return null;
+            }
+
+            Vector3 position = oldPlayer.transform.position;
+            // 继承旧化身的初始出生点：替换后跨轮复活仍回第一轮的实际出生位置
+            bool bHadSpawn = _initialSpawnPositions.TryGetValue(oldPlayer, out Vector3 initialSpawn);
+
+            PlayerController player = Instantiate(prefab, position, Quaternion.identity);
+            player.ApplyProfile(profile);
+            RegisterPlayer(player);
+            if (bHadSpawn)
+            {
+                _initialSpawnPositions[player] = initialSpawn;
+            }
+
+            // 旧化身销毁（其 OnDestroy 自动从本注册表/名字标签管理器注销）
+            Destroy(oldPlayer.gameObject);
             return player;
         }
 

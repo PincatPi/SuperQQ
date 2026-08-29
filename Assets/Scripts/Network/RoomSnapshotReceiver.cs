@@ -401,14 +401,15 @@ namespace SuperQQ.Network
             if (session == null || session.HasPlayerByIdentity(playerId)) return;
 
             string nickname = playerState?.Player?.Nickname;
-            // 颜色按房间列表下标（进房顺序，两端一致），与 NetGameFlowGate 的取色规则统一
+            // 颜色/角色按房间列表下标（进房顺序，两端一致），与 NetGameFlowGate 的分配规则统一
             int seatIndex = GetSeatIndex(playerId);
             session.RegisterProfile(new PlayerProfile
             {
                 PlayerId = playerId,
                 IsLocal = false,
                 PlayerName = string.IsNullOrEmpty(nickname) ? $"Remote_{playerId}" : nickname,
-                PlayerColor = PlayerColorPalette.Get(seatIndex)
+                PlayerColor = PlayerColorPalette.Get(seatIndex),
+                CharacterIndex = seatIndex
             });
 
             LevelPlayerRegistry.Instance?.SpawnMissingPlayerAvatars();

@@ -260,7 +260,7 @@ namespace SuperQQ.Network
 
                 if (!session.HasPlayerByIdentity(playerId))
                 {
-                    // 颜色：服务器按进房顺序分配的 color_index 查本地色板，各端一致
+                    // 颜色/角色：服务器按进房顺序分配的 color_index 查本地配置，各端一致
                     session.RegisterProfile(new PlayerProfile
                     {
                         PlayerId = playerId,
@@ -268,7 +268,8 @@ namespace SuperQQ.Network
                         PlayerName = string.IsNullOrEmpty(playerState.Player.Nickname)
                             ? $"Remote{index}"
                             : playerState.Player.Nickname,
-                        PlayerColor = PlayerColorPalette.Get(playerState.ColorIndex)
+                        PlayerColor = PlayerColorPalette.Get(playerState.ColorIndex),
+                        CharacterIndex = playerState.ColorIndex
                     });
                     Debug.Log($"[NetWork] 已注册远程玩家档案: {playerState.Player.Nickname}({playerId}) 色号={playerState.ColorIndex}");
                 }

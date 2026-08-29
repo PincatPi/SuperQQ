@@ -419,7 +419,8 @@ namespace SuperQQ.Network
                             PlayerId = playerId,
                             IsLocal = true,
                             PlayerName = nickname,
-                            PlayerColor = PlayerColorPalette.Get(i)
+                            PlayerColor = PlayerColorPalette.Get(i),
+                            CharacterIndex = i
                         });
                         localRegistered = true;
                         Debug.Log($"[NetWork] 本地玩家档案补注册: {playerId}（场景未预置本地玩家）");
@@ -429,8 +430,8 @@ namespace SuperQQ.Network
                 registered += TryRegisterRemote(net, session, playerId, p.Player?.Nickname, i);
             }
 
-            // 本地玩家也按同一下标规则着色（覆盖场景 prefab 的默认色），保证两端颜色统一
-            ApplyLocalPlayerColor(net, players);
+            // 本地玩家也按同一下标规则着色/定角色（覆盖场景 prefab 的默认配置），保证两端一致
+            ApplyLocalPlayerAppearance(net, players);
 
             if (registered > 0 || localRegistered)
             {
@@ -439,8 +440,12 @@ namespace SuperQQ.Network
             }
         }
 
-        /// <summary>按房间列表下标给本地玩家着色（两端对同一 playerId 算出相同颜色）</summary>
-        private static void ApplyLocalPlayerColor(NetworkManager net,
+        /// <summary>
+        /// 按房间列表下标给本地玩家着色并选定角色（两端对同一 playerId 算出相同结果）。
+        /// 场景预置的本地玩家无法在生成时选角色预制体，这里整体替换为角色预制体实例；
+        /// 未配置角色预制体列表时退化为仅着色（旧行为）
+        /// </summary>
+        private static void ApplyLocalPlayerAppearance(NetworkManager net,
             System.Collections.Generic.IList<Minigame.Room.V1.RoomPlayerState> players)
         {
             SuperQQ.Player.LevelPlayerRegistry registry = SuperQQ.Player.LevelPlayerRegistry.Instance;
@@ -450,16 +455,35 @@ namespace SuperQQ.Network
             {
                 if (players[i].Player?.PlayerId != net.LocalPlayerId) continue;
 
+                // 先定位再操作：替换会向注册表增删玩家，不能在遍历注册表列表的过程中进行
+                SuperQQ.Player.PlayerController local = null;
                 System.Collections.Generic.IReadOnlyList<SuperQQ.Player.PlayerController> all = registry.Players;
                 for (int j = 0; j < all.Count; j++)
                 {
                     if (all[j] != null && all[j].BIsLocal)
                     {
-                        SuperQQ.Player.PlayerProfile profile = all[j].BuildProfile();
-                        profile.PlayerColor = PlayerColorPalette.Get(i);
-                        all[j].ApplyProfile(profile);
-                        Debug.Log($"[NetWork] 本地玩家着色: 下标={i} 颜色={PlayerColorPalette.Get(i)}");
+                        local = all[j];
+                        break;
                     }
+                }
+                if (local == null) return;
+
+                SuperQQ.Player.PlayerProfile profile = local.BuildProfile();
+                profile.PlayerColor = PlayerColorPalette.Get(i);
+                profile.CharacterIndex = i;
+
+                SuperQQ.Player.PlayerController replaced = registry.ReplacePlayerAvatar(local, profile);
+                if (replaced != null)
+                {
+                    Debug.Log($"[NetWork] 本地玩家外观: 下标={i} 颜色={PlayerColorPalette.Get(i)} 已替换为角色{i}预制体");
+                    // 新化身缺少联机上报组件（InputReporter/PlayerOutReporter 原挂在旧化身上），立即补挂
+                    LocalPlayerNetSetup.EnsureLocalIdentityNow();
+                }
+                else
+                {
+                    // 无需替换（已是目标角色或未配置角色预制体）：仅应用颜色/角色索引
+                    local.ApplyProfile(profile);
+                    Debug.Log($"[NetWork] 本地玩家着色: 下标={i} 颜色={PlayerColorPalette.Get(i)}");
                 }
                 return;
             }
@@ -476,7 +500,8 @@ namespace SuperQQ.Network
                 PlayerId = playerId,
                 IsLocal = false,
                 PlayerName = string.IsNullOrEmpty(nickname) ? $"Remote_{playerId}" : nickname,
-                PlayerColor = PlayerColorPalette.Get(colorIndex)
+                PlayerColor = PlayerColorPalette.Get(colorIndex),
+                CharacterIndex = colorIndex
             });
             return 1;
         }

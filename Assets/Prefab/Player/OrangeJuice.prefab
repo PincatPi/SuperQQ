@@ -283,6 +283,8 @@ MonoBehaviour:
   isLocal: 1
   playerName: Player1
   playerColor: {r: 0.5730121, g: 1, b: 0, a: 1}
+  characterIndex: -1
+  applyPlayerColorTint: 0
   cursorMarkerSprite: {fileID: 21300000, guid: 617e9f46c14b94db3a6da9cb66ebc4aa, type: 3}
   selectionIconSprite: {fileID: 21300000, guid: 881ab80628a7043388408e44c1f6d879, type: 3}
   leftKey: 97

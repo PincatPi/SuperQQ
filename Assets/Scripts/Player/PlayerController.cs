@@ -69,6 +69,9 @@ namespace SuperQQ.Player
         [SerializeField] private bool isLocal = true;                      // 是否本机控制（false=远程玩家由网络驱动）
         [SerializeField] private string playerName = "P1";                 // 玩家名称
         [SerializeField] private Color playerColor = Color.white;          // 玩家专属颜色
+        [SerializeField] private int characterIndex = -1;                  // 角色索引（-1=未指定；联机按进房顺序分配，决定使用哪个角色预制体）
+        [Tooltip("勾选后 ApplyProfile 会把玩家座位色染到角色精灵上（旧单色小人依赖此区分玩家）；使用独立角色预制体时应取消勾选，保留角色原始配色")]
+        [SerializeField] private bool applyPlayerColorTint = true;         // 是否把玩家颜色染到角色精灵
         [SerializeField] private Sprite cursorMarkerSprite;                // 放置阶段跟随光标的玩家标识图，留空则回退用角色本体 Sprite
         [SerializeField] private Sprite selectionIconSprite;               // 选择阶段面板上的玩家图标，留空则回退用光标标识图
 
@@ -172,6 +175,8 @@ namespace SuperQQ.Player
         public bool BIsLocal => isLocal;
         public string PlayerName => playerName;
         public Color PlayerColor => playerColor;
+        /// <summary>角色索引（-1=未指定）；联机按进房顺序分配，两端一致且互斥</summary>
+        public int CharacterIndex => characterIndex;
         /// <summary>身份主键：联机为 PlayerId，单机回退为 PlayerName</summary>
         public string IdentityKey => string.IsNullOrEmpty(playerId) ? playerName : playerId;
 
@@ -400,6 +405,9 @@ namespace SuperQQ.Player
             isLocal = profile.IsLocal;
             playerName = profile.PlayerName;
             playerColor = profile.PlayerColor;
+            // 档案未指定角色（-1）时保留当前值：联机补注册/纯标识档案可能不带角色索引，
+            // 无条件覆盖会把已分配的角色清回未指定
+            if (profile.CharacterIndex >= 0) characterIndex = profile.CharacterIndex;
             // 档案未配置键位（None）时保留 prefab 序列化键位：
             // 联机补注册/纯标识档案可能不带键位，无条件覆盖会把按键清成 None（角色无法操控）
             if (profile.LeftKey != KeyCode.None) leftKey = profile.LeftKey;
@@ -416,7 +424,8 @@ namespace SuperQQ.Player
             }
 
             // 立即刷新精灵颜色（Awake 已缓存 _spriteRenderer）
-            if (_spriteRenderer != null)
+            // 独立角色预制体取消染色开关后跳过：保留角色原始配色，座位色仅用于 UI 标识
+            if (applyPlayerColorTint && _spriteRenderer != null)
             {
                 _spriteRenderer.color = playerColor;
             }
@@ -453,6 +462,7 @@ namespace SuperQQ.Player
                 IsLocal = isLocal,
                 PlayerName = playerName,
                 PlayerColor = playerColor,
+                CharacterIndex = characterIndex,
                 LeftKey = leftKey,
                 RightKey = rightKey,
                 JumpKey = jumpKey,

@@ -34,6 +34,13 @@ namespace SuperQQ.Player
         public Color PlayerColor;
 
         /// <summary>
+        /// 角色索引（-1=未指定，使用默认预制体）
+        /// 联机模式等于房间座位号（进房顺序，两端一致且互斥），
+        /// 由 LevelPlayerRegistry 的角色预制体列表按下标选取化身预制体
+        /// </summary>
+        public int CharacterIndex = -1;
+
+        /// <summary>
         /// 左移按键
         /// </summary>
         public KeyCode LeftKey;
