@@ -215,6 +215,8 @@ namespace SuperQQ.Event
             }
 
             _playersInside.Clear();
+            // 事件停用（法阵销毁）：复位咒语清单按键高光，覆盖玩家在法阵内时法阵被销毁的异常路径
+            SpellListButtonController.ResetCircleHighlight();
             _promptCanvasRect = null;
             _camera = null;
             _eventContext = null;
@@ -245,6 +247,8 @@ namespace SuperQQ.Event
             if (player.BIsLocal)
             {
                 RefreshPromptText();
+                // 咒语清单按键外圈高光开始循环闪烁（法阵运行时实例化，按键侧无法 Inspector 绑定，由事件侧通知）
+                SpellListButtonController.NotifyLocalPlayerEnteredCircle();
             }
 
             // 语音吟唱：仅本地玩家触发；成功开启识别时记录触发玩家（识别进行中重复进入会被忽略且不覆盖记录）
@@ -546,6 +550,12 @@ namespace SuperQQ.Event
 
             _playersInside.Remove(player);
             RefreshPromptVisibility();
+
+            // 本地玩家出阵：通知咒语清单按键（离开全部法阵后高光停止闪烁）
+            if (player.BIsLocal)
+            {
+                SpellListButtonController.NotifyLocalPlayerExitedCircle();
+            }
         }
 
         /// <summary>
@@ -562,7 +572,16 @@ namespace SuperQQ.Event
         private void HandlePlayersChanged()
         {
             LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
-            _playersInside.RemoveWhere(player => !IsRegistered(registry, player));
+            _playersInside.RemoveWhere(player =>
+            {
+                bool removed = !IsRegistered(registry, player);
+                // 本地玩家在法阵内被注销（化身销毁等）：补一次出阵通知，避免按键高光卡在闪烁状态
+                if (removed && player != null && player.BIsLocal)
+                {
+                    SpellListButtonController.NotifyLocalPlayerExitedCircle();
+                }
+                return removed;
+            });
             RefreshPromptVisibility();
         }
 
