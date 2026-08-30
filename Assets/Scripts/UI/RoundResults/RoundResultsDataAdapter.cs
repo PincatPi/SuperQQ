@@ -123,17 +123,19 @@ namespace SuperQQ.UI.RoundResults
         }
 
         /// <summary>
-        /// 判定本轮是否无人通关：以玩家注册表中的 Finished 状态为准（结算阶段玩家尚未复活，
-        /// 状态仍有效；联机端远端状态由快照/出局广播同步到本地化身）。
-        /// 注册表不可用时回退为"全员本轮 0 分"推断——只要有人通关，通关者至少获得通关分，
-        /// 全员 0 分只在无人通关（或全员通关但零金币的极端情况）下出现。
+        /// 判定本轮是否为"不加分局"（无人通关 或 全员通关，统一提示不加分）：
+        /// 以玩家注册表中的 Finished 状态为准（结算阶段玩家尚未复活，状态仍有效；
+        /// 联机端远端状态由快照/出局广播同步到本地化身）——通关人数为 0（规则1：无人通关）
+        /// 或等于在场人数（规则2：全员通关，仅金币计分）时提示不加分。
+        /// 注册表不可用时回退为"全员本轮 0 分"推断（此时无法区分两种局，统一文案下无影响）。
         /// </summary>
         private static bool ResolveNoPlayerFinished(List<RoundResultPlayerData> entries)
         {
-            if (LevelPlayerRegistry.Instance != null)
+            LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
+            if (registry != null && registry.Players.Count > 0)
             {
-                return LevelPlayerRegistry.Instance
-                    .GetPlayersByState(PlayerStateType.Finished).Count == 0;
+                int finished = registry.GetPlayersByState(PlayerStateType.Finished).Count;
+                return finished == 0 || finished >= registry.Players.Count;
             }
 
             for (int i = 0; i < entries.Count; i++)

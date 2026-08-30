@@ -20,12 +20,12 @@ namespace SuperQQ.UI.RoundResults
         [SerializeField] private RoundResultRowView _rowPrefab;
         [SerializeField] private Button _continueButton;
         [SerializeField] private TMP_Text _continueButtonText;
-        [Tooltip("无人通关提示文本；仅本轮无人通关时显示")]
+        [Tooltip("不加分提示文本；无人通关或全员通关时显示")]
         [SerializeField] private TMP_Text _noFinishNoticeText;
 
         [Header("Behaviour")]
-        [Tooltip("无人通关时显示的提示文案")]
-        [SerializeField] private string _noFinishNotice = "本轮无人通关，全员不加分";
+        [Tooltip("无人通关/全员通关时显示的提示文案")]
+        [SerializeField] private string _noFinishNotice = "全员通关/无人通关不加分";
         [SerializeField, Min(1)] private int _victoryScore = 100;
         [SerializeField] private bool _notifyGameFlowOnContinue;
         [SerializeField, Min(0.05f)] private float _panelRevealDuration = 0.28f;
@@ -45,7 +45,7 @@ namespace SuperQQ.UI.RoundResults
         private RoundResultRowView _dynamicRowPrefab;
         private RectTransform _dynamicRowsContainer;
         private readonly List<RoundResultRowView> _dynamicRows = new();
-        private bool _bNoPlayerFinished;                                    // 本轮是否无人通关（由数据适配层判定）
+        private bool _bNoPlayerFinished;                                    // 本轮是否不加分局：无人通关或全员通关（由数据适配层判定）
 
         public int VictoryScore
         {
@@ -210,7 +210,7 @@ namespace SuperQQ.UI.RoundResults
             return orderedEntries.Count;
         }
 
-        /// <summary>无人通关提示：仅本轮无人通关时显示（文案可在 Inspector 配置）</summary>
+        /// <summary>不加分提示：无人通关或全员通关时显示（文案可在 Inspector 配置）</summary>
         private void UpdateNoFinishNotice()
         {
             if (_noFinishNoticeText == null)

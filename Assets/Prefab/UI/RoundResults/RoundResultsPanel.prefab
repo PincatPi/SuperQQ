@@ -3107,7 +3107,7 @@ MonoBehaviour:
   _continueButton: {fileID: 9038749027543626399}
   _continueButtonText: {fileID: 4550225701222131406}
   _noFinishNoticeText: {fileID: 3535349542338588724}
-  _noFinishNotice: "\u672C\u8F6E\u65E0\u4EBA\u901A\u5173\uFF0C\u5168\u5458\u4E0D\u52A0\u5206"
+  _noFinishNotice: "\u5168\u5458\u901A\u5173/\u65E0\u4EBA\u901A\u5173\u4E0D\u52A0\u5206"
   _victoryScore: 100
   _notifyGameFlowOnContinue: 0
   _panelRevealDuration: 0.28
