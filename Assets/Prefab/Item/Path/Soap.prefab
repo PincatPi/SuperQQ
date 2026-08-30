@@ -26,8 +26,8 @@ Transform:
   m_GameObject: {fileID: 690413256691907485}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.003, y: -0.005, z: 0}
-  m_LocalScale: {x: 0.13916574, y: 0.07950909, z: 1}
+  m_LocalPosition: {x: 0.0155, y: 0.0006, z: 0}
+  m_LocalScale: {x: 0.20283206, y: 0.19167334, z: 1.4574854}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 9101255844511025219}
@@ -73,12 +73,12 @@ SpriteRenderer:
   m_SortingLayerID: -1046135143
   m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 31c7404393a5a994fa5c533f274581ac, type: 3}
+  m_Sprite: {fileID: 1730614549, guid: 5d23efdb12ab941528da0d91c16c0728, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 15.36, y: 10.24}
+  m_Size: {x: 10.05, y: 2.98}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -166,7 +166,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   displayName: "\u80A5\u7682"
-  icon: {fileID: 0}
+  icon: {fileID: 1730614549, guid: 5d23efdb12ab941528da0d91c16c0728, type: 3}
   iconScale: 1
   placeSfx: 202
 --- !u!114 &5704616245031174902

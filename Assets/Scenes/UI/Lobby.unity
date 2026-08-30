@@ -2773,7 +2773,7 @@ RectTransform:
   m_Children:
   - {fileID: 1110649598}
   m_Father: {fileID: 204506202}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -0.3623793}
   m_AnchorMin: {x: 0.15, y: 0.08}
   m_AnchorMax: {x: 0.85, y: 0.98}
   m_AnchoredPosition: {x: 2, y: 22}
@@ -2827,7 +2827,7 @@ Animator:
   m_GameObject: {fileID: 854101982}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 22100000, guid: 9a920dce79502774b8b4e14c83d50461, type: 2}
+  m_Controller: {fileID: 9100000, guid: aced70374d71b4471985614900cfd1bc, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

@@ -41,6 +41,12 @@ namespace SuperQQ.Item
         [Tooltip("朝目标高度移动的速度（格/秒），越大越跟手")]
         [SerializeField, Min(0.1f)] private float moveSpeedCells = 4f;
 
+        [Header("放置者图标")]
+        [Tooltip("映射放置者玩家图标的子物体 SpriteRenderer（Sprite 取放置者的 SelectionIconSprite）；留空则查找子物体 OwnerIcon")]
+        [SerializeField] private SpriteRenderer ownerIconRenderer;
+        [Tooltip("图标在平台本体 Sprite 之上的排序偏移（sortingOrder = 平台本体 + 该值）")]
+        [SerializeField] private int ownerIconOrderOffset = 1;
+
         [Header("联机同步")]
         [Tooltip("位置上报频率（次/秒）：放置者端按此频率把浮桥位置经服务器广播给其它端")]
         [SerializeField, Range(5f, 30f)] private float positionReportRate = 10f;
@@ -73,6 +79,9 @@ namespace SuperQQ.Item
         private bool hasRemoteTarget;
         private Vector2 remoteTarget;
 
+        // 放置者图标：解析成功前每帧重试（联机远端化身可能晚于道具生成）
+        private bool ownerIconResolved;
+
         /// <summary>是否处于联机房间中（联机下放置者端上报位置、其它端跟随远端位置）</summary>
         private static bool BNetRoom =>
             NetworkManager.Instance != null
@@ -94,6 +103,36 @@ namespace SuperQQ.Item
             basePosition = transform.position;
             baseUp = transform.up;
             body = EnsureKinematicBody();
+
+            if (ownerIconRenderer == null)
+            {
+                Transform found = transform.Find("OwnerIcon");
+                if (found != null)
+                {
+                    ownerIconRenderer = found.GetComponent<SpriteRenderer>();
+                }
+            }
+            // 解析出放置者图标前先隐藏（关卡初始物体/无归属时不显示）
+            if (ownerIconRenderer != null)
+            {
+                ownerIconRenderer.enabled = false;
+                SyncIconSorting();
+            }
+        }
+
+        /// <summary>
+        /// 图标与平台本体 Sprite 同排序层并置顶——子物体 SpriteRenderer 默认在 Default 层 order 0，
+        /// 会被平台本体/背景盖住导致游戏中不可见
+        /// </summary>
+        private void SyncIconSorting()
+        {
+            SpriteRenderer mainRenderer = GetComponent<SpriteRenderer>();
+            if (mainRenderer == null)
+            {
+                return;
+            }
+            ownerIconRenderer.sortingLayerID = mainRenderer.sortingLayerID;
+            ownerIconRenderer.sortingOrder = mainRenderer.sortingOrder + ownerIconOrderOffset;
         }
 
         /// <summary>挂 Kinematic Rigidbody2D（无则补挂）——MovePosition 移动物理正确、能载人</summary>
@@ -148,12 +187,92 @@ namespace SuperQQ.Item
             // 放置完成后的位置与朝向才是平移基准（Awake 时记录的可能是 prefab 预览姿态）
             basePosition = transform.position;
             baseUp = transform.up;
+            // 放置者已注入（OwnerKey），开始解析放置者图标
+            ownerIconResolved = false;
+            TryResolveOwnerIcon();
             // 联机远端生成/快照恢复可能发生在 PlayingPhase 进行中，补一次启动判定
             if (GameFlow.GamePhaseManager.Instance != null
                 && GameFlow.GamePhaseManager.Instance.CurrentPhaseAsset is GameFlow.PlayingPhase)
             {
                 OnRunPhaseStart();
             }
+        }
+
+        // ==================== 放置者图标 ====================
+
+        private void Update()
+        {
+            // 图标未解析成功时每帧重试（联机远端化身/档案可能晚于道具生成），成功后不再轮询
+            if (!ownerIconResolved)
+            {
+                TryResolveOwnerIcon();
+            }
+        }
+
+        private void LateUpdate()
+        {
+            // 图标保持世界朝向：抵消平台旋转（平台旋转在摆放时固定，逐帧写回世界无旋转即可）
+            if (ownerIconRenderer != null)
+            {
+                ownerIconRenderer.transform.rotation = Quaternion.identity;
+            }
+        }
+
+        /// <summary>
+        /// 解析放置者玩家图标并显示到 OwnerIcon 子物体：
+        /// 按 Placed.OwnerKey（联机=playerId，单机=IdentityKey）先查场景化身的 SelectionIconSprite，
+        /// 再回退跨场景档案缓存的 SelectionIcon（化身未生成时兜底）。
+        /// 注意：本地摆放链路（PlacementSession）中 SetOwnerKey 在 OnPlaced 之后才执行，
+        /// OwnerKey 暂空不是终态，保持重试直到归属写入且图标解析成功
+        /// </summary>
+        private void TryResolveOwnerIcon()
+        {
+            if (ownerIconRenderer == null)
+            {
+                ownerIconResolved = true; // 未配置子物体，无需再试
+                return;
+            }
+            if (Placed == null || string.IsNullOrEmpty(Placed.OwnerKey))
+            {
+                return; // 归属未写入（OnPlaced 先于 SetOwnerKey）或关卡初始物体，下帧重试
+            }
+
+            Sprite icon = null;
+            string ownerKey = Placed.OwnerKey;
+
+            // 1) 场景化身：图标来自化身 prefab 的序列化配置（含回退链）
+            LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
+            if (registry != null)
+            {
+                System.Collections.Generic.IReadOnlyList<PlayerController> players = registry.Players;
+                for (int i = 0; i < players.Count; i++)
+                {
+                    if (players[i] != null && players[i].IdentityKey == ownerKey)
+                    {
+                        icon = players[i].SelectionIconSprite;
+                        break;
+                    }
+                }
+            }
+
+            // 2) 跨场景档案缓存：化身未生成（联机远端化身迟到）时兜底
+            if (icon == null && PlayerSessionManager.Instance != null)
+            {
+                PlayerProfile profile = PlayerSessionManager.Instance.GetProfileByIdentity(ownerKey);
+                if (profile != null)
+                {
+                    icon = profile.SelectionIcon;
+                }
+            }
+
+            if (icon == null)
+            {
+                return; // 尚未就绪，下帧重试
+            }
+
+            ownerIconRenderer.sprite = icon;
+            ownerIconRenderer.enabled = true;
+            ownerIconResolved = true;
         }
 
         /// <summary>跑动阶段开始：本端为放置者时开始响应麦克风</summary>
