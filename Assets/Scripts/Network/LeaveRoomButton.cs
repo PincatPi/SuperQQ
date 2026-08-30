@@ -146,6 +146,9 @@ namespace SuperQQ.Network
                 receiver.ClearRoomState();
             }
 
+            // 门控缓存重置：旧房间的发牌/阶段缓存消息与服务器分数不带入下一局
+            NetGameFlowGate.ResetForRoomLeave();
+
             PlayerSessionManager.Instance?.ClearAllProfiles();
             PlayerScoreManager.Instance?.ResetForNewGame();
 

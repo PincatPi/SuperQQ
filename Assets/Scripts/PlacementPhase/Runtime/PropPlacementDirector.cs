@@ -815,7 +815,18 @@ namespace SuperQQ.Placement.Runtime
                 return; // 已搭建：显隐由拖拽手势控制（松手显示 / 拖动隐藏）
             }
 
-            Canvas canvas = FindFirstObjectByType<Canvas>();
+            // 只复用本场景的 Canvas：FindFirstObjectByType 可能命中跨场景常驻的 Canvas
+            //（如 SlotIntroVideoPlayer 的 SlotIntroVideoCanvas），按钮挂上去会随其
+            // 残留到后续场景（退房回大厅后确认/旋转按钮仍可见）
+            Canvas canvas = null;
+            foreach (Canvas c in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+            {
+                if (c != null && c.gameObject.scene == gameObject.scene)
+                {
+                    canvas = c;
+                    break;
+                }
+            }
             if (canvas == null)
             {
                 var canvasGo = new GameObject("PlacementCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));

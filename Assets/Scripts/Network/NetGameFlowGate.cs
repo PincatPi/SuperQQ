@@ -21,12 +21,80 @@ namespace SuperQQ.Network
     {
         private static ItemOfferList _pendingOffers;
 
+        // 缓存的阶段消息：GamePhaseSync 到达时当前场景不是本局关卡场景（旧 GamePhaseManager
+        // 跨场景残留/关卡场景未加载完）时暂存，待正确场景的 Manager 就绪后补投
+        private static GamePhaseSync _pendingPhaseSync;
+
+        // 缓存时刻：给 UIRoomController 的开局切场景一个优先窗口，超时仍不在关卡场景时
+        // 门控才兜底发起加载，避免两处同时请求加载同一关卡场景
+        private static float _pendingPhaseSyncAt;
+
+        // 门控是否已发起过关卡场景加载（防重复请求；场景加载完成后复位）
+        private static bool _bGateSceneLoadRequested;
+
+        // 门控兜底加载关卡场景的宽限（秒）：超过该时长仍不在本局关卡场景才主动加载
+        private const float GateSceneLoadGraceSeconds = 1.5f;
+
         /// <summary>取出并清空缓存的首轮道具列表（由 PropSelectionDirector 在进入阶段时消费）</summary>
         public static ItemOfferList ConsumePendingOffers()
         {
             ItemOfferList offers = _pendingOffers;
             _pendingOffers = null;
             return offers;
+        }
+
+        /// <summary>
+        /// 退房/离房时重置门控缓存：待发牌/待阶段消息、服务器分数缓存、轮次与种子。
+        /// 旧房间的对局消息与本局无关，残留会污染下一局（旧发牌补投、旧分数进结算页）。
+        /// 由 LeaveRoomButton 在退房流程中调用。
+        /// </summary>
+        public static void ResetForRoomLeave()
+        {
+            _pendingOffers = null;
+            _pendingPhaseSync = null;
+            _bGateSceneLoadRequested = false;
+            _serverScores.Clear();
+            CurrentPhaseEndTimeMs = 0;
+            CurrentServerRound = 0;
+            CurrentRoundSeed = -1;
+        }
+
+        /// <summary>
+        /// 房间号校验：消息属于当前所在房间才接受。
+        /// 退房后旧房间仍在服务端推进，其广播（阶段/发牌/出局/结算）会继续到达本端，
+        /// 不校验会被旧房间消息驱动本地流程（最典型：旧关卡场景被重新加载）。
+        /// </summary>
+        private static bool BIsCurrentRoomMessage(string roomId, string msgName)
+        {
+            NetworkManager net = NetworkManager.Instance;
+            if (net != null && !string.IsNullOrEmpty(net.RoomId) && roomId == net.RoomId)
+            {
+                return true;
+            }
+            Debug.LogWarning($"[NetWork] 丢弃非当前房间的 {msgName}: msgRoom={roomId} currentRoom={net?.RoomId}");
+            return false;
+        }
+
+        /// <summary>本局关卡场景名（按当前房间的 levelId 查表；无房间数据时回退默认关）</summary>
+        private static string GetExpectedLevelScene()
+        {
+            NetworkManager net = NetworkManager.Instance;
+            int levelId = net != null && net.JoinedRoom != null ? net.JoinedRoom.LevelId : 0;
+            return LevelTable.ResolveSceneName(levelId);
+        }
+
+        /// <summary>加载场景：优先走全局 SceneManager（带切换中防重入），缺失时退 Unity 原生加载</summary>
+        private static void LoadScene(string sceneName)
+        {
+            if (string.IsNullOrEmpty(sceneName)) return;
+            if (SuperQQ.Scene.SceneManager.Instance != null)
+            {
+                SuperQQ.Scene.SceneManager.Instance.LoadScene(sceneName);
+            }
+            else
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
+            }
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -60,6 +128,7 @@ namespace SuperQQ.Network
 
         private void HandleSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
         {
+            _bGateSceneLoadRequested = false; // 一次场景加载完成，允许下一次兜底请求
             TryInit();
             TrySuppressLocalTransitions();
         }
@@ -75,6 +144,52 @@ namespace SuperQQ.Network
             // 屏蔽被跳过一次后再不重试，整个对局本地倒计时/条件转移照常触发（阶段被"跳过"）。
             TrySuppressLocalTransitions();
             TryDeliverPendingOffers();
+            TryDeliverPendingPhaseSync();
+        }
+
+        /// <summary>
+        /// 缓存阶段消息的补投递：场景未切到本局关卡时 GamePhaseSync 被缓存（见 OnGamePhaseSync），
+        /// 此处等正确场景的新 Manager 就绪后补投；超宽限仍不在关卡场景时由门控兜底发起加载
+        /// （正常路径 UIRoomController 收到 game_started 会立即切场景，兜底只在其失败时生效）。
+        /// </summary>
+        private void TryDeliverPendingPhaseSync()
+        {
+            if (_pendingPhaseSync == null)
+            {
+                return;
+            }
+
+            NetworkManager net = NetworkManager.Instance;
+            // 已退房/换房：缓存的阶段消息属于旧房间，丢弃
+            if (net == null || string.IsNullOrEmpty(net.RoomId) || _pendingPhaseSync.RoomId != net.RoomId)
+            {
+                _pendingPhaseSync = null;
+                return;
+            }
+
+            string expectedScene = GetExpectedLevelScene();
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != expectedScene)
+            {
+                if (!_bGateSceneLoadRequested
+                    && Time.realtimeSinceStartup - _pendingPhaseSyncAt > GateSceneLoadGraceSeconds)
+                {
+                    _bGateSceneLoadRequested = true;
+                    Debug.Log($"[NetWork] 宽限后仍不在本局关卡场景，门控兜底加载: {expectedScene}");
+                    LoadScene(expectedScene);
+                }
+                return;
+            }
+
+            GamePhaseManager flow = GamePhaseManager.Instance;
+            if (flow == null)
+            {
+                return; // 关卡场景已加载但 Manager 尚未就绪，下一帧重试
+            }
+
+            GamePhaseSync sync = _pendingPhaseSync;
+            _pendingPhaseSync = null;
+            Debug.Log($"[NetWork] 关卡场景就绪，补投缓存阶段消息: phase={sync.Phase} round={sync.Round}");
+            OnGamePhaseSync(sync);
         }
 
         /// <summary>
@@ -162,6 +277,8 @@ namespace SuperQQ.Network
         /// <summary>服务器出局裁决：记录名次并广播日志（结算展示数据以服务器为准）</summary>
         private void OnPlayerOut(PlayerOutBroadcast msg)
         {
+            if (!BIsCurrentRoomMessage(msg.RoomId, nameof(PlayerOutBroadcast))) return;
+
             if (msg.OutType == PlayerOutType.Finished)
             {
                 Debug.Log($"[NetWork] 玩家 {msg.PlayerId} 通关，名次: 第{msg.FinishRank}名");
@@ -212,6 +329,8 @@ namespace SuperQQ.Network
         /// <summary>服务器结算结果：权威排名/胜负/分数（本地展示数据以服务器为准）</summary>
         private void OnSettlement(global::Minigame.Room.V1.Settlement settlement)
         {
+            if (!BIsCurrentRoomMessage(settlement.RoomId, nameof(Settlement))) return;
+
             _serverScores.Clear();
             foreach (SettlementPlayerResult r in settlement.Results)
             {
@@ -540,8 +659,37 @@ namespace SuperQQ.Network
 
         private void OnGamePhaseSync(GamePhaseSync sync)
         {
+            // 丢弃旧房间/未在房时的迟到消息（退房后旧房间仍在服务端推进，推送可能继续到达）
+            if (!BIsCurrentRoomMessage(sync.RoomId, nameof(GamePhaseSync))) return;
+
+            // 跨场景残留防护：GamePhaseManager 是 DontDestroyOnLoad，上一局关卡的旧实例在
+            // Hall/Room 场景仍存活，其 GameFlowConfig 的阶段资产 _scene 指回旧关卡场景——
+            // 此时让旧实例驱动阶段会把旧地图重新加载（开局 GamePhaseSync 与关卡场景加载竞态时必现）。
+            // 关卡内阶段（选择/摆放/游玩）必须在本局关卡场景处理：不在则缓存并等正确场景的
+            // 新 Manager 替换旧实例后补投（TryDeliverPendingPhaseSync），场景加载由
+            // UIRoomController 开局切场景负责，门控仅在宽限后兜底。
+            // 结算阶段不受限：终局结算阶段设计上跨场景运行（FinalSettlement 场景无 Manager）。
+            bool bLevelPhase = sync.Phase == GamePhaseKind.PropSelection
+                || sync.Phase == GamePhaseKind.PropPlacement
+                || sync.Phase == GamePhaseKind.Playing;
+            string expectedScene = GetExpectedLevelScene();
+            if (bLevelPhase
+                && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != expectedScene)
+            {
+                _pendingPhaseSync = sync;
+                _pendingPhaseSyncAt = Time.realtimeSinceStartup;
+                Debug.Log($"[NetWork] 当前不在本局关卡场景（期望 {expectedScene}），缓存阶段消息待补投: phase={sync.Phase} round={sync.Round}");
+                return;
+            }
+
             GamePhaseManager flow = GamePhaseManager.Instance;
-            if (flow == null) return;
+            // 关卡场景已加载但 Manager 尚未就绪：缓存待补投（Update 中重试）
+            if (flow == null)
+            {
+                _pendingPhaseSync = sync;
+                _pendingPhaseSyncAt = Time.realtimeSinceStartup;
+                return;
+            }
 
             // 服务器时间对时 + 记录本阶段结束时刻（倒计时锚点，两端一致）
             NetworkManager.SyncServerTime(sync.ServerTimeMs);
@@ -616,6 +764,9 @@ namespace SuperQQ.Network
 
         private void OnServerOffers(ItemOfferList list)
         {
+            // 丢弃旧房间的迟到发牌（退房后旧房间继续推进时会继续推送；缓存下来会污染下一局选择阶段）
+            if (!BIsCurrentRoomMessage(list.RoomId, nameof(ItemOfferList))) return;
+
             // 选择阶段已激活时，Director 的注册可能被本 Gate 重新注册覆盖（本地流程先于服务器
             // 消息启动的竞争场景：BeginPhase 注册 → OnGamePhaseSync 重新注册 → 发牌到达）。
             // 此时缓存将无人消费，直接把发牌转发给激活中的 Director 并清缓存。
