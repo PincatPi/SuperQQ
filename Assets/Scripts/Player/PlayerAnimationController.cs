@@ -17,7 +17,8 @@ namespace SuperQQ.Player
     ///   Taunt (Trigger) — 嘲讽表情触发标记：PC 端由本地键盘嘲讽键（PlayerController.TauntPressed）驱动，
     ///                     移动端由 MobileInputPanel 嘲讽按钮直接调用 PlayTaunt()；
     ///                     打断由 Animator 过渡实现：Taunt 状态配自身过渡（可被再次嘲讽打断），
-    ///                     移动/跳跃经 VelocityX/bIsJumping 条件过渡打断
+    ///                     移动/跳跃经 VelocityX/bIsJumping 条件过渡打断。
+    ///                     注意：仅存活状态走本 Trigger；嘲讽表情包（TauntEmojiController）存活/幽灵均播放
     /// </summary>
     [RequireComponent(typeof(PlayerController))]
     public class PlayerAnimationController : MonoBehaviour
@@ -42,10 +43,12 @@ namespace SuperQQ.Player
 
         // ---------- 组件缓存 ----------
         private PlayerController _player;
+        private TauntEmojiController _emojiCtrl;             // 幽灵嘲讽表情包播放器（可空，未挂载时幽灵嘲讽仅上报）
 
         private void Awake()
         {
             _player = GetComponent<PlayerController>();
+            _emojiCtrl = GetComponent<TauntEmojiController>();
 
             if (animator == null)
             {
@@ -151,20 +154,37 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
-        /// 播放嘲讽表情：向 Animator 写入 Taunt Trigger（沿触发，由 PC 嘲讽键或 UI 嘲讽按键调用）。
-        /// Trigger 可重复写入：嘲讽播放中再次触发会重启动作（需 Animator 配置 Taunt 自过渡）；
-        /// 移动/跳跃打断由 Animator 中 Taunt → Idle/Run/Jump 的条件过渡实现，代码侧无需处理。
-        /// 冻结状态下禁止嘲讽：不播动画也不上报，远端因此不会收到冻结玩家的嘲讽事件。
-        /// 联机时经 NetEventSync 上报一次性事件（服务器透传广播），远端化身收到后同样播放嘲讽动画；
+        /// 播放嘲讽：存活/幽灵均弹表情包（TauntEmojiController，固定时长 + Close 收尾动画，
+        /// 重复嘲讽立即打断重播）；存活状态额外向 Animator 写入 Taunt Trigger 播放玩家嘲讽动画
+        /// （可重复写入，再次触发重启动作需 Animator 配 Taunt 自过渡；
+        /// 移动/跳跃打断由 Taunt → Idle/Run/Jump 条件过渡实现，代码侧无需处理）。
+        /// 冻结状态禁止嘲讽：不播也不上报，远端因此不会收到冻结玩家的嘲讽事件。
+        /// 联机时经 NetEventSync 上报一次性事件（服务器透传广播），远端化身收到后按同样的规则播放；
         /// 仅本地玩家会走到这里（远端化身的本组件已被 RemotePlayerSync 禁用），离线时上报为空操作
         /// </summary>
         public void PlayTaunt()
         {
-            if (animator == null || _player.BIsFrozen)
+            if (_player.BIsFrozen)
             {
                 return;
             }
-            animator.SetTrigger(TauntHash);
+
+            // 存活/幽灵均弹表情包
+            if (_emojiCtrl != null)
+            {
+                _emojiCtrl.Play();
+            }
+            else
+            {
+                Debug.LogWarning("[PlayerAnimationController] 嘲讽表情包需要挂载 TauntEmojiController 并配置表情包 prefab。", this);
+            }
+
+            // 存活状态额外播放玩家嘲讽动画（幽灵只弹表情包）
+            if (!_player.BIsGhost && animator != null)
+            {
+                animator.SetTrigger(TauntHash);
+            }
+
             SuperQQ.Network.NetEventSync.ReportEvent(
                 Minigame.Room.V1.PlayerEventType.Taunt, _player.transform.position);
         }

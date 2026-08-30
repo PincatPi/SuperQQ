@@ -138,6 +138,7 @@ GameObject:
   - component: {fileID: 4068118322556819637}
   - component: {fileID: 1530836126952925576}
   - component: {fileID: 7027497864802993098}
+  - component: {fileID: -2300553050711742481}
   - component: {fileID: 4787373482862280131}
   m_Layer: 6
   m_Name: Tilamisu
@@ -309,6 +310,33 @@ MonoBehaviour:
   animator: {fileID: 432204406649400064}
   runEnterThreshold: 0.1
   flipWithVelocity: 1
+--- !u!114 &-2300553050711742481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2589623088379354774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53ca8d478d9fb40788c7c358390c6a67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  emojiPrefab: {fileID: 1995292472720036955, guid: 20169283073924b0da204d2281e0a8ca, type: 3}
+  spawnOffset: {x: 3, y: 3}
+  duration: 2
+  closeMaxDuration: 2
+  emojiSprites:
+  - {fileID: 21300000, guid: 4ec405a8722884cec81482c45cd5f241, type: 3}
+  - {fileID: 21300000, guid: d3d11baf257c9438cae0a87b35c8010c, type: 3}
+  - {fileID: 21300000, guid: 7f263381f6f3a428c85744105819b846, type: 3}
+  - {fileID: 21300000, guid: a40b56d128d354ab7a88bd0825d99e62, type: 3}
+  - {fileID: 21300000, guid: 0ec2c42371cef4c5aa3a90e258e8f309, type: 3}
+  - {fileID: 21300000, guid: 5bc17b79c45494d2ebfaa4b79e746621, type: 3}
+  - {fileID: 21300000, guid: 2bcb10390c40f426abef53d2c4e6a91e, type: 3}
+  - {fileID: 21300000, guid: 124cbd3d0ca1a406f8ed24e7688fb35a, type: 3}
+  - {fileID: 21300000, guid: 01d771f9a96bd4ffb8b1bb3d3c1d05ce, type: 3}
+  spriteNodeName: TauntIEmoji
 --- !u!114 &4787373482862280131
 MonoBehaviour:
   m_ObjectHideFlags: 0

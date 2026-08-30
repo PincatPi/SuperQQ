@@ -51,6 +51,9 @@ namespace SuperQQ.Network
         // 远端当前是否处于冻结状态（快照 player_state=3），供 RemotePlayerEffects 屏蔽冻结期间的嘲讽事件
         public bool BIsFrozen { get; private set; }
 
+        // 远端当前是否处于幽灵状态（快照 player_state=1），供 RemotePlayerEffects 决定嘲讽表现（幽灵=表情包）
+        public bool BIsGhost { get; private set; }
+
         // 快照缓冲：按接收时间升序
         private struct SnapshotPoint
         {
@@ -218,6 +221,7 @@ namespace SuperQQ.Network
             // 死亡表现与本地一致：收到 player_state=1 后先播死亡动画（躺），过渡时长后退出死亡动画
             // 进入幽灵表现（半透明 + 幽灵动画），避免 bIsDead 恒 true 导致死亡动画卡在最后一帧。
             bool isGhost = point.PlayerState == 1;
+            BIsGhost = isGhost;
             if (isGhost && !_wasGhost)
             {
                 _ghostEnterTime = UnityEngine.Time.time;   // 首次进入幽灵，开始死亡动画过渡

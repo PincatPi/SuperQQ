@@ -1,4 +1,5 @@
 using Minigame.Room.V1;
+using SuperQQ.Player;
 using UnityEngine;
 using Vector2 = UnityEngine.Vector2;
 
@@ -7,7 +8,8 @@ namespace SuperQQ.Network
     /// <summary>
     /// 远端玩家一次性事件表现（挂在远端化身上）。
     /// 当前实现：死亡时闪红、拾取时闪金，作为占位表现；
-    /// 嘲讽事件直接驱动远端 Animator 播放嘲讽动画（与本地 PlayerAnimationController 参数约定一致）；
+    /// 嘲讽事件（与本地 PlayTaunt 一致）：存活/幽灵均经 TauntEmojiController 弹表情包，
+    ///   存活额外驱动远端 Animator 播放嘲讽动画；
     /// 后续接入正式音效/粒子时在此扩展（按事件类型播 AudioClip/ParticleSystem）。
     /// </summary>
     public class RemotePlayerEffects : MonoBehaviour
@@ -15,6 +17,7 @@ namespace SuperQQ.Network
         private SpriteRenderer _renderer;
         private Animator _animator;
         private RemotePlayerSync _sync;
+        private TauntEmojiController _emojiCtrl;
         private float _flashTimer;
         private Color _flashColor;
         private Color _baseColor;
@@ -29,6 +32,7 @@ namespace SuperQQ.Network
             if (_renderer != null) _baseColor = _renderer.color;
             _animator = GetComponentInChildren<Animator>();
             _sync = GetComponent<RemotePlayerSync>();
+            _emojiCtrl = GetComponent<TauntEmojiController>();
         }
 
         public void Play(PlayerEventType eventType, Vector2 position)
@@ -48,11 +52,20 @@ namespace SuperQQ.Network
                     // 跳跃动画已由 is_jumping 驱动，无需额外表现
                     break;
                 case PlayerEventType.Taunt:
-                    // 远端播放嘲讽动画：Trigger 与快照驱动的 VelocityX/bIsJumping 等参数互不冲突，
-                    // 打断逻辑由 AnimatorController 过渡决定，与本地表现一致。
+                    // 远端嘲讽表现与本地 PlayTaunt 一致：
+                    //   存活/幽灵均弹表情包（固定时长 + Close 收尾动画，重复嘲讽打断重播）；
+                    //   存活额外驱动远端 Animator 播 Taunt 动画（打断由 AnimatorController 过渡决定）。
                     // 冻结状态屏蔽：本地 PlayTaunt 已在源头上拦截（冻结不上报），此处为防御性校验，
                     // 防止旧版本/异常端发来的嘲讽事件在冻结化身上播放
-                    if (_animator != null && !(_sync != null && _sync.BIsFrozen))
+                    if (_sync != null && _sync.BIsFrozen)
+                    {
+                        break;
+                    }
+                    if (_emojiCtrl != null)
+                    {
+                        _emojiCtrl.Play();
+                    }
+                    if (!(_sync != null && _sync.BIsGhost) && _animator != null)
                     {
                         _animator.SetTrigger(TauntHash);
                     }
