@@ -16,6 +16,10 @@ namespace SuperQQ.Map
         [Tooltip("四条边相对于 BoxCollider2D 边缘的偏移量（x=左, y=右, z=下, w=上），正值向外扩张、负值向内收缩")]
         [SerializeField] private Vector4 _edgeOffset = Vector4.zero;
 
+        [Header("越界死亡")]
+        [Tooltip("兜底死亡容差（世界单位）：左/右/上边界正常会夹紧玩家位置，单帧最多越界一个单帧位移量；越过边界超过该距离视为异常情况（超大击退、出生在外等），直接判死")]
+        [SerializeField] private float _outOfBoundsDeathMargin = 1f;
+
         // 单例实例（场景级，不 DontDestroyOnLoad）
         private static LevelBounds _instance;
 
@@ -91,6 +95,18 @@ namespace SuperQQ.Map
         public Vector2 Center => Bounds.center;
 
         /// <summary>
+        /// 水平 + 上边界夹紧：x 夹紧到 [min.x, max.x]，y 仅夹紧上边界（不超过 max.y），下边界保持开放
+        /// 用于存活/冻结状态：左右与上方像碰撞体一样不允许越界，下方开放（越界触发掉落死亡）
+        /// </summary>
+        public Vector2 ClampHorizontalAndTop(Vector2 pos)
+        {
+            Bounds bounds = Bounds;
+            pos.x = Mathf.Clamp(pos.x, bounds.min.x, bounds.max.x);
+            pos.y = Mathf.Min(pos.y, bounds.max.y);
+            return pos;
+        }
+
+        /// <summary>
         /// 四边夹紧：x/y 均夹紧到包围盒内
         /// 用于幽灵状态：上下左右均不允许越界
         /// </summary>
@@ -103,7 +119,7 @@ namespace SuperQQ.Map
         }
 
         /// <summary>
-        /// 指定高度是否低于下边界（掉落兜底判定）
+        /// 指定高度是否低于下边界（存活状态掉落死亡判定）
         /// </summary>
         public bool IsBelow(float y)
         {
@@ -111,14 +127,16 @@ namespace SuperQQ.Map
         }
 
         /// <summary>
-        /// 指定位置是否越过任意一条边界（上/下/左/右）
-        /// 用于存活/冻结状态的越界死亡判定：四边均不夹紧，越界即死
+        /// 指定位置是否越过任意一条边界且超出兜底容差（上/下/左/右）
+        /// 用于存活/冻结状态的异常越界死亡判定：正常游玩时左/右/上边界会被夹紧、
+        /// 下边界越界即死，只有异常情况（超大击退、出生在外等）才可能触发本判定
         /// </summary>
-        public bool IsOutOfBounds(Vector2 pos)
+        public bool IsDeeplyOutOfBounds(Vector2 pos)
         {
             Bounds bounds = Bounds;
-            return pos.x < bounds.min.x || pos.x > bounds.max.x
-                || pos.y < bounds.min.y || pos.y > bounds.max.y;
+            float margin = _outOfBoundsDeathMargin;
+            return pos.x < bounds.min.x - margin || pos.x > bounds.max.x + margin
+                || pos.y < bounds.min.y - margin || pos.y > bounds.max.y + margin;
         }
 
         // ==================== 调试可视化 ====================

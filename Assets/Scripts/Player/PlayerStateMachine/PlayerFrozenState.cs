@@ -86,23 +86,47 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
-        /// 每帧更新：不消费任何输入；仅检测地图边界（冻结中被击飞/吹飞出界时立即死亡）
+        /// 每帧更新：不消费任何输入；仅维护地图边界（与存活状态同一口径）
         /// </summary>
         public void Update()
         {
-            CheckLevelBounds();
+            ClampToLevelBounds();
         }
 
         /// <summary>
-        /// 边界检测：越过任意一条边界（上/下/左/右）时立即死亡（与存活状态同一判定口径，不可豁免）
-        /// 冻结中仍受重力/风力影响会移动，无此检测会无限坠落或飞出地图
+        /// 边界约束：左/右/上边界夹紧不允许越界；下方开放，越过下边界时立即死亡；
+        /// 大幅越过任意边界（异常情况：超大击退、出生在外等）时兜底强制死亡，不可豁免
+        /// 冻结中仍受重力/风力影响会移动，无此约束会无限坠落或飞出地图
         /// </summary>
-        private void CheckLevelBounds()
+        private void ClampToLevelBounds()
         {
             SuperQQ.Map.LevelBounds bounds = _ctx.LevelBounds;
-            if (bounds != null && bounds.IsOutOfBounds(_ctx.Rb.position))
+            if (bounds == null)
+            {
+                return;
+            }
+
+            Vector2 pos = _ctx.Rb.position;
+
+            // 越过下边界：掉落死亡
+            if (bounds.IsBelow(pos.y))
             {
                 _ctx.PlayerForceDie(fellOutOfBounds: true);
+                return;
+            }
+
+            // 兜底：大幅越过左/右/上边界 → 强制死亡
+            if (bounds.IsDeeplyOutOfBounds(pos))
+            {
+                _ctx.PlayerForceDie(fellOutOfBounds: true);
+                return;
+            }
+
+            // 正常情况：左/右/上边界夹紧写回
+            Vector2 clamped = bounds.ClampHorizontalAndTop(pos);
+            if (clamped != pos)
+            {
+                _ctx.Rb.position = clamped;
             }
         }
 

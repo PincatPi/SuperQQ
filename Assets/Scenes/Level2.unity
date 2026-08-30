@@ -8339,84 +8339,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0b09e7857660247b1477e93731de29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &1863149013
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1863149015}
-  - component: {fileID: 1863149014}
-  m_Layer: 5
-  m_Name: PopupManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1863149014
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1863149013}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11b8a127757c93d4da8d2c33824881be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _popupContainer: {fileID: 1538084899}
-  _tipsContainer: {fileID: 1289377824}
-  _popups:
-  - Type: 1
-    Prefab: {fileID: 9218222533047241839, guid: fa1f9840c5ef14c018da57542f6dfa82, type: 3}
-    DefaultDuration: 3
-  - Type: 2
-    Prefab: {fileID: 8951677371387435975, guid: 7ed50d8ea220b4ac8851f7c33df8f4d7, type: 3}
-    DefaultDuration: 3
-  - Type: 3
-    Prefab: {fileID: 6993257778526718000, guid: 74eb832ad8df64950959b2d12aa72b7d, type: 3}
-    DefaultDuration: 3
-  - Type: 5
-    Prefab: {fileID: 4313469324709259989, guid: 02457c99e5e8b4014a3c8637cd7dcd0b, type: 3}
-    DefaultDuration: 3
-  - Type: 12
-    Prefab: {fileID: 3128525747150584807, guid: a08b8c63ebe1a49f88eb598428152a02, type: 3}
-    DefaultDuration: 0
-  _tips:
-  - Type: 1
-    Prefab: {fileID: -5804504903879468968, guid: d132f58d80458491c8c7c9cf34d92f5d, type: 3}
-    DefaultDuration: 3
-  _floatingTextContainer: {fileID: 0}
-  _floatingTextPrefab: {fileID: 1109695356915285437, guid: 31032dba2666b4118aaa9003d64fd043, type: 3}
-  _defaultFloatingTextDuration: 1
-  _floatingTexts:
-  - Type: 1
-    Text: "\u8BE5\u533A\u57DF\u4E0D\u53EF\u653E\u7F6E\u54E6\uFF5E"
-    Offset: {x: 0, y: 2}
-    Duration: 1
---- !u!224 &1863149015
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1863149013}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.011722222, y: 0.011722222, z: 0.011722222}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1884115058
 GameObject:
   m_ObjectHideFlags: 0
@@ -8550,6 +8472,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _edgeOffset: {x: -0.5, y: -0.5, z: 0, w: 1}
+  _outOfBoundsDeathMargin: 1
 --- !u!61 &1895433437
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -9129,8 +9052,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11b8a127757c93d4da8d2c33824881be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _popupContainer: {fileID: 0}
-  _tipsContainer: {fileID: 0}
+  _popupContainer: {fileID: 1538084899}
+  _tipsContainer: {fileID: 1289377824}
   _popups:
   - Type: 1
     Prefab: {fileID: 9218222533047241839, guid: fa1f9840c5ef14c018da57542f6dfa82, type: 3}
@@ -9152,9 +9075,13 @@ MonoBehaviour:
     Prefab: {fileID: -5804504903879468968, guid: d132f58d80458491c8c7c9cf34d92f5d, type: 3}
     DefaultDuration: 3
   _floatingTextContainer: {fileID: 0}
-  _floatingTextPrefab: {fileID: 0}
+  _floatingTextPrefab: {fileID: 1109695356915285437, guid: 31032dba2666b4118aaa9003d64fd043, type: 3}
   _defaultFloatingTextDuration: 3
-  _floatingTexts: []
+  _floatingTexts:
+  - Type: 1
+    Text: "\u8BE5\u533A\u57DF\u4E0D\u53EF\u653E\u7F6E\u54E6\uFF5E"
+    Offset: {x: 0, y: 2}
+    Duration: 1
 --- !u!1 &2011314948
 GameObject:
   m_ObjectHideFlags: 0
@@ -10425,4 +10352,3 @@ SceneRoots:
   - {fileID: 401454653}
   - {fileID: 154983789}
   - {fileID: 1502373070}
-  - {fileID: 1863149015}
