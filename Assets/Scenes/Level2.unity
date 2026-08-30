@@ -5977,6 +5977,8 @@ MonoBehaviour:
   _targetGroup: {fileID: 471886939}
   _targetWeight: 1
   _targetRadius: 0
+  _finishedSpectatorCamera: {fileID: 956895468}
+  _finishedSpectatorCameraPriority: 20
 --- !u!1 &1302976097
 GameObject:
   m_ObjectHideFlags: 0

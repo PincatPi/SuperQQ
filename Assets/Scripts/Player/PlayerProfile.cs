@@ -41,6 +41,12 @@ namespace SuperQQ.Player
         public int CharacterIndex = -1;
 
         /// <summary>
+        /// 玩家图标（选择阶段标识图）：运行时由化身（PlayerController）回写缓存，
+        /// 供最终结算等无化身的场景展示玩家 PlayerIcon；资产引用，跨场景有效
+        /// </summary>
+        [System.NonSerialized] public Sprite SelectionIcon;
+
+        /// <summary>
         /// 左移按键
         /// </summary>
         public KeyCode LeftKey;

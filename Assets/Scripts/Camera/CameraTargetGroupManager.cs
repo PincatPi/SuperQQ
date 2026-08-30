@@ -13,6 +13,9 @@ namespace SuperQQ.CameraControl
     /// - 幽灵状态的本地玩家（仍在操控移动，镜头需跟随）
     /// 出局玩家（远端幽灵/任意通关）会被移出目标组
     ///
+    /// 另负责通关观战镜头：本地玩家通关后被移出目标组时，将主镜头平滑切换至
+    /// 固定观战镜头（通常为 SelectionPlacementCamera），复活后平滑切回游玩镜头
+    ///
     /// 设计说明：
     /// - 不依赖网络层，玩家来源统一走 LevelPlayerRegistry（本地/远端/晚进房玩家都会经过它注册）
     /// - 通过事件驱动，NetworkManager / RoomSnapshotReceiver 等无需感知本组件存在
@@ -27,6 +30,16 @@ namespace SuperQQ.CameraControl
         [Header("目标参数")]
         [SerializeField] private float _targetWeight = 1f;               // 每个玩家在镜头构图中的权重
         [SerializeField] private float _targetRadius = 1f;               // 每个玩家的包围半径，保证角色四周留边距
+
+        [Header("通关观战镜头")]
+        [Tooltip("本地玩家通关后接管主镜头的固定视角 Virtual Camera（通常为场景中的 SelectionPlacementCamera）；留空则通关后仍跟随目标组")]
+        [SerializeField] private CinemachineVirtualCamera _finishedSpectatorCamera;
+        [Tooltip("通关观战镜头生效时的优先级，需高于游玩镜头（默认 10），与选择/放置阶段镜头同级")]
+        [SerializeField] private int _finishedSpectatorCameraPriority = 20;
+
+        // 观战镜头接管状态（仅当本地玩家处于通关状态时生效）
+        private bool _bSpectatorCameraActive;
+        private int _spectatorCameraOriginalPriority;
 
         // 已入组的玩家 Transform，用于去重（TargetGroup 自身不去重）
         private readonly HashSet<Transform> _addedTargets = new();
@@ -68,6 +81,13 @@ namespace SuperQQ.CameraControl
                 LevelPlayerRegistry.Instance.OnPlayersChanged -= RebuildTargets;
                 LevelPlayerRegistry.Instance.OnPlayerStateChanged -= HandlePlayerStateChanged;
             }
+
+            // 兜底：本组件先销毁时还原观战镜头优先级（Unity 重载 == 可判已销毁对象，此处为异场景引用防御）
+            if (_bSpectatorCameraActive && _finishedSpectatorCamera != null)
+            {
+                _finishedSpectatorCamera.Priority = _spectatorCameraOriginalPriority;
+                _bSpectatorCameraActive = false;
+            }
         }
 
         // ==================== 状态过滤 ====================
@@ -78,6 +98,7 @@ namespace SuperQQ.CameraControl
         private void HandlePlayerStateChanged(PlayerController player, PlayerStateType stateType)
         {
             RebuildTargets();
+            UpdateSpectatorCamera();
         }
 
         /// <summary>
@@ -124,6 +145,64 @@ namespace SuperQQ.CameraControl
             {
                 AddTarget(target);
             }
+
+            UpdateSpectatorCamera();
+        }
+
+        // ==================== 通关观战镜头 ====================
+
+        /// <summary>
+        /// 本地玩家通关后，将主镜头平滑切换至固定观战镜头（Cinemachine Brain 按优先级差自动混合）；
+        /// 本地玩家复活回到存活状态时还原优先级，镜头平滑回到游玩目标组。
+        /// 解决"本地玩家通关后被移出目标组，PlayingCamera 无目标而生硬变大"的问题。
+        /// 时序说明：新一轮复活发生在 PropSelectionPhase.OnEnter 开头，
+        /// 先于选择/放置 Director 记录镜头原优先级，优先级还原不会与阶段镜头切换冲突。
+        /// </summary>
+        private void UpdateSpectatorCamera()
+        {
+            if (_finishedSpectatorCamera == null)
+            {
+                return;
+            }
+
+            if (AnyLocalPlayerFinished())
+            {
+                if (!_bSpectatorCameraActive)
+                {
+                    _spectatorCameraOriginalPriority = _finishedSpectatorCamera.Priority;
+                    _finishedSpectatorCamera.Priority = _finishedSpectatorCameraPriority;
+                    _bSpectatorCameraActive = true;
+                }
+            }
+            else if (_bSpectatorCameraActive)
+            {
+                _finishedSpectatorCamera.Priority = _spectatorCameraOriginalPriority;
+                _bSpectatorCameraActive = false;
+            }
+        }
+
+        /// <summary>
+        /// 是否存在处于通关状态的本地玩家
+        /// </summary>
+        private bool AnyLocalPlayerFinished()
+        {
+            LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
+            if (registry == null)
+            {
+                return false;
+            }
+
+            IReadOnlyList<PlayerController> players = registry.Players;
+            for (int i = 0; i < players.Count; i++)
+            {
+                PlayerController player = players[i];
+                if (player != null && player.BIsLocal
+                    && registry.GetPlayerState(player) == PlayerStateType.Finished)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>

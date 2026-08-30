@@ -441,6 +441,17 @@ namespace SuperQQ.Player
                 _initialSpawnPositions[player] = player.transform.position;
                 OnPlayersChanged?.Invoke();
             }
+
+            // 缓存玩家图标到跨场景档案：图标来自化身 prefab，档案持久化后
+            // 最终结算等无化身场景也能展示 PlayerIcon（覆盖预置玩家/生成化身/角色替换全部路径）
+            if (PlayerSessionManager.Instance != null)
+            {
+                PlayerProfile profile = PlayerSessionManager.Instance.GetProfile(player.PlayerName);
+                if (profile != null)
+                {
+                    profile.SelectionIcon = player.SelectionIconSprite;
+                }
+            }
         }
 
         /// <summary>

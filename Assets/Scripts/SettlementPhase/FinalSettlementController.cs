@@ -21,6 +21,8 @@ namespace SuperQQ.Settlement
         [Header("MVP 区")]
         [SerializeField] private TMP_Text mvpName;
         [SerializeField] private Image mvpPlayerIcon;
+        [Tooltip("胜利玩家 PlayerIcon（取自跨场景档案缓存的 SelectionIconSprite，原色显示；无图标时隐藏）")]
+        [SerializeField] private Image winnerPlayerIcon;
 
         [Header("排名区（运行时按玩家人数生成行）")]
         [Tooltip("排名行 prefab（内含 RankText/PlayerName/Avatar/Initial，按名解析）")]
@@ -93,8 +95,33 @@ namespace SuperQQ.Settlement
                 mvpPlayerIcon.color = Color.white; // 记录中无颜色字段，保持素材原色
             }
 
+            // 胜利玩家 PlayerIcon：取跨场景档案缓存的 SelectionIconSprite（关卡内由化身回写），原色显示
+            ApplyWinnerIcon(winnerName);
+
             // 排名行：运行时按玩家人数生成（场景中不预置行）
             BuildRankingRows(rankedPlayerNames);
+        }
+
+        /// <summary>应用胜利玩家 PlayerIcon：无档案/无图标时隐藏 Image，避免显示纯色块</summary>
+        private void ApplyWinnerIcon(string winnerName)
+        {
+            if (winnerPlayerIcon == null)
+            {
+                return;
+            }
+
+            Sprite icon = null;
+            if (SuperQQ.Player.PlayerSessionManager.Instance != null)
+            {
+                SuperQQ.Player.PlayerProfile profile =
+                    SuperQQ.Player.PlayerSessionManager.Instance.GetProfile(winnerName);
+                icon = profile != null ? profile.SelectionIcon : null;
+            }
+
+            winnerPlayerIcon.sprite = icon;
+            winnerPlayerIcon.color = Color.white;
+            winnerPlayerIcon.preserveAspect = true;
+            winnerPlayerIcon.enabled = icon != null;
         }
 
         /// <summary>清空并按排名数据重新生成排名行</summary>

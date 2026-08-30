@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _minTriggerDelay: 8
   _maxTriggerDelay: 20
-  _warningTipText: "\u6DB2\u6C2E\u5373\u5C06\u6CC4\u9732\uFF0C\u6CE8\u610F\u8EB2\u907F\uFF01"
+  _warningTipText: "\u901F\u51BB\u7CD6\u971C\u5373\u5C06\u6CC4\u9732\uFF0C\u6CE8\u610F\u8EB2\u907F\uFF01"
   _warningDuration: 3
   _iceBlockPrefab: {fileID: -8696185239438031818, guid: 17f280cc693ee44aab8fb5980a00f524, type: 3}
   _iceEffectDestroyDelay: 0.6

@@ -423,6 +423,10 @@ namespace SuperQQ.Player
                 localInput.SetKeys(leftKey, rightKey, jumpKey, jumpKeyAlt, downKey, tauntKey);
             }
 
+            // 回写玩家图标到档案：图标来自化身 prefab 序列化配置，
+            // 跨场景持久化的档案缓存后，最终结算等无化身场景也能展示 PlayerIcon
+            profile.SelectionIcon = SelectionIconSprite;
+
             // 立即刷新精灵颜色（Awake 已缓存 _spriteRenderer）
             // 独立角色预制体取消染色开关后跳过：保留角色原始配色，座位色仅用于 UI 标识
             if (applyPlayerColorTint && _spriteRenderer != null)
@@ -468,7 +472,8 @@ namespace SuperQQ.Player
                 JumpKey = jumpKey,
                 JumpKeyAlt = jumpKeyAlt,
                 DownKey = downKey,
-                TauntKey = tauntKey
+                TauntKey = tauntKey,
+                SelectionIcon = SelectionIconSprite
             };
         }
 
