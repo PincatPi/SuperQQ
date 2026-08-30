@@ -130,8 +130,18 @@ namespace SuperQQ.Item
             PlayerController remote = FindPlayerByIdentity(claimerPlayerId);
             if (remote != null)
             {
+                // 跟随目标与本地取同一锚点：优先用玩家身上的 CoinsFollowPoint 子物体
+                // （含身后距离与高度配置，远端朝向翻转由 CoinsFollowPointFlip 读快照 flipX 驱动），
+                // 缺失时回退根物体（旧行为：跟随脚底，仅靠 followOffset 抬升）
+                Transform followTarget = remote.transform;
+                CoinsFollowPointFlip anchor = remote.GetComponentInChildren<CoinsFollowPointFlip>();
+                if (anchor != null)
+                {
+                    followTarget = anchor.transform;
+                }
+
                 var follow = gameObject.AddComponent<RemoteCoinFollow>();
-                follow.Init(remote.transform, followDelay, followOffset);
+                follow.Init(followTarget, followDelay, followOffset);
 
                 // 关闭本地跟随逻辑：本路径 follower 未赋值，Coin.Update 会判定
                 // "跟随对象丢失"走 Vanish 把金币销毁（远端认领后跟随表现闪没的根因）；

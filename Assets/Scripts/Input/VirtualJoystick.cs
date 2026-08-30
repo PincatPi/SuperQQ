@@ -62,6 +62,12 @@ namespace SuperQQ.UI
         private void OnDisable()
         {
             // 面板被隐藏/禁用时强制回中，避免输入状态残留
+            ForceRelease();
+        }
+
+        /// <summary>强制松手回中并清空方向输出（面板经 CanvasGroup 隐藏时由外部调用）</summary>
+        public void ForceRelease()
+        {
             ResetHandle();
         }
 

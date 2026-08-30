@@ -54,10 +54,28 @@ namespace SuperQQ.Player
             }
         }
 
-        /// <summary>当前面朝符号（+1 朝右 / -1 朝左；无玩家组件时默认朝右）</summary>
+        /// <summary>
+        /// 当前面朝符号（+1 朝右 / -1 朝左；无玩家组件时默认朝右）
+        /// 本地玩家：按 PlayerController.FacingDir（状态机水平速度）判定；
+        /// 远端化身：PlayerController 被 RemotePlayerSync 禁用、FacingDir 冻结，
+        /// 朝向以快照驱动的精灵翻转（SpriteRenderer.flipX）为准
+        /// </summary>
         private float CurrentFacingSign()
         {
-            return player == null || player.FacingDir >= 0f ? 1f : -1f;
+            if (player == null)
+            {
+                return 1f;
+            }
+            if (player.enabled)
+            {
+                return player.FacingDir >= 0f ? 1f : -1f;
+            }
+            SpriteRenderer renderer = player.Renderer;
+            if (renderer != null)
+            {
+                return renderer.flipX ? -1f : 1f;
+            }
+            return 1f;
         }
 
         /// <summary>目标本地 X：默认落在玩家面朝的反方向（身后）；invertSide 开启时取反</summary>

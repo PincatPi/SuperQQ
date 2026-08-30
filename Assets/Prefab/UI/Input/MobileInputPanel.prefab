@@ -255,7 +255,7 @@ PrefabInstance:
     - target: {fileID: 5450270264861093758, guid: ad7dd4b418ade5146828f33b85d325c2, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: e2ae23d69e79c4fa6910bc6820acd6db, type: 3}
+      objectReference: {fileID: 21300000, guid: 41d4323f253da4231926d204a4916fc0, type: 3}
     - target: {fileID: 8453025908185511886, guid: ad7dd4b418ade5146828f33b85d325c2, type: 3}
       propertyPath: m_Name
       value: TauntBtn

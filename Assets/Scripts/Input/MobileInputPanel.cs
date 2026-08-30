@@ -1,3 +1,4 @@
+using SuperQQ.GameFlow;
 using SuperQQ.Player;
 using UnityEngine;
 
@@ -8,7 +9,9 @@ namespace SuperQQ.UI
     /// 运行时判断平台：
     ///   移动端（或 Editor 勾选强制开关）→ 显示面板，并将本地玩家的输入源替换为 JoystickPlayerInput；
     ///   PC → 隐藏整个面板，保持键盘输入。
-    /// 移动由虚拟摇杆（VirtualJoystick）控制：存活状态仅左右 + 独立跳跃键，幽灵状态四向移动。
+    /// 移动由虚拟摇杆（VirtualJoystick）控制：存活状态仅左右 + 独立跳跃键，幽灵状态四向移动并隐藏跳跃键。
+    /// 阶段显隐：仅 PlayingPhase（游玩阶段）显示按键，其余阶段经 CanvasGroup 隐藏（不用 SetActive，
+    /// 保证隐藏期间脚本仍运行、能收到 GamePhaseManager.OnPhaseChanged 阶段事件）。
     /// 只绑定 BIsLocal == true 的本地玩家，联机远程玩家不受影响。
     /// 嘲讽按键（tauntButton，面板上的 DownBtn）：按下沿触发本地玩家 PlayerAnimationController.PlayTaunt，
     /// 打断逻辑由 Animator 过渡实现（移动/跳跃条件过渡 + Taunt 自过渡）
@@ -35,8 +38,36 @@ namespace SuperQQ.UI
         private PlayerController _localPlayer;
         private PlayerAnimationController _tauntAnimCtrl;   // 本地玩家的动画驱动器（嘲讽目标）
         private bool _tauntButtonHeld;                      // 上帧嘲讽按键按压状态（按下沿检测用）
+        private bool _jumpButtonVisible = true;             // 跳跃键当前显示状态（避免每帧重复 SetActive）
+        private CanvasGroup _canvasGroup;                   // 阶段显隐控制（隐藏时仍接收阶段事件）
+        private bool _bControlsVisible = true;              // 当前是否处于 PlayingPhase 显示状态
 
         private bool TouchModeEnabled => Application.isMobilePlatform || forceTouchInEditor;
+
+        private void Awake()
+        {
+            _canvasGroup = GetComponent<CanvasGroup>();
+            if (_canvasGroup == null)
+            {
+                _canvasGroup = gameObject.AddComponent<CanvasGroup>();
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (GamePhaseManager.Instance != null)
+            {
+                GamePhaseManager.Instance.OnPhaseChanged += HandlePhaseChanged;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (GamePhaseManager.Instance != null)
+            {
+                GamePhaseManager.Instance.OnPhaseChanged -= HandlePhaseChanged;
+            }
+        }
 
         private void Start()
         {
@@ -48,6 +79,15 @@ namespace SuperQQ.UI
             }
             _touchInput = new JoystickPlayerInput(moveJoystick, jumpButton, axisThreshold);
             TryBindLocalPlayer();
+
+            // Awake/OnEnable 可能早于 Manager 单例就绪，Start 兜底补订阅并同步初始显隐
+            if (GamePhaseManager.Instance != null)
+            {
+                GamePhaseManager.Instance.OnPhaseChanged -= HandlePhaseChanged;
+                GamePhaseManager.Instance.OnPhaseChanged += HandlePhaseChanged;
+            }
+            SetControlsVisible(GamePhaseManager.Instance != null
+                && GamePhaseManager.Instance.CurrentPhaseAsset is PlayingPhase);
         }
 
         private void Update()
@@ -73,7 +113,62 @@ namespace SuperQQ.UI
             // 按当前状态切换摇杆模式：幽灵四向移动，存活仅左右 + 独立跳跃键
             _touchInput.FourWayMode = _localPlayer.BIsGhost;
 
-            UpdateTauntInput();
+            UpdateJumpButtonVisibility();
+
+            // 隐藏期间不读嘲讽按键（视觉上已不可见，避免残留按压误触发）
+            if (_bControlsVisible)
+            {
+                UpdateTauntInput();
+            }
+        }
+
+        /// <summary>
+        /// 阶段切换回调：进入 PlayingPhase 显示触屏按键，离开即隐藏
+        /// </summary>
+        private void HandlePhaseChanged(GamePhaseBase previousPhase, GamePhaseBase nextPhase)
+        {
+            SetControlsVisible(nextPhase is PlayingPhase);
+        }
+
+        /// <summary>
+        /// 经 CanvasGroup 切换面板显隐：不用 SetActive，保证隐藏期间脚本仍运行、能收到阶段事件。
+        /// 隐藏时强制释放摇杆/跳跃/嘲讽按键的按压状态，避免阶段切换瞬间按住的手指造成输入残留
+        /// </summary>
+        private void SetControlsVisible(bool visible)
+        {
+            if (visible == _bControlsVisible) return;
+
+            _bControlsVisible = visible;
+            if (_canvasGroup != null)
+            {
+                _canvasGroup.alpha = visible ? 1f : 0f;
+                _canvasGroup.interactable = visible;
+                _canvasGroup.blocksRaycasts = visible;
+            }
+
+            if (!visible)
+            {
+                if (moveJoystick != null) moveJoystick.ForceRelease();
+                if (jumpButton != null) jumpButton.ForceRelease();
+                if (tauntButton != null) tauntButton.ForceRelease();
+                _tauntButtonHeld = false;
+            }
+        }
+
+        /// <summary>
+        /// 按本地玩家幽灵状态切换跳跃键显隐：
+        /// 幽灵状态移动全由摇杆四向控制，隐藏跳跃键；恢复存活后重新显示。
+        /// 隐藏时 TouchInputButton.OnDisable 会强制释放按压状态，不会残留卡键
+        /// </summary>
+        private void UpdateJumpButtonVisibility()
+        {
+            if (jumpButton == null) return;
+
+            bool shouldShow = !_localPlayer.BIsGhost;
+            if (shouldShow == _jumpButtonVisible) return;
+
+            _jumpButtonVisible = shouldShow;
+            jumpButton.gameObject.SetActive(shouldShow);
         }
 
         /// <summary>

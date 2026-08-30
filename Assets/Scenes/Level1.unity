@@ -244,7 +244,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3481691695496474343, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
       propertyPath: forceTouchInEditor
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3654162602425015535, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
       propertyPath: m_Name
@@ -1830,7 +1830,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9123252112632102140, guid: 92ccdf5d2850f4e68902114b749b095d, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2493,8 +2493,8 @@ MonoBehaviour:
   placeStateReportRate: 10
   confirmPlaceButtonPrefab: {fileID: 3741916390764766324, guid: 889e84104d5d343e1a94c1caf0ef96b0, type: 3}
   rotatePlaceButtonPrefab: {fileID: 9130994873799658821, guid: 58fbba60e81c744e6a0ed3897d2ce7bd, type: 3}
-  confirmButtonOffset: {x: 50, y: 24}
-  rotateButtonOffset: {x: -50, y: 24}
+  confirmButtonOffset: {x: 70, y: 30}
+  rotateButtonOffset: {x: -70, y: 30}
   pointerLiftPixels: 200
   dragThresholdPixels: 12
   liftRampTime: 0.12
@@ -2789,6 +2789,10 @@ PrefabInstance:
     - target: {fileID: 1896190961833367881, guid: acf219faa6c156949bfcfd899bb0281b, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -17
+      objectReference: {fileID: 0}
+    - target: {fileID: 3369186939739767690, guid: acf219faa6c156949bfcfd899bb0281b, type: 3}
+      propertyPath: _scoreStageDuration
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4129007368809681890, guid: acf219faa6c156949bfcfd899bb0281b, type: 3}
       propertyPath: m_AnchorMax.y

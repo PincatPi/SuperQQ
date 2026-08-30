@@ -126,13 +126,13 @@ TextureImporter:
       name: "01_\u8DF3\u8DC3\u6309\u94AE_\u666E\u901A_\u900F\u660E_0"
       rect:
         serializedVersion: 2
-        x: 102
-        y: 73
-        width: 820
-        height: 876
+        x: 85
+        y: 97
+        width: 854
+        height: 854
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 19, z: 0, w: 17}
+      border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0

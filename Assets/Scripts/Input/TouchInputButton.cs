@@ -56,6 +56,12 @@ namespace SuperQQ.UI
         private void OnDisable()
         {
             // 面板被隐藏/禁用时强制释放，避免状态残留
+            ForceRelease();
+        }
+
+        /// <summary>强制释放按压状态并复位视觉（面板经 CanvasGroup 隐藏时由外部调用）</summary>
+        public void ForceRelease()
+        {
             IsPressed = false;
             ApplyPressedVisual(false);
         }

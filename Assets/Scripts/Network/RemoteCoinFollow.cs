@@ -7,7 +7,8 @@ namespace SuperQQ.Network
     /// <summary>
     /// 远端金币跟随（纯表现）：金币被远端玩家认领后，沿远端化身近期轨迹延迟跟随，
     /// 与本地 CoinFollowGroup 的视觉效果一致（延迟平滑尾随）。
-    /// 远端化身位置由 RemotePlayerSync 快照插值驱动，本组件记录其轨迹。
+    /// 跟随目标为远端化身的 CoinsFollowPoint 锚点（与本地同一参照，含身后距离与高度）；
+    /// 锚点位置由 RemotePlayerSync 快照插值 + CoinsFollowPointFlip 朝向翻转共同驱动，本组件记录其轨迹。
     /// 跟随的化身出局（幽灵/通关，经快照 player_state 判定）时金币消失。
     /// </summary>
     public class RemoteCoinFollow : MonoBehaviour

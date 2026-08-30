@@ -11,8 +11,8 @@ namespace SuperQQ.Settlement
     /// <summary>
     /// 最终结算控制器。
     /// 进入最终结算场景后，从 PlayerScoreManager 读取累计排名：
-    ///   - MVP 区展示冠军（名称 + 图标染玩家色）
-    ///   - 排名区按行展示名次/玩家/总分
+    ///   - MVP 区展示冠军（名称 + PlayerIcon）
+    ///   - 排名区按行展示名次/玩家（不显示总分数）
     /// 返回房间按钮：联机下回房间场景（房间状态由服务器驱动，UIRoomController 自动接管）；
     /// 单机/离线回大厅 Home。
     /// </summary>
@@ -83,12 +83,11 @@ namespace SuperQQ.Settlement
                 return;
             }
 
-            // MVP：第一名
+            // MVP：第一名（仅展示名称，不显示总分数）
             string winnerName = rankedPlayerNames[0];
-            int winnerScore = PlayerScoreManager.Instance.GetPlayerTotalScore(winnerName);
             if (mvpName != null)
             {
-                mvpName.text = $"{winnerName}　{winnerScore}分";
+                mvpName.text = winnerName;
             }
             if (mvpPlayerIcon != null)
             {
@@ -142,7 +141,6 @@ namespace SuperQQ.Settlement
             {
                 GameObject rowGo = Instantiate(rankingRowPrefab, rankingRowsContainer);
                 string name = rankedPlayerNames[i];
-                int score = PlayerScoreManager.Instance.GetPlayerTotalScore(name);
 
                 TMP_Text rankText = FindText(rowGo.transform, "RankText");
                 TMP_Text nameText = FindText(rowGo.transform, "PlayerName");
@@ -153,7 +151,7 @@ namespace SuperQQ.Settlement
                 }
                 if (nameText != null)
                 {
-                    nameText.text = $"{name}　{score}分";
+                    nameText.text = name; // 仅展示玩家名，不显示总分数
                 }
                 if (initial != null)
                 {
