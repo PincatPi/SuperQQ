@@ -4,7 +4,7 @@ using UnityEngine;
 namespace SuperQQ.Item
 {
     /// <summary>
-    /// 旋转吐司 — 大小 1x1 / 2x2 / 3x3（每轮开始时随机决定，见 RotatingToastSizeSync）
+    /// 旋转吐司 — 固定 3x3（尺寸写死于 RotatingToastSizeSync.FixedSize，忽略服务器种子/广播）
     /// 放置后持续旋转的方块：平滑转动 90°（2 秒）→ 停滞 1 秒 → 继续，循环往复
     /// 建造阶段可决定旋转方向（顺时针/逆时针，默认顺时针），见 SetClockwise/ToggleRotationDirection
     /// 生命周期：OnRunPhaseStart 启动旋转，OnBuildPhaseStart 停止并复位

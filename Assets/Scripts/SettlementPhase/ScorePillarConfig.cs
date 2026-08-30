@@ -62,13 +62,6 @@ namespace SuperQQ.Settlement
         [Tooltip("单条轨道最大宽度（世界单位），玩家数量少时轨道不会超过此值以保持美观")]
         public float MaxTrackWidth = 6f;
 
-        [Header("胜利线")]
-        [Tooltip("胜利线颜色")]
-        public Color VictoryLineColor = new Color(1f, 0.85f, 0f);
-
-        [Tooltip("胜利线文本")]
-        public string VictoryLineText = "100";
-
         // ==================== 动态布局计算 ====================
 
         /// <summary>

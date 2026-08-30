@@ -5,21 +5,21 @@ using UnityEngine;
 namespace SuperQQ.Item
 {
     /// <summary>
-    /// 旋转吐司尺寸同步：每轮开始时决定本轮尺寸（1/2/3），所有玩家一致。
+    /// 旋转吐司尺寸同步：每轮开始时决定本轮尺寸，所有玩家一致。
     ///
-    /// 两条路径：
-    /// 1. 联机：房主端 DecideSizeLocally() 本地随机 → OnUploadSize 钩子发给服务器
-    ///    （网络消息接好后在此挂钩，proto/服务器就绪前不影响单机流程）；
-    ///    远端收到广播后 ApplySyncedSize() 应用，保证各端一致。
-    /// 2. 确定性种子：SetRoundSeed() 后用同一种子 RollSize()，各端结果天然一致（推荐，
-    ///    无需额外网络消息，种子可随房间/轮次信息下发）。
+    /// 【当前版本】尺寸固定为 FixedSize（3x3），客户端写死：忽略服务器轮次种子与
+    /// 尺寸广播，各端天然一致。历史随机逻辑保留在 DecideSizeLocally/RollSize 注释中，
+    /// 恢复随机时改回实现即可。
     ///
     /// 已决定的尺寸存于 CurrentSize：新实例化的 RotatingToast 在 Awake 自动应用；
     /// 场上已存在的实例通过 ApplySyncedSize 同步更新。
     /// </summary>
     public static class RotatingToastSizeSync
     {
-        /// <summary>本轮尺寸（1/2/3；0=尚未决定）</summary>
+        /// <summary>固定尺寸（格）：吐司固定 3x3，不再随机</summary>
+        public const int FixedSize = 3;
+
+        /// <summary>本轮尺寸（固定为 FixedSize；0=尚未决定）</summary>
         public static int CurrentSize { get; private set; }
 
         /// <summary>
@@ -49,24 +49,24 @@ namespace SuperQQ.Item
         // ==================== 尺寸决定 ====================
 
         /// <summary>
-        /// 房主端：本地随机决定本轮尺寸并上传服务器（同步给所有玩家）
+        /// 决定本轮尺寸并上传服务器（同步给所有玩家）。
+        /// 【固定尺寸】不再随机，直接返回 FixedSize；历史实现：UnityEngine.Random.Range(1, 4)
         /// </summary>
-        /// <returns>决定的尺寸（1/2/3）</returns>
+        /// <returns>决定的尺寸（固定为 FixedSize）</returns>
         public static int DecideSizeLocally()
         {
-            int size = UnityEngine.Random.Range(1, 4);
-            ApplySyncedSize(size);
-            OnUploadSize?.Invoke(size);
-            return size;
+            ApplySyncedSize(FixedSize);
+            OnUploadSize?.Invoke(FixedSize);
+            return FixedSize;
         }
 
         /// <summary>
-        /// 确定性随机：同一种子各端结果一致（推荐联机方案，无需额外消息）
+        /// 按种子决定尺寸。【固定尺寸】忽略种子，直接返回 FixedSize；
+        /// 历史实现：new System.Random(roundSeed).Next(1, 4)
         /// </summary>
         public static int RollSize(int roundSeed)
         {
-            var rng = new System.Random(roundSeed);
-            return rng.Next(1, 4);
+            return FixedSize;
         }
 
         /// <summary>
@@ -87,11 +87,12 @@ namespace SuperQQ.Item
         /// 需要按本轮尺寸展示占位框与拖拽预览）。
         /// 已确认摆放（Placed != null）的实例保持原尺寸——本轮尺寸只影响本轮新摆放的道具，
         /// 已放置的旧吐司不应被后续轮次的新种子改变大小/占格；
-        /// 之后实例化的实例在 Awake 自动读取 CurrentSize
+        /// 之后实例化的实例在 Awake 自动读取 CurrentSize。
+        /// 【固定尺寸】忽略入参，始终应用 FixedSize（服务器广播/种子结果一律不生效）
         /// </summary>
         public static void ApplySyncedSize(int size)
         {
-            CurrentSize = Mathf.Clamp(size, 1, 3);
+            CurrentSize = FixedSize;
             for (int i = _instances.Count - 1; i >= 0; i--)
             {
                 RotatingToast toast = _instances[i];

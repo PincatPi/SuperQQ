@@ -36,9 +36,6 @@ namespace SuperQQ.Settlement
         // 所有玩家轨道
         private readonly List<PlayerTrack> _tracks = new();
 
-        // 胜利线（100分标记线）
-        private VictoryLine _victoryLine;
-
         // 当前动画协程引用
         private Coroutine _animationCoroutine;
 
@@ -314,7 +311,6 @@ namespace SuperQQ.Settlement
             // 清除旧轨道内容并重建
             ClearAllTracks();
             CreateOrUpdateTracks();
-            CreateOrUpdateVictoryLine();
             StartBatchAnimation();
         }
 
@@ -410,39 +406,6 @@ namespace SuperQQ.Settlement
                 {
                     _tracks[i].ClearPillars();
                 }
-            }
-        }
-
-        // ==================== 胜利线 ====================
-
-        /// <summary>
-        /// 创建或更新胜利线
-        /// 胜利线横贯屏幕，位于100分对应的高度（trackBottomY + VICTORY_LINE × HeightPerPoint）
-        /// 作为整场结束的视觉目标线，结算开始时即显示
-        /// </summary>
-        private void CreateOrUpdateVictoryLine()
-        {
-            float cameraAspect = Camera.main != null ? Camera.main.aspect : 1f;
-            float cameraWidth = _cameraOrthographicSize * 2f * cameraAspect;
-            float trackBottomY = -_cameraOrthographicSize + _config.TrackBottomPadding;
-            float victoryLineY = trackBottomY + ScoreCalculator.VICTORY_LINE * _config.HeightPerPoint;
-
-            if (_victoryLine == null)
-            {
-                GameObject victoryObj = new GameObject("VictoryLine");
-                victoryObj.transform.SetParent(_tracksRoot, false);
-                _victoryLine = victoryObj.AddComponent<VictoryLine>();
-            }
-
-            _victoryLine.gameObject.SetActive(true);
-            _victoryLine.Initialize(_config, victoryLineY, cameraWidth);
-
-            // 检查胜利线是否在相机视口内，超出时提示用户调整配置
-            float cameraTopY = _cameraOrthographicSize;
-            if (victoryLineY > cameraTopY)
-            {
-                Debug.LogWarning($"[SettlementController] 胜利线Y({victoryLineY:F2})超出相机视口顶部({cameraTopY:F2})，" +
-                                 $"请减小 HeightPerPoint({_config.HeightPerPoint}) 或增大相机正交大小({_cameraOrthographicSize})。");
             }
         }
 

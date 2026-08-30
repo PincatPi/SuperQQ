@@ -11,8 +11,8 @@ namespace SuperQQ.Selection.Runtime
     /// 无需在 Inspector 拖拽任何引用，Awake 按以下子物体命名约定自动识别（均可选）：
     ///   ItemIcon     （Image，道具图标；缺失时兜底取第一个非根物体上的 Image）
     ///   ClaimMarker  （Image，认领者颜色标记，未认领时自动隐藏）
-    ///   SizeBadge    （TextMeshProUGUI，旋转吐司尺寸角标"1x1/2x2/3x3"，
-    ///                 建议锚定图标右下角；非吐司道具或尺寸未决定时自动隐藏）
+    ///   SizeBadge    （TextMeshProUGUI，历史遗留的旋转吐司尺寸角标，已停用：
+    ///                 固定 3x3 后不再展示格数说明，运行时始终隐藏）
     ///   SelectedIcon （被认领后激活显示的选中图标，未认领时隐藏）
     ///   ClaimerIcon  （Image，认领该槽位玩家的 PlayerIcon，未认领时隐藏）
     /// 点击入口取本物体上的 Button。
@@ -83,40 +83,14 @@ namespace SuperQQ.Selection.Runtime
         }
 
         /// <summary>
-        /// 占地格数角标：仅【旋转吐司】在图标右下角展示本轮已决定的尺寸 "NxN"
-        /// （联机=服务器轮次种子，单机=进入阶段时本地随机；各端一致且随轮变化），
-        /// 尺寸尚未决定的异常时序下回退 prefab 配置格数；其余道具一律隐藏
+        /// 占地格数角标：已停用（吐司固定 3x3 后不再展示格数说明），始终隐藏
         /// </summary>
         private void UpdateSizeBadge(ItemBase item)
         {
-            if (sizeBadge == null)
-            {
-                return;
-            }
-
-            Vector2Int gridSize = item is RotatingToast ? ResolveGridSize(item) : Vector2Int.zero;
-            if (gridSize.x > 0 && gridSize.y > 0)
-            {
-                sizeBadge.text = $"{gridSize.x}x{gridSize.y}";
-                sizeBadge.gameObject.SetActive(true);
-            }
-            else
+            if (sizeBadge != null)
             {
                 sizeBadge.gameObject.SetActive(false);
             }
-        }
-
-        /// <summary>解析道具的占地格数：吐司取本轮尺寸（正方形），其余取 FootprintBoxView 配置</summary>
-        private static Vector2Int ResolveGridSize(ItemBase item)
-        {
-            if (item is RotatingToast && RotatingToastSizeSync.CurrentSize > 0)
-            {
-                int size = RotatingToastSizeSync.CurrentSize;
-                return new Vector2Int(size, size);
-            }
-
-            SuperQQ.Grid.FootprintBoxView box = item.GetComponent<SuperQQ.Grid.FootprintBoxView>();
-            return box != null ? box.Footprint : Vector2Int.zero;
         }
 
         /// <summary>标记该槽位已被认领：显示认领者颜色标记与选中图标、认领者头像，关闭点击</summary>
