@@ -153,15 +153,20 @@ namespace SuperQQ.Player
         /// <summary>
         /// 播放嘲讽表情：向 Animator 写入 Taunt Trigger（沿触发，由 PC 嘲讽键或 UI 嘲讽按键调用）。
         /// Trigger 可重复写入：嘲讽播放中再次触发会重启动作（需 Animator 配置 Taunt 自过渡）；
-        /// 移动/跳跃打断由 Animator 中 Taunt → Idle/Run/Jump 的条件过渡实现，代码侧无需处理
+        /// 移动/跳跃打断由 Animator 中 Taunt → Idle/Run/Jump 的条件过渡实现，代码侧无需处理。
+        /// 冻结状态下禁止嘲讽：不播动画也不上报，远端因此不会收到冻结玩家的嘲讽事件。
+        /// 联机时经 NetEventSync 上报一次性事件（服务器透传广播），远端化身收到后同样播放嘲讽动画；
+        /// 仅本地玩家会走到这里（远端化身的本组件已被 RemotePlayerSync 禁用），离线时上报为空操作
         /// </summary>
         public void PlayTaunt()
         {
-            if (animator == null)
+            if (animator == null || _player.BIsFrozen)
             {
                 return;
             }
             animator.SetTrigger(TauntHash);
+            SuperQQ.Network.NetEventSync.ReportEvent(
+                Minigame.Room.V1.PlayerEventType.Taunt, _player.transform.position);
         }
 
         // ==================== 朝向翻转 ====================

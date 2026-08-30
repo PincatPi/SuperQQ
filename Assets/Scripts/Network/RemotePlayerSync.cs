@@ -48,6 +48,9 @@ namespace SuperQQ.Network
         // 远端冻结视觉（快照 player_state=3 时挂载冰封特效，解除后消散销毁）
         private FrozenIceEffect _frozenVisual;
 
+        // 远端当前是否处于冻结状态（快照 player_state=3），供 RemotePlayerEffects 屏蔽冻结期间的嘲讽事件
+        public bool BIsFrozen { get; private set; }
+
         // 快照缓冲：按接收时间升序
         private struct SnapshotPoint
         {
@@ -244,7 +247,8 @@ namespace SuperQQ.Network
 
             // 冻结状态视觉（液氮事件）：快照 player_state=3 时挂载冰封特效，解除后消散。
             // 冻结玩家的移动停止由拥有者本端上报的静止位置自然体现，此处只管视觉
-            UpdateFrozenVisual(point.PlayerState == 3);
+            BIsFrozen = point.PlayerState == 3;
+            UpdateFrozenVisual(BIsFrozen);
         }
 
         /// <summary>

@@ -511,6 +511,7 @@ enum PlayerEventType {
   PLAYER_EVENT_TYPE_HIT = 2;        // 受击/击退
   PLAYER_EVENT_TYPE_PICKUP = 3;     // 拾取（金币等）
   PLAYER_EVENT_TYPE_DIE = 4;        // 死亡瞬间（爆炸/死亡音效，区别于持续的幽灵状态）
+  PLAYER_EVENT_TYPE_TAUNT = 5;      // 嘲讽表情（远端化身播放嘲讽动画）
 }
 
 // 客户端 → 服务器：本地一次性事件，服务器原样广播。
