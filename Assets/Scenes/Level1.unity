@@ -3607,7 +3607,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerPrefab: {fileID: 1530836126952925576, guid: 3f3d1a4b330cc40d7919b86105b7b1f2, type: 3}
   _characterPrefabs:
-  - {fileID: 1530836126952925576, guid: 5291b10ce10b3624c9c1cc9780ccac62, type: 3}
+  - {fileID: 1530836126952925576, guid: 3f3d1a4b330cc40d7919b86105b7b1f2, type: 3}
   - {fileID: 1530836126952925576, guid: da4372495ac56f045b5f53af191d5efe, type: 3}
   - {fileID: 1530836126952925576, guid: 5291b10ce10b3624c9c1cc9780ccac62, type: 3}
   - {fileID: 1530836126952925576, guid: f52c86fe524944f29ab6e758a6f01a82, type: 3}
