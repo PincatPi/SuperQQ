@@ -338,6 +338,9 @@ namespace SuperQQ.Player
 
         /// <summary>
         /// 可变跳跃高度：长按时持续追加向上速度
+        /// 注意：_bIsJumping 不随长按窗口结束而解除——它同时是"短跳截断待命"标记。
+        /// 若窗口（0.03s）结束就解除，真实点按（约0.08~0.12s）松手时 jumpCut 永不触发，
+        /// 大小跳高度几乎无差别。现仅由松手截断（HandleJumpCut）或落地（CheckGround）解除
         /// </summary>
         private void ApplyVariableJumpHeight()
         {
@@ -346,10 +349,6 @@ namespace SuperQQ.Player
                 // 全运动减速（蛛网等）：长按追加的跳跃加速度同比例降低
                 _ctx.Rb.velocity += Vector2.up * (_ctx.JumpHoldAccel * _ctx.MotionSlowFactor * Time.fixedDeltaTime);
                 _jumpHoldTimer += Time.fixedDeltaTime;
-            }
-            else if (_jumpHoldTimer >= _ctx.MaxJumpHoldTime)
-            {
-                _bIsJumping = false;
             }
         }
 

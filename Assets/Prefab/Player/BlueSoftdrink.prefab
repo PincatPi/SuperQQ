@@ -251,20 +251,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5a36224a3bf1ab4e927e63801aaa91c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 7
-  acceleration: 90
-  deceleration: 130
+  moveSpeed: 5
+  acceleration: 75
+  deceleration: 110
   airControlMultiplier: 1.1
-  airDrag: 28
-  gravityScale: 3.3
-  jumpVelocity: 13.5
-  jumpHoldAccel: 40
+  airDrag: 22
+  gravityScale: 2.4
+  jumpVelocity: 10
+  jumpHoldAccel: 15
   maxJumpHoldTime: 0.03
-  jumpCutMultiplier: 0.85
-  coyoteTime: 0.12
-  fallMultiplier: 2.5
-  lowJumpMultiplier: 1.2
-  maxFallSpeed: -22
+  jumpCutMultiplier: 0.6
+  coyoteTime: 0.15
+  fallMultiplier: 1.8
+  lowJumpMultiplier: 1.8
+  maxFallSpeed: -15
   groundCheck: {fileID: 5967865818935517384}
   groundCheckRadius: 0.16
   groundLayer:

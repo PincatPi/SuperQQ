@@ -14,25 +14,25 @@ namespace SuperQQ.Player
     public class PlayerController : MonoBehaviour
     {
         [Header("移动设置")]
-        [SerializeField] private float moveSpeed = 6f;                 // 左右移动速度（单位/秒）
-        [SerializeField] private float acceleration = 80f;             // 水平加速速率
-        [SerializeField] private float deceleration = 100f;            // 水平减速速率（松手回停）
+        [SerializeField] private float moveSpeed = 5f;                 // 左右移动速度（单位/秒）
+        [SerializeField] private float acceleration = 75f;             // 水平加速速率
+        [SerializeField] private float deceleration = 110f;            // 水平减速速率（松手回停）
         [SerializeField] private float airControlMultiplier = 0.85f;   // 空中操控系数（空中有输入时的变向/加速速率 = 地面加速度 × 该系数）
-        [SerializeField] private float airDrag = 28f;                  // 空中无输入水平阻尼（控制松手滑翔距离：越大滑翔越短，0=完全不减速）
+        [SerializeField] private float airDrag = 22f;                  // 空中无输入水平阻尼（控制松手滑翔距离：越大滑翔越短，0=完全不减速）
 
         [Header("重力设置")]
-        [SerializeField] private float gravityScale = 1.5f;             // 整体重力倍率（>1 跳跃更紧凑、上升下落更快）
+        [SerializeField] private float gravityScale = 2.4f;             // 整体重力倍率（>1 跳跃更紧凑、上升下落更快）
 
         [Header("跳跃设置")]
-        [SerializeField] private float jumpVelocity = 6.5f;             // 起跳初始竖直速度
-        [SerializeField] private float jumpHoldAccel = 55f;             // 长按时额外向上加速度
+        [SerializeField] private float jumpVelocity = 10f;              // 起跳初始竖直速度
+        [SerializeField] private float jumpHoldAccel = 15f;             // 长按时额外向上加速度
         [SerializeField] private float maxJumpHoldTime = 0.03f;         // 最大长按持续时间（秒）
-        [SerializeField] private float jumpCutMultiplier = 0.82f;       // 松手时竖直速度保留比例（短跳）
-        [SerializeField] private float coyoteTime = 0.1f;               // 离地后仍可跳跃的宽容时间
+        [SerializeField] private float jumpCutMultiplier = 0.6f;        // 松手时竖直速度保留比例（短跳）
+        [SerializeField] private float coyoteTime = 0.15f;              // 离地后仍可跳跃的宽容时间
 
         [Header("下落手感")]
-        [SerializeField] private float fallMultiplier = 2.5f;           // 下落时额外重力倍数
-        [SerializeField] private float lowJumpMultiplier = 1f;          // 松手上升时额外重力倍数
+        [SerializeField] private float fallMultiplier = 1.8f;           // 下落时额外重力倍数
+        [SerializeField] private float lowJumpMultiplier = 1.8f;        // 松手上升时额外重力倍数
         [SerializeField] private float maxFallSpeed = -15f;             // 最大下落速度
 
         [Header("地面检测")]
