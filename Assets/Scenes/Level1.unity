@@ -4053,6 +4053,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2267200626133812690, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: m_Size.y
+      value: 0.9397952
+      objectReference: {fileID: 0}
+    - target: {fileID: 2267200626133812690, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: m_Offset.y
+      value: 0.01884833
+      objectReference: {fileID: 0}
+    - target: {fileID: 6103972852659083156, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: m_Size.y
+      value: 0.8644018
+      objectReference: {fileID: 0}
+    - target: {fileID: 6103972852659083156, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
+      propertyPath: m_Offset.y
+      value: 0.01884842
+      objectReference: {fileID: 0}
     - target: {fileID: 6986144985396041551, guid: 778c5bc3bb6a99a40b0f9d62a7071234, type: 3}
       propertyPath: m_Name
       value: Map

@@ -880,10 +880,28 @@ namespace SuperQQ.Placement.Runtime
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 (RectTransform)actionButtonCanvas.transform, screen, uiCam, out Vector2 local);
 
-            ((RectTransform)confirmPlaceButton.transform).anchoredPosition = local + confirmButtonOffset;
-            ((RectTransform)rotateButton.transform).anchoredPosition = local + rotateButtonOffset;
+            var canvasRect = (RectTransform)actionButtonCanvas.transform;
+            var confirmRect = (RectTransform)confirmPlaceButton.transform;
+            var rotateRect = (RectTransform)rotateButton.transform;
+            confirmRect.anchoredPosition =
+                ClampIntoCanvas(canvasRect, confirmRect, local + confirmButtonOffset);
+            rotateRect.anchoredPosition =
+                ClampIntoCanvas(canvasRect, rotateRect, local + rotateButtonOffset);
             confirmPlaceButton.gameObject.SetActive(true);
             rotateButton.gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// 把按钮锚点位置钳制进 Canvas 范围内，防止道具贴近镜头边缘时按钮出屏。
+        /// 按钮统一 pivot=(0.5,0)（底部居中）：x 向左右各伸出半宽，y 从锚点向上伸出整高。
+        /// </summary>
+        private static Vector2 ClampIntoCanvas(RectTransform canvasRect, RectTransform buttonRect, Vector2 anchoredPos)
+        {
+            Rect c = canvasRect.rect;
+            Vector2 size = buttonRect.sizeDelta;
+            float x = Mathf.Clamp(anchoredPos.x, c.xMin + size.x * 0.5f, c.xMax - size.x * 0.5f);
+            float y = Mathf.Clamp(anchoredPos.y, c.yMin, c.yMax - size.y);
+            return new Vector2(x, y);
         }
 
         /// <summary>生成操作按钮：优先实例化 Inspector 指定的 prefab，未指定时退回运行时搭建的默认样式</summary>
