@@ -5,7 +5,9 @@ using UnityEngine.Video;
 namespace SuperQQ.Selection.Runtime
 {
     /// <summary>
-    /// 槽位介绍视频面板 — 玩家图标到达道具槽位时在【屏幕右上角】弹出，循环播放该道具的介绍 mp4。
+    /// 槽位介绍视频面板 — 玩家图标到达道具槽位时弹出，循环播放该道具的介绍 mp4。
+    /// 默认锚定【屏幕右上角】；当目标槽位（含其上方打勾确认按钮预留区）与面板重叠时，
+    /// 按 右上→左上→右下→左下 顺序自动换到第一个不遮挡的角落。
     /// 纯本地表现，不联网。无气泡装饰：视频直接铺满面板（按视频宽高比居中等比适配）。
     ///
     /// 视频文件约定：Assets/Resources/Videos/Items/{itemId}.mp4（itemId 为 ItemCatalog 数字代号，如 11.mp4）；
@@ -21,6 +23,12 @@ namespace SuperQQ.Selection.Runtime
         [SerializeField] private Vector2 screenMargin = new Vector2(24f, 24f);
         [Tooltip("关闭按钮尺寸（像素）")]
         [SerializeField] private float closeButtonSize = 32f;
+
+        [Header("位置自适应")]
+        [Tooltip("避让区域外扩边距（像素，按槽位所在 Canvas 缩放）")]
+        [SerializeField] private float avoidPadding = 16f;
+        [Tooltip("槽位上方为打勾确认按钮预留的高度（像素，按钮本体 72 + 间距 8，留余量）")]
+        [SerializeField] private float confirmReserveHeight = 96f;
 
         [Header("视频")]
         [Tooltip("视频分辨率（RenderTexture 尺寸）；越大越清晰越耗")]
@@ -84,17 +92,18 @@ namespace SuperQQ.Selection.Runtime
         /// <param name="itemId">ItemCatalog 数字代号（如 "11"）</param>
         public static bool Show(string itemId)
         {
-            return Instance.ShowInternal(itemId);
+            return Instance.ShowInternal(itemId, null);
         }
 
         /// <summary>
-        /// 显示面板并循环播放指定道具的介绍视频（位置固定屏幕右上角，
-        /// slotAnchor 参数仅为兼容旧调用保留，不再跟随槽位）。
+        /// 显示面板并循环播放指定道具的介绍视频（默认屏幕右上角；
+        /// slotAnchor 为目标槽位矩形，用于位置自适应——与槽位及其上方确认按钮
+        /// 重叠时自动换角避让，可为 null 表示不做避让）。
         /// 无视频文件时静默隐藏（返回 false）。
         /// </summary>
         public static bool Show(string itemId, RectTransform slotAnchor)
         {
-            return Instance.ShowInternal(itemId);
+            return Instance.ShowInternal(itemId, slotAnchor);
         }
 
         /// <summary>隐藏气泡并停止播放（含关闭按钮点击）</summary>
@@ -108,7 +117,7 @@ namespace SuperQQ.Selection.Runtime
 
         // ==================== 内部实现 ====================
 
-        private bool ShowInternal(string itemId)
+        private bool ShowInternal(string itemId, RectTransform slotAnchor)
         {
             if (string.IsNullOrEmpty(itemId))
             {
@@ -127,6 +136,7 @@ namespace SuperQQ.Selection.Runtime
             videoPlayer.clip = clip;
             videoPlayer.isLooping = true;
             bubbleRoot.gameObject.SetActive(true);
+            UpdateAvoidance(slotAnchor);
             BVisible = true;
             videoPlayer.Play();
             return true;
@@ -144,6 +154,81 @@ namespace SuperQQ.Selection.Runtime
             {
                 bubbleRoot.gameObject.SetActive(false);
             }
+        }
+
+        // ==================== 位置自适应（避让槽位/确认按钮） ====================
+
+        // 角落候选顺序：右上（默认）→ 左上 → 右下 → 左下；（x: 1=右 0=左, y: 1=上 0=下）
+        private static readonly int[,] cornerPreference = { { 1, 1 }, { 0, 1 }, { 1, 0 }, { 0, 0 } };
+
+        private readonly Vector3[] cornerBuffer = new Vector3[4];
+
+        /// <summary>
+        /// 位置自适应：面板默认锚定右上角；当目标槽位（含其上方打勾确认按钮的预留区）
+        /// 与面板屏幕矩形相交时，按候选顺序换到第一个不遮挡的角落。
+        /// 打勾确认按钮挂在槽位正上方（见 PropSelectionDirector.ShowConfirmCheck），
+        /// 且比本方法晚一拍显示，故避让矩形需向上预留其高度。
+        /// </summary>
+        private void UpdateAvoidance(RectTransform slotAnchor)
+        {
+            if (slotAnchor == null)
+            {
+                AnchorToCorner(1, 1);
+                return;
+            }
+
+            Rect avoidRect = GetSlotAvoidScreenRect(slotAnchor);
+            for (int i = 0; i < cornerPreference.GetLength(0); i++)
+            {
+                AnchorToCorner(cornerPreference[i, 0], cornerPreference[i, 1]);
+                if (!GetPanelScreenRect().Overlaps(avoidRect))
+                {
+                    return;
+                }
+            }
+        }
+
+        /// <summary>把面板锚定到屏幕某个角落（right: 1=右 0=左；top: 1=上 0=下）</summary>
+        private void AnchorToCorner(int right, int top)
+        {
+            bubbleRoot.anchorMin = new Vector2(right, top);
+            bubbleRoot.anchorMax = new Vector2(right, top);
+            bubbleRoot.pivot = new Vector2(right, top);
+            bubbleRoot.anchoredPosition = new Vector2(
+                right == 1 ? -screenMargin.x : screenMargin.x,
+                top == 1 ? -screenMargin.y : screenMargin.y);
+        }
+
+        /// <summary>面板在屏幕像素空间的矩形（本组件 Canvas 为 ScreenSpaceOverlay，世界坐标即屏幕像素）</summary>
+        private Rect GetPanelScreenRect()
+        {
+            bubbleRoot.GetWorldCorners(cornerBuffer); // 顺序：左下、左上、右上、右下
+            return Rect.MinMaxRect(cornerBuffer[0].x, cornerBuffer[0].y, cornerBuffer[2].x, cornerBuffer[2].y);
+        }
+
+        /// <summary>
+        /// 槽位在屏幕像素空间的避让矩形：槽位矩形外扩边距，并向上延伸确认按钮预留高度
+        /// </summary>
+        private Rect GetSlotAvoidScreenRect(RectTransform slotAnchor)
+        {
+            Canvas slotCanvas = slotAnchor.GetComponentInParent<Canvas>();
+            Camera cam = slotCanvas != null && slotCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? slotCanvas.worldCamera : null;
+            float scale = slotCanvas != null ? slotCanvas.scaleFactor : 1f;
+
+            slotAnchor.GetWorldCorners(cornerBuffer);
+            Vector2 min = RectTransformUtility.WorldToScreenPoint(cam, cornerBuffer[0]);
+            Vector2 max = min;
+            for (int i = 1; i < cornerBuffer.Length; i++)
+            {
+                Vector2 p = RectTransformUtility.WorldToScreenPoint(cam, cornerBuffer[i]);
+                min = Vector2.Min(min, p);
+                max = Vector2.Max(max, p);
+            }
+
+            float pad = avoidPadding * scale;
+            return Rect.MinMaxRect(min.x - pad, min.y - pad,
+                max.x + pad, max.y + pad + confirmReserveHeight * scale);
         }
 
         /// <summary>
@@ -212,11 +297,8 @@ namespace SuperQQ.Selection.Runtime
             var panelGo = new GameObject("VideoPanel", typeof(RectTransform));
             panelGo.transform.SetParent(canvasGo.transform, false);
             bubbleRoot = (RectTransform)panelGo.transform;
-            bubbleRoot.anchorMin = new Vector2(1f, 1f);
-            bubbleRoot.anchorMax = new Vector2(1f, 1f);
-            bubbleRoot.pivot = new Vector2(1f, 1f);
             bubbleRoot.sizeDelta = panelSize;
-            bubbleRoot.anchoredPosition = new Vector2(-screenMargin.x, -screenMargin.y);
+            AnchorToCorner(1, 1); // 默认右上角（无避让目标时的落点）
 
             // 关闭按钮（气泡右上角外侧）
             var closeGo = new GameObject("CloseButton", typeof(RectTransform), typeof(Image), typeof(Button));

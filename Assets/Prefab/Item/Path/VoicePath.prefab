@@ -142,6 +142,7 @@ MonoBehaviour:
   riseThreshold: 0.5
   moveSpeedCells: 4
   ownerIconRenderer: {fileID: 5207551894172481754}
+  ownerIconOrderOffset: 1
   positionReportRate: 30
   remoteFollowSpeed: 12
   remoteTeleportCells: 5
