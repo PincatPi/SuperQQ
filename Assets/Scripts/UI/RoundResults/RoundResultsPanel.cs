@@ -30,7 +30,7 @@ namespace SuperQQ.UI.RoundResults
         [SerializeField] private bool _notifyGameFlowOnContinue;
         [SerializeField, Min(0.05f)] private float _panelRevealDuration = 0.28f;
         [SerializeField, Min(0.05f)] private float _rowRevealDuration = 0.42f;
-        [SerializeField, Min(0.05f)] private float _scoreStageDuration = 0.18f;
+        [SerializeField, Min(0.05f)] private float _scoreStageDuration = 0.3f;
         [SerializeField, Min(0f)] private float _rowStagger = 0.08f;
         [SerializeField, Min(0.05f)] private float _rankSwapDuration = 0.28f;
 

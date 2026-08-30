@@ -86,27 +86,9 @@ namespace SuperQQ.Map
         // ==================== 钳制辅助 ====================
 
         /// <summary>
-        /// 水平夹紧：仅将 x 夹紧到 [min.x, max.x]，y 原样返回
-        /// 用于存活状态：左右不允许越界，上下保持开放
+        /// 边界盒中心（越界死亡后幽灵重生的目标位置）
         /// </summary>
-        public Vector2 ClampHorizontal(Vector2 pos)
-        {
-            Bounds bounds = Bounds;
-            pos.x = Mathf.Clamp(pos.x, bounds.min.x, bounds.max.x);
-            return pos;
-        }
-
-        /// <summary>
-        /// 水平 + 上边界夹紧：x 夹紧到 [min.x, max.x]，y 仅夹紧上边界（不超过 max.y），下边界保持开放
-        /// 用于存活状态：左右与上方不允许越界，下方开放（越界触发掉落死亡）
-        /// </summary>
-        public Vector2 ClampHorizontalAndTop(Vector2 pos)
-        {
-            Bounds bounds = Bounds;
-            pos.x = Mathf.Clamp(pos.x, bounds.min.x, bounds.max.x);
-            pos.y = Mathf.Min(pos.y, bounds.max.y);
-            return pos;
-        }
+        public Vector2 Center => Bounds.center;
 
         /// <summary>
         /// 四边夹紧：x/y 均夹紧到包围盒内
@@ -121,11 +103,22 @@ namespace SuperQQ.Map
         }
 
         /// <summary>
-        /// 指定高度是否低于下边界（存活状态掉落死亡判定）
+        /// 指定高度是否低于下边界（掉落兜底判定）
         /// </summary>
         public bool IsBelow(float y)
         {
             return y < Bounds.min.y;
+        }
+
+        /// <summary>
+        /// 指定位置是否越过任意一条边界（上/下/左/右）
+        /// 用于存活/冻结状态的越界死亡判定：四边均不夹紧，越界即死
+        /// </summary>
+        public bool IsOutOfBounds(Vector2 pos)
+        {
+            Bounds bounds = Bounds;
+            return pos.x < bounds.min.x || pos.x > bounds.max.x
+                || pos.y < bounds.min.y || pos.y > bounds.max.y;
         }
 
         // ==================== 调试可视化 ====================

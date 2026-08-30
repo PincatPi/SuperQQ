@@ -48,7 +48,8 @@ namespace SuperQQ.Player
 
         /// <summary>
         /// 进入幽灵状态：禁用碰撞体、取消重力、半透明、重置速度、确定出生位置
-        /// 出生位置：仅跌落下边界死亡传送至固定初始位置，其余死亡保持死亡位置
+        /// 出生位置：越界死亡（上/下/左/右）重生在地图中央（无 LevelBounds 时回退固定初始位置），
+        /// 其余死亡保持死亡位置
         /// </summary>
         public void Enter()
         {
@@ -65,9 +66,10 @@ namespace SuperQQ.Player
             _ctx.Rb.gravityScale = 0f;
             _ctx.Rb.velocity = Vector2.zero;
 
-            // 出生位置：仅跌落下边界死亡传送至固定初始位置，其余死亡保持死亡位置
+            // 出生位置：越界死亡重生在地图中央（无 LevelBounds 时回退固定初始位置），其余死亡保持死亡位置
+            LevelBounds bounds = _ctx.LevelBounds;
             _ctx.Rb.position = _ctx.GhostSpawnAtFixedPosition
-                ? (Vector2)_ctx.GhostSpawnPosition
+                ? (bounds != null ? bounds.Center : (Vector2)_ctx.GhostSpawnPosition)
                 : _ctx.DeathPosition;
 
             // 保存并设置半透明

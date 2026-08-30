@@ -86,7 +86,7 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
-        /// 每帧更新：不消费任何输入；仅检测地图边界（冻结中下坠越过下边界时立即死亡）
+        /// 每帧更新：不消费任何输入；仅检测地图边界（冻结中被击飞/吹飞出界时立即死亡）
         /// </summary>
         public void Update()
         {
@@ -94,13 +94,13 @@ namespace SuperQQ.Player
         }
 
         /// <summary>
-        /// 边界检测：y 越过下边界时立即死亡（与存活状态同一判定口径，不可豁免）
-        /// 冻结中仍受重力影响会下坠，无此检测会无限坠落
+        /// 边界检测：越过任意一条边界（上/下/左/右）时立即死亡（与存活状态同一判定口径，不可豁免）
+        /// 冻结中仍受重力/风力影响会移动，无此检测会无限坠落或飞出地图
         /// </summary>
         private void CheckLevelBounds()
         {
             SuperQQ.Map.LevelBounds bounds = _ctx.LevelBounds;
-            if (bounds != null && bounds.IsBelow(_ctx.Rb.position.y))
+            if (bounds != null && bounds.IsOutOfBounds(_ctx.Rb.position))
             {
                 _ctx.PlayerForceDie(fellOutOfBounds: true);
             }

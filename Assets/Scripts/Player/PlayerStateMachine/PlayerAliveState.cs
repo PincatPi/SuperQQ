@@ -6,8 +6,8 @@ namespace SuperQQ.Player
 {
     /// <summary>
     /// 存活状态：左右移动、可变高度跳跃、下落手感优化、地图边界约束
-    /// 边界行为：左右夹紧不允许水平越界；上方开放可跳出地图顶部；
-    /// 下方不做位置夹紧，y 越过下边界时触发死亡（PlayerDie）
+    /// 边界行为：四边均不做位置夹紧，玩家位置越过任意一条边界（上/下/左/右）
+    /// 即触发强制死亡（PlayerForceDie），随后进入幽灵状态重生在地图中央
     /// 所有运行时数据（土狼计时、跳跃保持计时等）归本状态私有
     /// </summary>
     public class PlayerAliveState : IPlayerState
@@ -94,10 +94,10 @@ namespace SuperQQ.Player
         /// </summary>
         public void FixedUpdate()
         {
-            // 击退压制中：跳过输入驱动的移动改写（击退速度自然飞行），仅保留边界约束
+            // 击退压制中：跳过输入驱动的移动改写（击退速度自然飞行），仅保留越界死亡判定
             if (_ctx.BIsKnockbackStunned)
             {
-                ClampToLevelBounds();
+                CheckLevelBoundsDeath();
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace SuperQQ.Player
                 ApplyVariableJumpHeight();
                 ApplyBetterFallGravity();
             }
-            ClampToLevelBounds();
+            CheckLevelBoundsDeath();
             CheckWaterDeath();
         }
 
@@ -184,10 +184,11 @@ namespace SuperQQ.Player
         // ==================== 地图边界 ====================
 
         /// <summary>
-        /// 边界约束：水平与上边界夹紧（左右、上方不允许越界），下方开放；
-        /// y 越过下边界时触发死亡。未配置 LevelBounds 时静默跳过
+        /// 越界死亡判定：玩家位置越过任意一条边界（上/下/左/右）即强制死亡，
+        /// 不可豁免（无视无敌金身等无敌保护）。未配置 LevelBounds 时静默跳过
+        /// fellOutOfBounds: true → 幽灵重生在地图中央（尸体已跌出地图，保持原位无意义）
         /// </summary>
-        private void ClampToLevelBounds()
+        private void CheckLevelBoundsDeath()
         {
             LevelBounds bounds = _ctx.LevelBounds;
             if (bounds == null)
@@ -195,17 +196,7 @@ namespace SuperQQ.Player
                 return;
             }
 
-            // 先夹紧写回（仅在产生修正时写入），死亡判定使用钳制后的位置
-            Vector2 pos = _ctx.Rb.position;
-            Vector2 clamped = bounds.ClampHorizontalAndTop(pos);
-            if (clamped != pos)
-            {
-                _ctx.Rb.position = clamped;
-            }
-
-            // 越过下边界：掉落死亡（不可豁免，无视无敌金身等无敌保护）
-            // fellOutOfBounds: true → 幽灵出生在固定初始位置（尸体已跌出地图，保持原位无意义）
-            if (bounds.IsBelow(clamped.y))
+            if (bounds.IsOutOfBounds(_ctx.Rb.position))
             {
                 _ctx.PlayerForceDie(fellOutOfBounds: true);
             }

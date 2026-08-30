@@ -93,7 +93,7 @@ namespace SuperQQ.Player
 
         // ---------- 死亡信息（进入死亡时记录，供幽灵状态决定出生位置） ----------
         private Vector2 _deathPosition;              // 死亡瞬间位置
-        private bool _ghostSpawnAtFixedPosition;     // 幽灵是否出生在固定初始位置（仅跌落下边界死亡为 true）
+        private bool _ghostSpawnAtFixedPosition;     // 幽灵是否重生在地图中央（仅越界死亡为 true）
 
         // ---------- 外部速度修正（道具表面效果等，1=无影响） ----------
         private float _speedMultiplier = 1f;
@@ -160,7 +160,7 @@ namespace SuperQQ.Player
         public float DeathDuration => deathDuration;
         /// <summary>死亡瞬间位置（进入死亡过渡时记录）</summary>
         public Vector2 DeathPosition => _deathPosition;
-        /// <summary>幽灵是否出生在固定初始位置：仅跌落下边界死亡为 true，其余死亡保持死亡位置</summary>
+        /// <summary>幽灵是否重生在地图中央：仅越界死亡（上/下/左/右）为 true，其余死亡保持死亡位置</summary>
         public bool GhostSpawnAtFixedPosition => _ghostSpawnAtFixedPosition;
 
         // 幽灵
@@ -659,10 +659,10 @@ namespace SuperQQ.Player
 
         /// <summary>
         /// 强制死亡：无视无敌状态，立即进入死亡过渡
-        /// 用于掉落出界等不可豁免的死亡场景（无敌金身等护盾不提供保护）
+        /// 用于越出地图边界等不可豁免的死亡场景（无敌金身等护盾不提供保护）
         /// </summary>
-        /// <param name="playHitSfx">是否播放命中音效；坠落出界等非命中死亡传 false</param>
-        /// <param name="fellOutOfBounds">是否跌落下边界死亡：true 时幽灵出生在固定初始位置，false 时保持死亡位置</param>
+        /// <param name="playHitSfx">是否播放命中音效；越界等非命中死亡传 false</param>
+        /// <param name="fellOutOfBounds">是否越界死亡（上/下/左/右）：true 时幽灵重生在地图中央，false 时保持死亡位置</param>
         public void PlayerForceDie(bool playHitSfx = false, bool fellOutOfBounds = false)
         {
             if (BIsDead || BIsGhost)
