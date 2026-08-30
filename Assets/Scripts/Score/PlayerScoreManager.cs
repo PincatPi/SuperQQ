@@ -561,6 +561,26 @@ namespace SuperQQ.Score
         }
 
         /// <summary>
+        /// 重置整场记分簿（退房/返回大厅时调用，如 LeaveRoomButton 的退房流程）：
+        /// 清空全部得分记录、本轮中间数据与轮次索引，并退订档案注册事件
+        /// （下一局进关卡时 InitializeFirstRound 会重新订阅，不退订会重复订阅）。
+        /// 本管理器跨场景持久，不重置会让下一局结算页残留上一局分数。
+        /// </summary>
+        public void ResetForNewGame()
+        {
+            UnsubscribeFromRegistry();
+            if (PlayerSessionManager.Instance != null)
+            {
+                PlayerSessionManager.Instance.OnProfileRegistered -= HandleProfileRegistered;
+            }
+            _scoreRecords.Clear();
+            _roundTrapKillCounts.Clear();
+            _roundBonusScores.Clear();
+            _currentRoundIndex = 0;
+            _bIsRoundScored = false;
+        }
+
+        /// <summary>
         /// 进入下一轮：递增轮次索引、清空本轮中间数据
         /// 由 GamePhaseManager 在确认继续下一轮时调用
         /// </summary>

@@ -6,8 +6,8 @@ namespace SuperQQ.Player
 {
     /// <summary>
     /// 存活状态：左右移动、可变高度跳跃、下落手感优化、地图边界约束
-    /// 边界行为：四边均不做位置夹紧，玩家位置越过任意一条边界（上/下/左/右）
-    /// 即触发强制死亡（PlayerForceDie），随后进入幽灵状态重生在地图中央
+    /// 边界行为：左/右/上边界夹紧不允许越界（类似碰撞体）；下方开放，越过下边界触发掉落死亡；
+    /// 大幅越过任意边界（异常情况）触发兜底强制死亡（PlayerForceDie），随后进入幽灵状态重生在地图中央
     /// 所有运行时数据（土狼计时、跳跃保持计时等）归本状态私有
     /// </summary>
     public class PlayerAliveState : IPlayerState
@@ -94,10 +94,10 @@ namespace SuperQQ.Player
         /// </summary>
         public void FixedUpdate()
         {
-            // 击退压制中：跳过输入驱动的移动改写（击退速度自然飞行），仅保留越界死亡判定
+            // 击退压制中：跳过输入驱动的移动改写（击退速度自然飞行），仅保留边界约束
             if (_ctx.BIsKnockbackStunned)
             {
-                CheckLevelBoundsDeath();
+                ClampToLevelBounds();
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace SuperQQ.Player
                 ApplyVariableJumpHeight();
                 ApplyBetterFallGravity();
             }
-            CheckLevelBoundsDeath();
+            ClampToLevelBounds();
             CheckWaterDeath();
         }
 
@@ -184,11 +184,13 @@ namespace SuperQQ.Player
         // ==================== 地图边界 ====================
 
         /// <summary>
-        /// 越界死亡判定：玩家位置越过任意一条边界（上/下/左/右）即强制死亡，
-        /// 不可豁免（无视无敌金身等无敌保护）。未配置 LevelBounds 时静默跳过
+        /// 边界约束：左/右/上边界像碰撞体一样夹紧位置，正常游玩无法越界；
+        /// 下方不夹紧，y 越过下边界时触发掉落死亡。
+        /// 兜底：位置大幅越过任意边界（超出容差，属异常情况：超大击退、出生在外等）时强制死亡，
+        /// 均不可豁免（无视无敌金身等无敌保护）。未配置 LevelBounds 时静默跳过
         /// fellOutOfBounds: true → 幽灵重生在地图中央（尸体已跌出地图，保持原位无意义）
         /// </summary>
-        private void CheckLevelBoundsDeath()
+        private void ClampToLevelBounds()
         {
             LevelBounds bounds = _ctx.LevelBounds;
             if (bounds == null)
@@ -196,9 +198,27 @@ namespace SuperQQ.Player
                 return;
             }
 
-            if (bounds.IsOutOfBounds(_ctx.Rb.position))
+            Vector2 pos = _ctx.Rb.position;
+
+            // 越过下边界：掉落死亡（不可豁免，无视无敌金身等无敌保护）
+            if (bounds.IsBelow(pos.y))
             {
                 _ctx.PlayerForceDie(fellOutOfBounds: true);
+                return;
+            }
+
+            // 兜底：大幅越过左/右/上边界（正常会被夹紧，只有异常情况才可能到这里）→ 强制死亡
+            if (bounds.IsDeeplyOutOfBounds(pos))
+            {
+                _ctx.PlayerForceDie(fellOutOfBounds: true);
+                return;
+            }
+
+            // 正常情况：左/右/上边界夹紧写回（仅在产生修正时写入），玩家无法越界
+            Vector2 clamped = bounds.ClampHorizontalAndTop(pos);
+            if (clamped != pos)
+            {
+                _ctx.Rb.position = clamped;
             }
         }
 

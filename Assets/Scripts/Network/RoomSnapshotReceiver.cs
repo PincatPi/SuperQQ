@@ -65,6 +65,10 @@ namespace SuperQQ.Network
             NetworkManager net = NetworkManager.Instance;
             if (net == null || string.IsNullOrEmpty(net.LocalPlayerId)) return;
 
+            // 房间号不匹配（退房瞬间旧房间的迟到快照）：直接丢弃，避免污染 LatestSnapshot
+            // 及玩家列表 UI；未在房（RoomId 为空）时同样不接收任何快照
+            if (string.IsNullOrEmpty(net.RoomId) || snapshot.RoomId != net.RoomId) return;
+
             LatestSnapshot = snapshot;
 
             if (!_firstSnapshotLogged)
@@ -174,6 +178,25 @@ namespace SuperQQ.Network
         /// 本组件跨场景存活，不清空会导致新一轮同 itemId 同锚点的道具被误判"已恢复"而永远补不出来
         /// </summary>
         public void ClearRestoredItems() => _restoredItems.Clear();
+
+        /// <summary>
+        /// 退房/离房时清空全部房间态：快照引用、远端同步器缓存、道具恢复记录及诊断标志。
+        /// 本组件跨场景存活，不清空会让旧房间数据残留到下一个房间
+        /// （旧快照驱动玩家列表 UI、同 itemId 同锚点道具被误判"已恢复"而永远补不出来）。
+        /// 由 LeaveRoomButton 在退房流程中调用。
+        /// </summary>
+        public void ClearRoomState()
+        {
+            LatestSnapshot = null;
+            _remotePlayers.Clear();
+            _restoredItems.Clear();
+            _firstSnapshotLogged = false;
+            _bHadEvent3States = false;
+            _bLoggedMissingEventParams = false;
+            _bLoggedEventParamsReceived = false;
+            _bLoggedEventParams2Received = false;
+            _bLoggedEvent3StatesReceived = false;
+        }
 
         /// <summary>
         /// 按快照恢复房间内已摆放的道具：本地还没有的（错过实时广播 / 阶段边界迟到被丢弃 /
