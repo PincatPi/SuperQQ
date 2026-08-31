@@ -168,8 +168,73 @@ namespace SuperQQ.Player
                 return;
             }
 
+            // 联机模式每端只有一个本地玩家：上一局/联机流程已建过本地档案（昵称≠预置名，
+            // 按名查重会漏）时不再重复注册，否则空 PlayerId 的重复本地档案会残留进结算列表。
+            // 单机模式多名本地玩家共用键盘，档案各自独立，不做此合并
+            if (player.BIsLocal && BIsNetworkedInRoom())
+            {
+                IReadOnlyList<PlayerProfile> existing = PlayerSessionManager.Instance.Profiles;
+                for (int i = 0; i < existing.Count; i++)
+                {
+                    if (existing[i] != null && existing[i].IsLocal)
+                    {
+                        return;
+                    }
+                }
+            }
+
             PlayerProfile profile = player.BuildProfile();
             PlayerSessionManager.Instance.RegisterProfile(profile);
+        }
+
+        /// <summary>当前是否处于"已连接且在房间中"的联机状态</summary>
+        private static bool BIsNetworkedInRoom()
+        {
+            SuperQQ.Network.NetworkManager net = SuperQQ.Network.NetworkManager.Instance;
+            return net != null && net.IsConnected && !string.IsNullOrEmpty(net.RoomId);
+        }
+
+        /// <summary>
+        /// 联机在房时校验远程档案是否属于当前房间（快照优先，JoinedRoom 兜底）。
+        /// 不属于即是旧房间残留档案（清理路径遗漏的兜底防线）：不生成化身，
+        /// 否则它会因收不到当前房间快照而成为静止的过期 Player。
+        /// 房间玩家列表暂不可得（快照未到/无 JoinedRoom）时不拦截，交由后续流程。
+        /// </summary>
+        private static bool BRemoteProfileOutOfCurrentRoom(string playerId)
+        {
+            SuperQQ.Network.NetworkManager net = SuperQQ.Network.NetworkManager.Instance;
+            if (net == null || !net.IsConnected || string.IsNullOrEmpty(net.RoomId))
+            {
+                return false; // 离线/未在房不拦截
+            }
+
+            System.Collections.Generic.IList<Minigame.Room.V1.RoomPlayerState> players = null;
+            SuperQQ.Network.RoomSnapshotReceiver receiver =
+                FindFirstObjectByType<SuperQQ.Network.RoomSnapshotReceiver>();
+            if (receiver != null && receiver.LatestSnapshot != null
+                && receiver.LatestSnapshot.RoomId == net.RoomId && receiver.LatestSnapshot.Players.Count > 0)
+            {
+                players = receiver.LatestSnapshot.Players;
+            }
+            else if (net.JoinedRoom != null && net.JoinedRoom.RoomId == net.RoomId
+                && net.JoinedRoom.Players.Count > 0)
+            {
+                players = net.JoinedRoom.Players;
+            }
+
+            if (players == null)
+            {
+                return false; // 房间列表暂不可得，不拦截
+            }
+
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i].Player != null && players[i].Player.PlayerId == playerId)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <summary>
@@ -194,8 +259,34 @@ namespace SuperQQ.Player
                     continue;
                 }
 
-                // 跳过已注册的同名玩家（场景中预置的 PlayerController）
-                if (FindPlayerByName(profile.PlayerName) != null)
+                // 联机在房时跳过不属于当前房间的远程残留档案（静止过期化身的来源之一）
+                if (!profile.IsLocal && !string.IsNullOrEmpty(profile.PlayerId)
+                    && BRemoteProfileOutOfCurrentRoom(profile.PlayerId))
+                {
+                    continue;
+                }
+
+                // 主判据是身份（联机 PlayerId / 单机 PlayerName），不是昵称：
+                // 换房/续局后服务器可能重新分配 playerId，旧房间的同名残留化身若按名挡掉
+                // 新档案，会导致真实玩家化身永远生不出来（SpawnLateJoiner 按身份查档已存在
+                // 也直接返回），只剩收不到新房间快照的静止化身
+                if (FindPlayerByIdentity(profile.IdentityKey) != null)
+                {
+                    continue;
+                }
+
+                // 同名但身份不同的已注册化身 = 旧房间残留：销毁后按新档案重新生成
+                if (!profile.IsLocal && !string.IsNullOrEmpty(profile.PlayerId))
+                {
+                    PlayerController nameClash = FindPlayerByName(profile.PlayerName);
+                    if (nameClash != null && !nameClash.BIsLocal && nameClash.IdentityKey != profile.IdentityKey)
+                    {
+                        Debug.LogWarning($"[LevelPlayerRegistry] 玩家 {profile.PlayerName} 存在旧身份({nameClash.IdentityKey})的残留化身，销毁后按新身份({profile.IdentityKey})重新生成。", nameClash);
+                        Destroy(nameClash.gameObject);
+                    }
+                }
+                // 单机/无 PlayerId 档案保持原按名去重行为（场景预置玩家）
+                else if (FindPlayerByName(profile.PlayerName) != null)
                 {
                     continue;
                 }
@@ -548,6 +639,27 @@ namespace SuperQQ.Player
             for (int i = 0; i < _players.Count; i++)
             {
                 if (_players[i] != null && _players[i].PlayerName == playerName)
+                {
+                    return _players[i];
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 按身份主键（联机 PlayerId / 单机 PlayerName）查找已注册玩家
+        /// 网络同步以 PlayerId 匹配化身，去重必须与此同口径，不能按昵称
+        /// </summary>
+        public PlayerController FindPlayerByIdentity(string identityKey)
+        {
+            if (string.IsNullOrEmpty(identityKey))
+            {
+                return null;
+            }
+
+            for (int i = 0; i < _players.Count; i++)
+            {
+                if (_players[i] != null && _players[i].IdentityKey == identityKey)
                 {
                     return _players[i];
                 }

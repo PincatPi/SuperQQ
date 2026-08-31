@@ -612,7 +612,18 @@ namespace SuperQQ.Network
             string playerId, string nickname, int colorIndex)
         {
             if (string.IsNullOrEmpty(playerId) || playerId == net.LocalPlayerId) return 0;
-            if (session.HasPlayerByIdentity(playerId)) return 0;
+
+            SuperQQ.Player.PlayerProfile existing = session.GetProfileByIdentity(playerId);
+            if (existing != null)
+            {
+                // 档案已存在（同房续局/换房残留）：座位相关字段必须刷新为当前房间的
+                // 进房顺序下标，否则换房后沿用旧座位 → 各端角色/颜色错配（"角色可能错误"）
+                if (!string.IsNullOrEmpty(nickname)) existing.PlayerName = nickname;
+                existing.PlayerColor = PlayerColorPalette.Get(colorIndex);
+                existing.CharacterIndex = colorIndex;
+                RefreshRemoteAvatarAppearance(playerId, existing);
+                return 0;
+            }
 
             session.RegisterProfile(new SuperQQ.Player.PlayerProfile
             {
@@ -623,6 +634,38 @@ namespace SuperQQ.Network
                 CharacterIndex = colorIndex
             });
             return 1;
+        }
+
+        /// <summary>
+        /// 已存在的远程档案座位刷新后，同步修正已生成的化身：
+        /// 化身可能先于本方法按旧 CharacterIndex 生成（Registry.Start 早于发牌到达），
+        /// 角色索引变化时用角色预制体整体替换（ReplacePlayerAvatar 内部幂等，索引一致直接返回）。
+        /// 关卡场景未加载（注册表为空）时跳过——之后 SpawnMissingPlayerAvatars 会按新档案生成。
+        /// </summary>
+        private static void RefreshRemoteAvatarAppearance(string playerId, SuperQQ.Player.PlayerProfile profile)
+        {
+            SuperQQ.Player.LevelPlayerRegistry registry = SuperQQ.Player.LevelPlayerRegistry.Instance;
+            if (registry == null) return;
+
+            SuperQQ.Player.PlayerController avatar = registry.FindPlayerByIdentity(playerId);
+            if (avatar == null) return;
+
+            SuperQQ.Player.PlayerController replaced = registry.ReplacePlayerAvatar(avatar, profile);
+            if (replaced == null)
+            {
+                // 角色未变化或未配置角色预制体：沿用旧化身，仅刷新颜色/昵称等档案字段
+                avatar.ApplyProfile(profile);
+                return;
+            }
+
+            // 替换出的新化身补挂远程同步组件（CreatePlayerAvatar 的联机路径会做，替换路径需补齐；
+            // 快照到达时 GetOrCreateRemoteSync 也有兜底，双保险）
+            if (replaced.GetComponent<RemotePlayerSync>() == null)
+            {
+                replaced.gameObject.AddComponent<RemotePlayerSync>();
+            }
+            SuperQQ.UI.PlayerNameLabelManager.Instance?.RegisterPlayer(replaced);
+            Debug.Log($"[NetWork] 远程玩家 {profile.PlayerName}({playerId}) 座位刷新为下标 {profile.CharacterIndex}，已替换化身");
         }
 
         private static string ResolveLocalPlayerName()

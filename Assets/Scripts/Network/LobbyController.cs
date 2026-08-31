@@ -226,6 +226,9 @@ namespace SuperQQ.Network
                 return;
             }
 
+            // 换房防护：未走退房流程直接进入不同房间时，先清掉旧房间的本地房间级状态
+            NetworkManager.ClearLocalRoomStateIfSwitching(resp.Room.RoomId);
+
             _net.RoomId = resp.Room.RoomId;
             _net.JoinedRoom = resp.Room;
 

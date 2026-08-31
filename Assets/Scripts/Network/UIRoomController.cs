@@ -435,10 +435,11 @@ namespace SuperQQ.Network
                 {
                     _net.Send(new LeaveRoomRequest { RoomId = _net.RoomId });
                 }
-
-                _net.RoomId = "";
-                _net.JoinedRoom = null;
             }
+
+            // 与 LeaveRoomButton 同口径的完整清理：档案/快照缓存/门控缓存/记分簿跨场景持久，
+            // 只清 RoomId 会让旧房间档案残留到下一个房间（按旧档案生成静止的过期玩家化身）
+            NetworkManager.ClearLocalRoomState();
 
             SceneManager.LoadScene(lobbySceneName);
         }

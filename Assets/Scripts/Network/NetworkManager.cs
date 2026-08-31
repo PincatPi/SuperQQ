@@ -336,6 +336,55 @@ namespace SuperQQ.Network
             }
         }
 
+        /// <summary>
+        /// 清空本端全部"房间级"状态（退房/换房统一入口，幂等）。
+        /// 清理顺序（关键）：
+        ///   1. 清空 RoomId/JoinedRoom —— 快照接收按房间号过滤，先断源；
+        ///      断线自动重连按 RoomId 重新 JoinRoom，不清会把玩家拉回旧房间；
+        ///   2. RoomSnapshotReceiver.ClearRoomState —— 组件跨场景存活，清掉旧房间快照引用、
+        ///      远端同步器缓存与道具恢复记录，并复位 LocalPlayerNetSetup；
+        ///   3. NetGameFlowGate.ResetForRoomLeave —— 清掉旧房间的发牌/阶段缓存与服务器分数；
+        ///   4. PlayerSessionManager.ClearAllProfiles —— 档案跨场景持久，不清会在下一局
+        ///      按旧档案错误生成化身（静止的过期 Player）；
+        ///   5. PlayerScoreManager.ResetForNewGame —— 记分簿跨场景持久，不清会残留上一局分数。
+        /// </summary>
+        public static void ClearLocalRoomState()
+        {
+            NetworkManager net = Instance;
+            if (net != null)
+            {
+                net.RoomId = "";
+                net.JoinedRoom = null;
+            }
+
+            RoomSnapshotReceiver receiver = FindFirstObjectByType<RoomSnapshotReceiver>();
+            if (receiver != null)
+            {
+                receiver.ClearRoomState();
+            }
+
+            NetGameFlowGate.ResetForRoomLeave();
+
+            SuperQQ.Player.PlayerSessionManager.Instance?.ClearAllProfiles();
+            SuperQQ.Score.PlayerScoreManager.Instance?.ResetForNewGame();
+        }
+
+        /// <summary>
+        /// 换房防护：即将进入的房间与当前房间不同（含异常路径下未走退房直接进新房）时，
+        /// 先清空旧房间的全部本地房间级状态，避免旧档案/旧快照污染新房间对局。
+        /// 由各 JoinRoomResponse 处理方在写入新房间号前调用。
+        /// </summary>
+        /// <param name="newRoomId">即将进入的房间号</param>
+        public static void ClearLocalRoomStateIfSwitching(string newRoomId)
+        {
+            NetworkManager net = Instance;
+            if (net == null || string.IsNullOrEmpty(newRoomId)) return;
+            if (string.IsNullOrEmpty(net.RoomId) || net.RoomId == newRoomId) return;
+
+            Debug.Log($"[NetWork] 检测到换房（{net.RoomId} -> {newRoomId}）且未走退房流程，强制清理旧房间本地状态");
+            ClearLocalRoomState();
+        }
+
         /// <summary>退出登录：通知服务端注销 token（fire-and-forget，幂等），并清空本地登录态</summary>
         public void Logout()
         {

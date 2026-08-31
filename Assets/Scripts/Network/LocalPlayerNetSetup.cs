@@ -16,6 +16,15 @@ namespace SuperQQ.Network
     {
         private bool _done;
 
+        /// <summary>
+        /// 退房/换房时复位完成标记：本组件随 RoomSnapshotReceiver 跨场景存活，
+        /// 不复位则下一局的 Update 轮询不再补写本地玩家身份/上报组件（仅靠门控路径兜底）。
+        /// </summary>
+        public void ResetSetup()
+        {
+            _done = false;
+        }
+
         private void Update()
         {
             if (_done) return;

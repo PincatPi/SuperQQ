@@ -196,6 +196,13 @@ namespace SuperQQ.Network
             _bLoggedEventParamsReceived = false;
             _bLoggedEventParams2Received = false;
             _bLoggedEvent3StatesReceived = false;
+
+            // 同物体的本地玩家接入组件一并复位：下一局重新轮询写入身份/挂载上报组件
+            LocalPlayerNetSetup setup = GetComponent<LocalPlayerNetSetup>();
+            if (setup != null)
+            {
+                setup.ResetSetup();
+            }
         }
 
         /// <summary>
