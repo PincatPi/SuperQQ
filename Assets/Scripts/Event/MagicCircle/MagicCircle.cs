@@ -45,8 +45,9 @@ namespace SuperQQ.Event
 
         /// <summary>
         /// 从触发碰撞体解析玩家控制器：仅接受 Player 标签物体，碰撞体可在玩家根节点或其子级上
+        /// （internal：外围区域触发器 MagicCircleProximityZone 复用同一套解析规则）
         /// </summary>
-        private static PlayerController ResolvePlayer(Collider2D other)
+        internal static PlayerController ResolvePlayer(Collider2D other)
         {
             if (other == null || !other.CompareTag(PLAYER_TAG))
             {

@@ -14,6 +14,8 @@ namespace SuperQQ.Event
     /// 事件被选中后：在场景固定位置创建一个法阵，持续整场游玩阶段
     /// 法阵触发范围由法阵 Prefab 上的 Trigger 碰撞体定义：玩家（Player 标签）进入范围时，
     /// 吟唱提示 Text 框显示在法阵旁的固定位置；范围内无存活玩家时提示隐藏
+    /// 外围提示：法阵 Prefab 子节点可挂 MagicCircleProximityZone 触发器（碰撞体范围即"周围区域"，
+    /// 通常比吟唱触发范围大一圈）；玩家进入周围区域且法阵内无玩家时，提示框显示外围引导文本
     /// 本地玩家进阵开启语音识别，识别结果与咒语列表（SpellDefinition）逐条做覆盖率匹配；
     /// 命中咒语且其配置了效果时，对触发玩家执行该咒语效果（如"无敌金身"护盾）
     /// 吟唱冷却：玩家身上存在生效中的咒语效果时不触发语音识别；效果全部结束后开始冷却倒计时
@@ -51,6 +53,10 @@ namespace SuperQQ.Event
         [Tooltip("提示框相对法阵的世界坐标偏移（Scene 视图中可拖拽调节）")]
         [SerializeField] private Vector2 _promptOffset = new Vector2(0f, 1.5f);
 
+        [Header("外围提示")]
+        [Tooltip("外围引导文本：玩家进入法阵周围区域（法阵 Prefab 子节点上 MagicCircleProximityZone 触发器的范围）且法阵内无玩家时，提示框显示该文本；法阵 Prefab 未配置外围触发器时无外围提示")]
+        [SerializeField] private string _surroundingPromptText = "法阵就在附近，快进去吟唱吧！";
+
         [Header("语音吟唱")]
         [Tooltip("本地玩家进入法阵时开启语音识别（吟唱内容经远端 ASR 识别为文本，显示在调试 HUD）")]
         [SerializeField] private bool _bEnableVoiceChant = true;
@@ -77,6 +83,12 @@ namespace SuperQQ.Event
 
         // 当前处于法阵触发范围内的玩家（由法阵进出事件维护）
         private readonly HashSet<PlayerController> _playersInside = new();
+
+        // 外围区域触发器实例（法阵 Prefab 子节点上的 MagicCircleProximityZone，可空：未配置则无外围提示）
+        private MagicCircleProximityZone _proximityZone;
+
+        // 当前处于法阵外围区域内的玩家（由外围区域进出事件维护；外围区域包含法阵本体，在阵玩家通常也在其中）
+        private readonly HashSet<PlayerController> _playersNearby = new();
 
         // 吟唱提示实例（整场一个，Deactivate 时销毁）
         private ChantPrompt _promptInstance;
@@ -142,6 +154,14 @@ namespace SuperQQ.Event
             _circleInstance.OnPlayerEntered += HandlePlayerEntered;
             _circleInstance.OnPlayerExited += HandlePlayerExited;
 
+            // 外围区域触发器为可选配置（法阵 Prefab 子节点）：订阅其进出事件驱动外围提示
+            _proximityZone = _circleInstance.GetComponentInChildren<MagicCircleProximityZone>();
+            if (_proximityZone != null)
+            {
+                _proximityZone.OnPlayerEntered += HandlePlayerEnteredProximity;
+                _proximityZone.OnPlayerExited += HandlePlayerExitedProximity;
+            }
+
             CreatePrompt();
 
             if (_bEnableVoiceChant)
@@ -172,6 +192,14 @@ namespace SuperQQ.Event
                 // 场景正常销毁时法阵可能已随之销毁，此处判空后兜底销毁
                 Destroy(_circleInstance.gameObject);
                 _circleInstance = null;
+            }
+
+            if (_proximityZone != null)
+            {
+                _proximityZone.OnPlayerEntered -= HandlePlayerEnteredProximity;
+                _proximityZone.OnPlayerExited -= HandlePlayerExitedProximity;
+                // 触发器随法阵一并销毁，仅置空引用
+                _proximityZone = null;
             }
 
             if (LevelPlayerRegistry.Instance != null)
@@ -215,6 +243,7 @@ namespace SuperQQ.Event
             }
 
             _playersInside.Clear();
+            _playersNearby.Clear();
             // 事件停用（法阵销毁）：复位咒语清单按键高光，覆盖玩家在法阵内时法阵被销毁的异常路径
             SpellListButtonController.ResetCircleHighlight();
             _promptCanvasRect = null;
@@ -559,6 +588,34 @@ namespace SuperQQ.Event
         }
 
         /// <summary>
+        /// 玩家进入法阵外围区域：记录到场并刷新提示显隐（法阵内无玩家时提示框显示外围引导文本）
+        /// </summary>
+        private void HandlePlayerEnteredProximity(PlayerController player)
+        {
+            if (player == null)
+            {
+                return;
+            }
+
+            _playersNearby.Add(player);
+            RefreshPromptVisibility();
+        }
+
+        /// <summary>
+        /// 玩家离开法阵外围区域：移除在场记录并刷新提示显隐
+        /// </summary>
+        private void HandlePlayerExitedProximity(PlayerController player)
+        {
+            if (player == null)
+            {
+                return;
+            }
+
+            _playersNearby.Remove(player);
+            RefreshPromptVisibility();
+        }
+
+        /// <summary>
         /// 玩家状态变化：刷新提示显隐（范围内玩家全部出局时隐藏，恢复存活时重新显示）
         /// </summary>
         private void HandlePlayerStateChanged(PlayerController player, PlayerStateType stateType)
@@ -582,6 +639,8 @@ namespace SuperQQ.Event
                 }
                 return removed;
             });
+            // 同步清理外围区域内的离场玩家残留记录
+            _playersNearby.RemoveWhere(player => !IsRegistered(registry, player));
             RefreshPromptVisibility();
         }
 
@@ -635,7 +694,9 @@ namespace SuperQQ.Event
         }
 
         /// <summary>
-        /// 刷新提示显隐：法阵范围内存在存活（Alive）玩家时显示，否则隐藏
+        /// 刷新提示显隐与外围文本：法阵内或外围区域内存在存活（Alive）玩家时显示，否则隐藏；
+        /// 法阵内无玩家但外围有玩家时，提示文本固定为外围引导文本
+        /// （法阵内有玩家时文本由吟唱逻辑驱动：请吟唱/冷却中/施法成功/吟唱失败）
         /// </summary>
         private void RefreshPromptVisibility()
         {
@@ -644,13 +705,20 @@ namespace SuperQQ.Event
                 return;
             }
 
-            _promptInstance.gameObject.SetActive(HasAlivePlayerInside());
+            bool bInside = HasAlivePlayerIn(_playersInside);
+            bool bNearby = HasAlivePlayerIn(_playersNearby);
+            _promptInstance.gameObject.SetActive(bInside || bNearby);
+
+            if (!bInside && bNearby)
+            {
+                _promptInstance.SetText(_surroundingPromptText);
+            }
         }
 
         /// <summary>
-        /// 法阵范围内是否存在存活玩家
+        /// 指定玩家集合中是否存在存活玩家
         /// </summary>
-        private bool HasAlivePlayerInside()
+        private static bool HasAlivePlayerIn(HashSet<PlayerController> players)
         {
             LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
             if (registry == null)
@@ -658,7 +726,7 @@ namespace SuperQQ.Event
                 return false;
             }
 
-            foreach (PlayerController player in _playersInside)
+            foreach (PlayerController player in players)
             {
                 if (player != null && registry.GetPlayerState(player) == PlayerStateType.Alive)
                 {

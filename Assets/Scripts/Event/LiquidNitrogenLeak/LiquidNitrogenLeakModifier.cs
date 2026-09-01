@@ -51,6 +51,10 @@ namespace SuperQQ.Event
         [Tooltip("冻结发生时经 PopupManager 播放的 Tips 文本内容（留空则不播放）")]
         [SerializeField] private string _freezeTipText = "全员被冻结！快摇晃手机解冻！";
 
+        [Tooltip("冻结 Tips 最大存在时长（秒）：到时长自动关闭；玩家提前解冻时 Tips 会在本地客户端提前关闭。非正时使用 Tips 注册表默认时长")]
+        [Min(0f)]
+        [SerializeField] private float _freezeTipDuration = 5f;
+
         [Tooltip("冻结期间显示的 UI Prefab（屏幕空间 UI，冻结时实例化到本地主 Canvas 下，解冻时销毁）；留空则无冻结 UI")]
         [SerializeField] private GameObject _frozenUiPrefab;
 
@@ -117,6 +121,9 @@ namespace SuperQQ.Event
 
         // 解冻进度条弹窗引用（由 PopupManager 管理，结束时手动关闭并销毁）
         private ThawProgressBar _progressBarPopup;
+
+        // 冻结 Tips 视图引用（解冻时提前关闭；已自动关闭时为失效引用，CloseTips 内部查无记录静默返回）
+        private TipsView _freezeTipView;
 
         // 解冻阶段启用的摇晃检测器引用，结束时禁用
         private ShakeDetector _shakeDetector;
@@ -398,7 +405,8 @@ namespace SuperQQ.Event
         }
 
         /// <summary>
-        /// 播放冻结 Tips（通用 Tips 类型，自动关闭）；文本未配置或 PopupManager 缺失时静默跳过
+        /// 播放冻结 Tips（通用 Tips 类型，按 _freezeTipDuration 最大时长自动关闭，
+        /// 解冻时经 EndThaw 提前关闭）；文本未配置或 PopupManager 缺失时静默跳过
         /// </summary>
         private void PlayFreezeTip()
         {
@@ -413,7 +421,7 @@ namespace SuperQQ.Event
                 return;
             }
 
-            PopupManager.Instance.ShowTips(TipsType.Common, _freezeTipText);
+            _freezeTipView = PopupManager.Instance.ShowTips(TipsType.Common, _freezeTipText, _freezeTipDuration);
         }
 
         /// <summary>
@@ -542,6 +550,17 @@ namespace SuperQQ.Event
                 // 场景正常销毁时冻结 UI 可能已随之销毁，此处判空后兜底销毁
                 Destroy(_frozenUiInstance);
                 _frozenUiInstance = null;
+            }
+
+            // 提前关闭冻结 Tips（正常解冻、超时兜底、Deactivate 强制中断共用本出口；
+            // 联机下各客户端本地各自执行，即提前解冻只关闭本端 Tips）
+            if (_freezeTipView != null)
+            {
+                if (PopupManager.Instance != null)
+                {
+                    PopupManager.Instance.CloseTips(_freezeTipView);
+                }
+                _freezeTipView = null;
             }
 
             if (_progressBarPopup != null)

@@ -6,7 +6,8 @@ namespace SuperQQ.UI
     /// <summary>
     /// 提示（Tips）视图 — 挂在 Tips Prefab 的根节点上
     /// Tips 结构简单：仅承载一段提示文本，由 PopupManager.ShowTips 实例化播放，
-    /// 固定时长后自动关闭销毁（不支持手动关闭，无标题/图片/关闭按钮等额外绑定）
+    /// 固定时长后自动关闭销毁（无标题/图片/关闭按钮等额外绑定；
+    /// 外部事件需提前结束时可经 PopupManager.CloseTips 手动关闭）
     /// 配置了背景时，SetContent 后按文本实际宽度自动调整背景宽度（背景锚点建议居中）
     /// </summary>
     public class TipsView : MonoBehaviour

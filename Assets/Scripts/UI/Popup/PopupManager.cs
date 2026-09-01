@@ -380,6 +380,26 @@ namespace SuperQQ.UI
         }
 
         /// <summary>
+        /// 手动关闭指定 Tips（对自动关闭中的实例同样生效，用于外部事件需提前结束提示的场景）
+        /// </summary>
+        /// <param name="view">待关闭的 Tips 视图（ShowTips 的返回值）</param>
+        public void CloseTips(TipsView view)
+        {
+            if (view == null)
+            {
+                return;
+            }
+
+            ActiveEntry entry = FindActiveEntry(view);
+            if (entry == null)
+            {
+                return;
+            }
+
+            CloseInternal(entry);
+        }
+
+        /// <summary>
         /// 关闭所有展示中的弹窗（不含 Tips）
         /// </summary>
         public void CloseAllPopups()

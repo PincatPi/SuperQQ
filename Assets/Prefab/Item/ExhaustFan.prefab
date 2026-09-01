@@ -260,7 +260,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a120710bc304244aa13c7276d954e64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  windForce: 20
+  windForce: 60
   windLoopSfx: 218
   windSfxFadeOut: 0.5
 --- !u!1 &4381155933758414411
