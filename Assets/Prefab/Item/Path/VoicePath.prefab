@@ -139,7 +139,7 @@ MonoBehaviour:
   placeSfx: 202
   maxUpCells: 4
   maxDownCells: 4
-  riseThreshold: 0.5
+  riseThreshold: 0.65
   moveSpeedCells: 4
   ownerIconRenderer: {fileID: 5207551894172481754}
   ownerIconOrderOffset: 1
