@@ -41,8 +41,11 @@ namespace SuperQQ.Event
         [Tooltip("提示文字内容（法阵可用时进阵显示）")]
         [SerializeField] private string _promptText = "请吟唱";
 
-        [Tooltip("冷却提示文本：法阵对本地玩家处于冷却（咒语效果生效中/冷却倒计时中）时，进阵显示该文本")]
+        [Tooltip("冷却提示文本：法阵对本地玩家处于冷却倒计时中时，进阵显示该文本（后附剩余秒数）")]
         [SerializeField] private string _cooldownText = "冷却中…";
+
+        [Tooltip("咒语生效中文本：本地玩家身上存在生效中的咒语效果时，进阵显示该文本")]
+        [SerializeField] private string _spellActiveText = "咒语生效中";
 
         [Tooltip("施法成功文本：语音识别命中咒语时显示")]
         [SerializeField] private string _castSuccessText = "施法成功";
@@ -120,8 +123,17 @@ namespace SuperQQ.Event
         // Deactivate 清理中标记：阻止效果 End 回调误启动冷却倒计时
         private bool _bDeactivating;
 
-        // 冷却到期后刷新提示文本的协程（CD 结束时把"冷却中"恢复为"请吟唱"）
+        // 冷却期间刷新提示文本的协程（逐秒更新剩余冷却秒数，CD 结束时把冷却文本恢复为"请吟唱"）
         private Coroutine _cooldownRefreshCoroutine;
+
+        // 施法结果文本驻留后的延迟刷新协程（"施法成功"短暂驻留后切换为"咒语生效中"）
+        private Coroutine _delayedTextRefreshCoroutine;
+
+        // 施法结果文本驻留时长（秒）：语音识别命中后"施法成功"的展示时长，到期刷新为当前状态文本
+        private const float CAST_RESULT_TEXT_DURATION = 2f;
+
+        // 冷却文本刷新间隔（秒）：剩余秒数按整数秒显示，小间隔轮询保证秒数变化及时反映到文本
+        private const float COOLDOWN_TEXT_TICK_INTERVAL = 0.1f;
 
         // GUI 匹配结果的展示截止时刻（Time.unscaledTime）
         private float _matchHudExpireTime;
@@ -255,6 +267,7 @@ namespace SuperQQ.Event
             _matchHudExpireTime = 0f;
             _cooldownEndTime = 0f;
             _cooldownRefreshCoroutine = null;
+            _delayedTextRefreshCoroutine = null;
         }
 
         // ==================== 事件响应 ====================
@@ -302,7 +315,8 @@ namespace SuperQQ.Event
         private bool BVoiceChantBlocked => HasActiveSpellEffect() || Time.time < _cooldownEndTime;
 
         /// <summary>
-        /// 刷新吟唱提示文本：冷却中显示冷却文本，法阵可用时显示"请吟唱"
+        /// 刷新吟唱提示文本：法阵可用时显示"请吟唱"；冷却倒计时中显示冷却文本 + 剩余秒数（整数秒）；
+        /// 咒语效果生效中（冷却倒计时尚未开始）仅显示冷却文本
         /// </summary>
         private void RefreshPromptText()
         {
@@ -311,13 +325,30 @@ namespace SuperQQ.Event
                 return;
             }
 
-            _promptInstance.SetText(BVoiceChantBlocked ? _cooldownText : _promptText);
+            if (!BVoiceChantBlocked)
+            {
+                _promptInstance.SetText(_promptText);
+                return;
+            }
+
+            // 咒语效果生效中优先显示生效文本（冷却倒计时在效果全部结束后才开始，两者不会同时成立）
+            if (HasActiveSpellEffect())
+            {
+                _promptInstance.SetText(_spellActiveText);
+                return;
+            }
+
+            float cooldownRemain = _cooldownEndTime - Time.time;
+            _promptInstance.SetText(cooldownRemain > 0f
+                ? $"{_cooldownText}{Mathf.CeilToInt(cooldownRemain)}s"
+                : _cooldownText);
         }
 
         /// <summary>
-        /// 冷却到期后刷新提示文本（把"冷却中"恢复为"请吟唱"）；无协程宿主或无提示框时跳过
+        /// 启动冷却文本刷新协程：冷却期间按固定间隔刷新提示文本（剩余秒数随倒计时逐秒更新），
+        /// 冷却到期后恢复"请吟唱"；无协程宿主或无提示框时跳过
         /// </summary>
-        private void StartCooldownTextRefresh(float delay)
+        private void StartCooldownTextRefresh()
         {
             MonoBehaviour runner = _eventContext != null ? _eventContext.CoroutineRunner : null;
             if (runner == null || _promptInstance == null)
@@ -329,12 +360,43 @@ namespace SuperQQ.Event
             {
                 runner.StopCoroutine(_cooldownRefreshCoroutine);
             }
-            _cooldownRefreshCoroutine = runner.StartCoroutine(RefreshPromptTextAfterCooldown(delay));
+            _cooldownRefreshCoroutine = runner.StartCoroutine(RefreshPromptTextDuringCooldown());
         }
 
-        private IEnumerator RefreshPromptTextAfterCooldown(float delay)
+        /// <summary>
+        /// 延迟刷新提示文本：施法结果文本（"施法成功"）驻留指定时长后，按当前状态重算提示文本
+        /// （效果生效中显示"咒语生效中"，冷却中显示冷却文本，可用时恢复"请吟唱"）；无协程宿主或无提示框时跳过
+        /// </summary>
+        private void StartDelayedPromptTextRefresh(float delay)
+        {
+            MonoBehaviour runner = _eventContext != null ? _eventContext.CoroutineRunner : null;
+            if (runner == null || _promptInstance == null)
+            {
+                return;
+            }
+
+            if (_delayedTextRefreshCoroutine != null)
+            {
+                runner.StopCoroutine(_delayedTextRefreshCoroutine);
+            }
+            _delayedTextRefreshCoroutine = runner.StartCoroutine(RefreshPromptTextAfterDelay(delay));
+        }
+
+        private IEnumerator RefreshPromptTextAfterDelay(float delay)
         {
             yield return new WaitForSeconds(delay);
+            _delayedTextRefreshCoroutine = null;
+            RefreshPromptText();
+        }
+
+        private IEnumerator RefreshPromptTextDuringCooldown()
+        {
+            var tick = new WaitForSeconds(COOLDOWN_TEXT_TICK_INTERVAL);
+            while (Time.time < _cooldownEndTime)
+            {
+                RefreshPromptText();
+                yield return tick;
+            }
             _cooldownRefreshCoroutine = null;
             RefreshPromptText();
         }
@@ -378,9 +440,14 @@ namespace SuperQQ.Event
             {
                 _cooldownEndTime = Time.time + _cooldownSeconds;
                 Debug.Log($"[MagicCircleModifier] 咒语效果已结束，进入吟唱冷却（{_cooldownSeconds:F1}s）。");
-                // 冷却期间提示框若显示应切换为冷却文本，CD 到期自动恢复"请吟唱"
+                // 冷却期间提示框若显示应切换为冷却文本（含剩余秒数，逐秒更新），CD 到期自动恢复"请吟唱"
                 RefreshPromptText();
-                StartCooldownTextRefresh(_cooldownSeconds);
+                StartCooldownTextRefresh();
+            }
+            else
+            {
+                // 未配置冷却：效果结束即恢复可用，提示文本从"咒语生效中"恢复为"请吟唱"
+                RefreshPromptText();
             }
         }
 
@@ -405,6 +472,12 @@ namespace SuperQQ.Event
             {
                 Debug.Log($"[MagicCircleModifier] 吟唱匹配：识别\"{_lastRecognizedText}\" 命中咒语\"{_lastMatchedSpell.DisplayName}\"（覆盖率 {bestCoverage:P0}，阈值 {_spellMatchThreshold:P0}）");
                 TryActivateSpellEffect(_lastMatchedSpell);
+
+                // 命中配置了效果的咒语："施法成功"短暂驻留后刷新为"咒语生效中"（效果期间持续显示）
+                if (_lastMatchedSpell.Effect != null)
+                {
+                    StartDelayedPromptTextRefresh(CAST_RESULT_TEXT_DURATION);
+                }
             }
             else
             {
