@@ -32,6 +32,9 @@ namespace SuperQQ.UI
         /// <summary>仅剩一名存活玩家时的提前结束提示</summary>
         EndEarly = 10,
 
+        /// <summary>通关弹窗（按注册表默认时长自动关闭）</summary>
+        LevelClear = 11,
+
         /// <summary>解冻进度条弹窗（手动关闭，Prefab 根节点挂 ThawProgressBar）</summary>
         ThawProgress = 12,
     }
