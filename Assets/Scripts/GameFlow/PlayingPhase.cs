@@ -25,7 +25,17 @@ namespace SuperQQ.GameFlow
         [Tooltip("进入正式游玩阶段后，本地玩家的无敌与禁输入时长（秒）；0 表示不启用")]
         [SerializeField] private float _initialProtectionDuration = 3f;
 
+        [Header("按键放弃")]
+        [Tooltip("长按该键达到放弃时长后，本地存活玩家立即进入死亡状态；None 表示禁用")]
+        [SerializeField] private KeyCode _giveUpKey = KeyCode.B;
+
+        [Tooltip("触发放弃所需的长按时长（秒）；松开按键即重置进度")]
+        [SerializeField] private float _giveUpHoldDuration = 3f;
+
         private bool _bRoundSettled;
+
+        // ---------- 按键放弃 ----------
+        private float _giveUpHoldTimer;             // 当前长按累计时间（秒）
 
         // ---------- 开局保护（无敌 + 禁输入） ----------
         private bool _bProtectionStarted;           // 本轮是否已施加保护（防重，场景异步加载时由 RefreshSceneRuntimeBindings 补触发）
@@ -40,6 +50,7 @@ namespace SuperQQ.GameFlow
             _bProtectionStarted = false;
             _bProtectionActive = false;
             _protectionOriginalInputs.Clear();
+            _giveUpHoldTimer = 0f;
 
             // 阶段开始音效（2D 全局，走 SFX 总线）
             if (_roundStartSfx != SfxId.None)
@@ -62,6 +73,8 @@ namespace SuperQQ.GameFlow
         {
             base.OnUpdate(context, deltaTime);
 
+            UpdateGiveUp(deltaTime);
+
             if (!_bProtectionActive)
             {
                 return;
@@ -72,6 +85,60 @@ namespace SuperQQ.GameFlow
             {
                 EndInitialProtection();
             }
+        }
+
+        /// <summary>
+        /// 按键放弃：长按指定键累计计时，达到时长后让本地存活玩家强制死亡；松开按键即重置进度。
+        /// 直接读取键盘输入，不受开局保护的空输入屏蔽影响（放弃属于玩家主动行为）。
+        /// </summary>
+        private void UpdateGiveUp(float deltaTime)
+        {
+            if (_giveUpKey == KeyCode.None || _giveUpHoldDuration <= 0f)
+            {
+                return;
+            }
+
+            if (Input.GetKey(_giveUpKey))
+            {
+                _giveUpHoldTimer += deltaTime;
+                if (_giveUpHoldTimer >= _giveUpHoldDuration)
+                {
+                    _giveUpHoldTimer = 0f;
+                    GiveUpLocalPlayer();
+                }
+            }
+            else
+            {
+                _giveUpHoldTimer = 0f;
+            }
+        }
+
+        /// <summary>
+        /// 让本端主控的本地玩家进入死亡状态（主动放弃），不影响其他本地/远程玩家。
+        /// 主控玩家取自 LevelPlayerRegistry.FindLocalPlayerObject：联机下即本端唯一本地化身，
+        /// 单机多人共用键盘时为首个本地玩家（P1）。
+        /// 视为不可豁免死亡：无视无敌状态，幽灵在死亡位置重生；
+        /// 死亡/幽灵/通关/冻结中的玩家跳过（冻结视为无法操作）。
+        /// </summary>
+        private void GiveUpLocalPlayer()
+        {
+            LevelPlayerRegistry registry = LevelPlayerRegistry.Instance;
+            if (registry == null)
+            {
+                return;
+            }
+
+            PlayerController player = registry.FindLocalPlayerObject();
+            if (player == null || !player.BIsLocal)
+            {
+                return;
+            }
+            if (player.BIsDead || player.BIsGhost || player.BIsFinished || player.BIsFrozen)
+            {
+                return;
+            }
+
+            player.PlayerForceDie(playHitSfx: false, fellOutOfBounds: false);
         }
 
         public override void RefreshSceneRuntimeBindings(GamePhaseContext context)
@@ -86,6 +153,7 @@ namespace SuperQQ.GameFlow
         {
             base.OnExit(context);
             _bRoundSettled = false;
+            _giveUpHoldTimer = 0f;
 
             // 阶段提前结束（全员出局等）时兜底解除保护，避免无敌计数与空输入残留到下一阶段
             EndInitialProtection();

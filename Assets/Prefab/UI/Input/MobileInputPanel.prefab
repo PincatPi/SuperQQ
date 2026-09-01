@@ -648,7 +648,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   background: {fileID: 7782687783167571317}
   handle: {fileID: 840270223341199102}
-  handleRange: 0
+  handleRange: 40
+  deadZone: 0.4
 --- !u!224 &7782687783167571317 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1180551688905596398, guid: 49379226d6f9d42ff857832c26e1cd89, type: 3}

@@ -242,13 +242,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 673032399}
     m_Modifications:
-    - target: {fileID: 1132004232495602444, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
-      propertyPath: handleRange
-      value: 40
-      objectReference: {fileID: 0}
     - target: {fileID: 3481691695496474343, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
       propertyPath: forceTouchInEditor
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3654162602425015535, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
       propertyPath: m_Name

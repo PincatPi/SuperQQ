@@ -20,7 +20,7 @@ MonoBehaviour:
   _iceEffectDestroyDelay: 0.6
   _freezeTipText: "\u5168\u5458\u88AB\u51BB\u7ED3\uFF01\u5FEB\u6447\u6643\u624B\u673A\u89E3\u51BB\uFF01"
   _frozenUiPrefab: {fileID: 8204921928607008166, guid: 70df8c4e447574d06931a04b2e50191a, type: 3}
-  _fullShakeThawSeconds: 1
+  _fullShakeThawSeconds: 0.7
   _progressDecayPerSecond: 0.05
   _autoThawTimeout: 10
   _vibrateShakeThreshold: 0.5

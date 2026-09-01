@@ -22,6 +22,9 @@ namespace SuperQQ.UI
         [SerializeField, Tooltip("把手可偏移的最大半径（像素）；0 = 自动取底盘宽度的一半")]
         private float handleRange = 0f;
 
+        [SerializeField, Range(0f, 0.9f), Tooltip("中心死区（归一化半径比例，0~0.9）：偏移比例小于该值时 Direction 输出为 zero，把手仍跟随手指")]
+        private float deadZone = 0f;
+
         /// <summary>当前摇杆方向（归一化，各轴 -1~1，模长 0~1；松手/死区内为 zero）</summary>
         public Vector2 Direction { get; private set; }
 
@@ -105,7 +108,19 @@ namespace SuperQQ.UI
             {
                 handle.anchoredPosition = _handleHomePos + offset;
             }
-            Direction = offset / range;
+
+            Vector2 normalized = offset / range;
+            float magnitude = normalized.magnitude;
+            if (magnitude < deadZone)
+            {
+                // 死区内：把手跟随但不输出方向，不触发玩家移动
+                Direction = Vector2.zero;
+            }
+            else
+            {
+                // 越过死区后重映射为 0~1，保证输出从 0 平滑起步而非从 deadZone 突变
+                Direction = normalized * ((magnitude - deadZone) / ((1f - deadZone) * magnitude));
+            }
         }
 
         /// <summary>把手回中并清空方向输出</summary>
@@ -118,5 +133,53 @@ namespace SuperQQ.UI
                 handle.anchoredPosition = _handleHomePos;
             }
         }
+
+#if UNITY_EDITOR
+        // Gizmos 圆环分段数
+        private const int GizmoSegments = 48;
+
+        /// <summary>Scene 视图可视化：黄色 = 最大偏移半径，红色 = 中心死区</summary>
+        private void OnDrawGizmos()
+        {
+            RectTransform bg = background != null ? background : transform as RectTransform;
+            if (bg == null)
+            {
+                return;
+            }
+
+            Rect rect = bg.rect;
+            float range = handleRange > 0f ? handleRange : rect.width * 0.5f;
+            if (range <= 0f)
+            {
+                return;
+            }
+
+            // 底盘中心与局部 X/Y 单位向量换算到世界空间，兼容 Canvas 缩放与旋转
+            Vector3 center = bg.TransformPoint(new Vector3(
+                (0.5f - bg.pivot.x) * rect.width,
+                (0.5f - bg.pivot.y) * rect.height, 0f));
+            Vector3 right = bg.TransformVector(Vector3.right);
+            Vector3 up = bg.TransformVector(Vector3.up);
+
+            DrawGizmoCircle(center, right, up, range, Color.yellow);
+            if (deadZone > 0f)
+            {
+                DrawGizmoCircle(center, right, up, range * deadZone, Color.red);
+            }
+        }
+
+        private static void DrawGizmoCircle(Vector3 center, Vector3 right, Vector3 up, float radius, Color color)
+        {
+            Gizmos.color = color;
+            Vector3 prev = center + right * radius;
+            for (int i = 1; i <= GizmoSegments; i++)
+            {
+                float angle = i * (Mathf.PI * 2f) / GizmoSegments;
+                Vector3 next = center + right * (Mathf.Cos(angle) * radius) + up * (Mathf.Sin(angle) * radius);
+                Gizmos.DrawLine(prev, next);
+                prev = next;
+            }
+        }
+#endif
     }
 }
