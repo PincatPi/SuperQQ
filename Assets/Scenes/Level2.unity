@@ -7830,8 +7830,8 @@ MonoBehaviour:
   placeStateReportRate: 10
   confirmPlaceButtonPrefab: {fileID: 3741916390764766324, guid: 889e84104d5d343e1a94c1caf0ef96b0, type: 3}
   rotatePlaceButtonPrefab: {fileID: 9130994873799658821, guid: 58fbba60e81c744e6a0ed3897d2ce7bd, type: 3}
-  confirmButtonOffset: {x: 70, y: 24}
-  rotateButtonOffset: {x: -70, y: 24}
+  confirmButtonOffset: {x: 50, y: 24}
+  rotateButtonOffset: {x: -50, y: 24}
   pointerLiftPixels: 200
   dragThresholdPixels: 12
   liftRampTime: 0.12

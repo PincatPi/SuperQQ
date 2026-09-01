@@ -17,9 +17,11 @@ MonoBehaviour:
   _chantPromptPrefab: {fileID: 1547929648626745103, guid: 631660be41b5c4ba39f179502d273c83, type: 3}
   _promptText: "\u8BF7\u541F\u5531"
   _cooldownText: "\u51B7\u5374\u4E2D\u2026"
+  _spellActiveText: "\u5492\u8BED\u751F\u6548\u4E2D"
   _castSuccessText: "\u65BD\u6CD5\u6210\u529F"
   _chantFailedText: "\u541F\u5531\u5931\u8D25"
   _promptOffset: {x: 0, y: 2}
+  _surroundingPromptText: 
   _bEnableVoiceChant: 1
   _chantDurationSeconds: 3.5
   _spells:

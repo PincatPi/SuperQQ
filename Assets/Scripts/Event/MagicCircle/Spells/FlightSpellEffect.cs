@@ -38,6 +38,10 @@ namespace SuperQQ.Event
         [Tooltip("效果生效时播放的 Tips 文本内容（经 PopupManager 播放，留空则不播放）")]
         [SerializeField] private string _activateTipText = "中国人能飞！";
 
+        [Tooltip("生效 Tips 展示时长（秒）：到时长自动关闭。非正时使用 Tips 注册表默认时长")]
+        [Min(0f)]
+        [SerializeField] private float _activateTipDuration = 3f;
+
         [Header("音效")]
         [Tooltip("飞行循环音效：按住跳跃键开始循环播放，松开后音量渐小直至消失（Clip 在 AudioCatalog 资产中按 Id 拖配）；None 表示静默")]
         [SerializeField] private SfxId _flightLoopSfx = SfxId.FlightLoop;
@@ -97,7 +101,7 @@ namespace SuperQQ.Event
         }
 
         /// <summary>
-        /// 播放效果生效 Tips（通用 Tips 类型，自动关闭时长用注册表默认）；
+        /// 播放效果生效 Tips（通用 Tips 类型，按 _activateTipDuration 时长自动关闭）；
         /// 文本未配置或 PopupManager 缺失时静默跳过
         /// </summary>
         private void ShowActivateTip()
@@ -113,7 +117,7 @@ namespace SuperQQ.Event
                 return;
             }
 
-            PopupManager.Instance.ShowTips(TipsType.Common, _activateTipText);
+            PopupManager.Instance.ShowTips(TipsType.Common, _activateTipText, _activateTipDuration);
         }
 
         /// <summary>
