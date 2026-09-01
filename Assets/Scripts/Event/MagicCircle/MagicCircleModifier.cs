@@ -23,10 +23,17 @@ namespace SuperQQ.Event
     /// 提示框为屏幕空间 UI，实例化到主 Canvas 下，位置 = 法阵位置 + 可配置偏移（随相机实时换算）
     /// 在 Project 窗口选中本资产时，Scene 视图会标注法阵位置与提示框偏移（均可拖拽调节）
     /// 所有策划参数均在本资产上配置；运行时状态（法阵实例、提示框实例）不序列化
+    /// 激活时机：法阵需要在道具放置阶段就出现（便于玩家围绕法阵摆放道具），
+    /// 故重写 BActivateDuringPlacement 为 true，放置阶段即激活并持续整场游玩阶段
     /// </summary>
     [CreateAssetMenu(fileName = "MagicCircleModifier", menuName = "SuperQQ/Event/Magic Circle Modifier")]
     public class MagicCircleModifier : LevelEventModifier, IServerDrivenRandomEvent3
     {
+        /// <summary>
+        /// 法阵在道具放置阶段提前激活（其余事件保持游玩阶段才激活）
+        /// </summary>
+        public override bool BActivateDuringPlacement => true;
+
         [Header("法阵")]
         [Tooltip("法阵 Prefab（根节点需挂 MagicCircle 脚本与 Trigger 碰撞体，碰撞体形状即触发范围），激活时在固定位置实例化")]
         [SerializeField] private MagicCircle _circlePrefab;

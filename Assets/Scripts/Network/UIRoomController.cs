@@ -182,7 +182,7 @@ namespace SuperQQ.Network
                         : playerId);
                 // 诊断日志：排查服务端房间数据是否下发了 nickname，验证后可删除
                 Debug.Log($"[Room] 槽位{i}: playerId={playerId} 服务端nickname='{serverNickname}' 显示='{nickname}'");
-                view.SetSlotPlayer(i, nickname, ready);
+                view.SetSlotPlayer(i, nickname, ready, playerId == _net.LocalPlayerId);
             }
             view.SetReadyProgress(readyCount, _room.Players.Count);
 

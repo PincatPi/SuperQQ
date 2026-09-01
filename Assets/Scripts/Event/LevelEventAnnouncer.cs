@@ -13,7 +13,8 @@ namespace SuperQQ.Event
     /// 事件选定后：
     ///   - 待进入 Playing 游玩阶段时，通过 PopupManager 依次播放每个事件的说明弹窗（3秒自动销毁），
     ///     并调用每个事件对应 LevelEventModifier 的 Activate 方法启动事件逻辑
-    ///     （事件计时与弹窗播报统一从游玩阶段起算，道具选择/放置阶段不推进计时、不出现弹窗）
+    ///     （事件计时与弹窗播报统一从游玩阶段起算，道具选择/放置阶段不推进计时、不出现弹窗；
+    ///     例外：标记 BActivateDuringPlacement 的 Modifier（如法阵）在道具放置阶段即提前激活，持续整场）
     /// 游玩阶段结束时停止弹窗播放并调用所有 Modifier 的 Deactivate 进行清理（事件随阶段结束而结束）；
     /// 场景销毁时同样调用 Deactivate 兜底
     /// 选取决策已抽离到 LevelEventSelector（纯 C#，可单元测试），本类只负责调度与播报
@@ -46,6 +47,9 @@ namespace SuperQQ.Event
 
         // 是否已激活事件 Modifier（游玩阶段闸门保证只激活一次）
         private bool _bModifiersActivated;
+
+        // 是否已激活"放置阶段提前激活"的 Modifier（如法阵；放置阶段闸门保证只激活一次）
+        private bool _bPlacementModifiersActivated;
 
         // 弹窗依次播放的协程引用
         private Coroutine _popupPlaybackCoroutine;
@@ -204,6 +208,7 @@ namespace SuperQQ.Event
             StopPopupPlayback();
             DeactivateAllModifiers();
             _bModifiersActivated = false;
+            _bPlacementModifiersActivated = false;
         }
 
         /// <summary>
@@ -538,6 +543,7 @@ namespace SuperQQ.Event
         /// 游玩阶段闸门：事件 Modifier 的计时（首次落石延迟、随机触发时机等）从
         /// Playing 游玩阶段开始才起算，事件说明弹窗也在进入游玩阶段后才播放，
         /// 道具选择/放置等其它阶段不推进事件计时、不出现事件弹窗
+        /// 例外：标记 BActivateDuringPlacement 的 Modifier（如法阵）在道具放置阶段即提前激活
         /// 当前已在游玩阶段或场景中无 GamePhaseManager（纯测试场景）时立即执行；
         /// 否则订阅阶段切换事件，待进入游玩阶段时执行
         /// </summary>
@@ -551,15 +557,29 @@ namespace SuperQQ.Event
                 return;
             }
 
+            // 事件选取完成时若已处于道具放置阶段（如单机首轮），提前激活类事件立即激活
+            if (phaseManager.CurrentPhaseAsset is PropPlacementPhase)
+            {
+                ActivatePlacementModifiers();
+            }
+
             phaseManager.OnPhaseChanged += HandlePhaseChangedForActivation;
         }
 
         /// <summary>
-        /// 阶段切换回调：进入游玩阶段时激活事件 Modifier 并播放事件说明弹窗，随后退订（只执行一次）
+        /// 阶段切换回调：进入道具放置阶段时提前激活标记 BActivateDuringPlacement 的 Modifier（不退订）；
+        /// 进入游玩阶段时激活其余事件 Modifier 并播放事件说明弹窗，随后退订（只执行一次）
         /// 单机走本地条件转移、联机走服务器 GamePhaseSync，二者均经 EnterPhase 触发本事件
         /// </summary>
         private void HandlePhaseChangedForActivation(GamePhaseBase previousPhase, GamePhaseBase nextPhase)
         {
+            // 道具放置阶段：仅提前激活放置阶段类事件（如法阵），其余事件与弹窗仍待游玩阶段
+            if (nextPhase is PropPlacementPhase)
+            {
+                ActivatePlacementModifiers();
+                return;
+            }
+
             if (!(nextPhase is PlayingPhase))
             {
                 return;
@@ -577,7 +597,8 @@ namespace SuperQQ.Event
         /// <summary>
         /// 激活本关所有选中事件对应的 Modifier
         /// 直接遍历条目引用调用 Modifier.Activate，无需按枚举回查配置表
-        /// 幂等：游玩阶段闸门保证只激活一次，重复调用为空操作
+        /// 幂等：游玩阶段闸门保证只激活一次，重复调用为空操作；
+        /// 放置阶段已提前激活的 Modifier（如法阵）跳过，不重复激活
         /// </summary>
         private void ActivateSelectedModifiers()
         {
@@ -589,9 +610,40 @@ namespace SuperQQ.Event
 
             for (int i = 0; i < _selectedEntries.Count; i++)
             {
-                if (_selectedEntries[i].Modifier != null)
+                LevelEventModifier modifier = _selectedEntries[i].Modifier;
+                if (modifier == null)
                 {
-                    _selectedEntries[i].Modifier.Activate(_eventContext);
+                    continue;
+                }
+
+                // 放置阶段已提前激活的 Modifier 不再重复激活（其生命周期覆盖放置+游玩整场）
+                if (_bPlacementModifiersActivated && modifier.BActivateDuringPlacement)
+                {
+                    continue;
+                }
+
+                modifier.Activate(_eventContext);
+            }
+        }
+
+        /// <summary>
+        /// 激活本关选中事件中标记 BActivateDuringPlacement 的 Modifier（如法阵）
+        /// 仅道具放置阶段闸门调用；幂等：重复调用为空操作
+        /// </summary>
+        private void ActivatePlacementModifiers()
+        {
+            if (_bPlacementModifiersActivated || _bModifiersActivated || _eventContext == null)
+            {
+                return;
+            }
+            _bPlacementModifiersActivated = true;
+
+            for (int i = 0; i < _selectedEntries.Count; i++)
+            {
+                LevelEventModifier modifier = _selectedEntries[i].Modifier;
+                if (modifier != null && modifier.BActivateDuringPlacement)
+                {
+                    modifier.Activate(_eventContext);
                 }
             }
         }

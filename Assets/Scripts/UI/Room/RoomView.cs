@@ -420,11 +420,15 @@ namespace SuperQQ.UI
             }
         }
 
-        /// <summary>填充指定槽位的玩家信息（昵称 + 准备状态文本）</summary>
-        public void SetSlotPlayer(int index, string playerName, bool isReady)
+        /// <summary>填充指定槽位的玩家信息（昵称 + 准备状态文本），并告知是否为本地玩家（驱动 PlayerSlot 高亮）</summary>
+        public void SetSlotPlayer(int index, string playerName, bool isReady, bool isLocal = false)
         {
             RoomSlotView slot = GetSlotView(index);
             if (slot != null) slot.SetPlayer(playerName, isReady);
+
+            if (slots == null || index < 0 || index >= slots.Length || slots[index] == null) return;
+            PlayerSlot playerSlot = slots[index].GetComponent<PlayerSlot>();
+            if (playerSlot != null) playerSlot.SetLocalHighlight(isLocal);
         }
 
         /// <summary>获取槽位子视图：未挂 RoomSlotView 时自动挂载（其 Awake 会按名字自动绑定子物体）</summary>

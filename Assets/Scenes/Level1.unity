@@ -1057,7 +1057,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 7.1676006, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3786,7 +3786,7 @@ Transform:
   m_GameObject: {fileID: 2045586317}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 7.1676006, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4022,6 +4022,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2139680713}
   - component: {fileID: 2139680714}
+  - component: {fileID: 2139680715}
   m_Layer: 5
   m_Name: PlayerNameLabelManager
   m_TagString: Untagged
@@ -4065,6 +4066,23 @@ MonoBehaviour:
   _labelSize: {x: 120, y: 30}
   _outlineWidth: 0.5
   _outlineColor: {r: 0, g: 0, b: 0, a: 1}
+--- !u!114 &2139680715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2139680712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 082e1daf83c5d4dcab8d4e8d486b7bd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _arrowSprite: {fileID: 21300000, guid: 61ebf1d354b9544388422295be709ce4, type: 3}
+  _arrowSize: {x: 40, y: 40}
+  _worldOffset: {x: 0, y: 2, z: 0}
+  _bobAmplitude: 5
+  _bobSpeed: 1
 --- !u!224 &209188377037790386 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7439057468781681768, guid: 3a9955499897e44eb9f35c3c5f2754ec, type: 3}

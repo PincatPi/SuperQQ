@@ -4248,6 +4248,7 @@ GameObject:
   - component: {fileID: 893851906}
   - component: {fileID: 893851905}
   - component: {fileID: 893851907}
+  - component: {fileID: 893851908}
   m_Layer: 0
   m_Name: Slot_3
   m_TagString: Untagged
@@ -4337,6 +4338,22 @@ MonoBehaviour:
   readyStateBgImage: {fileID: 217863116}
   readyBgColor: {r: 1, g: 0.7882353, b: 0.4117647, a: 1}
   notReadyBgColor: {r: 0.3019608, g: 0.6313726, b: 0.9607843, a: 1}
+--- !u!114 &893851908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 893851902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1e452884cbc247799855ca4b63c49cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerNameText: {fileID: 1704676185}
+  slotImage: {fileID: 893851905}
+  highlightColor: {r: 1, g: 0.9137255, b: 0.78039217, a: 1}
+  refreshInterval: 0.2
 --- !u!1 &955142659
 GameObject:
   m_ObjectHideFlags: 0
@@ -6454,6 +6471,22 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 2261649615991189091, guid: 904199ed5ed7e46b0b7539183fcd4c67, type: 3}
   m_PrefabInstance: {fileID: 91254869597015220}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1446024152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1446024150}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1e452884cbc247799855ca4b63c49cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerNameText: {fileID: 91254869597015222}
+  slotImage: {fileID: 91254869597015223}
+  highlightColor: {r: 1, g: 0.9137255, b: 0.78039217, a: 1}
+  refreshInterval: 0.2
 --- !u!21 &1479685668
 Material:
   serializedVersion: 8
@@ -7143,6 +7176,7 @@ GameObject:
   - component: {fileID: 1613893859}
   - component: {fileID: 1613893858}
   - component: {fileID: 1613893860}
+  - component: {fileID: 1613893861}
   m_Layer: 0
   m_Name: Slot_4
   m_TagString: Untagged
@@ -7232,6 +7266,22 @@ MonoBehaviour:
   readyStateBgImage: {fileID: 325491656}
   readyBgColor: {r: 1, g: 0.7882353, b: 0.4117647, a: 1}
   notReadyBgColor: {r: 0.3019608, g: 0.6313726, b: 0.9607843, a: 1}
+--- !u!114 &1613893861
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1613893855}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1e452884cbc247799855ca4b63c49cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerNameText: {fileID: 1585379251}
+  slotImage: {fileID: 1613893858}
+  highlightColor: {r: 1, g: 0.9137255, b: 0.78039217, a: 1}
+  refreshInterval: 0.2
 --- !u!1 &1622966374
 GameObject:
   m_ObjectHideFlags: 0
@@ -9504,6 +9554,7 @@ GameObject:
   - component: {fileID: 2034302698}
   - component: {fileID: 2034302697}
   - component: {fileID: 2034302699}
+  - component: {fileID: 2034302700}
   m_Layer: 0
   m_Name: Slot_2
   m_TagString: Untagged
@@ -9593,6 +9644,22 @@ MonoBehaviour:
   readyStateBgImage: {fileID: 637775996}
   readyBgColor: {r: 1, g: 0.7882353, b: 0.4117647, a: 1}
   notReadyBgColor: {r: 0.3019608, g: 0.6313726, b: 0.9607843, a: 1}
+--- !u!114 &2034302700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2034302694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1e452884cbc247799855ca4b63c49cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerNameText: {fileID: 326135161}
+  slotImage: {fileID: 2034302697}
+  highlightColor: {r: 1, g: 0.9137255, b: 0.78039217, a: 1}
+  refreshInterval: 0.2
 --- !u!21 &2047096263
 Material:
   serializedVersion: 8
@@ -10208,7 +10275,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1382973661427306693, guid: 904199ed5ed7e46b0b7539183fcd4c67, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1446024152}
   m_SourcePrefab: {fileID: 100100000, guid: 904199ed5ed7e46b0b7539183fcd4c67, type: 3}
 --- !u!114 &91254869597015221 stripped
 MonoBehaviour:
@@ -10216,6 +10286,28 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 91254869597015220}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &91254869597015222 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1497135169103527978, guid: 904199ed5ed7e46b0b7539183fcd4c67, type: 3}
+  m_PrefabInstance: {fileID: 91254869597015220}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &91254869597015223 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2675691518747851571, guid: 904199ed5ed7e46b0b7539183fcd4c67, type: 3}
+  m_PrefabInstance: {fileID: 91254869597015220}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1446024150}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}

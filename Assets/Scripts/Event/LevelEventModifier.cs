@@ -11,6 +11,13 @@ namespace SuperQQ.Event
     public abstract class LevelEventModifier : ScriptableObject
     {
         /// <summary>
+        /// 是否在道具放置阶段提前激活：默认 false（与其余事件一致，进入游玩阶段时才激活）；
+        /// 需要在放置阶段就出现的场景表现类事件（如法阵）可重写为 true。
+        /// 仅影响激活时机：停用仍统一在游玩阶段结束时进行（放置阶段激活的事件会持续整场）
+        /// </summary>
+        public virtual bool BActivateDuringPlacement => false;
+
+        /// <summary>
         /// 激活事件：启动事件逻辑
         /// 由 LevelEventAnnouncer 在事件被选中时调用
         /// </summary>

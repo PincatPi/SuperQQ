@@ -6762,6 +6762,30 @@ PrefabInstance:
       propertyPath: handleRange
       value: 40
       objectReference: {fileID: 0}
+    - target: {fileID: 2264177915676043137, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 2264177915676043137, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 2264177915676043137, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 2993865648650010266, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 2993865648650010266, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 2993865648650010266, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -40
+      objectReference: {fileID: 0}
     - target: {fileID: 3654162602425015535, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
       propertyPath: m_Name
       value: MobileInputPanel
@@ -6845,6 +6869,30 @@ PrefabInstance:
     - target: {fileID: 4240037364533582284, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4743593623425987907, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 4743593623425987907, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 4743593623425987907, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -40
+      objectReference: {fileID: 0}
+    - target: {fileID: 9016484228348718101, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 9016484228348718101, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 9016484228348718101, guid: 471766789e47b5d4da5b7940c3138bff, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 40
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8018,6 +8066,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1664585789}
   - component: {fileID: 1664585790}
+  - component: {fileID: 1664585791}
   m_Layer: 5
   m_Name: PlayerNameLabelManager
   m_TagString: Untagged
@@ -8061,6 +8110,23 @@ MonoBehaviour:
   _labelSize: {x: 120, y: 30}
   _outlineWidth: 0.5
   _outlineColor: {r: 0, g: 0, b: 0, a: 1}
+--- !u!114 &1664585791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1664585788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 082e1daf83c5d4dcab8d4e8d486b7bd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _arrowSprite: {fileID: 21300000, guid: 61ebf1d354b9544388422295be709ce4, type: 3}
+  _arrowSize: {x: 40, y: 40}
+  _worldOffset: {x: 0, y: 2, z: 0}
+  _bobAmplitude: 5
+  _bobSpeed: 1
 --- !u!1 &1722586202
 GameObject:
   m_ObjectHideFlags: 0
