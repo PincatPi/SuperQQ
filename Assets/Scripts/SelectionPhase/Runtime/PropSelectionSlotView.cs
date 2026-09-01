@@ -5,8 +5,9 @@ using UnityEngine.UI;
 namespace SuperQQ.Selection.Runtime
 {
     /// <summary>
-    /// 道具选择槽位视图：展示候选道具的图标，响应点击并向 Director 发起选中请求。
-    /// 被认领后显示认领者颜色标记并关闭点击；本地玩家完成认领后全部槽位对本地锁定。
+    /// 道具选择槽位视图：展示候选道具的图标，响应点击并回传 Director 分流
+    /// （未认领且本地未选定 → 发起选中；已认领或本地已选定 → 仅播放演示视频）。
+    /// 被认领后显示认领者颜色标记；按钮始终保持可点击（点已认领槽位用于看演示）。
     ///
     /// 无需在 Inspector 拖拽任何引用，Awake 按以下子物体命名约定自动识别（均可选）：
     ///   ItemIcon     （Image，道具图标；缺失时兜底取第一个非根物体上的 Image）
@@ -32,6 +33,7 @@ namespace SuperQQ.Selection.Runtime
 
         private PropSelectionDirector owner;
         private int slotIndex = -1;
+        private bool claimed;       // 是否已被认领（已认领槽位的点击仅用于播放演示视频）
 
         /// <summary>本槽位对应的候选下标</summary>
         public int SlotIndex => slotIndex;
@@ -93,11 +95,15 @@ namespace SuperQQ.Selection.Runtime
             }
         }
 
-        /// <summary>标记该槽位已被认领：显示认领者颜色标记与选中图标、认领者头像，关闭点击</summary>
+        /// <summary>
+        /// 标记该槽位已被认领：显示认领者颜色标记与选中图标、认领者头像。
+        /// 按钮保持可点击：此后点击仅播放演示视频，不再触发选中逻辑（由 Director 分流）。
+        /// </summary>
         /// <param name="claimerColor">认领者的玩家颜色</param>
         /// <param name="claimerIcon">认领者的 PlayerIcon（选择阶段标识图），可为 null</param>
         public void SetClaimed(Color claimerColor, Sprite claimerIcon = null)
         {
+            claimed = true;
             if (claimMarker != null)
             {
                 claimMarker.color = claimerColor;
@@ -114,19 +120,15 @@ namespace SuperQQ.Selection.Runtime
                 claimerIconImage.preserveAspect = true;
                 claimerIconImage.gameObject.SetActive(true);
             }
-            if (button != null)
-            {
-                button.interactable = false;
-            }
         }
 
-        /// <summary>锁定/解锁本地点击（本地玩家完成认领后锁定全部槽位）</summary>
+        /// <summary>
+        /// 锁定/解锁本地选中行为（本地玩家完成认领后锁定全部槽位）。
+        /// 不再关闭按钮：锁定期间点击仅播放演示视频，选中拦截由 Director 按会话状态判定。
+        /// </summary>
         public void SetLocalInputLocked(bool bLocked)
         {
-            if (button != null)
-            {
-                button.interactable = !bLocked;
-            }
+            // 表现上无需处理：点击入口始终保留，行为分流见 PropSelectionDirector.HandleSlotClicked
         }
 
         // ==================== 引用自动识别 ====================
@@ -200,7 +202,7 @@ namespace SuperQQ.Selection.Runtime
         {
             if (owner != null && slotIndex >= 0)
             {
-                owner.TrySelectLocal(slotIndex);
+                owner.HandleSlotClicked(slotIndex, claimed);
             }
         }
     }

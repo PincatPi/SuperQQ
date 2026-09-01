@@ -384,7 +384,37 @@ namespace SuperQQ.Selection.Runtime
         // ==================== 选中入口 ====================
 
         /// <summary>
-        /// 本地玩家点击槽位时发起选中（由 PropSelectionSlotView 回传）。
+        /// 槽位点击总入口（由 PropSelectionSlotView 回传），按状态分流：
+        /// 槽位已被认领，或本地玩家已完成选择 → 仅播放该道具的演示视频，
+        /// 不执行任何选择/预选逻辑（不发认领意图、不飞图标、不出打勾按钮）；
+        /// 否则走正常选中流程 <see cref="TrySelectLocal"/>。
+        /// </summary>
+        public void HandleSlotClicked(int slotIndex, bool bClaimed)
+        {
+            if (!BIsActive || session == null)
+            {
+                return;
+            }
+
+            if (bClaimed || BIsLocalSelectionDone)
+            {
+                PreviewSlotIntro(slotIndex);
+                return;
+            }
+
+            TrySelectLocal(slotIndex);
+        }
+
+        /// <summary>仅播放指定槽位道具的演示视频（纯本地表现，气泡自动避让该槽位）</summary>
+        private void PreviewSlotIntro(int slotIndex)
+        {
+            PropSelectionSlotView view = FindSlotView(slotIndex);
+            SlotIntroVideoPlayer.Show(ResolveItemIdAtSlot(slotIndex),
+                view != null ? (RectTransform)view.transform : null);
+        }
+
+        /// <summary>
+        /// 本地玩家点击未认领槽位时发起选中。
         /// 玩家图标先飞向槽位，到达后才正式认领生效。
         /// </summary>
         public void TrySelectLocal(int slotIndex)
