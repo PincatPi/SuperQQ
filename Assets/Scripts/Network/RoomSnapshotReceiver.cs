@@ -173,6 +173,21 @@ namespace SuperQQ.Network
         // 已恢复的远端道具：anchorCell key -> 实例，避免每次快照重复生成
         private readonly HashSet<string> _restoredItems = new();
 
+        // 本地兜底拆除但服务器未裁定（placed_items 中仍存在）的道具 key：
+        // 阻止 RestorePlacedItems 把已拆道具重新生成（"复活"）。
+        // 跨轮次保留——服务器的陈旧记录不会自行消失；退房时随 ClearRoomState 清空
+        private readonly HashSet<string> _demolishedItems = new();
+
+        /// <summary>
+        /// 标记某锚点的道具已被本地兜底拆除（PropPlacementDirector 收到拆除结果时调用）：
+        /// 之后快照恢复跳过该条目，防止已拆道具被快照重新生成
+        /// </summary>
+        public void MarkItemDemolished(string itemId, Vector2Int anchor)
+        {
+            if (string.IsNullOrEmpty(itemId)) return;
+            _demolishedItems.Add($"{itemId}_{anchor.x}_{anchor.y}");
+        }
+
         /// <summary>
         /// 新一轮开始（进入道具选择阶段）时清空已恢复记录：
         /// 本组件跨场景存活，不清空会导致新一轮同 itemId 同锚点的道具被误判"已恢复"而永远补不出来
@@ -190,6 +205,7 @@ namespace SuperQQ.Network
             LatestSnapshot = null;
             _remotePlayers.Clear();
             _restoredItems.Clear();
+            _demolishedItems.Clear();
             _firstSnapshotLogged = false;
             _bHadEvent3States = false;
             _bLoggedMissingEventParams = false;
@@ -221,6 +237,7 @@ namespace SuperQQ.Network
 
                 string key = $"{placed.ItemId}_{placed.AnchorCell.X}_{placed.AnchorCell.Y}";
                 if (_restoredItems.Contains(key)) continue;
+                if (_demolishedItems.Contains(key)) continue; // 本地已兜底拆除：服务器记录陈旧，跳过防止复活
 
                 ItemBase prefab = FindItemPrefab(placed.ItemId);
                 if (prefab == null)

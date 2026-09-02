@@ -25,7 +25,7 @@ namespace SuperQQ.Network
         /// 未写入时回退 GameObject 名去 "(Clone)" 后缀后再经目录反查数字 ID，
         /// 保证所有者端上报的实例键与远端登记键一致（远端实体名带 "RemotePlaced_" 等前缀）
         /// </summary>
-        private static string ResolveItemId(ItemBase item)
+        public static string ResolveItemId(ItemBase item)
         {
             if (item == null) return string.Empty;
             if (!string.IsNullOrEmpty(item.NetItemId)) return item.NetItemId;

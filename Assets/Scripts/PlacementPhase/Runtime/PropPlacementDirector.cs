@@ -1154,14 +1154,15 @@ namespace SuperQQ.Placement.Runtime
                 removedAnchors.Add(new Vector2Int(removed.AnchorCell.X, removed.AnchorCell.Y));
             }
             HashSet<Vector2Int> localTargets = CollectDemolishTargetsLocally(result);
-            int localExtra = 0;
+            var localExtras = new List<Vector2Int>();
             foreach (Vector2Int a in localTargets)
             {
                 if (removedAnchors.Add(a))
                 {
-                    localExtra++;
+                    localExtras.Add(a);
                 }
             }
+            int localExtra = localExtras.Count;
             if (result.RemovedItems.Count == 0 && localTargets.Count > 0)
             {
                 Debug.LogWarning($"{LOG_TAG} 服务器 removed_items 为空，本地按爆破范围兜底拆除 {localTargets.Count} 个道具（各端计算口径一致时结果相同）");
@@ -1170,6 +1171,11 @@ namespace SuperQQ.Placement.Runtime
             {
                 Debug.LogWarning($"{LOG_TAG} 服务器裁定漏掉 {localExtra} 个目标（可能是多格道具的非锚点格），本地兜底补齐");
             }
+
+            // 兜底拆除的目标服务器并不知情：其记录仍留在快照 placed_items 里，
+            // 必须在引爆销毁实体之前（NetItemId 还可读）标记到快照恢复侧，
+            // 否则下一个 RoomSnapshot 到达时会把已拆道具重新生成（"复活"）
+            MarkDemolishedInSnapshot(localExtras);
 
             if (isMine)
             {
@@ -1233,8 +1239,11 @@ namespace SuperQQ.Placement.Runtime
 
         /// <summary>
         /// 本地计算拆除目标：按炸弹锚点+footprint 得出爆破范围格子，
-        /// 取与占据表的交集（排除炸弹自身锚点），返回目标道具锚点集合。
+        /// 取与占据表的交集，返回目标道具锚点集合。
         /// 与 DemolitionItemBase.CollectTargetsInArea 口径一致。
+        /// 注意：不排除炸弹锚点格——拆除类道具 RegistersOccupancy=false，从不登记占据，
+        /// 锚点格上的占据物（如被炸弹直接压住的玻璃球）是合法拆除目标；
+        /// 排除掉会导致"炸弹正好压在目标上时目标存活"，且服务器 removed=0 时各端一致漏拆。
         /// </summary>
         private static HashSet<Vector2Int> CollectDemolishTargetsLocally(ItemDemolishResult result)
         {
@@ -1255,10 +1264,8 @@ namespace SuperQQ.Placement.Runtime
                 for (int dy = 0; dy < size.y; dy++)
                 {
                     Vector2Int cell = new Vector2Int(anchor.x + dx, anchor.y + dy);
-                    if (cell == anchor)
-                    {
-                        continue; // 排除炸弹自身
-                    }
+                    // 无需跳过锚点格：炸弹自身不登记占据，GetItemAt 不会返回炸弹，
+                    // 锚点格上的占据物（被炸弹压住的道具）正是要拆除的目标
                     PlacedItem target = grid.GetItemAt(cell);
                     // 只消除道具（有 ItemBase 的占据物）：Map 下的关卡物体（船/平台等）
                     // 也登记在占据表中但没有 ItemBase，一律不可被消除
@@ -1275,6 +1282,35 @@ namespace SuperQQ.Placement.Runtime
         private static ItemBase FindPoolItemStatic(string itemId)
         {
             return Instance != null ? Instance.FindPoolItem(itemId) : null;
+        }
+
+        /// <summary>
+        /// 把本地兜底拆除（服务器未裁定）的目标标记到快照恢复侧：
+        /// 服务器 placed_items 仍包含这些道具，不标记会被 RoomSnapshotReceiver 按快照重新生成。
+        /// 需在目标实体销毁前调用（依赖占据表读取 NetItemId 拼快照 key）
+        /// </summary>
+        private static void MarkDemolishedInSnapshot(List<Vector2Int> extras)
+        {
+            if (extras == null || extras.Count == 0)
+            {
+                return;
+            }
+            GridManager grid = GridManager.Instance;
+            var receiver = FindFirstObjectByType<SuperQQ.Network.RoomSnapshotReceiver>();
+            if (grid == null || receiver == null)
+            {
+                return;
+            }
+            foreach (Vector2Int anchor in extras)
+            {
+                PlacedItem occupant = grid.GetItemAt(anchor);
+                ItemBase item = occupant != null ? occupant.GetComponent<ItemBase>() : null;
+                string itemId = SuperQQ.Network.ItemLifecycleSync.ResolveItemId(item);
+                if (!string.IsNullOrEmpty(itemId))
+                {
+                    receiver.MarkItemDemolished(itemId, anchor);
+                }
+            }
         }
 
         /// <summary>兜底：炸弹 prefab 缺失或组件缺失时，仅按服务器裁定执行移除</summary>
