@@ -12,8 +12,8 @@ namespace SuperQQ.Item
     public class RotatingToast : ItemBase
     {
         [Header("尺寸")]
-        [Tooltip("当前边长（格）：1 / 2 / 3，世界尺寸 = 格数 x cellSize")]
-        [SerializeField, Range(1, 3)] private int sizeInCells = 1;
+        [Tooltip("当前边长（格）：固定 3（历史随机已移除，运行期由 RotatingToastSizeSync 统一驱动）")]
+        [SerializeField, Range(1, 3)] private int sizeInCells = 3;
 
         [Header("旋转参数")]
         [Tooltip("转动 90° 的动画时长（秒）")]
@@ -45,12 +45,6 @@ namespace SuperQQ.Item
         /// <summary>搭路：可站立的旋转方块</summary>
         public override ItemCategory Category => ItemCategory.Path;
 
-        /// <summary>是否处于联机房间中（联机下尺寸由放置者随机+服务器广播，本端不自行随机）</summary>
-        private static bool BNetRoom =>
-            SuperQQ.Network.NetworkManager.Instance != null
-            && SuperQQ.Network.NetworkManager.Instance.IsConnected
-            && !string.IsNullOrEmpty(SuperQQ.Network.NetworkManager.Instance.RoomId);
-
         /// <summary>当前边长（格）</summary>
         public int SizeInCells => sizeInCells;
         /// <summary>当前是否顺时针</summary>
@@ -75,15 +69,10 @@ namespace SuperQQ.Item
             baseRotation = transform.rotation;
             appliedSize = Mathf.Clamp(sizeInCells, 1, 3); // 以 prefab 当前配置为已应用基准
 
-            // 应用本轮已决定的尺寸（尺寸同步先于实例化发生时生效）
-            if (RotatingToastSizeSync.CurrentSize > 0 && RotatingToastSizeSync.CurrentSize != sizeInCells)
+            // 应用固定尺寸（CurrentSize 恒为 FixedSize，覆盖 prefab 上可能残留的旧尺寸）
+            if (RotatingToastSizeSync.CurrentSize != sizeInCells)
             {
                 SetSize(RotatingToastSizeSync.CurrentSize);
-            }
-            // 单机兜底：无联机房间且尺寸未决定时本地随机（联机模式由放置者 DecideSizeLocally 后经服务器广播，远端等待同步）
-            if (RotatingToastSizeSync.CurrentSize <= 0 && !BNetRoom)
-            {
-                RotatingToastSizeSync.DecideSizeLocally();
             }
             RotatingToastSizeSync.Register(this);
         }

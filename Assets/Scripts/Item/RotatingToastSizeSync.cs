@@ -19,8 +19,8 @@ namespace SuperQQ.Item
         /// <summary>固定尺寸（格）：吐司固定 3x3，不再随机</summary>
         public const int FixedSize = 3;
 
-        /// <summary>本轮尺寸（固定为 FixedSize；0=尚未决定）</summary>
-        public static int CurrentSize { get; private set; }
+        /// <summary>本轮尺寸（固定为 FixedSize；初始即为 FixedSize，不存在"未决定"状态）</summary>
+        public static int CurrentSize { get; private set; } = FixedSize;
 
         /// <summary>
         /// 上传钩子：房主端本地随机完成后调用，参数为本轮尺寸。
@@ -109,10 +109,10 @@ namespace SuperQQ.Item
             }
         }
 
-        /// <summary>新一轮/退出房间时清空</summary>
+        /// <summary>新一轮/退出房间时清空（尺寸保持 FixedSize，不回到未决定状态）</summary>
         public static void ClearAll()
         {
-            CurrentSize = 0;
+            CurrentSize = FixedSize;
             _instances.Clear();
         }
     }
