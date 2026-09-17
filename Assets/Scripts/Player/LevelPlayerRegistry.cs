@@ -530,6 +530,7 @@ namespace SuperQQ.Player
                 _players.Add(player);
                 _playerStates[player] = PlayerStateType.Alive;
                 _initialSpawnPositions[player] = player.transform.position;
+                ApplySpriteSorting(player);
                 OnPlayersChanged?.Invoke();
             }
 
@@ -542,6 +543,40 @@ namespace SuperQQ.Player
                 {
                     profile.SelectionIcon = player.SelectionIconSprite;
                 }
+            }
+        }
+
+        /// <summary>
+        /// 为玩家 sprite 分配固定 sortingOrder，消除玩家重叠时的交替闪烁：
+        /// 本地玩家（1000 起）永远在远程玩家（100 起）之上；同组内按注册顺序错开，保证唯一。
+        /// 场景预置玩家在 Registry.Awake 注册时 PlayerController.Awake 可能尚未执行（Renderer 缓存未就绪），
+        /// 因此这里直接从子级查找 SpriteRenderer，不依赖 player.Renderer。
+        /// </summary>
+        /// <param name="player">新注册的玩家控制器</param>
+        private void ApplySpriteSorting(PlayerController player)
+        {
+            SpriteRenderer renderer = player.GetComponentInChildren<SpriteRenderer>();
+            if (renderer == null)
+            {
+                return;
+            }
+
+            if (player.BIsLocal)
+            {
+                // 本地玩家置顶；单机多本地玩家时按注册顺序依次错开
+                int localCount = 0;
+                for (int i = 0; i < _players.Count; i++)
+                {
+                    if (_players[i] != null && _players[i].BIsLocal)
+                    {
+                        localCount++;
+                    }
+                }
+                renderer.sortingOrder = 1000 + localCount;
+            }
+            else
+            {
+                renderer.sortingOrder = 100 + _players.Count;
             }
         }
 
