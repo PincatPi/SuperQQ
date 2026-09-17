@@ -139,6 +139,8 @@ MonoBehaviour:
   description: 
   placeSfx: 202
   exitOffset: {x: 0.5, y: 0}
+  playerTeleportDelay: 1.5
+  chantIndicatorPrefab: {fileID: 578829262011968326, guid: 62541641ca97944f1b910fb8b4c6457b, type: 3}
   exitPortalPrefab: {fileID: 8282279829162158160}
   exitSpawnCellOffset: {x: 3, y: 0}
   tintByPair: 1

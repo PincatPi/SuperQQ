@@ -1,5 +1,6 @@
 using SuperQQ.Grid;
 using SuperQQ.Player;
+using SuperQQ.UI;
 using UnityEngine;
 
 namespace SuperQQ.Item
@@ -46,6 +47,12 @@ namespace SuperQQ.Item
         [Header("传送")]
         [Tooltip("传送落点相对出口中心的偏移（避免玩家卡在出口几何体边缘）")]
         [SerializeField] private Vector2 exitOffset = Vector2.zero;
+        [Tooltip("玩家进入触发区后需持续停留的时长（秒）才触发传送；0 = 即触即传。仅对玩家生效，弹体不受影响")]
+        [SerializeField] private float playerTeleportDelay = 1.5f;
+
+        [Header("吟唱提示")]
+        [Tooltip("吟唱倒计时提示 prefab（挂 PortalChantIndicator + TMP 文本）；玩家开始停留计时在其头顶生成，传送/离开时销毁")]
+        [SerializeField] private GameObject chantIndicatorPrefab;
 
         [Header("出口生成")]
         [Tooltip("入口确认后生成的出口传送门预制体（由摆放流程经 SpawnChainedItem 取回）；留空则回退使用 Placed.Def.Prefab（场景手动摆放测试时 Def 为空，需在 Inspector 中配置本字段）")]
@@ -78,6 +85,11 @@ namespace SuperQQ.Item
         /// <summary>传送免疫中的玩家（刚被本对门传送过）：离开触发区前不再触发传送，防两端往返乒乓</summary>
         private readonly System.Collections.Generic.HashSet<PlayerController> _immunePlayers = new();
         private readonly System.Collections.Generic.List<PlayerController> _expiredImmunity = new();
+        /// <summary>停留计时中的玩家（已进入触发区、尚未住满 playerTeleportDelay）→ 已停留时长</summary>
+        private readonly System.Collections.Generic.Dictionary<PlayerController, float> _pendingPlayers = new();
+        private readonly System.Collections.Generic.List<PlayerController> _finishedPending = new();
+        /// <summary>玩家 → 该玩家的吟唱提示实例（生成于计时开始，销毁于传送/计时作废）</summary>
+        private readonly System.Collections.Generic.Dictionary<PlayerController, PortalChantIndicator> _chantIndicators = new();
         private Collider2D _triggerCollider;
 
         /// <summary>控制：改变玩家移动/状态</summary>
@@ -124,6 +136,13 @@ namespace SuperQQ.Item
         /// </summary>
         private void FixedUpdate()
         {
+            UpdateImmunity();
+            UpdatePendingPlayers();
+        }
+
+        /// <summary>免疫清理兜底（原 FixedUpdate 主体）</summary>
+        private void UpdateImmunity()
+        {
             if (_immunePlayers.Count == 0)
             {
                 return;
@@ -140,6 +159,68 @@ namespace SuperQQ.Item
             foreach (PlayerController player in _expiredImmunity)
             {
                 _immunePlayers.Remove(player);
+            }
+        }
+
+        /// <summary>停留计时到期、待循环结束后传送的玩家（Teleport 会改集合，不能在枚举中直接调）</summary>
+        private readonly System.Collections.Generic.List<PlayerController> _readyToTeleport = new();
+        /// <summary>计时键快照：Mono 运行时下字典索引器赋值（即使键已存在）也会使枚举失效，故先拷贝再遍历</summary>
+        private readonly System.Collections.Generic.List<PlayerController> _pendingKeysSnapshot = new();
+
+        /// <summary>
+        /// 玩家停留计时：持续接触本端触发区才累计时长，住满 playerTeleportDelay 即传送。
+        /// - 中途走出触发区（或死亡销毁）→ 计时作废，下次进入重新计
+        /// - 传送时再次校验 BAffectedByItems 与免疫状态（计时期间可能被击杀进入死亡过渡）
+        /// </summary>
+        private void UpdatePendingPlayers()
+        {
+            if (_pendingPlayers.Count == 0)
+            {
+                return;
+            }
+
+            _finishedPending.Clear();
+            _readyToTeleport.Clear();
+            _pendingKeysSnapshot.Clear();
+            _pendingKeysSnapshot.AddRange(_pendingPlayers.Keys);
+            foreach (PlayerController player in _pendingKeysSnapshot)
+            {
+                if (player == null || !IsPlayerTouching(player, this))
+                {
+                    // 走出/销毁：计时作废（走出的玩家同时由 OnTriggerExit2D 移除，此处兜底）
+                    _finishedPending.Add(player);
+                    continue;
+                }
+
+                float elapsed = _pendingPlayers[player] + Time.fixedDeltaTime;
+                if (elapsed >= playerTeleportDelay)
+                {
+                    _finishedPending.Add(player);
+                    // 住满时长：仍存活且不在免疫中才传送（免疫中的玩家本就未进入计时）
+                    if (player.BAffectedByItems && !_immunePlayers.Contains(player))
+                    {
+                        _readyToTeleport.Add(player);
+                    }
+                }
+                else
+                {
+                    _pendingPlayers[player] = elapsed;
+                    // 刷新吟唱提示剩余时间
+                    if (_chantIndicators.TryGetValue(player, out PortalChantIndicator indicator))
+                    {
+                        indicator.UpdateRemaining(playerTeleportDelay - elapsed);
+                    }
+                }
+            }
+            foreach (PlayerController player in _finishedPending)
+            {
+                _pendingPlayers.Remove(player);
+                DestroyChantIndicator(player);
+            }
+            // 枚举结束后再执行传送（Teleport 内部会修改 _pendingPlayers）
+            foreach (PlayerController player in _readyToTeleport)
+            {
+                Teleport(player);
             }
         }
 
@@ -196,7 +277,16 @@ namespace SuperQQ.Item
             {
                 if (player.BAffectedByItems && !_immunePlayers.Contains(player))   // 死亡过渡/幽灵不被传送
                 {
-                    Teleport(player);
+                    if (playerTeleportDelay <= 0f)
+                    {
+                        Teleport(player);
+                    }
+                    else
+                    {
+                        // 进入触发区开始停留计时，住满 playerTeleportDelay 由 FixedUpdate 触发传送
+                        _pendingPlayers[player] = 0f;
+                        SpawnChantIndicator(player);
+                    }
                 }
                 return;
             }
@@ -215,9 +305,15 @@ namespace SuperQQ.Item
             // 走出本端且不再接触配对另一端时才解除免疫（与 FixedUpdate 兜底同口径，
             // 防止"压在一端内又走出另一端"时免疫被提前解除形成往返互传）
             PlayerController player = other.GetComponentInParent<PlayerController>();
-            if (player != null && !IsPlayerTouching(player, linkedPortal))
+            if (player != null)
             {
-                _immunePlayers.Remove(player);
+                // 走出本端：停留计时作废（下次进入重新计时），吟唱提示消失
+                _pendingPlayers.Remove(player);
+                DestroyChantIndicator(player);
+                if (!IsPlayerTouching(player, linkedPortal))
+                {
+                    _immunePlayers.Remove(player);
+                }
             }
         }
 
@@ -242,6 +338,11 @@ namespace SuperQQ.Item
         {
             _immunePlayers.Add(player);
             linkedPortal._immunePlayers.Add(player);
+            // 两端停留计时一并作废（落点端不应因残留计时被再次传送），吟唱提示消失
+            _pendingPlayers.Remove(player);
+            linkedPortal._pendingPlayers.Remove(player);
+            DestroyChantIndicator(player);
+            linkedPortal.DestroyChantIndicator(player);
 
             Vector2 target = (Vector2)linkedPortal.transform.position + linkedPortal.exitOffset;
             if (player.Rb != null)
@@ -254,6 +355,76 @@ namespace SuperQQ.Item
             }
             // 清零运动状态（刚体速度 + 状态机速度积分器），玩家静止留在出口
             player.ResetMotion();
+        }
+
+        // ==================== 吟唱提示 ====================
+
+        /// <summary>
+        /// 为开始停留计时的玩家生成吟唱提示（重复进入时复用已有实例）
+        /// </summary>
+        private void SpawnChantIndicator(PlayerController player)
+        {
+            if (chantIndicatorPrefab == null)
+            {
+                Debug.LogWarning("[Portal] 未配置 chantIndicatorPrefab，吟唱提示不显示", this);
+                return;
+            }
+            if (_chantIndicators.ContainsKey(player))
+            {
+                return;
+            }
+            GameObject go = Instantiate(chantIndicatorPrefab);
+            // 挂到 PopupManager 的浮动文本容器下（与 FloatingText 同层渲染，坐标转换依赖 RectTransform 父级）
+            PopupManager popupManager = PopupManager.Instance;
+            if (popupManager != null)
+            {
+                go.transform.SetParent(popupManager.FloatingTextContainer, false);
+            }
+            else
+            {
+                Debug.LogWarning("[Portal] 场景中无 PopupManager，吟唱提示可能无法正确渲染", this);
+            }
+            PortalChantIndicator indicator = go.GetComponent<PortalChantIndicator>();
+            if (indicator == null)
+            {
+                Debug.LogWarning("[Portal] chantIndicatorPrefab 缺少 PortalChantIndicator 组件，吟唱提示不生效", this);
+                Destroy(go);
+                return;
+            }
+            indicator.Bind(player);
+            indicator.UpdateRemaining(playerTeleportDelay);
+            _chantIndicators[player] = indicator;
+        }
+
+        /// <summary>销毁玩家的吟唱提示（计时作废/已传送/离开触发区时调用）</summary>
+        private void DestroyChantIndicator(PlayerController player)
+        {
+            if (player != null && _chantIndicators.TryGetValue(player, out PortalChantIndicator indicator))
+            {
+                if (indicator != null)
+                {
+                    Destroy(indicator.gameObject);
+                }
+                _chantIndicators.Remove(player);
+            }
+        }
+
+        /// <summary>清空全部吟唱提示（传送门自身销毁时兜底，防提示残留悬空）</summary>
+        private void ClearAllChantIndicators()
+        {
+            foreach (var pair in _chantIndicators)
+            {
+                if (pair.Value != null)
+                {
+                    Destroy(pair.Value.gameObject);
+                }
+            }
+            _chantIndicators.Clear();
+        }
+
+        private void OnDestroy()
+        {
+            ClearAllChantIndicators();
         }
 
         // ==================== 配对 ====================

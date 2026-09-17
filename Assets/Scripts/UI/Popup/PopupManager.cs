@@ -118,6 +118,21 @@ namespace SuperQQ.UI
         // 当前展示中的弹窗/Tips（按播放顺序，后播放的在列表末尾）
         private readonly List<ActiveEntry> _activeEntries = new();
 
+        /// <summary>
+        /// 浮动文本容器（吟唱提示等需挂到浮动文本层的外部实例使用；Awake 中已保证非空）
+        /// </summary>
+        public Transform FloatingTextContainer
+        {
+            get
+            {
+                if (_floatingTextContainer == null)
+                {
+                    _floatingTextContainer = _tipsContainer != null ? _tipsContainer : transform;
+                }
+                return _floatingTextContainer;
+            }
+        }
+
         // ==================== 单例访问 ====================
 
         /// <summary>
