@@ -1834,6 +1834,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6106690048855405493, guid: 92ccdf5d2850f4e68902114b749b095d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9123252112632102140, guid: 92ccdf5d2850f4e68902114b749b095d, type: 3}
       propertyPath: m_Name
       value: PropSelectionPanelNew

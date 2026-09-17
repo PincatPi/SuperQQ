@@ -60,6 +60,7 @@ MonoBehaviour:
   gapPixels: 6
   pixelsPerUnit: 100
   sortingOrder: 10
+  sortingLayerName: Item
 --- !u!61 &4299916664896943230
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -142,12 +143,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: 
   icon: {fileID: 0}
+  iconScale: 1
   placeSfx: 202
   animator: {fileID: 6161238830508108831}
   punchDuration: 0.90000004
   punchCooldown: 0.3
   punchStretchX: 1.6
-  attackRangeCells: 3
+  attackRangeCells: 2
   startFacingRight: 1
   visual: {fileID: 6435347423579715546}
   drawAttackZone: 1
