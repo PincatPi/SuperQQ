@@ -261,7 +261,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a120710bc304244aa13c7276d954e64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  windForce: 80
+  windForce: 70
   windLoopSfx: 218
   windSfxFadeOut: 0.5
 --- !u!1 &4381155933758414411
@@ -559,11 +559,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23cf06a8fc8250d42ad5c7b02d4f74fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: "\u6392\u6C14\u6247"
+  displayName: "\u98CE\u6247"
   icon: {fileID: 1215604, guid: 64133d3851b04454a8512ac4aba3b64b, type: 3}
   iconScale: 0.55
   itemType: 4
-  description: 
+  description: "\u6301\u7EED\u5439\u98CE\uFF0C\u628A\u89D2\u8272\u6CBF\u4E00\u4E2A\u65B9\u5411\u63A8\u79FB"
   placeSfx: 202
 --- !u!114 &768216225951300669
 MonoBehaviour:

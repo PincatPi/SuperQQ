@@ -248,5 +248,12 @@ namespace SuperQQ.Item
 
         /// <summary>建造阶段开始：机关复位（停止攻击、回到初始状态）</summary>
         public virtual void OnBuildPhaseStart() { }
+
+        /// <summary>
+        /// 摆放阶段被取出手持摆放（PlacementSession.Adopt，尚未确认落点）时调用。
+        /// 实例确认放置后走 OnPlaced；取消/丢弃时实例被销毁，无需配对停止通知。
+        /// 有"摆放期预启动"语义的道具重写（如樱桃发射器：手持期间即开始发射）
+        /// </summary>
+        public virtual void OnHeldForPlacement() { }
     }
 }

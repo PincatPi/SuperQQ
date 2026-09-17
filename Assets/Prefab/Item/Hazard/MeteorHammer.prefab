@@ -297,11 +297,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8690731eab3c0a24eb26fde805390d17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: "\u6D41\u661F\u9524"
+  displayName: "\u7CD6\u679C\u6D41\u661F\u9524"
   icon: {fileID: 21300390, guid: 5ef94af803fbc022cad964e2e12c01ff, type: 3}
   iconScale: 1
   itemType: 1
-  description: 
+  description: "\u9524\u5934\u6765\u56DE\u6446\u52A8\uFF0C\u78B0\u5230\u9524\u5934\u4F1A\u6B7B\u4EA1"
   placeSfx: 202
   arm: {fileID: 9141920536830378153}
   swingArcDegrees: 130
@@ -311,6 +311,7 @@ MonoBehaviour:
   headCollider: {fileID: 2955316137860698142}
   startFromLeft: 1
   debugAutoSwing: 1
+  swingDuringPlacement: 1
   swingFrames: []
   swingFrameRenderer: {fileID: 0}
   framesCoverFullCycle: 1

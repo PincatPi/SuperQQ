@@ -52,7 +52,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   iconScale: 1
   itemType: 0
-  description: 
+  description: "\u6301\u7EED\u65CB\u8F6C\u7684\u5E73\u53F0\uFF0C\u9ECF\u4F4F\u7684\u9053\u5177\u4F1A\u8DDF\u7740\u4E00\u8D77\u8F6C\u52A8"
   placeSfx: 202
   sizeInCells: 3
   rotateDuration: 2

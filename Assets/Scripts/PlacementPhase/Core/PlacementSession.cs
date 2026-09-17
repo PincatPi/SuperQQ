@@ -298,6 +298,12 @@ namespace SuperQQ.Placement.Core
                 currentBox.Init(currentBox.Footprint, currentPc.RotationSteps);
                 currentBox.Show();
             }
+
+            // 手持摆放通知：有摆放期预启动语义的道具（如樱桃发射器）在确认放置前即开始运作
+            if (instance.TryGetComponent(out ItemBase heldItem))
+            {
+                heldItem.OnHeldForPlacement();
+            }
         }
 
         /// <summary>按当前位置校验落点并刷新虚线框颜色</summary>

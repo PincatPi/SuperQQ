@@ -137,7 +137,7 @@ MonoBehaviour:
   icon: {fileID: 158882696, guid: dff622d4f42974a2687c26b9b09238ac, type: 3}
   iconScale: 1
   itemType: 0
-  description: 
+  description: "\u7528\u58F0\u97F3\u63A7\u5236\u5347\u964D\uFF0C\u5927\u58F0\u4E0A\u5347\uFF0C\u65E0\u58F0\u56DE\u843D"
   placeSfx: 202
   maxUpCells: 4
   maxDownCells: 4

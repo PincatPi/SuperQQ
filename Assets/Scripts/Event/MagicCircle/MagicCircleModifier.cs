@@ -681,6 +681,16 @@ namespace SuperQQ.Event
             // 已有实例时先销毁（同轮多次施法时覆盖旧 UI）
             HideSpellCastUi();
             _spellCastUiInstance = Instantiate(_spellCastUiPrefab, canvasRect, false);
+
+            // 全屏特效只做视觉表现，不拦截任何输入：挂 CanvasGroup 并关闭射线投射，
+            // 使其不遮挡下方按键（摇杆/道具等）的点击与拖拽
+            CanvasGroup canvasGroup = _spellCastUiInstance.GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+            {
+                canvasGroup = _spellCastUiInstance.AddComponent<CanvasGroup>();
+            }
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
         }
 
         /// <summary>关闭咒语生效全屏 UI：效果全部结束或事件停用时调用；场景销毁时实例可能已随之销毁，判空后兜底</summary>

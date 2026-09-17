@@ -136,7 +136,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   iconScale: 1
   itemType: 4
-  description: 
+  description: "\u628A\u5468\u56F4\u7684\u89D2\u8272\u5438\u5411\u78C1\u94C1\u4E2D\u5FC3"
   placeSfx: 202
   rangeExtendCells: 2
   pullAcceleration: 100

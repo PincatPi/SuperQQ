@@ -262,7 +262,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   iconScale: 1
   itemType: 1
-  description: 
+  description: "\u78B0\u5230\u5C16\u523A\u5C31\u4F1A\u6B7B\u4EA1"
   placeSfx: 202
 --- !u!1 &6171005509928747702
 GameObject:

@@ -260,7 +260,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   iconScale: 1
   itemType: 0
-  description: 
+  description: "\u8D34\u5728\u7269\u4F53\u8868\u9762\uFF0C\u7528\u4E8E\u7C98\u7740\u5176\u4ED6\u9053\u5177"
   placeSfx: 202
   stickCheckInterval: 0.1
   topSortingOrder: 100

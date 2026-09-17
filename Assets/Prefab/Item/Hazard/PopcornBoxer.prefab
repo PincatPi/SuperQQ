@@ -145,7 +145,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   iconScale: 1
   itemType: 1
-  description: 
+  description: "\u6709\u4EBA\u9760\u8FD1\u5C31\u84C4\u529B\u51FA\u62F3\uFF0C\u547D\u4E2D\u8005\u6B7B\u4EA1"
   placeSfx: 202
   animator: {fileID: 6161238830508108831}
   punchDuration: 0.90000004

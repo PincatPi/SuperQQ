@@ -52,7 +52,7 @@ MonoBehaviour:
   icon: {fileID: -198754273, guid: 0b00c8ba02f5b45f893863d55b292470, type: 3}
   iconScale: 1
   itemType: 2
-  description: 
+  description: "\u6E05\u9664\u5C0F\u8303\u56F4\u5185\u7684\u9053\u5177"
   placeSfx: 202
   fuseDelay: 0
   explosionEffectPrefab: {fileID: 8239483576044603468, guid: 9a50656854cb3bb458df802db5821c70, type: 3}

@@ -18,6 +18,8 @@ namespace SuperQQ.Item
         [Header("发射")]
         [Tooltip("樱桃弹体 prefab（挂 CherryProjectile）")]
         [SerializeField] private CherryProjectile cherryPrefab;
+        [Tooltip("是否在道具摆放阶段（PropPlacement）就开始发射")]
+        [SerializeField] private bool fireDuringPlacement = true;
         [Tooltip("发射间隔（秒）")]
         [SerializeField, Range(0.2f, 10f)] private float fireInterval = 1.8f;
         [Tooltip("发射角度（度，斜向上）")]
@@ -142,8 +144,7 @@ namespace SuperQQ.Item
 
         // ==================== 阶段钩子 ====================
 
-        /// <summary>
-        /// 跑动阶段开始：启动发射循环。
+        /// <summary>跑动阶段开始：启动发射循环。
         /// 发射时刻对齐（估算）服务器绝对时间网格——各端在同一服务器时刻出弹，
         /// 不受阶段切换消息到达延迟差影响（残差仅对时误差，~10ms 级）
         /// </summary>
@@ -155,6 +156,52 @@ namespace SuperQQ.Item
 
         /// <summary>建造阶段开始：停止发射（场上存活弹体自然飞完，不强制清除）</summary>
         public override void OnBuildPhaseStart()
+        {
+            // 摆放阶段（PropPlacement）允许继续发射：仅在进入道具选择阶段时才停
+            if (fireDuringPlacement && IsInPlacementPhase())
+            {
+                return;
+            }
+            StopFiring();
+        }
+
+        /// <summary>
+        /// 被放置到网格后调用：若处于道具摆放阶段且开启摆放期发射，立即启动发射循环，
+        /// 使摆放中的道具当场开始发射（覆盖 GridManager/PlacementController/快照恢复等所有放置路径）
+        /// </summary>
+        public override void OnPlaced()
+        {
+            base.OnPlaced();
+            if (fireDuringPlacement && IsInPlacementPhase())
+            {
+                firing = true;
+                nextFireServerMs = SuperQQ.Network.NetworkManager.EstimatedServerNowMs(); // 立即射出第一发
+            }
+        }
+
+        private static bool IsInPlacementPhase()
+        {
+            var flow = SuperQQ.GameFlow.GamePhaseManager.Instance;
+            return flow != null && flow.CurrentPhaseAsset is SuperQQ.GameFlow.PropPlacementPhase;
+        }
+
+        /// <summary>
+        /// 摆放阶段被取出手持摆放（尚未确认落点）：立即启动发射循环，
+        /// 道具跟随指针移动的同时持续朝当前朝向发射樱桃；
+        /// 确认放置后由 OnPlaced 无缝衔接继续发射，取消/丢弃时随实例销毁自动停止
+        /// </summary>
+        public override void OnHeldForPlacement()
+        {
+            if (!fireDuringPlacement)
+            {
+                return;
+            }
+            firing = true;
+            nextFireServerMs = SuperQQ.Network.NetworkManager.EstimatedServerNowMs(); // 立即射出第一发
+        }
+
+        /// <summary>停止发射并复位发射形变</summary>
+        private void StopFiring()
         {
             firing = false;
             // 复位发射形变，避免停在压扁/拉伸的中间态

@@ -29,6 +29,8 @@ namespace SuperQQ.Item
         [SerializeField] private bool startFromLeft = true;
         [Tooltip("调试：运行即开始摆动（阶段系统接入后关闭，由 OnRunPhaseStart/OnBuildPhaseStart 控制）")]
         [SerializeField] private bool debugAutoSwing = true;
+        [Tooltip("是否在道具摆放阶段（PropPlacement）就开始摆动（含手持未确认状态）")]
+        [SerializeField] private bool swingDuringPlacement = true;
 
         [Header("摆动帧动画")]
         [Tooltip("摆锤帧动画序列（WreckingBall-ChainandBall.014~033），按摆动相位取帧——帧与锤头判定圈严格同步")]
@@ -170,6 +172,56 @@ namespace SuperQQ.Item
         }
 
         public override void OnBuildPhaseStart()
+        {
+            // 摆放阶段（PropPlacement）允许继续摆动：仅在进入道具选择阶段时才停
+            if (swingDuringPlacement && IsInPlacementPhase())
+            {
+                return;
+            }
+            StopSwinging();
+        }
+
+        /// <summary>
+        /// 被放置到网格后调用：若处于道具摆放阶段且开启摆放期摆动，立即启动摆动
+        /// （覆盖 GridManager/PlacementController/联机快照恢复等所有放置路径）
+        /// </summary>
+        public override void OnPlaced()
+        {
+            base.OnPlaced();
+            if (swingDuringPlacement && IsInPlacementPhase())
+            {
+                StartSwinging();
+            }
+        }
+
+        /// <summary>
+        /// 摆放阶段被取出手持摆放（尚未确认落点）：立即启动摆动，
+        /// 道具跟随指针移动的同时锤头持续钟摆扫击；
+        /// 确认放置后由 OnPlaced 无缝衔接，取消/丢弃时随实例销毁自动停止
+        /// </summary>
+        public override void OnHeldForPlacement()
+        {
+            if (!swingDuringPlacement)
+            {
+                return;
+            }
+            StartSwinging();
+        }
+
+        private static bool IsInPlacementPhase()
+        {
+            var flow = SuperQQ.GameFlow.GamePhaseManager.Instance;
+            return flow != null && flow.CurrentPhaseAsset is SuperQQ.GameFlow.PropPlacementPhase;
+        }
+
+        /// <summary>启动摆动（保持当前相位，避免摆放期各次启动重置节奏）</summary>
+        private void StartSwinging()
+        {
+            swinging = true;
+        }
+
+        /// <summary>停止摆动并复位摆角/帧动画</summary>
+        private void StopSwinging()
         {
             swinging = false;
             phaseTime = 0f;

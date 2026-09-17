@@ -39,12 +39,18 @@ namespace SuperQQ.UI
 
         // ==================== 法阵进出通知（供 MagicCircleModifier 调用） ====================
 
-        /// <summary>本地玩家进入一个法阵：开始/维持高光闪烁（多个法阵并存时按计数管理）</summary>
+        /// <summary>本地玩家进入一个法阵：开始/维持高光闪烁（多个法阵并存时按计数管理），并自动弹出咒语清单</summary>
         public static void NotifyLocalPlayerEnteredCircle()
         {
             if (Instance != null)
             {
+                bool bWasOutside = Instance._insideCircleCount == 0;
                 Instance._insideCircleCount++;
+                // 从阵外进入第一个法阵：自动弹出咒语清单面板
+                if (bWasOutside)
+                {
+                    Instance.ShowSpellList();
+                }
             }
         }
 
@@ -61,10 +67,12 @@ namespace SuperQQ.UI
             {
                 Instance._blinkPhase = 0f;
                 Instance.SetHighlightAlpha(0f);
+                // 离开全部法阵：自动隐藏咒语清单面板
+                Instance.HideSpellList();
             }
         }
 
-        /// <summary>强制复位高光（法阵销毁/事件停用等异常路径兜底）</summary>
+        /// <summary>强制复位高光（法阵销毁/事件停用等异常路径兜底）；同时隐藏咒语清单面板</summary>
         public static void ResetCircleHighlight()
         {
             if (Instance == null)
@@ -74,6 +82,7 @@ namespace SuperQQ.UI
             Instance._insideCircleCount = 0;
             Instance._blinkPhase = 0f;
             Instance.SetHighlightAlpha(0f);
+            Instance.HideSpellList();
         }
 
         // ==================== 生命周期 ====================
@@ -146,6 +155,24 @@ namespace SuperQQ.UI
             if (_spellListPanel != null)
             {
                 _spellListPanel.SetActive(!_spellListPanel.activeSelf);
+            }
+        }
+
+        /// <summary>显示咒语清单面板（进法阵时自动调用）</summary>
+        private void ShowSpellList()
+        {
+            if (_spellListPanel != null)
+            {
+                _spellListPanel.SetActive(true);
+            }
+        }
+
+        /// <summary>隐藏咒语清单面板（离开全部法阵时自动调用）</summary>
+        private void HideSpellList()
+        {
+            if (_spellListPanel != null)
+            {
+                _spellListPanel.SetActive(false);
             }
         }
 

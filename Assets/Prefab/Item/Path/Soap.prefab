@@ -169,7 +169,7 @@ MonoBehaviour:
   icon: {fileID: 1730614549, guid: 5d23efdb12ab941528da0d91c16c0728, type: 3}
   iconScale: 1
   itemType: 0
-  description: 
+  description: "\u4E00\u4E2A\u975E\u5E38\u6ED1\u7684\u5E73\u53F0"
   placeSfx: 202
 --- !u!114 &5704616245031174902
 MonoBehaviour:

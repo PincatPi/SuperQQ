@@ -92,6 +92,7 @@ MonoBehaviour:
   gapPixels: 6
   pixelsPerUnit: 100
   sortingOrder: 10
+  sortingLayerName: Item
 --- !u!61 &7469886125241395913
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -174,6 +175,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "\u9762\u5305"
   icon: {fileID: 0}
+  iconScale: 1
+  itemType: 0
+  description: "\u4E00\u4E2A\u7A33\u5B9A\u7684\u5E73\u53F0"
   placeSfx: 202
 --- !u!1 &7759195075958798245
 GameObject:

@@ -52,7 +52,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   iconScale: 1
   itemType: 3
-  description: 
+  description: "\u62FE\u53D6\u540E\u5E26\u5230\u7EC8\u70B9\uFF0C\u53EF\u83B7\u5F97\u989D\u5916\u5206\u6570"
   placeSfx: 201
   bonusScore: 10
   followDelay: 0.1

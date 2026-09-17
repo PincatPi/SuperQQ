@@ -51,7 +51,7 @@ MonoBehaviour:
   footprint: {x: 2, y: 2}
   autoInitOnStart: 0
   startRotated: 0
-  canRotate: 0
+  canRotate: 1
   pivotCell: {x: -1, y: -1}
   drawBoxInEditor: 1
   lineColor: {r: 1, g: 1, b: 1, a: 0.9}
@@ -145,9 +145,10 @@ MonoBehaviour:
   icon: {fileID: 0}
   iconScale: 1
   itemType: 1
-  description: 
+  description: "\u5411\u524D\u53D1\u5C04\u6A31\u6843\u70AE\u5F39\uFF0C\u547D\u4E2D\u5373\u6B7B"
   placeSfx: 202
   cherryPrefab: {fileID: 6783027045074304204, guid: b91cb87e3355d1141ae92be10bfd470e, type: 3}
+  fireDuringPlacement: 1
   fireInterval: 1.8
   launchAngle: 45
   launchSpeed: 7

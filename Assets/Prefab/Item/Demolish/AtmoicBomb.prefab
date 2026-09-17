@@ -48,11 +48,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06dcb3af7c6d91b4999e468f05366523, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: "\u751F\u65E5\u86CB\u7CD5\u70B8\u5F39"
+  displayName: "\u86CB\u7CD5\u70B8\u5F39"
   icon: {fileID: 1525584354, guid: 9a8aae91819c647d995d2b5241086814, type: 3}
   iconScale: 1
   itemType: 2
-  description: 
+  description: "\u6E05\u9664\u5927\u8303\u56F4\u5185\u7684\u9053\u5177"
   placeSfx: 202
   fuseDelay: 0
   explosionEffectPrefab: {fileID: 6548652224338589727, guid: 68a9aae8e0dea5f46b07b3e99f9b006d, type: 3}
