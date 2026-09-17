@@ -22,6 +22,12 @@ namespace SuperQQ.UI.RoundResults
         [SerializeField] private TMP_Text _continueButtonText;
         [Tooltip("不加分提示文本；无人通关或全员通关时显示")]
         [SerializeField] private TMP_Text _noFinishNoticeText;
+        [Tooltip("回合数文本：显示\"当前x回合/共y回合\"")]
+        [SerializeField] private TMP_Text _roundCountText;
+
+        [Header("Round Count")]
+        [Tooltip("总回合数（自行配置）")]
+        [SerializeField, Min(1)] private int _totalRounds = 1;
 
         [Header("Behaviour")]
         [Tooltip("无人通关/全员通关时显示的提示文案")]
@@ -51,6 +57,23 @@ namespace SuperQQ.UI.RoundResults
         {
             get => _victoryScore;
             set => _victoryScore = Mathf.Max(1, value);
+        }
+
+        /// <summary>总回合数（由 Inspector 或外部配置）</summary>
+        public int TotalRounds
+        {
+            get => _totalRounds;
+            set => _totalRounds = Mathf.Max(1, value);
+        }
+
+        /// <summary>
+        /// 解析真实当前轮次：联机模式以服务器 GamePhaseSync 下发的轮次为准
+        /// （联机下 PlayerScoreManager.CurrentRoundIndex 不被推进，恒为 1）；单机回退计分管理器轮次
+        /// </summary>
+        private static int ResolveCurrentRound(int roundIndex)
+        {
+            int serverRound = SuperQQ.Network.NetGameFlowGate.CurrentServerRound;
+            return serverRound > 0 ? serverRound : roundIndex;
         }
 
         public void Configure(
@@ -207,7 +230,19 @@ namespace SuperQQ.UI.RoundResults
             }
 
             UpdateNoFinishNotice();
+            UpdateRoundCountText(roundIndex);
             return orderedEntries.Count;
+        }
+
+        /// <summary>回合数文本：显示"当前x回合/共y回合"（当前轮次优先取服务器下发值）</summary>
+        private void UpdateRoundCountText(int roundIndex)
+        {
+            if (_roundCountText == null)
+            {
+                return;
+            }
+            int currentRound = Mathf.Max(1, ResolveCurrentRound(roundIndex));
+            _roundCountText.text = $"{currentRound}/{Mathf.Max(1, _totalRounds)}回合";
         }
 
         /// <summary>不加分提示：无人通关或全员通关时显示（文案可在 Inspector 配置）</summary>
