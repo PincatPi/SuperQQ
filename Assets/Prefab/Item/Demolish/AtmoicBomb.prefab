@@ -48,8 +48,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06dcb3af7c6d91b4999e468f05366523, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: "\u539F\u5B50\u5F39"
+  displayName: "\u751F\u65E5\u86CB\u7CD5\u70B8\u5F39"
   icon: {fileID: 1525584354, guid: 9a8aae91819c647d995d2b5241086814, type: 3}
+  iconScale: 1
+  itemType: 2
+  description: 
   placeSfx: 202
   fuseDelay: 0
   explosionEffectPrefab: {fileID: 6548652224338589727, guid: 68a9aae8e0dea5f46b07b3e99f9b006d, type: 3}
@@ -78,6 +81,7 @@ MonoBehaviour:
   gapPixels: 6
   pixelsPerUnit: 100
   sortingOrder: 10
+  sortingLayerName: Item
 --- !u!61 &56979206078734683
 BoxCollider2D:
   m_ObjectHideFlags: 0

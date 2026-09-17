@@ -256,8 +256,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08cacf5ce8d5e984395f611ab85a7743, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: "\u9EC4\u6CB9"
+  displayName: "\u8702\u871C"
   icon: {fileID: 0}
+  iconScale: 1
+  itemType: 0
+  description: 
   placeSfx: 202
   stickCheckInterval: 0.1
   topSortingOrder: 100
@@ -286,6 +289,7 @@ MonoBehaviour:
   gapPixels: 6
   pixelsPerUnit: 100
   sortingOrder: 10
+  sortingLayerName: Item
 --- !u!61 &3626521035394824369
 BoxCollider2D:
   m_ObjectHideFlags: 0

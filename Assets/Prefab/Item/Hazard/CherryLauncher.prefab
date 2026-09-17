@@ -60,6 +60,7 @@ MonoBehaviour:
   gapPixels: 6
   pixelsPerUnit: 100
   sortingOrder: 10
+  sortingLayerName: Item
 --- !u!61 &1149097168261063995
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -140,8 +141,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51c9f09ee34cb0d46b2b1ef3d3577040, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: 
+  displayName: "\u6A31\u6843\u53D1\u5C04\u5668"
   icon: {fileID: 0}
+  iconScale: 1
+  itemType: 1
+  description: 
   placeSfx: 202
   cherryPrefab: {fileID: 6783027045074304204, guid: b91cb87e3355d1141ae92be10bfd470e, type: 3}
   fireInterval: 1.8

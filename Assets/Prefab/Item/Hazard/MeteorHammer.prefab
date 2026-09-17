@@ -299,6 +299,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "\u6D41\u661F\u9524"
   icon: {fileID: 21300390, guid: 5ef94af803fbc022cad964e2e12c01ff, type: 3}
+  iconScale: 1
+  itemType: 1
+  description: 
   placeSfx: 202
   arm: {fileID: 9141920536830378153}
   swingArcDegrees: 130
@@ -337,6 +340,7 @@ MonoBehaviour:
   gapPixels: 6
   pixelsPerUnit: 100
   sortingOrder: 10
+  sortingLayerName: Item
 --- !u!1 &9075786806852780329
 GameObject:
   m_ObjectHideFlags: 0

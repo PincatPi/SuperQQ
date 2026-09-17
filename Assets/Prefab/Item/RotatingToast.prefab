@@ -48,9 +48,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d6affd185e4bc74898edc67f505b5d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: 
+  displayName: "\u65CB\u8F6C\u5410\u53F8"
   icon: {fileID: 0}
   iconScale: 1
+  itemType: 0
+  description: 
   placeSfx: 202
   sizeInCells: 1
   rotateDuration: 2

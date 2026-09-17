@@ -141,9 +141,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c274ae295488bb44b4eaee0ed71d292, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: 
+  displayName: "\u7206\u7C73\u82B1\u62F3\u738B"
   icon: {fileID: 0}
   iconScale: 1
+  itemType: 1
+  description: 
   placeSfx: 202
   animator: {fileID: 6161238830508108831}
   punchDuration: 0.90000004

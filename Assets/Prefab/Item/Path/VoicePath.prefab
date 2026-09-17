@@ -133,9 +133,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17b014d4d66fd44afb57aa2790805e17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  displayName: 
+  displayName: "\u58F0\u63A7\u5E73\u53F0"
   icon: {fileID: 21300000, guid: ce2dc65b69958469ab0405ed12528d3b, type: 3}
   iconScale: 1
+  itemType: 0
+  description: 
   placeSfx: 202
   maxUpCells: 4
   maxDownCells: 4

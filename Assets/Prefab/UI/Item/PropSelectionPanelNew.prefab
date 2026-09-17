@@ -1452,6 +1452,7 @@ GameObject:
   - component: {fileID: 7986165021066589898}
   - component: {fileID: 23221256762903032}
   - component: {fileID: 7133508924310949537}
+  - component: {fileID: 1504099440998797677}
   m_Layer: 5
   m_Name: ItemDescription
   m_TagString: Untagged
@@ -1520,6 +1521,34 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &1504099440998797677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6106690048855405493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48662d9fbb97f487a9d1f418d3d50a7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  typeColors:
+  - type: 0
+    color: {r: 0.14509805, g: 0.654902, b: 0.90588236, a: 1}
+  - type: 1
+    color: {r: 0.95686275, g: 0.49411765, b: 0.69803923, a: 1}
+  - type: 2
+    color: {r: 0.64705884, g: 0.5411765, b: 0.8980392, a: 1}
+  - type: 3
+    color: {r: 0.99607843, g: 0.8235294, b: 0.41960785, a: 1}
+  - type: 4
+    color: {r: 0.9529412, g: 0.6039216, b: 0.09019608, a: 1}
+  nameText: {fileID: 6695276436218560294}
+  descriptionText: {fileID: 3086591764083139675}
+  tagBackground: {fileID: 4450863727077318258}
+  tagText: {fileID: 6572487625494449572}
+  confirmButton: {fileID: 6264004739914669467}
 --- !u!1 &6393847295229546159
 GameObject:
   m_ObjectHideFlags: 0
@@ -1783,7 +1812,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &3526589643686112839
 RectTransform:
   m_ObjectHideFlags: 0

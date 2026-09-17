@@ -135,6 +135,8 @@ MonoBehaviour:
   displayName: "\u4F20\u9001\u95E8"
   icon: {fileID: 0}
   iconScale: 1
+  itemType: 4
+  description: 
   placeSfx: 202
   exitOffset: {x: 0.5, y: 0}
   exitPortalPrefab: {fileID: 8282279829162158160}

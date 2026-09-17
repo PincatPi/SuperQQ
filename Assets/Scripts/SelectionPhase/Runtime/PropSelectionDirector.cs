@@ -124,6 +124,7 @@ namespace SuperQQ.Selection.Runtime
         private readonly PlayerAvatarGate avatarGate = new PlayerAvatarGate();
         private RectTransform iconLayer;                    // 玩家图标层（BeginPhase 创建，EndPhase 销毁；自动生成的出现位也挂在其下）
         private GameObject runtimeBuiltPanel;               // 自动搭建的面板（EndPhase 时销毁）
+        private GameObject itemDescriptionNode;             // 道具描述面板节点（美术面板 ItemDescription，点击道具时展示）
         private RectTransform runtimeSlotsContainer;        // 自动搭建面板内的槽位容器
         private PropSelectionPhase activePhase;             // 驱动本阶段的阶段资产（倒计时数据源）
         private ItemBase localSelectedItem;                 // 本地玩家选中道具的缓存（EndPhase 前由阶段资产读取）
@@ -132,8 +133,9 @@ namespace SuperQQ.Selection.Runtime
         private float phaseElapsed;
 
         // 联机打勾确认按钮（运行时搭建，跟随待确认槽位）
-        private RectTransform confirmCheckButton;       // 打勾按钮（EndPhase 销毁）
+        private RectTransform confirmCheckButton;       // 打勾按钮（EndPhase 销毁；ItemDescription 未接线时的回退方案）
         private int confirmCheckSlot = -1;              // 当前待确认的槽位；-1 表示无
+        private bool confirmEventBound;                 // ItemDescription 确认按钮事件是否已绑定
 
         /// <summary>本地玩家确认一次选择时触发（未来网络同步订阅点）</summary>
         public event Action<SelectionResult> OnLocalSelectionConfirmed;
@@ -362,6 +364,7 @@ namespace SuperQQ.Selection.Runtime
             }
             UnregisterNetHandlers();
             SlotIntroVideoPlayer.Hide(); // 阶段退出：关闭介绍视频气泡
+            HideItemDescription(); // 阶段退出：关闭道具描述面板
 
             ClearSlotViews();
             ClearPlayerIcons();
@@ -395,6 +398,11 @@ namespace SuperQQ.Selection.Runtime
             {
                 return;
             }
+
+            // 无论走选中还是仅预览分支，点击道具都更新描述面板（本地表现，可与演示视频并存）；
+            // 确认选择按钮仅对待确认的那个槽位显示，点其它道具只看信息不显示确认
+            ShowItemDescription(slotIndex);
+            UpdateConfirmButtonForSlot(slotIndex);
 
             if (bClaimed || BIsLocalSelectionDone)
             {
@@ -759,6 +767,7 @@ namespace SuperQQ.Selection.Runtime
                 PropSelectionSlotView slotView = FindSlotView(slotIndex);
                 SlotIntroVideoPlayer.Show(ResolveItemIdAtSlot(slotIndex),
                     slotView != null ? (RectTransform)slotView.transform : null);
+                ShowItemDescription(slotIndex); // 同步更新道具描述面板
             }
 
             if (session == null)
@@ -944,6 +953,7 @@ namespace SuperQQ.Selection.Runtime
             if (selectionPanel != null)
             {
                 selectionPanel.SetActive(true);
+                HookItemDescription();
                 if (slotsContainer == null || slotViewPrefab == null)
                 {
                     Debug.LogWarning($"{LOG_TAG} 已配置选择面板但槽位容器或槽位 prefab 未配置，候选将无法展示。", this);
@@ -953,6 +963,79 @@ namespace SuperQQ.Selection.Runtime
             }
 
             BuildRuntimePanel();
+        }
+
+        /// <summary>
+        /// 接管道具描述面板（美术节点 ItemDescription）：
+        /// 挂 ItemDescriptionPanel 逻辑脚本并初始隐藏，玩家点击道具格时展示对应信息
+        /// </summary>
+        private void HookItemDescription()
+        {
+            if (itemDescriptionNode == null && selectionPanel != null)
+            {
+                Transform node = FindDeepChildByName(selectionPanel.transform, "ItemDescription");
+                if (node == null)
+                {
+                    node = FindSceneNodeByName("ItemDescription");
+                }
+                if (node != null)
+                {
+                    itemDescriptionNode = node.gameObject;
+                    // 先临时激活：未激活节点上 AddComponent 会延迟 Awake（单例/自动接线不执行），
+                    // 强制激活一次让 Awake 跑完，再隐藏作为初始状态
+                    bool bWasInactive = !itemDescriptionNode.activeSelf;
+                    if (bWasInactive)
+                    {
+                        itemDescriptionNode.SetActive(true);
+                    }
+                    if (itemDescriptionNode.GetComponent<ItemDescriptionPanel>() == null)
+                    {
+                        itemDescriptionNode.AddComponent<ItemDescriptionPanel>();
+                    }
+                    if (bWasInactive)
+                    {
+                        itemDescriptionNode.SetActive(false); // 初始隐藏，点击道具后再展示
+                    }
+                    Debug.Log($"{LOG_TAG} 已接管道具描述面板: ItemDescription", this);
+                }
+                else
+                {
+                    Debug.LogWarning($"{LOG_TAG} 选择面板内未找到 ItemDescription 节点，道具描述不可用。", this);
+                }
+            }
+        }
+
+        /// <summary>展示指定槽位道具的描述信息（纯本地表现，未接线/无效槽位时静默跳过）</summary>
+        private void ShowItemDescription(int slotIndex)
+        {
+            if (itemDescriptionNode == null || session == null
+                || slotIndex < 0 || slotIndex >= session.OfferItems.Count)
+            {
+                return;
+            }
+            ItemDescriptionPanel.Show(session.OfferItems[slotIndex]);
+        }
+
+        /// <summary>隐藏道具描述面板</summary>
+        private void HideItemDescription()
+        {
+            if (itemDescriptionNode != null)
+            {
+                itemDescriptionNode.SetActive(false);
+            }
+        }
+
+        /// <summary>
+        /// 点击槽位后同步确认选择按钮可见性：
+        /// 仅当点击的正是当前待确认槽位时显示"确认选择"，点其它道具（已选定/纯查看）只显示描述
+        /// </summary>
+        private void UpdateConfirmButtonForSlot(int slotIndex)
+        {
+            ItemDescriptionPanel descPanel = ItemDescriptionPanel.Instance;
+            if (descPanel != null)
+            {
+                descPanel.SetConfirmVisible(confirmCheckSlot >= 0 && confirmCheckSlot == slotIndex);
+            }
         }
 
         /// <summary>层级深度查找子物体（含未激活）</summary>
@@ -1305,11 +1388,27 @@ namespace SuperQQ.Selection.Runtime
         // ==================== 联机打勾确认按钮（到达后二次确认，非模态） ====================
 
         /// <summary>
-        /// 图标到达槽位后在该槽位上方显示打勾按钮：点击才向服务器发送认领请求。
-        /// 非模态：期间仍可改点其他未认领槽位，图标飞过去、打勾按钮跟随移动。
+        /// 图标到达槽位后进入待确认状态：优先使用 ItemDescription 面板上的"确认选择"按钮，
+        /// 点击后才向服务器发送认领请求；未接线描述面板时回退到运行时打勾按钮（槽位上方）。
+        /// 非模态：期间仍可改点其他未认领槽位，图标飞过去后按钮跟随切到新槽位。
         /// </summary>
         private void ShowConfirmCheck(int slotIndex)
         {
+            // 优先：ItemDescription 的 ConfirmSelectionBtn（美术面板节点）
+            ItemDescriptionPanel descPanel = ItemDescriptionPanel.Instance;
+            if (descPanel != null && descPanel.HasConfirmButton)
+            {
+                if (!confirmEventBound)
+                {
+                    descPanel.ConfirmClicked += OnConfirmCheckClicked;
+                    confirmEventBound = true;
+                }
+                confirmCheckSlot = slotIndex;
+                descPanel.SetConfirmVisible(true);
+                return;
+            }
+
+            // 回退：运行时打勾按钮
             PropSelectionSlotView view = FindSlotView(slotIndex);
             if (view == null)
             {
@@ -1348,6 +1447,11 @@ namespace SuperQQ.Selection.Runtime
             if (confirmCheckButton != null)
             {
                 confirmCheckButton.gameObject.SetActive(false);
+            }
+            // 同步隐藏 ItemDescription 上的确认选择按钮
+            if (ItemDescriptionPanel.Instance != null)
+            {
+                ItemDescriptionPanel.Instance.SetConfirmVisible(false);
             }
         }
 
@@ -1570,6 +1674,7 @@ namespace SuperQQ.Selection.Runtime
             if (applied && result.PlayerId == localPlayerKey)
             {
                 SlotIntroVideoPlayer.Hide(); // 本地认领生效：选择已定，关闭介绍气泡
+                HideItemDescription(); // 认领生效：关闭道具描述面板
                 Debug.Log($"{LOG_TAG} 已认领槽位 {result.SlotIndex}（含服务器分配）");
             }
         }

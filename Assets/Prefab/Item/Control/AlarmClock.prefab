@@ -51,6 +51,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "\u95F9\u949F"
   icon: {fileID: 0}
+  iconScale: 1
+  itemType: 4
+  description: 
   placeSfx: 202
   rangeExtendCells: 2
   windUpTime: 1
@@ -85,6 +88,7 @@ MonoBehaviour:
   gapPixels: 6
   pixelsPerUnit: 100
   sortingOrder: 10
+  sortingLayerName: Item
 --- !u!61 &6044106061371280689
 BoxCollider2D:
   m_ObjectHideFlags: 0

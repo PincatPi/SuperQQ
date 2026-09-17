@@ -4,6 +4,21 @@ using UnityEngine;
 
 namespace SuperQQ.Item
 {
+    /// <summary>道具类型（选择面板 ItemDescription 标签用，与 ItemCategory 策划分类相互独立）</summary>
+    public enum ItemType
+    {
+        /// <summary>搭路</summary>
+        Bridge = 0,
+        /// <summary>伤害</summary>
+        Damage = 1,
+        /// <summary>消除</summary>
+        Remove = 2,
+        /// <summary>得分</summary>
+        Score = 3,
+        /// <summary>控制</summary>
+        Control = 4,
+    }
+
     /// <summary>
     /// 道具基类 — 所有可摆放道具 prefab 的根组件
     /// 薄基类，只定义"作为网格道具"的契约与生命周期钩子；
@@ -22,6 +37,10 @@ namespace SuperQQ.Item
         [SerializeField] private Sprite icon;
         [Tooltip("图标在选择面板中的显示缩放（1=铺满槽位；过大/过小的道具用它微调）")]
         [SerializeField, Range(0.3f, 1.5f)] private float iconScale = 1f;
+        [Tooltip("道具类型（选择面板 ItemDescription 的标签展示用）")]
+        [SerializeField] private ItemType itemType = ItemType.Bridge;
+        [Tooltip("道具描述文案（选择面板 ItemDescription 展示用；留空时显示为空）")]
+        [SerializeField, TextArea] private string description = "";
 
         [Header("音效")]
         [Tooltip("放置确认音效：OnPlaced 时在道具位置 3D 播放（Clip 在 AudioCatalog 资产中按 Id 拖配）；None 表示静默")]
@@ -38,6 +57,12 @@ namespace SuperQQ.Item
 
         /// <summary>图标在选择面板中的显示缩放（1=铺满槽位）</summary>
         public float IconScale => iconScale;
+
+        /// <summary>道具类型（ItemDescription 标签展示用）</summary>
+        public ItemType ItemType => itemType;
+
+        /// <summary>道具描述（ItemDescription 展示用）</summary>
+        public string Description => description ?? string.Empty;
 
         /// <summary>放置信息（锚点格子、旋转、放置者），由 GridManager.Place 注入</summary>
         public PlacedItem Placed { get; private set; }

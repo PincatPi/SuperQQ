@@ -50,6 +50,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "\u91D1\u5E01"
   icon: {fileID: 0}
+  iconScale: 1
+  itemType: 3
+  description: 
   placeSfx: 201
   bonusScore: 10
   followDelay: 0.1
@@ -81,6 +84,7 @@ MonoBehaviour:
   gapPixels: 6
   pixelsPerUnit: 100
   sortingOrder: 10
+  sortingLayerName: Item
 --- !u!61 &8604014805325872198
 BoxCollider2D:
   m_ObjectHideFlags: 0

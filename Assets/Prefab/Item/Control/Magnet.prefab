@@ -134,6 +134,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "\u78C1\u94C1"
   icon: {fileID: 0}
+  iconScale: 1
+  itemType: 4
+  description: 
   placeSfx: 202
   rangeExtendCells: 2
   pullAcceleration: 100
@@ -164,6 +167,7 @@ MonoBehaviour:
   gapPixels: 6
   pixelsPerUnit: 100
   sortingOrder: 10
+  sortingLayerName: Item
 --- !u!61 &9051780741760204941
 BoxCollider2D:
   m_ObjectHideFlags: 0
