@@ -289,6 +289,8 @@ namespace SuperQQ.Network
                 var anchor = new Vector2Int(placed.AnchorCell.X, placed.AnchorCell.Y);
                 FootprintBoxView prefabBox = prefab.GetComponent<FootprintBoxView>();
                 Vector2Int footprint = prefabBox != null ? prefabBox.Footprint : Vector2Int.one;
+                // 旋转吐司固定 3x3 占格：prefab footprint 可能残留旧值（如 1x1），与 Awake 的 SetSize(3) 表现不一致
+                footprint = SuperQQ.Item.RotatingToastSizeSync.ResolveFootprint(prefab, footprint);
 
                 Vector2 worldPos = grid.GetPlacementWorldPos(anchor, footprint, placed.Rotation);
                 GameObject item = Instantiate(prefab.gameObject, worldPos,

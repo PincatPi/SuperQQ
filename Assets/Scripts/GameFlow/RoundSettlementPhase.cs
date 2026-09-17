@@ -1,3 +1,4 @@
+using SuperQQ.UI;
 using UnityEngine;
 
 namespace SuperQQ.GameFlow
@@ -19,6 +20,10 @@ namespace SuperQQ.GameFlow
             base.OnEnter(context);
             _bSettlementFinished = false;
             _bAdvancedToNextRound = false;
+
+            // 进入结算阶段时清场：关闭对局中残留的所有弹窗、Tips 与浮动文本，
+            // 避免结算期间继续播放上一阶段的内容（PopupManager.CloseInternal 会销毁实例并触发关闭回调）
+            PopupManager.Instance?.CloseAll();
 
             // 结算为场景内覆盖层（不切场景），RoundResultsDirector 已在场，直接弹出结算面板
             _bResultsPanelOpened = false;

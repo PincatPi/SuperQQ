@@ -95,6 +95,10 @@ namespace SuperQQ.Event
         [Min(0f)]
         [SerializeField] private float _cooldownSeconds = 10f;
 
+        [Header("咒语生效全屏 UI")]
+        [Tooltip("咒语生效时显示的全屏 UI Prefab（屏幕空间 UI，生效时实例化到本地主 Canvas 下，效果全部结束时销毁）；留空则无全屏 UI")]
+        [SerializeField] private GameObject _spellCastUiPrefab;
+
         // ==================== 运行时状态（非序列化，Activate 初始化 / Deactivate 清空） ====================
 
         // 法阵实例，Deactivate 时销毁
@@ -132,6 +136,9 @@ namespace SuperQQ.Event
 
         // 当前生效中的咒语效果实例（Deactivate 时统一结束清理）
         private readonly List<SpellEffectInstance> _activeEffects = new();
+
+        // 咒语生效期间显示的全屏 UI 实例（效果全部结束 / Deactivate 时销毁）
+        private GameObject _spellCastUiInstance;
 
         // 吟唱冷却截止时刻（Time.time）：本地玩家身上咒语效果全部结束时按 _cooldownSeconds 设置
         private float _cooldownEndTime;
@@ -262,6 +269,9 @@ namespace SuperQQ.Event
             }
             _activeEffects.Clear();
             _bDeactivating = false;
+
+            // 兜底关闭咒语生效全屏 UI（场景正常销毁时实例可能已随之销毁，判空后兜底）
+            HideSpellCastUi();
 
             // 清理服务端同步驱动的咒语表现（如雷公助我的施法者雷光）
             if (_spells != null)
@@ -546,6 +556,9 @@ namespace SuperQQ.Event
                 return;
             }
 
+            // 玩家身上已无任何生效中的咒语效果：关闭全屏生效 UI
+            HideSpellCastUi();
+
             if (_cooldownSeconds > 0f)
             {
                 _cooldownEndTime = Time.time + _cooldownSeconds;
@@ -641,6 +654,42 @@ namespace SuperQQ.Event
             {
                 instance.OnEnded += HandleSpellEffectEnded;
                 _activeEffects.Add(instance);
+                ShowSpellCastUi();
+            }
+        }
+
+        // ==================== 咒语生效全屏 UI ====================
+
+        /// <summary>
+        /// 弹出咒语生效全屏 UI：实例化到本地主 Canvas 下（各客户端本地各自执行）
+        /// 未配置 Prefab 或未找到主 Canvas 时跳过，咒语效果逻辑不受影响
+        /// </summary>
+        private void ShowSpellCastUi()
+        {
+            if (_spellCastUiPrefab == null)
+            {
+                return;
+            }
+
+            RectTransform canvasRect = ResolvePromptCanvasRect();
+            if (canvasRect == null)
+            {
+                Debug.LogWarning("[MagicCircleModifier] 未找到主 Canvas，跳过咒语生效全屏 UI。");
+                return;
+            }
+
+            // 已有实例时先销毁（同轮多次施法时覆盖旧 UI）
+            HideSpellCastUi();
+            _spellCastUiInstance = Instantiate(_spellCastUiPrefab, canvasRect, false);
+        }
+
+        /// <summary>关闭咒语生效全屏 UI：效果全部结束或事件停用时调用；场景销毁时实例可能已随之销毁，判空后兜底</summary>
+        private void HideSpellCastUi()
+        {
+            if (_spellCastUiInstance != null)
+            {
+                Destroy(_spellCastUiInstance);
+                _spellCastUiInstance = null;
             }
         }
 

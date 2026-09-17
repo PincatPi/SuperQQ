@@ -142,10 +142,9 @@ namespace SuperQQ.Item
             {
                 box = GetComponent<FootprintBoxView>();
             }
-            if (sizeInCells > 0)
-            {
-                SetSize(sizeInCells);
-            }
+            // 以固定尺寸为准：prefab 上残留的旧 sizeInCells（如 1）不得反向覆盖
+            // FootprintBoxView.footprint——否则刚改的 3x3 会被 OnValidate 弹回 1x1
+            SetSize(RotatingToastSizeSync.FixedSize);
         }
 
         // ==================== 旋转方向接口（建造阶段调用） ====================

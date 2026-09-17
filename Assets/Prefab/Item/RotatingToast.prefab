@@ -54,7 +54,7 @@ MonoBehaviour:
   itemType: 0
   description: 
   placeSfx: 202
-  sizeInCells: 1
+  sizeInCells: 3
   rotateDuration: 2
   pauseDuration: 1
   clockwise: 1
@@ -73,7 +73,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb67369568e92dc4a9c25958ba6fd362, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  footprint: {x: 1, y: 1}
+  footprint: {x: 3, y: 3}
   autoInitOnStart: 0
   startRotated: 0
   canRotate: 0
@@ -129,7 +129,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.5, y: 0.5}
+  m_Size: {x: 1.5, y: 1.5}
   m_EdgeRadius: 0
 --- !u!114 &3979415188864356926
 MonoBehaviour:
@@ -180,8 +180,8 @@ Transform:
   m_GameObject: {fileID: 3225514191152118634}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.027, y: -0.024, z: 0}
-  m_LocalScale: {x: 0.032552086, y: 0.032552086, z: 1}
+  m_LocalPosition: {x: 0.0782, y: -0.0805, z: 0}
+  m_LocalScale: {x: 0.0968846, y: 0.09559509, z: 0.33618587}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7733589260747946808}

@@ -109,6 +109,16 @@ namespace SuperQQ.Item
             }
         }
 
+        /// <summary>
+        /// 远端生成/快照恢复时解析道具的实际占格：
+        /// 旋转吐司固定按 FixedSize（3x3）占据——prefab 上的 FootprintBoxView 可能残留旧值（如 1x1），
+        /// 若直接采用会导致"3x3 表现、1x1 占格"的不一致；其余道具原样返回 prefab footprint。
+        /// </summary>
+        public static Vector2Int ResolveFootprint(ItemBase prefab, Vector2Int prefabFootprint)
+        {
+            return prefab is RotatingToast ? new Vector2Int(FixedSize, FixedSize) : prefabFootprint;
+        }
+
         /// <summary>新一轮/退出房间时清空（尺寸保持 FixedSize，不回到未决定状态）</summary>
         public static void ClearAll()
         {

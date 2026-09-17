@@ -51,7 +51,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _label: {fileID: 2241692263450527852}
   _worldOffset: {x: 0, y: 1.2, z: 0}
-  _format: "\u541F\u5531\u4E2D...\u5269\u4F59{0:F1}s"
+  _format: "\u4F20\u9001\u4E2D...\u5269\u4F59{0:F1}s"
   _fadeInDuration: 0.2
 --- !u!1 &6473440124081963764
 GameObject:

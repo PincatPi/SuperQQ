@@ -134,7 +134,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   displayName: "\u58F0\u63A7\u5E73\u53F0"
-  icon: {fileID: 21300000, guid: ce2dc65b69958469ab0405ed12528d3b, type: 3}
+  icon: {fileID: 158882696, guid: dff622d4f42974a2687c26b9b09238ac, type: 3}
   iconScale: 1
   itemType: 0
   description: 
@@ -268,8 +268,8 @@ Transform:
   m_GameObject: {fileID: 8845525257371221690}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.0007, y: -0.009, z: 13.406082}
-  m_LocalScale: {x: 0.16, y: 0.1, z: 0.1}
+  m_LocalPosition: {x: 0.0065, y: -0.009, z: 13.406082}
+  m_LocalScale: {x: 0.14054056, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2981123298608198288}
@@ -315,12 +315,12 @@ SpriteRenderer:
   m_SortingLayerID: -1046135143
   m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: ce2dc65b69958469ab0405ed12528d3b, type: 3}
+  m_Sprite: {fileID: 158882696, guid: dff622d4f42974a2687c26b9b09238ac, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 17.79, y: 4.79}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
