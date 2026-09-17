@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using SuperQQ.Grid;
 using UnityEngine;
 
@@ -33,9 +34,17 @@ namespace SuperQQ.Item
         [Tooltip("运行即开始旋转（无 GameFlow 的测试场景使用；阶段系统接入后关闭）")]
         [SerializeField] private bool debugAutoRotate;
 
+        [Header("黏性表面")]
+        [Tooltip("黏住检测间隔（秒），检测外表面相邻格新出现的道具并黏住（与黄油块一致）")]
+        [SerializeField, Range(0.02f, 0.5f)] private float stickCheckInterval = 0.1f;
+
         private FootprintBoxView box;
         private int appliedSize;          // 已应用到视觉/碰撞的尺寸（0=未初始化，取当前字段值）
         private Quaternion baseRotation;
+
+        // ==================== 黏性表面（与 ButterBlock 行为一致） ====================
+        private readonly List<Transform> stuckItems = new List<Transform>();
+        private float nextStickCheckTime;
 
         private bool rotating;
         private float cycleTime;          // 当前周期已进行时间
@@ -184,6 +193,96 @@ namespace SuperQQ.Item
             ToggleRotationDirection();
         }
 
+        // ==================== 黏性表面（与 ButterBlock 行为一致） ====================
+
+        /// <summary>
+        /// 上表面（footprint 顶边上方一行相邻格）集合：只有这些格子里的道具会被黏住，
+        /// 左/右/下表面无黏性；被黏道具成为吐司子物体后随吐司旋转一起运动
+        /// （与黄油块黏住道具的机制完全一致，仅黏性面限定为上表面）
+        /// </summary>
+        private List<Vector2Int> GetStickyCells()
+        {
+            GridManager grid = GridManager.Instance;
+            var cells = new List<Vector2Int>();
+            if (grid == null || Placed == null)
+            {
+                return cells;
+            }
+            Vector2Int footprint = box != null ? box.Footprint : new Vector2Int(sizeInCells, sizeInCells);
+            // 仅上表面有黏性：只有 footprint 顶边一行的上方相邻格是黏性格，
+            // 左/右/下表面均无黏性（世界坐标 +y 方向，与吐司旋转角度无关）
+            foreach (Vector2Int own in grid.GetFootprintCells(Placed.AnchorCell, footprint, Placed.Rotation))
+            {
+                cells.Add(own + Vector2Int.up);
+            }
+            // 去掉与自身 footprint 重叠的格子（自身占位格不算外表面）
+            HashSet<Vector2Int> ownCells = new HashSet<Vector2Int>(
+                grid.GetFootprintCells(Placed.AnchorCell, footprint, Placed.Rotation));
+            cells.RemoveAll(c => ownCells.Contains(c));
+            return cells;
+        }
+
+        /// <summary>周期检测外表面相邻格的道具并黏住（成为子物体，随吐司旋转）</summary>
+        private void StickNewItemsOnStickyCells()
+        {
+            GridManager grid = GridManager.Instance;
+            if (grid == null)
+            {
+                return;
+            }
+
+            foreach (Vector2Int stickyCell in GetStickyCells())
+            {
+                PlacedItem candidate = grid.GetItemAt(stickyCell);
+                if (candidate == null)
+                {
+                    continue;
+                }
+                // 跳过自身与已黏住的
+                if (candidate == Placed || stuckItems.Contains(candidate.transform))
+                {
+                    continue;
+                }
+                // 跳过祖先物体（避免互相黏住形成环）
+                if (transform.IsChildOf(candidate.transform))
+                {
+                    continue;
+                }
+                // 跳过不可黏目标：整道具不可黏（CanBeStuck=false），
+                // 或限定了吸附点但本格不是吸附点（如流星锤仅底座挂点格可黏）
+                ItemBase candidateItem = candidate.GetComponent<ItemBase>();
+                if (candidateItem != null && !candidateItem.CanBeStuckAt(stickyCell))
+                {
+                    continue;
+                }
+
+                candidate.transform.SetParent(transform, worldPositionStays: true);
+                stuckItems.Add(candidate.transform);
+                // 黏住钩子：需要自定义跟随行为的道具（如流星锤）在此记录参数
+                candidateItem?.OnStuckTo(transform, stickyCell);
+            }
+        }
+
+        /// <summary>解除全部黏住（吐司被拆时道具恢复独立，停在原地）</summary>
+        private void UnstickAll()
+        {
+            foreach (Transform stuck in stuckItems)
+            {
+                if (stuck != null)
+                {
+                    stuck.GetComponent<ItemBase>()?.OnUnstuck();
+                    stuck.SetParent(null, worldPositionStays: true);
+                }
+            }
+            stuckItems.Clear();
+        }
+
+        public override void OnRemoved()
+        {
+            UnstickAll();
+            base.OnRemoved();
+        }
+
         // ==================== 阶段钩子 ====================
 
         /// <summary>跑动阶段开始：启动持续旋转</summary>
@@ -191,7 +290,6 @@ namespace SuperQQ.Item
         {
             rotating = true;
         }
-
         /// <summary>建造阶段开始：停止旋转并复位角度</summary>
         public override void OnBuildPhaseStart()
         {
@@ -206,6 +304,13 @@ namespace SuperQQ.Item
 
         private void Update()
         {
+            // 黏性表面检测（与黄油块一致：周期检测外表面相邻格，已放置后持续生效）
+            if (Placed != null && Time.time >= nextStickCheckTime)
+            {
+                nextStickCheckTime = Time.time + stickCheckInterval;
+                StickNewItemsOnStickyCells();
+            }
+
             if (!rotating && !debugAutoRotate)
             {
                 return;

@@ -49,7 +49,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   displayName: "\u65CB\u8F6C\u5410\u53F8"
-  icon: {fileID: 0}
+  icon: {fileID: -733110670, guid: d79d08eb62a114582911bb25bd6b8c9d, type: 3}
   iconScale: 1
   itemType: 0
   description: "\u6301\u7EED\u65CB\u8F6C\u7684\u5E73\u53F0\uFF0C\u9ECF\u4F4F\u7684\u9053\u5177\u4F1A\u8DDF\u7740\u4E00\u8D77\u8F6C\u52A8"
@@ -61,6 +61,7 @@ MonoBehaviour:
   visual: {fileID: 5120887857269553825}
   solidCollider: {fileID: 6185271712286534273}
   debugAutoRotate: 0
+  stickCheckInterval: 0.1
 --- !u!114 &1876854700904441066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -180,8 +181,8 @@ Transform:
   m_GameObject: {fileID: 3225514191152118634}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.0782, y: -0.0805, z: 0}
-  m_LocalScale: {x: 0.0968846, y: 0.09559509, z: 0.33618587}
+  m_LocalPosition: {x: 0.0051, y: -0.0084, z: 0}
+  m_LocalScale: {x: 0.13177128, y: 0.13001746, z: 0.45724136}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7733589260747946808}
@@ -227,12 +228,12 @@ SpriteRenderer:
   m_SortingLayerID: -1046135143
   m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300384, guid: 55638d99c7f6296a916343b6c48fc20f, type: 3}
+  m_Sprite: {fileID: -733110670, guid: d79d08eb62a114582911bb25bd6b8c9d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 15.36, y: 10.24}
+  m_Size: {x: 11.02, y: 11.19}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
