@@ -422,8 +422,9 @@ namespace SuperQQ.Item
             _chantIndicators.Clear();
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
             ClearAllChantIndicators();
         }
 

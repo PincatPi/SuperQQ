@@ -18,8 +18,9 @@ namespace SuperQQ.Event
         [Min(0f)]
         [SerializeField] private float _bottomOffset = 40f;
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             NormalizeFillImage();
             SnapToBottomCenter();
         }

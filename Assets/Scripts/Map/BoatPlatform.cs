@@ -20,9 +20,6 @@ namespace SuperQQ.Map
         private Vector2Int registeredAnchor;
         private bool registered;
 
-        // 网格吸附是否已完成（GridManager 就绪前每帧重试，避免 Start 时序导致吸附被跳过）
-        private bool snapDone;
-
         private void Start()
         {
             box = GetComponent<FootprintBoxView>();
@@ -75,11 +72,9 @@ namespace SuperQQ.Map
             Vector2 snapped = grid.GetPlacementWorldPos(anchor, box.Footprint, 0);
             if (((Vector2)transform.position - snapped).sqrMagnitude < 0.0001f)
             {
-                snapDone = true;
                 return true; // 已对齐，无需写回（避免每帧无意义赋值）
             }
             transform.position = snapped;
-            snapDone = true;
             return true;
         }
 

@@ -380,6 +380,14 @@ namespace SuperQQ.UI.RoundResults
 
         private System.Collections.IEnumerator CaptureLayoutAndRevealNextFrame(RectTransform rowsContainer)
         {
+            // 首帧空窗防护：下一帧捕获布局前，先立刻把面板压回 alpha=0，
+            // 避免"刷新（RefreshIfOpen）时面板正以 alpha=1 显示"残留一帧
+            // 空面板（旧行已销毁、新行未揭示）造成闪屏
+            if (_canvasGroup != null)
+            {
+                _canvasGroup.alpha = 0f;
+            }
+
             yield return null;
 
             Canvas.ForceUpdateCanvases();
